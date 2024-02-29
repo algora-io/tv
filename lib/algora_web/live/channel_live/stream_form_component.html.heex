@@ -1,0 +1,42 @@
+<div>
+  <.form
+    :let={f}
+    id="stream-form"
+    for={@changeset}
+    class="space-y-8"
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save"
+  >
+    <div class="space-y-8 divide-y divide-gray-700 sm:space-y-5">
+      <div class="space-y-2 sm:space-y-2">
+        <div class="sm:col-span-4">
+          <label for="about" class="block text-sm font-medium text-gray-200">
+            Stream title
+          </label>
+          <div class="mt-1">
+            <%= text_input(f, :channel_tagline,
+              class:
+                "bg-gray-950 text-white flex-1 focus:ring-purple-400 focus:border-purple-400 block w-full min-w-0 rounded-md sm:text-sm border-gray-600"
+            ) %>
+            <.error field={:channel_tagline} input_name="user[channel_tagline]" errors={f.errors} />
+          </div>
+        </div>
+
+        <div class="sm:col-span-4">
+          <label for="about" class="block text-sm font-medium text-gray-200">
+            Stream URL
+          </label>
+          <div class="mt-1">
+            <div class="py-2 border px-3 border-1 bg-gray-950 text-white flex-1 focus:ring-purple-400 focus:border-purple-400 block w-full min-w-0 rounded-md sm:text-sm border-gray-600">
+              <%= "rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}" %>
+            </div>
+          </div>
+          <p class="mt-2 text-sm text-gray-400">
+            <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </.form>
+</div>

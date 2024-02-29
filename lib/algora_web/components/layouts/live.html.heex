@@ -1,0 +1,125 @@
+<div
+  id="mobile-sidebar-container"
+  class="fixed inset-0 flex z-40 lg:hidden"
+  aria-modal="true"
+  style="display: none;"
+  role="region"
+>
+  <div class="fixed inset-0 bg-gray-900 bg-opacity-75" phx-click={hide_mobile_sidebar()}></div>
+
+  <div
+    id="mobile-sidebar"
+    class="relative flex-1 flex-col w-full pt-5 pb-4 bg-gray-950 hidden min-h-screen sm:max-w-md"
+  >
+    <div class="absolute top-0 right-2 pt-4">
+      <button
+        type="button"
+        id="hide-mobile-sidebar"
+        aria-expanded="true"
+        aria-controls="mobile-sidebar"
+        class="ml-1 flex items-center justify-center h-10 w-10 rounded-full"
+        phx-click={hide_mobile_sidebar()}
+      >
+        <span class="sr-only">Close sidebar</span>
+        <svg
+          class="h-6 w-6 text-white"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="flex-shrink-0 flex items-center px-4">
+      <.logo />
+    </div>
+    <div class="mt-5 flex-1 h-0 overflow-y-auto">
+      <%= if @current_user do %>
+        <.sidebar_account_dropdown id="mobile-account-dropdown" current_user={@current_user} />
+      <% end %>
+
+      <nav class="px-3 pt-1">
+        <%= if @current_user do %>
+          <.sidebar_nav_links current_user={@current_user} active_tab={@active_tab} />
+        <% end %>
+        <.sidebar_active_users id="desktop-active-users" users={@active_users} />
+      </nav>
+    </div>
+  </div>
+
+  <div class="flex-shrink-0 w-14" aria-hidden="true">
+    <!-- Dummy element to force sidebar to shrink to fit close icon -->
+  </div>
+</div>
+<!-- Static sidebar for desktop -->
+<div :if={@current_user} class="hidden lg:flex lg:flex-shrink-0" role="region">
+  <div class="flex flex-col w-64 border-r border-gray-800 pt-5 pb-4 bg-gray-950/50">
+    <div class="flex items-center flex-shrink-0 px-6">
+      <.logo />
+    </div>
+    <!-- Sidebar component, swap this element with another sidebar if you like -->
+    <div class="h-0 flex-1 flex flex-col overflow-y-auto">
+      <%= if @current_user do %>
+        <.sidebar_account_dropdown id="account-dropdown" current_user={@current_user} />
+      <% end %>
+      <!-- Navigation -->
+      <nav class="px-3 mt-6">
+        <%= if @current_user do %>
+          <.sidebar_nav_links current_user={@current_user} active_tab={@active_tab} />
+        <% end %>
+        <!-- Secondary navigation -->
+        <.sidebar_active_users id="mobile-active-users" users={@active_users} />
+      </nav>
+    </div>
+  </div>
+</div>
+<!-- Main column -->
+<div class="flex flex-col w-0 flex-1 overflow-hidden">
+  <!-- Search header -->
+  <div
+    :if={@current_user}
+    class="relative z-10 flex-shrink-0 flex h-16 border-b border-gray-800 lg:hidden"
+    role="navigation"
+  >
+    <div class="flex-1 flex justify-between px-4 sm:px-6 lg:px-8">
+      <div class="my-auto">
+        <.logo />
+      </div>
+      <button
+        type="button"
+        id="show-mobile-sidebar"
+        aria-expanded="false"
+        aria-controls="mobile-sidebar"
+        class="ml-auto -mr-4 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 lg:hidden"
+        phx-click={show_mobile_sidebar()}
+      >
+        <span class="sr-only">Open sidebar</span>
+        <Heroicons.bars_2 class="h-6 w-6" />
+      </button>
+    </div>
+  </div>
+
+  <.flash flash={@flash} kind={:info} />
+  <.flash flash={@flash} kind={:error} />
+  <.connection_status>
+    Re-establishing connection...
+  </.connection_status>
+
+  <.live_component module={AlgoraWeb.LayoutComponent} id="layout" />
+
+  <%= live_render(@socket, AlgoraWeb.ChatLive, id: "chat", session: %{}, sticky: true) %>
+  <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none pb-4">
+    <%= live_render(@socket, AlgoraWeb.PlayerLive, id: "player", session: %{}, sticky: true) %>
+    <%= @inner_content %>
+  </main>
+</div>

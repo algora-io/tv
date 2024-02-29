@@ -1,0 +1,63 @@
+# fly.toml app configuration file generated for algora-media on 2024-02-08T18:25:10+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'algora-media'
+primary_region = 'otp'
+kill_signal = 'SIGTERM'
+kill_timeout = '5s'
+
+[experimental]
+  auto_rollback = true
+
+[build]
+
+[deploy]
+  release_command = '/app/bin/migrate'
+
+[env]
+  PHX_HOST = 'tv.algora.io'
+  PORT = '4000'
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 4000
+  processes = ['app']
+
+[[services.ports]]
+    port = 80
+    handlers = ['http']
+    force_https = true
+
+[[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 2500
+    soft_limit = 2000
+
+[[services.tcp_checks]]
+    interval = '15s'
+    timeout = '2s'
+    grace_period = '20s'
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 9006
+  processes = ['app']
+
+[[services.ports]]
+    port = 9006
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 2500
+    soft_limit = 2000
+
+[[vm]]
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 512
