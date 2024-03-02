@@ -403,7 +403,7 @@ defmodule AlgoraWeb.CoreComponents do
                   class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
                   aria-label={gettext("close")}
                 >
-                  <.icon name="hero-x-mark-solid" class="w-5 h-5" />
+                  <Heroicons.x_mark solid class="w-5 h-5" />
                 </button>
               </div>
               <div id={"#{@id}-content"}>
@@ -490,7 +490,7 @@ defmodule AlgoraWeb.CoreComponents do
         class="group absolute top-2 right-1 p-2"
         aria-label={gettext("close")}
       >
-        <.icon name="hero-x-mark-solid" class="w-5 h-5 opacity-40 group-hover:opacity-70" />
+        <Heroicons.x_mark solid class="w-5 h-5 opacity-40 group-hover:opacity-70" />
       </button>
     </div>
     """
@@ -518,7 +518,7 @@ defmodule AlgoraWeb.CoreComponents do
       phx-disconnected={show("#disconnected")}
       phx-connected={hide("#disconnected")}
     >
-      Attempting to reconnect <.icon name="hero-arrow-path" class="ml-1 w-3 h-3 animate-spin" />
+      Attempting to reconnect <Heroicons.arrow_path class="ml-1 w-3 h-3 animate-spin" />
     </.flash>
     """
   end
@@ -741,7 +741,7 @@ defmodule AlgoraWeb.CoreComponents do
   def error(assigns) do
     ~H"""
     <p class="phx-no-feedback:hidden mt-3 flex gap-3 text-sm leading-6 text-red-300">
-      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 w-5 h-5 flex-none" />
+      <Heroicons.exclamation_circle class="mt-0.5 w-5 h-5 flex-none" />
       <%= render_slot(@inner_block) %>
     </p>
     """
@@ -892,39 +892,10 @@ defmodule AlgoraWeb.CoreComponents do
         navigate={@navigate}
         class="text-sm font-semibold leading-6 text-gray-50 hover:text-gray-200"
       >
-        <.icon name="hero-arrow-left-solid" class="w-3 h-3" />
+        <Heroicons.arrow_left solid class="w-3 h-3" />
         <%= render_slot(@inner_block) %>
       </.link>
     </div>
-    """
-  end
-
-  @doc """
-  Renders a [Hero Icon](https://heroicons.com).
-
-  Hero icons come in three styles – outline, solid, and mini.
-  By default, the outline style is used, but solid an mini may
-  be applied by using the `-solid` and `-mini` suffix.
-
-  You can customize the size and colors of the icons by setting
-  width, height, and background color classes.
-
-  Icons are extracted from your `priv/hero_icons` directory and bundled
-  within your compiled app.css by the plugin in your `assets/tailwind.config.js`.
-
-  ## Examples
-
-      <.icon name="hero-cake" />
-      <.icon name="hero-cake-solid" />
-      <.icon name="hero-cake-mini" />
-      <.icon name="hero-bolt" class="bg-blue-500 w-10 h-10" />
-  """
-  attr :name, :string, required: true
-  attr :class, :string, default: nil
-
-  def icon(%{name: "hero-" <> _} = assigns) do
-    ~H"""
-    <span class={[@name, @class]} />
     """
   end
 
