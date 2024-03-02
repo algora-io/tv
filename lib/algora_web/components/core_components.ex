@@ -1,12 +1,21 @@
 defmodule AlgoraWeb.CoreComponents do
+  @moduledoc """
+  Provides core UI components.
+
+  The components in this module use Tailwind CSS, a utility-first CSS framework.
+  See the [Tailwind CSS documentation](https://tailwindcss.com) to learn how to
+  customize the generated components in this module.
+
+  Icons are provided by [heroicons](https://heroicons.com). See `icon/1` for usage.
+  """
   use Phoenix.Component
   use AlgoraWeb, :verified_routes
 
-  alias Phoenix.LiveView.JS
   alias Algora.{Accounts, Library}
+  alias Phoenix.LiveView.JS
+  import AlgoraWeb.Gettext
 
-  def home_path(nil = _current_user), do: "/"
-  def home_path(%Accounts.User{} = current_user), do: channel_path(current_user)
+  slot :inner_block
 
   def channel_stream_path(%Accounts.User{} = user) do
     ~p"/#{user.handle}/stream"
@@ -23,8 +32,6 @@ defmodule AlgoraWeb.CoreComponents do
   def channel_path(%Library.Channel{} = channel) do
     channel_path(channel.handle)
   end
-
-  slot :inner_block
 
   def connection_status(assigns) do
     ~H"""
@@ -63,6 +70,77 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
+  attr :id, :string, required: true
+  attr :video, :any, required: true
+
+  def video_entry(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      class="cursor-pointer truncate"
+      phx-click={
+        JS.push("join", value: %{video_id: @video.id}, target: "#chat-box")
+        |> JS.dispatch("js:play_video",
+          to: "#video-player",
+          detail: %{player: %{src: @video.url, type: Library.player_type(@video)}}
+        )
+      }
+    >
+      <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[16/9] bg-gray-800">
+        <Heroicons.play :if={!@video.thumbnails_ready} solid class="h-12 w-12 text-gray-500" />
+        <img
+          :if={@video.thumbnails_ready}
+          src={Library.thumbnail_url(@video)}
+          alt={@video.title}
+          class="absolute w-full h-full object-cover transition-transform duration-200 scale-105 hover:scale-110 z-10"
+        />
+
+        <div
+          :if={@video.is_live}
+          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+        >
+          🔴 LIVE
+        </div>
+        <div
+          :if={not @video.is_live and @video.duration != 0}
+          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+        >
+          <%= Library.to_hhmmss(@video.duration) %>
+        </div>
+      </div>
+      <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
+      <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
+      <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :videos, :list, required: true
+
+  slot :inner_block
+
+  def playlist(assigns) do
+    ~H"""
+    <div class="mt-8 sm:block">
+      <div class="align-middle inline-block min-w-full">
+        <div id={@id} class="px-4 sm:px-6 lg:px-8 min-w-full">
+          <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide">
+            Library
+          </h2>
+          <div
+            id={"#{@id}-body"}
+            class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3"
+            phx-update="stream"
+          >
+            <.video_entry :for={{id, video} <- @videos} id={id} video={video} />
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   attr :class, :string, default: nil
 
   def logo(assigns) do
@@ -79,85 +157,6 @@ defmodule AlgoraWeb.CoreComponents do
         </g>
       </svg>
     </.link>
-    """
-  end
-
-  attr :flash, :map
-  attr :kind, :atom
-
-  def flash(%{kind: :error} = assigns) do
-    ~H"""
-    <div
-      :if={msg = Phoenix.Flash.get(@flash, @kind)}
-      id="flash"
-      class="rounded-md bg-red-900 p-4 fixed top-1 right-1 w-96 fade-in-scale z-50"
-      phx-click={
-        JS.push("lv:clear-flash")
-        |> JS.remove_class("fade-in-scale", to: "#flash")
-        |> hide("#flash")
-      }
-      phx-hook="Flash"
-    >
-      <div class="flex justify-between items-center space-x-3 text-red-200">
-        <Heroicons.exclamation_circle solid class="w-5 h-5" />
-        <p class="flex-1 text-sm font-medium" role="alert">
-          <%= msg %>
-        </p>
-        <button
-          type="button"
-          class="inline-flex bg-red-900 rounded-md p-1.5 text-red-400 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-900 focus:ring-red-300"
-        >
-          <Heroicons.x_mark solid class="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-    """
-  end
-
-  def flash(%{kind: :info} = assigns) do
-    ~H"""
-    <div
-      :if={msg = Phoenix.Flash.get(@flash, @kind)}
-      id="flash"
-      class="rounded-md bg-green-900 p-4 fixed top-1 right-1 w-96 fade-in-scale z-50"
-      phx-click={JS.push("lv:clear-flash") |> JS.remove_class("fade-in-scale") |> hide("#flash")}
-      phx-value-key="info"
-      phx-hook="Flash"
-    >
-      <div class="flex justify-between items-center space-x-3 text-green-200">
-        <Heroicons.check_circle solid class="w-5 h-5" />
-        <p class="flex-1 text-sm font-medium" role="alert">
-          <%= msg %>
-        </p>
-        <button
-          type="button"
-          class="inline-flex bg-green-900 rounded-md p-1.5 text-green-400 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-900 focus:ring-green-300"
-        >
-          <Heroicons.x_mark solid class="w-4 h-4" />
-        </button>
-      </div>
-    </div>
-    """
-  end
-
-  def spinner(assigns) do
-    ~H"""
-    <svg
-      class="inline-block animate-spin h-2.5 w-2.5 text-gray-500"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-      </circle>
-      <path
-        class="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      >
-      </path>
-    </svg>
     """
   end
 
@@ -295,27 +294,6 @@ defmodule AlgoraWeb.CoreComponents do
     |> JS.dispatch("js:exec", to: "#show-mobile-sidebar", detail: %{call: "focus", args: []})
   end
 
-  def show(js \\ %JS{}, selector) do
-    JS.show(js,
-      to: selector,
-      time: 300,
-      display: "inline-block",
-      transition:
-        {"ease-out duration-300", "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
-         "opacity-100 translate-y-0 sm:scale-100"}
-    )
-  end
-
-  def hide(js \\ %JS{}, selector) do
-    JS.hide(js,
-      to: selector,
-      time: 300,
-      transition:
-        {"transition ease-in duration-300", "transform opacity-100 scale-100",
-         "transform opacity-0 scale-95"}
-    )
-  end
-
   def show_dropdown(to) do
     JS.show(
       to: to,
@@ -336,48 +314,34 @@ defmodule AlgoraWeb.CoreComponents do
     |> JS.remove_attribute("aria-expanded", to: to)
   end
 
-  def show_modal(js \\ %JS{}, id) when is_binary(id) do
-    js
-    |> JS.show(
-      to: "##{id}",
-      display: "inline-block",
-      transition: {"ease-out duration-300", "opacity-0", "opacity-100"}
-    )
-    |> JS.show(
-      to: "##{id}-container",
-      display: "inline-block",
-      transition:
-        {"ease-out duration-300", "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
-         "opacity-100 translate-y-0 sm:scale-100"}
-    )
-    |> js_exec("##{id}-confirm", "focus", [])
-  end
+  @doc """
+  Renders a modal.
 
-  def hide_modal(js \\ %JS{}, id) do
-    js
-    |> JS.remove_class("fade-in", to: "##{id}")
-    |> JS.hide(
-      to: "##{id}",
-      transition: {"ease-in duration-200", "opacity-100", "opacity-0"}
-    )
-    |> JS.hide(
-      to: "##{id}-container",
-      transition:
-        {"ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
-    )
-    |> JS.dispatch("click", to: "##{id} [data-modal-return]")
-  end
+  ## Examples
 
+      <.modal id="confirm-modal">
+        Are you sure?
+        <:confirm>OK</:confirm>
+        <:cancel>Cancel</:cancel>
+      </.modal>
+
+  JS commands may be passed to the `:on_cancel` and `on_confirm` attributes
+  for the caller to react to each button press, for example:
+
+      <.modal id="confirm" on_confirm={JS.push("delete")} on_cancel={JS.navigate(~p"/posts")}>
+        Are you sure you?
+        <:confirm>OK</:confirm>
+        <:cancel>Cancel</:cancel>
+      </.modal>
+  """
   attr :id, :string, required: true
   attr :show, :boolean, default: false
-  attr :patch, :string, default: nil
-  attr :navigate, :string, default: nil
   attr :on_cancel, JS, default: %JS{}
   attr :on_confirm, JS, default: %JS{}
-  attr :rest, :global
 
+  slot :inner_block, required: true
   slot :title
+  slot :subtitle
   slot :confirm
   slot :cancel
 
@@ -385,265 +349,585 @@ defmodule AlgoraWeb.CoreComponents do
     ~H"""
     <div
       id={@id}
-      class={"fixed z-10 inset-0 overflow-y-auto #{if @show, do: "fade-in", else: "hidden"}"}
-      {@rest}
+      phx-mounted={@show && show_modal(@id)}
+      phx-remove={hide_modal(@id)}
+      class="relative z-50 hidden"
     >
-      <.focus_wrap id={"#{@id}-focus-wrap"}>
-        <div
-          class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
-          aria-labelledby={"#{@id}-title"}
-          aria-describedby={"#{@id}-description"}
-          role="dialog"
-          aria-modal="true"
-          tabindex="0"
-        >
-          <div class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity" aria-hidden="true">
-          </div>
-          <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-            &#8203;
-          </span>
-          <div
-            id={"#{@id}-container"}
-            class={
-              "#{if @show, do: "fade-in-scale", else: "hidden"} sticky inline-block align-bottom bg-gray-900 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform sm:my-8 sm:align-middle sm:max-w-xl sm:w-full sm:p-6"
-            }
-            phx-window-keydown={hide_modal(@on_cancel, @id)}
-            phx-key="escape"
-            phx-click-away={hide_modal(@on_cancel, @id)}
-          >
-            <%= if @patch do %>
-              <.link patch={@patch} data-modal-return class="hidden"></.link>
-            <% end %>
-            <%= if @navigate do %>
-              <.link navigate={@navigate} data-modal-return class="hidden"></.link>
-            <% end %>
-            <div class="sm:flex sm:items-start">
-              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-purple-800 sm:mx-0">
-                <Heroicons.information_circle class="h-6 w-6 text-purple-300" />
+      <div
+        id={"#{@id}-bg"}
+        class="fixed inset-0 bg-gray-900/90 transition-opacity"
+        aria-hidden="true"
+      />
+      <div
+        class="fixed inset-0 overflow-y-auto"
+        aria-labelledby={"#{@id}-title"}
+        aria-describedby={"#{@id}-description"}
+        role="dialog"
+        aria-modal="true"
+        tabindex="0"
+      >
+        <div class="flex min-h-full items-center justify-center">
+          <div class="w-full max-w-3xl p-4 sm:p-6 lg:py-8">
+            <.focus_wrap
+              id={"#{@id}-container"}
+              phx-mounted={@show && show_modal(@id)}
+              phx-window-keydown={hide_modal(@on_cancel, @id)}
+              phx-key="escape"
+              phx-click-away={hide_modal(@on_cancel, @id)}
+              class="hidden relative rounded-2xl bg-white p-14 shadow-lg shadow-gray-200/10 ring-1 ring-gray-200/10 transition"
+            >
+              <div class="absolute top-6 right-5">
+                <button
+                  phx-click={hide_modal(@on_cancel, @id)}
+                  type="button"
+                  class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
+                  aria-label={gettext("close")}
+                >
+                  <Heroicons.x_mark solid class="w-5 h-5" />
+                </button>
               </div>
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full mr-12">
-                <h3 class="text-lg leading-6 font-medium text-gray-50" id={"#{@id}-title"}>
-                  <%= render_slot(@title) %>
-                </h3>
-                <div class="mt-2">
-                  <p id={"#{@id}-content"} class="text-sm text-gray-400">
-                    <%= render_slot(@inner_block) %>
+              <div id={"#{@id}-content"}>
+                <header :if={@title != []}>
+                  <h1 id={"#{@id}-title"} class="text-lg font-semibold leading-8 text-gray-100">
+                    <%= render_slot(@title) %>
+                  </h1>
+                  <p
+                    :if={@subtitle != []}
+                    id={"#{@id}-description"}
+                    class="mt-2 text-sm leading-6 text-gray-300"
+                  >
+                    <%= render_slot(@subtitle) %>
                   </p>
+                </header>
+                <%= render_slot(@inner_block) %>
+                <div :if={@confirm != [] or @cancel != []} class="ml-6 mb-4 flex items-center gap-5">
+                  <.button
+                    :for={confirm <- @confirm}
+                    id={"#{@id}-confirm"}
+                    phx-click={@on_confirm}
+                    phx-disable-with
+                    class="py-2 px-3"
+                  >
+                    <%= render_slot(confirm) %>
+                  </.button>
+                  <.link
+                    :for={cancel <- @cancel}
+                    phx-click={hide_modal(@on_cancel, @id)}
+                    class="text-sm font-semibold leading-6 text-gray-50 hover:text-gray-200"
+                  >
+                    <%= render_slot(cancel) %>
+                  </.link>
                 </div>
               </div>
-            </div>
-            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-              <%= for confirm <- @confirm do %>
-                <button
-                  id={"#{@id}-confirm"}
-                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 sm:ml-3 sm:w-auto sm:text-sm"
-                  phx-click={@on_confirm}
-                  phx-disable-with
-                  {assigns_to_attributes(confirm)}
-                >
-                  <%= render_slot(confirm) %>
-                </button>
-              <% end %>
-              <%= for cancel <- @cancel do %>
-                <button
-                  class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-gray-900 text-base font-medium text-gray-200 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 sm:mt-0 sm:w-auto sm:text-sm"
-                  phx-click={hide_modal(@on_cancel, @id)}
-                  {assigns_to_attributes(cancel)}
-                >
-                  <%= render_slot(cancel) %>
-                </button>
-              <% end %>
-            </div>
+            </.focus_wrap>
           </div>
         </div>
-      </.focus_wrap>
-    </div>
-    """
-  end
-
-  slot :actions
-
-  def title_bar(assigns) do
-    ~H"""
-    <!-- Page title & actions -->
-    <div class="border-b border-gray-700 px-4 py-4 flex items-center justify-between sm:px-6 lg:px-8 sm:h-24">
-      <div class="flex-1 min-w-0">
-        <h1 class="text-lg font-medium leading-6 text-gray-50 focus:outline-none">
-          <%= render_slot(@inner_block) %>
-        </h1>
       </div>
-      <%= if Enum.count(@actions) > 0 do %>
-        <div class="flex sm:ml-4 space-x-4">
-          <%= render_slot(@actions) %>
-        </div>
-      <% end %>
     </div>
     """
   end
 
-  attr :patch, :string
-  attr :primary, :boolean, default: false
-  attr :rest, :global
+  @doc """
+  Renders flash notices.
 
-  slot :inner_block
+  ## Examples
 
-  def button(%{patch: _} = assigns) do
-    ~H"""
-    <%= if @primary do %>
-      <%= live_patch [to: @patch, class: "order-0 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 sm:order-1 sm:ml-3"] ++
-        Map.to_list(@rest) do %>
-        <%= render_slot(@inner_block) %>
-      <% end %>
-    <% else %>
-      <%= live_patch [to: @patch, class: "order-1 inline-flex items-center px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-200 bg-gray-900 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 sm:order-0 sm:ml-0 lg:ml-3"] ++
-        assigns_to_attributes(assigns, [:primary, :patch]) do %>
-        <%= render_slot(@inner_block) %>
-      <% end %>
-    <% end %>
-    """
-  end
+      <.flash kind={:info} flash={@flash} />
+      <.flash kind={:info} phx-mounted={show("#flash")}>Welcome Back!</.flash>
+  """
+  attr :id, :string, default: "flash", doc: "the optional id of flash container"
+  attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
+  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+  attr :autoshow, :boolean, default: true, doc: "whether to auto show the flash on mount"
+  attr :close, :boolean, default: true, doc: "whether the flash can be closed"
+  attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
-  def button(%{} = assigns) do
-    ~H"""
-    <%= if @primary do %>
-      <button
-        type="button"
-        class="order-0 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 sm:order-1 sm:ml-3"
-        {@rest}
-      >
-        <%= render_slot(@inner_block) %>
-      </button>
-    <% else %>
-      <button
-        type="button"
-        class="order-1 inline-flex items-center px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-200 bg-gray-900 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 sm:order-0 sm:ml-0 lg:ml-3"
-        {@rest}
-      >
-        <%= render_slot(@inner_block) %>
-      </button>
-    <% end %>
-    """
-  end
+  slot :inner_block, doc: "the optional inner block that renders the flash message"
 
-  attr :id, :string, required: true
-  attr :video, :any, required: true
-
-  def video_entry(assigns) do
+  def flash(assigns) do
     ~H"""
     <div
+      :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
-      class="cursor-pointer truncate"
-      phx-click={
-        JS.push("join", value: %{video_id: @video.id}, target: "#chat-box")
-        |> JS.dispatch("js:play_video",
-          to: "#video-player",
-          detail: %{player: %{src: @video.url, type: Library.player_type(@video)}}
-        )
-      }
+      phx-mounted={@autoshow && show("##{@id}")}
+      phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
+      role="alert"
+      class={[
+        "fixed hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-gray-50/5 ring-1",
+        @kind == :info && "bg-purple-900 text-purple-100 ring-purple-900 fill-purple-900",
+        @kind == :error && "bg-red-900 p-3 text-red-50 shadow-md ring-red-900 fill-red-50"
+      ]}
+      {@rest}
     >
-      <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[16/9] bg-gray-800">
-        <Heroicons.play :if={!@video.thumbnails_ready} solid class="h-12 w-12 text-gray-500" />
-        <img
-          :if={@video.thumbnails_ready}
-          src={Library.thumbnail_url(@video)}
-          alt={@video.title}
-          class="absolute w-full h-full object-cover transition-transform duration-200 scale-105 hover:scale-110 z-10"
-        />
-
-        <div
-          :if={@video.is_live}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          🔴 LIVE
-        </div>
-        <div
-          :if={not @video.is_live and @video.duration != 0}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          <%= Library.to_hhmmss(@video.duration) %>
-        </div>
-      </div>
-      <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
-      <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
-      <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
+      <p class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
+        <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
+        <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
+        <%= msg %>
+      </p>
+      <button
+        :if={@close}
+        type="button"
+        class="group absolute top-2 right-1 p-2"
+        aria-label={gettext("close")}
+      >
+        <Heroicons.x_mark solid class="w-5 h-5 opacity-40 group-hover:opacity-70" />
+      </button>
     </div>
     """
   end
 
-  attr :id, :string, required: true
-  attr :videos, :list, required: true
+  @doc """
+  Shows the flash group with standard titles and content.
 
+  ## Examples
+
+      <.flash_group flash={@flash} />
+  """
+  attr :flash, :map, required: true, doc: "the map of flash messages"
+
+  def flash_group(assigns) do
+    ~H"""
+    <.flash kind={:info} title="Success!" flash={@flash} />
+    <.flash kind={:error} title="Error!" flash={@flash} />
+    <.flash
+      id="disconnected"
+      kind={:error}
+      title="We can't find the internet"
+      close={false}
+      autoshow={false}
+      phx-disconnected={show("#disconnected")}
+      phx-connected={hide("#disconnected")}
+    >
+      Attempting to reconnect <Heroicons.arrow_path class="ml-1 w-3 h-3 animate-spin" />
+    </.flash>
+    """
+  end
+
+  @doc """
+  Renders a simple form.
+
+  ## Examples
+
+      <.simple_form for={@form} phx-change="validate" phx-submit="save">
+        <.input field={@form[:email]} label="Email"/>
+        <.input field={@form[:username]} label="Username" />
+        <:actions>
+          <.button>Save</.button>
+        </:actions>
+      </.simple_form>
+  """
+  attr :for, :any, required: true, doc: "the datastructure for the form"
+  attr :as, :any, default: nil, doc: "the server side parameter to collect all input under"
+
+  attr :rest, :global,
+    include: ~w(autocomplete name rel action enctype method novalidate target),
+    doc: "the arbitrary HTML attributes to apply to the form tag"
+
+  slot :inner_block, required: true
+  slot :actions, doc: "the slot for form actions, such as a submit button"
+
+  def simple_form(assigns) do
+    ~H"""
+    <.form :let={f} for={@for} as={@as} {@rest}>
+      <div class="space-y-8">
+        <%= render_slot(@inner_block, f) %>
+        <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
+          <%= render_slot(action, f) %>
+        </div>
+      </div>
+    </.form>
+    """
+  end
+
+  @doc """
+  Renders a button.
+
+  ## Examples
+
+      <.button>Send!</.button>
+      <.button phx-click="go" class="ml-2">Send!</.button>
+  """
+  attr :type, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global, include: ~w(disabled form name value)
+
+  slot :inner_block, required: true
+
+  def button(assigns) do
+    ~H"""
+    <button
+      type={@type}
+      class={[
+        "phx-submit-loading:opacity-75 rounded-lg bg-gray-50 hover:bg-gray-200 py-2 px-3",
+        "text-sm font-semibold leading-6 text-gray-950 active:text-gray-950/80",
+        @class
+      ]}
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </button>
+    """
+  end
+
+  @doc """
+  Renders an input with label and error messages.
+
+  A `%Phoenix.HTML.Form{}` and field name may be passed to the input
+  to build input names and error messages, or all the attributes and
+  errors may be passed explicitly.
+
+  ## Examples
+
+      <.input field={@form[:email]} type="email" />
+      <.input name="my-input" errors={["oh no!"]} />
+  """
+  attr :id, :any, default: nil
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :value, :any
+
+  attr :type, :string,
+    default: "text",
+    values: ~w(checkbox color date datetime-local email file hidden month number password
+               range radio search select tel text textarea time url week)
+
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :errors, :list, default: []
+  attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
+  attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
+  attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
+  attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :rest, :global, include: ~w(autocomplete cols disabled form max maxlength min minlength
+                                   pattern placeholder readonly required rows size step)
   slot :inner_block
 
-  def playlist(assigns) do
+  def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    assigns
+    |> assign(field: nil, id: assigns.id || field.id)
+    |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
+    |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
+    |> assign_new(:value, fn -> field.value end)
+    |> input()
+  end
+
+  def input(%{type: "checkbox", value: value} = assigns) do
+    assigns =
+      assign_new(assigns, :checked, fn -> Phoenix.HTML.Form.normalize_value("checkbox", value) end)
+
     ~H"""
-    <div class="mt-8 sm:block">
-      <div class="align-middle inline-block min-w-full">
-        <div id={@id} class="px-4 sm:px-6 lg:px-8 min-w-full">
-          <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide">
-            Library
-          </h2>
-          <div
-            id={"#{@id}-body"}
-            class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3"
-            phx-update="stream"
-          >
-            <.video_entry :for={{id, video} <- @videos} id={id} video={video} />
-          </div>
-        </div>
-      </div>
+    <div phx-feedback-for={@name}>
+      <label class="flex items-center gap-4 text-sm leading-6 text-gray-300">
+        <input type="hidden" name={@name} value="false" />
+        <input
+          type="checkbox"
+          id={@id || @name}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class="rounded border-gray-600 text-gray-50 focus:ring-gray-50"
+          {@rest}
+        />
+        <%= @label %>
+      </label>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  def input(%{type: "select"} = assigns) do
+    ~H"""
+    <div phx-feedback-for={@name}>
+      <.label for={@id}><%= @label %></.label>
+      <select
+        id={@id}
+        name={@name}
+        class="mt-1 block w-full py-2 px-3 border border-gray-600 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm"
+        multiple={@multiple}
+        {@rest}
+      >
+        <option :if={@prompt} value=""><%= @prompt %></option>
+        <%= Phoenix.HTML.Form.options_for_select(@options, @value) %>
+      </select>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  def input(%{type: "textarea"} = assigns) do
+    ~H"""
+    <div phx-feedback-for={@name}>
+      <.label for={@id}><%= @label %></.label>
+      <textarea
+        id={@id || @name}
+        name={@name}
+        class={[
+          "mt-2 block min-h-[6rem] w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
+          "text-gray-50 focus:border-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-100/5 sm:text-sm sm:leading-6",
+          "phx-no-feedback:border-gray-600 phx-no-feedback:focus:border-gray-500 phx-no-feedback:focus:ring-gray-100/5",
+          "border-gray-600 focus:border-gray-500 focus:ring-gray-100/5",
+          @errors != [] && "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+        ]}
+        {@rest}
+      ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  def input(assigns) do
+    ~H"""
+    <div phx-feedback-for={@name}>
+      <.label for={@id}><%= @label %></.label>
+      <input
+        type={@type}
+        name={@name}
+        id={@id || @name}
+        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        class={[
+          "bg-gray-950 mt-2 block w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
+          "text-gray-50 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
+          "phx-no-feedback:border-gray-600 phx-no-feedback:focus:border-gray-500 phx-no-feedback:focus:ring-gray-100/5",
+          "border-gray-600 focus:border-gray-500 focus:ring-gray-100/5",
+          @errors != [] && "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+        ]}
+        {@rest}
+      />
+      <.error :for={msg <- @errors}><%= msg %></.error>
     </div>
     """
   end
 
   @doc """
-  Calls a wired up event listener to call a function with arguments.
-
-      window.addEventListener("js:exec", e => e.target[e.detail.call](...e.detail.args))
+  Renders a label.
   """
-  def js_exec(js \\ %JS{}, to, call, args) do
-    JS.dispatch(js, "js:exec", to: to, detail: %{call: call, args: args})
-  end
+  attr :for, :string, default: nil
+  slot :inner_block, required: true
 
-  def focus(js \\ %JS{}, parent, to) do
-    JS.dispatch(js, "js:focus", to: to, detail: %{parent: parent})
-  end
-
-  def focus_closest(js \\ %JS{}, to) do
-    js
-    |> JS.dispatch("js:focus-closest", to: to)
-    |> hide(to)
+  def label(assigns) do
+    ~H"""
+    <label for={@for} class="block text-sm font-semibold leading-6 text-gray-100">
+      <%= render_slot(@inner_block) %>
+    </label>
+    """
   end
 
   @doc """
-  Generates tag for inlined form input errors.
+  Generates a generic error message.
   """
-  def error_tag(form, field) do
-    error(%{
-      errors: form.errors,
-      field: field,
-      input_name: Phoenix.HTML.Form.input_name(form, field)
-    })
+  slot :inner_block, required: true
+
+  def error(assigns) do
+    ~H"""
+    <p class="phx-no-feedback:hidden mt-3 flex gap-3 text-sm leading-6 text-red-300">
+      <Heroicons.exclamation_circle class="mt-0.5 w-5 h-5 flex-none" />
+      <%= render_slot(@inner_block) %>
+    </p>
+    """
   end
 
-  def error(%{errors: errors, field: field} = assigns) do
+  @doc """
+  Renders a header with title.
+  """
+  attr :class, :string, default: nil
+
+  slot :inner_block, required: true
+  slot :subtitle
+  slot :actions
+
+  def header(assigns) do
+    ~H"""
+    <header class={[
+      "px-4 py-4 sm:px-6 lg:px-8",
+      @actions != [] && "flex items-center justify-between gap-6",
+      @class
+    ]}>
+      <div>
+        <h1 class="text-lg font-semibold leading-8 text-gray-100 focus:outline-none">
+          <%= render_slot(@inner_block) %>
+        </h1>
+        <p :if={@subtitle != []} class="text-sm leading-6 text-gray-300">
+          <%= render_slot(@subtitle) %>
+        </p>
+      </div>
+      <div class="flex-none"><%= render_slot(@actions) %></div>
+    </header>
+    """
+  end
+
+  @doc ~S"""
+  Renders a table with generic styling.
+
+  ## Examples
+
+      <.table id="users" rows={@users}>
+        <:col :let={user} label="id"><%= user.id %></:col>
+        <:col :let={user} label="username"><%= user.username %></:col>
+      </.table>
+  """
+  attr :id, :string, required: true
+  attr :rows, :list, required: true
+  attr :row_id, :any, default: nil, doc: "the function for generating the row id"
+  attr :row_click, :any, default: nil, doc: "the function for handling phx-click on each row"
+
+  attr :row_item, :any,
+    default: &Function.identity/1,
+    doc: "the function for mapping each row before calling the :col and :action slots"
+
+  slot :col, required: true do
+    attr :label, :string
+  end
+
+  slot :action, doc: "the slot for showing user actions in the last table column"
+
+  def table(assigns) do
     assigns =
-      assigns
-      |> assign(:error_values, Keyword.get_values(errors, field))
-      |> assign_new(:class, fn -> "" end)
+      with %{rows: %Phoenix.LiveView.LiveStream{}} <- assigns do
+        assign(assigns, row_id: assigns.row_id || fn {id, _item} -> id end)
+      end
 
     ~H"""
-    <%= for error <- @error_values do %>
-      <span
-        phx-feedback-for={@input_name}
-        class={
-          "invalid-feedback inline-block text-sm text-red-400 #{@class}"
-        }
-      >
-        <%= translate_error(error) %>
-      </span>
-    <% end %>
+    <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
+      <table class="mt-11 w-[40rem] sm:w-full">
+        <thead class="text-left text-[0.8125rem] leading-6 text-gray-900">
+          <tr>
+            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
+            <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
+          </tr>
+        </thead>
+        <tbody
+          id={@id}
+          phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
+          class="relative divide-y divide-gray-800 border-t border-gray-700 text-sm leading-6 text-gray-200"
+        >
+          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-gray-900">
+            <td
+              :for={{col, i} <- Enum.with_index(@col)}
+              phx-click={@row_click && @row_click.(row)}
+              class={["relative p-0", @row_click && "hover:cursor-pointer"]}
+            >
+              <div class="block py-4 pr-6">
+                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-gray-900 sm:rounded-l-xl" />
+                <span class={["relative", i == 0 && "font-semibold text-gray-50"]}>
+                  <%= render_slot(col, @row_item.(row)) %>
+                </span>
+              </div>
+            </td>
+            <td :if={@action != []} class="relative p-0 w-14">
+              <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
+                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-gray-900 sm:rounded-r-xl" />
+                <span
+                  :for={action <- @action}
+                  class="relative ml-4 font-semibold leading-6 text-gray-50 hover:text-gray-200"
+                >
+                  <%= render_slot(action, @row_item.(row)) %>
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     """
+  end
+
+  @doc """
+  Renders a data list.
+
+  ## Examples
+
+      <.list>
+        <:item title="Title"><%= @post.title %></:item>
+        <:item title="Views"><%= @post.views %></:item>
+      </.list>
+  """
+  slot :item, required: true do
+    attr :title, :string, required: true
+  end
+
+  def list(assigns) do
+    ~H"""
+    <div class="mt-14">
+      <dl class="-my-4 divide-y divide-gray-800">
+        <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8">
+          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-gray-900"><%= item.title %></dt>
+          <dd class="text-sm leading-6 text-gray-200"><%= render_slot(item) %></dd>
+        </div>
+      </dl>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a back navigation link.
+
+  ## Examples
+
+      <.back navigate={~p"/posts"}>Back to posts</.back>
+  """
+  attr :navigate, :any, required: true
+  slot :inner_block, required: true
+
+  def back(assigns) do
+    ~H"""
+    <div class="mt-16">
+      <.link
+        navigate={@navigate}
+        class="text-sm font-semibold leading-6 text-gray-50 hover:text-gray-200"
+      >
+        <Heroicons.arrow_left solid class="w-3 h-3" />
+        <%= render_slot(@inner_block) %>
+      </.link>
+    </div>
+    """
+  end
+
+  ## JS Commands
+
+  def show(js \\ %JS{}, selector) do
+    JS.show(js,
+      to: selector,
+      transition:
+        {"transition-all transform ease-out duration-300",
+         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
+         "opacity-100 translate-y-0 sm:scale-100"}
+    )
+  end
+
+  def hide(js \\ %JS{}, selector) do
+    JS.hide(js,
+      to: selector,
+      time: 200,
+      transition:
+        {"transition-all transform ease-in duration-200",
+         "opacity-100 translate-y-0 sm:scale-100",
+         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
+    )
+  end
+
+  def show_modal(js \\ %JS{}, id) when is_binary(id) do
+    js
+    |> JS.show(to: "##{id}")
+    |> JS.show(
+      to: "##{id}-bg",
+      transition: {"transition-all transform ease-out duration-300", "opacity-0", "opacity-100"}
+    )
+    |> show("##{id}-container")
+    |> JS.add_class("overflow-hidden", to: "body")
+    |> JS.focus_first(to: "##{id}-content")
+  end
+
+  def hide_modal(js \\ %JS{}, id) do
+    js
+    |> JS.hide(
+      to: "##{id}-bg",
+      transition: {"transition-all transform ease-in duration-200", "opacity-100", "opacity-0"}
+    )
+    |> hide("##{id}-container")
+    |> JS.hide(to: "##{id}", transition: {"block", "block", "hidden"})
+    |> JS.remove_class("overflow-hidden", to: "body")
+    |> JS.pop_focus()
   end
 
   @doc """
@@ -674,8 +958,10 @@ defmodule AlgoraWeb.CoreComponents do
     end
   end
 
-  def translate_changeset_errors(changeset) do
-    changeset.errors
-    |> Enum.map_join("\n", fn {key, value} -> "#{key} #{translate_error(value)}" end)
+  @doc """
+  Translates the errors for a field from a keyword list of errors.
+  """
+  def translate_errors(errors, field) when is_list(errors) do
+    for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
 end

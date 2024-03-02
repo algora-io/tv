@@ -80,8 +80,8 @@ defmodule Algora.Accounts.User do
 
   def settings_changeset(%User{} = user, params) do
     user
-    |> cast(params, [:handle, :channel_tagline])
-    |> validate_required([:handle, :channel_tagline])
+    |> cast(params, [:handle, :name, :channel_tagline])
+    |> validate_required([:handle, :name, :channel_tagline])
     |> validate_handle()
   end
 
