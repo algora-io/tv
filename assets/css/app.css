@@ -3,6 +3,11 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+::selection {
+  background: #4338ca;
+  color: #fff;
+}
+
 @layer base {
   :root {
     --radius: 0.5rem;
