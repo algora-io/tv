@@ -5,11 +5,14 @@ defmodule AlgoraWeb.SettingsLive do
 
   def render(assigns) do
     ~H"""
-    <.title_bar>
+    <.header>
       Settings
-    </.title_bar>
+      <:subtitle>
+        Update your account details
+      </:subtitle>
+    </.header>
 
-    <div class="max-w-3xl px-4 sm:px-6 lg:px-8 mt-6">
+    <div class="max-w-3xl px-4 sm:px-6 lg:px-8 mt-4">
       <.simple_form for={@form} phx-change="validate" phx-submit="save">
         <.input field={@form[:handle]} label="Handle" />
         <.input field={@form[:name]} label="Name" />

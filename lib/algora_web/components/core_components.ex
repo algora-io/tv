@@ -160,26 +160,6 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
-  slot :actions
-
-  def title_bar(assigns) do
-    ~H"""
-    <!-- Page title & actions -->
-    <div class="border-b border-gray-700 px-4 py-4 flex items-center justify-between sm:px-6 lg:px-8 sm:h-24">
-      <div class="flex-1 min-w-0">
-        <h1 class="text-lg font-medium leading-6 text-gray-50 focus:outline-none">
-          <%= render_slot(@inner_block) %>
-        </h1>
-      </div>
-      <%= if Enum.count(@actions) > 0 do %>
-        <div class="flex sm:ml-4 space-x-4">
-          <%= render_slot(@actions) %>
-        </div>
-      <% end %>
-    </div>
-    """
-  end
-
   @doc """
   Returns a button triggered dropdown with aria keyboard and focus supporrt.
 
@@ -549,7 +529,7 @@ defmodule AlgoraWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="space-y-8 mt-10">
+      <div class="space-y-8">
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
           <%= render_slot(action, f) %>
@@ -758,12 +738,16 @@ defmodule AlgoraWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
+    <header class={[
+      "px-4 py-4 sm:px-6 lg:px-8",
+      @actions != [] && "flex items-center justify-between gap-6",
+      @class
+    ]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-gray-100">
+        <h1 class="text-lg font-semibold leading-8 text-gray-100 focus:outline-none">
           <%= render_slot(@inner_block) %>
         </h1>
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-gray-300">
+        <p :if={@subtitle != []} class="text-sm leading-6 text-gray-300">
           <%= render_slot(@subtitle) %>
         </p>
       </div>

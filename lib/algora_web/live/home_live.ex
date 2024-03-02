@@ -7,12 +7,19 @@ defmodule AlgoraWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <div class="lg:mr-[20rem]">
-      <.title_bar :if={!@current_user}>
+      <.header :if={!@current_user}>
         <.logo />
         <:actions>
-          <.link navigate="/auth/login">Login</.link>
+          <.link
+            navigate="/auth/login"
+            class="flex rounded px-5 py-2.5 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
+          >
+            <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
+            </span>
+            <span class="relative font-semibold">Login</span>
+          </.link>
         </:actions>
-      </.title_bar>
+      </.header>
       <.playlist id="playlist" videos={@streams.videos} />
     </div>
     """
