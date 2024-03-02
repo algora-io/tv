@@ -10,7 +10,7 @@ defmodule AlgoraWeb.HomeLive do
       <.title_bar :if={!@current_user}>
         <.logo />
         <:actions>
-          <.button primary patch="/auth/login">Login</.button>
+          <.link navigate="/auth/login">Login</.link>
         </:actions>
       </.title_bar>
       <.playlist id="playlist" videos={@streams.videos} />

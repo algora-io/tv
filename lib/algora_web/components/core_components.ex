@@ -17,9 +17,6 @@ defmodule AlgoraWeb.CoreComponents do
 
   slot :inner_block
 
-  def home_path(nil = _current_user), do: "/"
-  def home_path(%Accounts.User{} = current_user), do: channel_path(current_user)
-
   def channel_stream_path(%Accounts.User{} = user) do
     ~p"/#{user.handle}/stream"
   end
@@ -460,7 +457,6 @@ defmodule AlgoraWeb.CoreComponents do
   """
   attr :id, :string, default: "flash", doc: "the optional id of flash container"
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
-  attr :title, :string, default: nil
   attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
   attr :autoshow, :boolean, default: true, doc: "whether to auto show the flash on mount"
   attr :close, :boolean, default: true, doc: "whether the flash can be closed"
@@ -478,17 +474,16 @@ defmodule AlgoraWeb.CoreComponents do
       role="alert"
       class={[
         "fixed hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-gray-50/5 ring-1",
-        @kind == :info && "bg-green-900 text-green-100 ring-green-9000 fill-cyan-900",
-        @kind == :error && "bg-red-900 p-3 text-red-50 shadow-md ring-red-9000 fill-red-50"
+        @kind == :info && "bg-purple-900 text-purple-100 ring-purple-900 fill-purple-900",
+        @kind == :error && "bg-red-900 p-3 text-red-50 shadow-md ring-red-900 fill-red-50"
       ]}
       {@rest}
     >
-      <p :if={@title} class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="w-4 h-4" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="w-4 h-4" />
-        <%= @title %>
+      <p class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
+        <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
+        <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
+        <%= msg %>
       </p>
-      <p class="mt-2 text-[0.8125rem] leading-5"><%= msg %></p>
       <button
         :if={@close}
         type="button"
@@ -554,7 +549,7 @@ defmodule AlgoraWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="space-y-8 bg-white mt-10">
+      <div class="space-y-8 mt-10">
         <%= render_slot(@inner_block, f) %>
         <div :for={action <- @actions} class="mt-2 flex items-center justify-between gap-6">
           <%= render_slot(action, f) %>
@@ -584,7 +579,7 @@ defmodule AlgoraWeb.CoreComponents do
       type={@type}
       class={[
         "phx-submit-loading:opacity-75 rounded-lg bg-gray-50 hover:bg-gray-200 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
+        "text-sm font-semibold leading-6 text-gray-950 active:text-gray-950/80",
         @class
       ]}
       {@rest}
@@ -668,7 +663,7 @@ defmodule AlgoraWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-1 block w-full py-2 px-3 border border-gray-600 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-9000 focus:border-gray-9000 sm:text-sm"
+        class="mt-1 block w-full py-2 px-3 border border-gray-600 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm"
         multiple={@multiple}
         {@rest}
       >
@@ -711,7 +706,7 @@ defmodule AlgoraWeb.CoreComponents do
         id={@id || @name}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
+          "bg-gray-950 mt-2 block w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
           "text-gray-50 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-gray-600 phx-no-feedback:focus:border-gray-500 phx-no-feedback:focus:ring-gray-100/5",
           "border-gray-600 focus:border-gray-500 focus:ring-gray-100/5",
@@ -811,7 +806,7 @@ defmodule AlgoraWeb.CoreComponents do
     ~H"""
     <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
       <table class="mt-11 w-[40rem] sm:w-full">
-        <thead class="text-left text-[0.8125rem] leading-6 text-gray-9000">
+        <thead class="text-left text-[0.8125rem] leading-6 text-gray-900">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
             <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
@@ -872,7 +867,7 @@ defmodule AlgoraWeb.CoreComponents do
     <div class="mt-14">
       <dl class="-my-4 divide-y divide-gray-800">
         <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8">
-          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-gray-9000"><%= item.title %></dt>
+          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-gray-900"><%= item.title %></dt>
           <dd class="text-sm leading-6 text-gray-200"><%= render_slot(item) %></dd>
         </div>
       </dl>

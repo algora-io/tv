@@ -35,14 +35,7 @@ defmodule AlgoraWeb.LayoutComponent do
     ~H"""
     <div class={unless @show, do: "hidden"}>
       <%= if @show do %>
-        <.modal
-          show
-          id={@id}
-          navigate={@show.navigate}
-          patch={@show.patch}
-          on_cancel={@show.on_cancel}
-          on_confirm={@show.on_confirm}
-        >
+        <.modal show id={@id} on_cancel={@show.on_cancel} on_confirm={@show.on_confirm}>
           <:title><%= @show.title %></:title>
           <.live_component module={@show.module} {@show} />
           <:cancel>Cancel</:cancel>
