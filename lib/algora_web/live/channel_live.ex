@@ -37,7 +37,7 @@ defmodule AlgoraWeb.ChannelLive do
       </:actions> --%>
 
     <div class="lg:mr-[24rem]">
-      <div class="border-b border-gray-700 px-4 py-8 sm:px-6 lg:px-8">
+      <div class="border-b border-gray-700 px-4 py-4">
         <figure :if={@channel.is_live} class="relative isolate -mt-4 pt-4 pb-4">
           <svg
             viewBox="0 0 162 128"
@@ -197,6 +197,9 @@ defmodule AlgoraWeb.ChannelLive do
         </div>
       </div>
 
+      <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide px-4 pt-4">
+        Library
+      </h2>
       <.playlist id="playlist" videos={@streams.videos} />
     </div>
     """

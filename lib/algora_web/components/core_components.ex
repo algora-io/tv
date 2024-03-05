@@ -122,12 +122,9 @@ defmodule AlgoraWeb.CoreComponents do
 
   def playlist(assigns) do
     ~H"""
-    <div class="mt-8 sm:block">
+    <div>
       <div class="align-middle inline-block min-w-full">
-        <div id={@id} class="px-4 sm:px-6 lg:px-8 min-w-full">
-          <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide">
-            Library
-          </h2>
+        <div id={@id} class="px-4 min-w-full">
           <div
             id={"#{@id}-body"}
             class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3"
@@ -319,10 +316,7 @@ defmodule AlgoraWeb.CoreComponents do
           aria-haspopup="true"
         >
           <%= for img <- @img do %>
-            <img
-              class="w-10 h-10 bg-gray-600 rounded-full flex-shrink-0"
-              {assigns_to_attributes(img)}
-            />
+            <img class="w-8 h-8 bg-gray-600 rounded-full flex-shrink-0" {assigns_to_attributes(img)} />
           <% end %>
         </button>
       </div>
