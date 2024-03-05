@@ -21,6 +21,7 @@ const init = () => {
     }
     chatBox.classList.add("lg:w-0");
     chatBox.classList.remove("lg:w-[24rem]");
+    chatBox.classList.remove("lg:flex");
   };
 
   const join = ({ id, type }) => {
@@ -39,6 +40,7 @@ const init = () => {
     chatMessages = document.querySelector("#chat-messages");
     chatMessages.scrollTop = chatMessages.scrollHeight;
     chatBox.classList.add("lg:w-[24rem]");
+    chatBox.classList.add("lg:flex");
     chatBox.classList.remove("lg:w-0");
 
     handleSend = (event) => {
