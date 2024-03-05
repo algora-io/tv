@@ -5,8 +5,8 @@ defmodule AlgoraWeb.SettingsLive do
 
   def render(assigns) do
     ~H"""
-    <div class="max-w-3xl px-4 sm:px-6 lg:px-8">
-      <.header class="py-4 sm:py-6 lg:py-8">
+    <div class="max-w-3xl mx-auto bg-gray-950/50 rounded-lg p-4 sm:p-6 lg:p-8">
+      <.header>
         Settings
         <:subtitle>
           Update your account details

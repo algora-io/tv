@@ -118,7 +118,7 @@
   <.live_component module={AlgoraWeb.LayoutComponent} id="layout" />
 
   <%= live_render(@socket, AlgoraWeb.ChatLive, id: "chat", session: %{}, sticky: true) %>
-  <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none pb-4">
+  <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none">
     <%= live_render(@socket, AlgoraWeb.PlayerLive, id: "player", session: %{}, sticky: true) %>
     <%= @inner_content %>
   </main>

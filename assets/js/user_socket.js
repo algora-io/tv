@@ -4,8 +4,9 @@ const system_user = (sender) => sender === "algora";
 
 const init = () => {
   let socket = new Socket("/socket", { params: { token: window.userToken } });
-
   socket.connect();
+
+  const main = document.querySelector("body");
 
   let channel;
   let chatBox;
@@ -22,6 +23,7 @@ const init = () => {
     chatBox.classList.add("lg:w-0");
     chatBox.classList.remove("lg:w-[24rem]");
     chatBox.classList.remove("lg:flex");
+    main.classList.remove("lg:mr-[24rem]");
   };
 
   const join = ({ id, type }) => {
@@ -42,6 +44,7 @@ const init = () => {
     chatBox.classList.add("lg:w-[24rem]");
     chatBox.classList.add("lg:flex");
     chatBox.classList.remove("lg:w-0");
+    main.classList.add("lg:mr-[24rem]");
 
     handleSend = (event) => {
       if (event.key === "Enter" && chatInput.value.trim()) {
