@@ -267,7 +267,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
 });
 
 let routeUpdated = () => {
-  Focus.focusMain();
+  // Focus.focusMain();
 };
 
 // Show progress bar on live navigation and form submits
