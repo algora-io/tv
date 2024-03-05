@@ -17,7 +17,7 @@ defmodule AlgoraWeb.ChatLive do
         <div class="pb-2 text-center text-gray-400 text-xs font-medium uppercase tracking-wide">
           Stream chat
         </div>
-        <div id="chat-messages" class="break-all flex-1 overflow-y-auto h-[calc(100vh-11rem)]">
+        <div id="chat-messages" class="text-sm break-words flex-1 overflow-y-auto h-[calc(100vh-11rem)]">
           <div :for={message <- @messages} id={"message-#{message.id}"}>
             <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
               <%= message.sender_handle %>:
