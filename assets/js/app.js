@@ -135,7 +135,7 @@ Hooks.VideoPlayer = {
       },
     });
 
-    window.addEventListener("js:play_video", ({ detail }) => {
+    const playVideo = ({ detail }) => {
       const { player } = detail;
       this.player.options({
         techOrder: [player.type === "video/youtube" ? "youtube" : "html5"],
@@ -145,7 +145,10 @@ Hooks.VideoPlayer = {
       this.player.el().parentElement.classList.remove("hidden");
       this.player.el().parentElement.classList.add("flex");
       this.player.el().scrollIntoView();
-    });
+    };
+
+    window.addEventListener("js:play_video", playVideo);
+    this.handleEvent("js:play_video", playVideo);
 
     this.handleEvent("join_chat", Chat.join);
   },

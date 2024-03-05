@@ -1,4 +1,5 @@
 defmodule Algora.Library.Subtitle do
+  alias Algora.Library
   use Ecto.Schema
   import Ecto.Changeset
 

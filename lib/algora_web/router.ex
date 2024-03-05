@@ -50,6 +50,9 @@ defmodule AlgoraWeb.Router do
       on_mount: [{AlgoraWeb.UserAuth, :ensure_authenticated}, AlgoraWeb.Nav] do
       live "/channel/settings", SettingsLive, :edit
       live "/:channel_handle/stream", ChannelLive, :stream
+      live "/videos/:video_id/subtitles", SubtitleLive.Index, :index
+      live "/videos/:video_id/subtitles/new", SubtitleLive.Index, :new
+      live "/videos/:video_id/subtitles/edit", SubtitleLive.Index, :edit
     end
 
     live_session :default, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
