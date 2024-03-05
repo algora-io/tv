@@ -1,48 +1,50 @@
-<.header>
-  Listing Subtitles
-  <:actions>
-    <.link patch={~p"/subtitles/new"}>
-      <.button>New Subtitle</.button>
-    </.link>
-  </:actions>
-</.header>
+<div class="px-4 sm:px-6 lg:px-8">
+  <.header class="py-4 sm:py-6 lg:py-8">
+    Listing Subtitles
+    <:actions>
+      <.link patch={~p"/videos/578/subtitles/new"}>
+        <.button>New Subtitle</.button>
+      </.link>
+    </:actions>
+  </.header>
 
-<.table
-  id="subtitles"
-  rows={@streams.subtitles}
-  row_click={fn {_id, subtitle} -> JS.navigate(~p"/subtitles/#{subtitle}") end}
->
-  <:col :let={{_id, subtitle}} label="Body"><%= subtitle.body %></:col>
-  <:col :let={{_id, subtitle}} label="Start"><%= subtitle.start %></:col>
-  <:col :let={{_id, subtitle}} label="End"><%= subtitle.end %></:col>
-  <:action :let={{_id, subtitle}}>
-    <div class="sr-only">
-      <.link navigate={~p"/subtitles/#{subtitle}"}>Show</.link>
-    </div>
-    <.link patch={~p"/subtitles/#{subtitle}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{id, subtitle}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: subtitle.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
+  <.table
+    id="subtitles"
+    rows={@streams.subtitles}
+    row_click={fn {_id, subtitle} -> JS.navigate(~p"/videos/578/subtitles/#{subtitle}") end}
+  >
+    <:col :let={{_id, subtitle}} label="Start"><%= subtitle.start %></:col>
+    <:col :let={{_id, subtitle}} label="End"><%= subtitle.end %></:col>
+    <:col :let={{_id, subtitle}} label="Body"><%= subtitle.body %></:col>
+    <:action :let={{_id, subtitle}}>
+      <div class="sr-only">
+        <.link navigate={~p"/videos/578/subtitles/#{subtitle}"}>Show</.link>
+      </div>
+      <.link patch={~p"/videos/578/subtitles/#{subtitle}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{id, subtitle}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: subtitle.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
 
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="subtitle-modal"
-  show
-  on_cancel={JS.navigate(~p"/subtitles")}
->
-  <.live_component
-    module={AlgoraWeb.SubtitleLive.FormComponent}
-    id={@subtitle.id || :new}
-    title={@page_title}
-    action={@live_action}
-    subtitle={@subtitle}
-    patch={~p"/subtitles"}
-  />
-</.modal>
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="subtitle-modal"
+    show
+    on_cancel={JS.navigate(~p"/videos/578/subtitles")}
+  >
+    <.live_component
+      module={AlgoraWeb.SubtitleLive.FormComponent}
+      id={@subtitle.id || :new}
+      title={@page_title}
+      action={@live_action}
+      subtitle={@subtitle}
+      patch={~p"/videos/578/subtitles"}
+    />
+  </.modal>
+</div>
