@@ -336,8 +336,8 @@ defmodule Algora.Library do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_subtitle(attrs \\ %{}) do
-    %Subtitle{}
+  def create_subtitle(%Video{} = video, attrs \\ %{}) do
+    %Subtitle{video_id: video.id}
     |> Subtitle.changeset(attrs)
     |> Repo.insert()
   end

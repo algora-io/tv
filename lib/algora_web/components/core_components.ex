@@ -454,7 +454,7 @@ defmodule AlgoraWeb.CoreComponents do
       role="alert"
       class={[
         "fixed hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-gray-50/5 ring-1",
-        @kind == :info && "bg-purple-900 text-purple-100 ring-purple-900 fill-purple-900",
+        @kind == :info && "bg-green-900 text-green-100 ring-green-900 fill-green-900",
         @kind == :error && "bg-red-900 p-3 text-red-50 shadow-md ring-red-900 fill-red-50"
       ]}
       {@rest}
@@ -854,7 +854,7 @@ defmodule AlgoraWeb.CoreComponents do
     <div class="mt-14">
       <dl class="-my-4 divide-y divide-gray-800">
         <div :for={item <- @item} class="flex gap-4 py-4 sm:gap-8">
-          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-gray-900"><%= item.title %></dt>
+          <dt class="w-1/4 flex-none text-[0.8125rem] leading-6 text-gray-50"><%= item.title %></dt>
           <dd class="text-sm leading-6 text-gray-200"><%= render_slot(item) %></dd>
         </div>
       </dl>

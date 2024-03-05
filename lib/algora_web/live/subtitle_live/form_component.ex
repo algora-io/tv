@@ -70,7 +70,7 @@ defmodule AlgoraWeb.SubtitleLive.FormComponent do
   end
 
   defp save_subtitle(socket, :new, subtitle_params) do
-    case Library.create_subtitle(subtitle_params) do
+    case Library.create_subtitle(socket.assigns.video, subtitle_params) do
       {:ok, subtitle} ->
         notify_parent({:saved, subtitle})
 

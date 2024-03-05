@@ -52,7 +52,9 @@ defmodule AlgoraWeb.Router do
       live "/:channel_handle/stream", ChannelLive, :stream
       live "/videos/:video_id/subtitles", SubtitleLive.Index, :index
       live "/videos/:video_id/subtitles/new", SubtitleLive.Index, :new
-      live "/videos/:video_id/subtitles/edit", SubtitleLive.Index, :edit
+      live "/videos/:video_id/subtitles/:id/edit", SubtitleLive.Index, :edit
+      live "/videos/:video_id/subtitles/:id", SubtitleLive.Show, :show
+      live "/videos/:video_id/subtitles/:id/show/edit", SubtitleLive.Show, :edit
     end
 
     live_session :default, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
