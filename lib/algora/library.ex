@@ -303,8 +303,9 @@ defmodule Algora.Library do
       [%Subtitle{}, ...]
 
   """
-  def list_subtitles do
-    Repo.all(Subtitle)
+  def list_subtitles(%Video{} = video) do
+    from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
+    |> Repo.replica().all()
   end
 
   @doc """

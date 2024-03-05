@@ -13,7 +13,7 @@ defmodule AlgoraWeb.SubtitleLive.Index do
     {:ok,
      socket
      |> assign(:video, video)
-     |> stream(:subtitles, Library.list_subtitles())}
+     |> stream(:subtitles, Library.list_subtitles(video))}
   end
 
   @impl true

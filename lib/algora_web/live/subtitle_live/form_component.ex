@@ -7,7 +7,7 @@ defmodule AlgoraWeb.SubtitleLive.FormComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.header>
+      <.header class="pb-6">
         <%= @title %>
         <:subtitle>Use this form to manage subtitle records in your database.</:subtitle>
       </.header>
