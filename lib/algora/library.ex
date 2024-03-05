@@ -7,9 +7,8 @@ defmodule Algora.Library do
   import Ecto.Query, warn: false
   import Ecto.Changeset
   alias Algora.Accounts.User
-  alias Algora.Storage
-  alias Algora.{Repo, Accounts}
-  alias Algora.Library.{Channel, Video, Events}
+  alias Algora.{Repo, Accounts, Storage}
+  alias Algora.Library.{Channel, Video, Events, Subtitle}
 
   @pubsub Algora.PubSub
 
@@ -292,99 +291,29 @@ defmodule Algora.Library do
 
   def topic_livestreams(), do: "livestreams"
 
-  alias Algora.Library.Subtitle
-
-  @doc """
-  Returns the list of subtitles.
-
-  ## Examples
-
-      iex> list_subtitles()
-      [%Subtitle{}, ...]
-
-  """
   def list_subtitles(%Video{} = video) do
     from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
     |> Repo.replica().all()
   end
 
-  @doc """
-  Gets a single subtitle.
-
-  Raises `Ecto.NoResultsError` if the Subtitle does not exist.
-
-  ## Examples
-
-      iex> get_subtitle!(123)
-      %Subtitle{}
-
-      iex> get_subtitle!(456)
-      ** (Ecto.NoResultsError)
-
-  """
   def get_subtitle!(id), do: Repo.get!(Subtitle, id)
 
-  @doc """
-  Creates a subtitle.
-
-  ## Examples
-
-      iex> create_subtitle(%{field: value})
-      {:ok, %Subtitle{}}
-
-      iex> create_subtitle(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def create_subtitle(%Video{} = video, attrs \\ %{}) do
     %Subtitle{video_id: video.id}
     |> Subtitle.changeset(attrs)
     |> Repo.insert()
   end
 
-  @doc """
-  Updates a subtitle.
-
-  ## Examples
-
-      iex> update_subtitle(subtitle, %{field: new_value})
-      {:ok, %Subtitle{}}
-
-      iex> update_subtitle(subtitle, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def update_subtitle(%Subtitle{} = subtitle, attrs) do
     subtitle
     |> Subtitle.changeset(attrs)
     |> Repo.update()
   end
 
-  @doc """
-  Deletes a subtitle.
-
-  ## Examples
-
-      iex> delete_subtitle(subtitle)
-      {:ok, %Subtitle{}}
-
-      iex> delete_subtitle(subtitle)
-      {:error, %Ecto.Changeset{}}
-
-  """
   def delete_subtitle(%Subtitle{} = subtitle) do
     Repo.delete(subtitle)
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking subtitle changes.
-
-  ## Examples
-
-      iex> change_subtitle(subtitle)
-      %Ecto.Changeset{data: %Subtitle{}}
-
-  """
   def change_subtitle(%Subtitle{} = subtitle, attrs \\ %{}) do
     Subtitle.changeset(subtitle, attrs)
   end
