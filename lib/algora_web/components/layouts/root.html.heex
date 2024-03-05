@@ -88,12 +88,14 @@
           </div>
 
           <%= if @current_user do %>
-            <.dropdown2 id="account-dropdown2">
-              <:img src={@current_user.avatar_url} alt={@current_user.handle} />
-              <:link navigate={channel_path(@current_user)}>Channel</:link>
-              <:link navigate={~p"/channel/settings"}>Settings</:link>
-              <:link href={~p"/auth/logout"} method={:delete}>Sign out</:link>
-            </.dropdown2>
+            <div class="shrink-0">
+              <.dropdown2 id="account-dropdown2">
+                <:img src={@current_user.avatar_url} alt={@current_user.handle} />
+                <:link navigate={channel_path(@current_user)}>Channel</:link>
+                <:link navigate={~p"/channel/settings"}>Settings</:link>
+                <:link href={~p"/auth/logout"} method={:delete}>Sign out</:link>
+              </.dropdown2>
+            </div>
           <% else %>
             <.link
               navigate="/auth/login"

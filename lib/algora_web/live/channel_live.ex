@@ -57,7 +57,7 @@ defmodule AlgoraWeb.ChannelLive do
           </blockquote>
         </figure>
 
-        <div class="flex flex-col items-start justify-start lg:flex-col lg:items-start lg:justify-start md:flex-row md:items-center md:justify-between xl:items-center xl:justify-between xl:flex-row gap-8">
+        <div class="flex flex-col items-start justify-start md:flex-row md:items-center md:justify-between gap-8">
           <div class="flex items-center gap-4">
             <div class="relative h-20 w-20 shrink-0">
               <img
