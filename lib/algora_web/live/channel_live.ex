@@ -214,8 +214,8 @@ defmodule AlgoraWeb.ChannelLive do
       |> Library.get_channel!()
 
     if connected?(socket) do
-      # TODO: only if user is live
-      send(self(), :play_video)
+      # # TODO: only if user is live
+      # send(self(), :play_video)
 
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
@@ -249,18 +249,18 @@ defmodule AlgoraWeb.ChannelLive do
   end
 
   @impl true
-  def handle_info(:play_video, socket) do
-    # TODO: get live video
-    # video = socket.assigns.video
-    video = Library.get_video!(439)
+  # def handle_info(:play_video, socket) do
+  #   # TODO: get live video
+  #   # video = socket.assigns.video
+  #   video = Library.get_video!(439)
 
-    {:noreply,
-     socket
-     |> push_event("js:play_video", %{
-       detail: %{player: %{src: video.url, type: Library.player_type(video)}}
-     })
-     |> push_event("join_chat", %{id: video.id, type: video.type})}
-  end
+  #   {:noreply,
+  #    socket
+  #    |> push_event("js:play_video", %{
+  #      detail: %{player: %{src: video.url, type: Library.player_type(video)}}
+  #    })
+  #    |> push_event("join_chat", %{id: video.id, type: video.type})}
+  # end
 
   def handle_info({Presence, {:join, presence}}, socket) do
     {:noreply, stream_insert(socket, :presences, presence)}

@@ -126,8 +126,7 @@ Hooks.Menu = {
 Hooks.VideoPlayer = {
   mounted() {
     this.player = videojs("video-player", {
-      // TODO: uncomment
-      // autoplay: true,
+      autoplay: true,
       liveui: true,
       html5: {
         vhs: {
