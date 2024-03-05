@@ -788,7 +788,12 @@ defmodule AlgoraWeb.CoreComponents do
       <table class="w-[40rem] sm:w-full">
         <thead class="text-left text-[0.8125rem] leading-6 text-gray-100">
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
+            <th
+              :for={{col, i} <- Enum.with_index(@col)}
+              class={["p-0 pb-4 pr-6 font-normal", i == 0 && "pl-4 sm:pl-6 lg:pl-8"]}
+            >
+              <%= col[:label] %>
+            </th>
             <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
           </tr>
         </thead>
@@ -807,13 +812,13 @@ defmodule AlgoraWeb.CoreComponents do
               phx-click={@row_click && @row_click.(row)}
               class={["relative p-0", @row_click && "hover:cursor-pointer"]}
             >
-              <div class="block py-4 pr-6">
+              <div class={["block py-4 pr-6", i == 0 && "pl-4 sm:pl-6 lg:pl-8"]}>
                 <span class={["relative", i == 0 && "font-semibold text-gray-50"]}>
                   <%= render_slot(col, @row_item.(row)) %>
                 </span>
               </div>
             </td>
-            <td :if={@action != []} class="relative p-0 w-14">
+            <td :if={@action != []} class="relative p-0 w-14 pr-4 sm:pr-6 lg:pr-8">
               <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
                 <span
                   :for={action <- @action}

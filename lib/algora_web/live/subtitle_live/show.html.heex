@@ -3,7 +3,7 @@
     Subtitle <%= @subtitle.id %>
     <:subtitle>This is a subtitle record from your database.</:subtitle>
     <:actions>
-      <.link patch={~p"/videos/578/subtitles/#{@subtitle}/show/edit"} phx-click={JS.push_focus()}>
+      <.link patch={~p"/videos/439/subtitles/#{@subtitle}/show/edit"} phx-click={JS.push_focus()}>
         <.button>Edit subtitle</.button>
       </.link>
     </:actions>
@@ -15,13 +15,13 @@
     <:item title="End"><%= @subtitle.end %></:item>
   </.list>
 
-  <.back navigate={~p"/videos/578/subtitles"}>Back to subtitles</.back>
+  <.back navigate={~p"/videos/439/subtitles"}>Back to subtitles</.back>
 
   <.modal
     :if={@live_action == :edit}
     id="subtitle-modal"
     show
-    on_cancel={JS.patch(~p"/videos/578/subtitles/#{@subtitle}")}
+    on_cancel={JS.patch(~p"/videos/439/subtitles/#{@subtitle}")}
   >
     <.live_component
       module={AlgoraWeb.SubtitleLive.FormComponent}
@@ -29,7 +29,7 @@
       title={@page_title}
       action={@live_action}
       subtitle={@subtitle}
-      patch={~p"/videos/578/subtitles/#{@subtitle}"}
+      patch={~p"/videos/439/subtitles/#{@subtitle}"}
     />
   </.modal>
 </div>
