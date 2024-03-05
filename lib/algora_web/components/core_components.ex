@@ -355,7 +355,7 @@ defmodule AlgoraWeb.CoreComponents do
     >
       <div
         id={"#{@id}-bg"}
-        class="fixed inset-0 bg-gray-900/90 transition-opacity"
+        class="fixed inset-0 bg-gray-950/90 transition-opacity"
         aria-hidden="true"
       />
       <div
@@ -374,7 +374,7 @@ defmodule AlgoraWeb.CoreComponents do
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-white p-14 shadow-lg shadow-gray-200/10 ring-1 ring-gray-200/10 transition"
+              class="hidden relative rounded-2xl bg-gray-900 p-14 shadow-lg shadow-gray-200/10 ring-1 ring-gray-200/10 transition"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -643,7 +643,7 @@ defmodule AlgoraWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class="mt-1 block w-full py-2 px-3 border border-gray-600 bg-white rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm"
+        class="mt-1 block w-full py-2 px-3 border border-gray-600 bg-gray-950 rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 sm:text-sm"
         multiple={@multiple}
         {@rest}
       >
@@ -790,7 +790,7 @@ defmodule AlgoraWeb.CoreComponents do
     ~H"""
     <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
       <table class="mt-11 w-[40rem] sm:w-full">
-        <thead class="text-left text-[0.8125rem] leading-6 text-gray-900">
+        <thead class="text-left text-[0.8125rem] leading-6 text-gray-100">
           <tr>
             <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal"><%= col[:label] %></th>
             <th class="relative p-0 pb-4"><span class="sr-only"><%= gettext("Actions") %></span></th>
@@ -801,14 +801,17 @@ defmodule AlgoraWeb.CoreComponents do
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
           class="relative divide-y divide-gray-800 border-t border-gray-700 text-sm leading-6 text-gray-200"
         >
-          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-gray-900">
+          <tr
+            :for={row <- @rows}
+            id={@row_id && @row_id.(row)}
+            class="group bg-white/[2.5%] hover:bg-white/[5%]"
+          >
             <td
               :for={{col, i} <- Enum.with_index(@col)}
               phx-click={@row_click && @row_click.(row)}
               class={["relative p-0", @row_click && "hover:cursor-pointer"]}
             >
               <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-gray-900 sm:rounded-l-xl" />
                 <span class={["relative", i == 0 && "font-semibold text-gray-50"]}>
                   <%= render_slot(col, @row_item.(row)) %>
                 </span>
@@ -816,7 +819,6 @@ defmodule AlgoraWeb.CoreComponents do
             </td>
             <td :if={@action != []} class="relative p-0 w-14">
               <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-gray-900 sm:rounded-r-xl" />
                 <span
                   :for={action <- @action}
                   class="relative ml-4 font-semibold leading-6 text-gray-50 hover:text-gray-200"
