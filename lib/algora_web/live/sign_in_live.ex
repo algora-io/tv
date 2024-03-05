@@ -4,7 +4,7 @@ defmodule AlgoraWeb.SignInLive do
   def render(assigns) do
     ~H"""
     <div class="min-h-[calc(100vh-64px)] flex flex-col justify-center">
-      <div class="sm:mx-auto sm:w-full sm:max-w-sm max-w-3xl mx-auto bg-gray-950/50 rounded-lg p-24">
+      <div class="sm:mx-auto sm:w-full sm:max-w-sm max-w-3xl mx-auto bg-gray-950/50 rounded-lg p-12 sm:p-24">
         <h2 class="text-center text-3xl font-extrabold text-gray-50">
           Algora TV
         </h2>

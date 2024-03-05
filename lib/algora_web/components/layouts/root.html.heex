@@ -74,9 +74,9 @@
               <span class="sr-only">Open sidebar</span>
               <Heroicons.bars_3 class="h-6 w-6" />
             </button>
-            <.logo class="w-16 h-auto" />
+            <.logo class="w-16 h-auto hidden sm:flex" />
           </div>
-          <div class="pr-10 font-medium text-gray-300 text-sm flex items-center gap-2">
+          <div class="flex sm:pr-10 font-medium text-gray-300 text-sm items-center gap-2">
             <div>Built with</div>
             <.link navigate="https://elixir-lang.org">
               <img src={~p"/images/elixir.png"} alt="Elixir" class="shrink-0 mb-1 h-5 mx-auto" />
@@ -88,7 +88,7 @@
           </div>
 
           <%= if @current_user do %>
-            <div class="shrink-0">
+            <div class="shrink-0 hidden sm:block">
               <.dropdown2 id="account-dropdown2">
                 <:img src={@current_user.avatar_url} alt={@current_user.handle} />
                 <:link navigate={channel_path(@current_user)}>Channel</:link>
@@ -99,7 +99,7 @@
           <% else %>
             <.link
               navigate="/auth/login"
-              class="flex rounded px-4 py-2 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
+              class="hidden sm:flex rounded px-4 py-2 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
             >
               <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
               </span>

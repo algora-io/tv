@@ -46,6 +46,17 @@
     <div class="mt-5 flex-1 h-0 overflow-y-auto">
       <%= if @current_user do %>
         <.sidebar_account_dropdown id="mobile-account-dropdown" current_user={@current_user} />
+      <% else %>
+        <div class="px-4">
+          <.link
+            navigate="/auth/login"
+            class="flex items-center justify-center rounded px-4 py-2 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
+          >
+            <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
+            </span>
+            <span class="relative font-semibold text-sm">Login</span>
+          </.link>
+        </div>
       <% end %>
 
       <nav class="px-3 pt-1">
