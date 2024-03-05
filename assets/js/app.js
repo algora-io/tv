@@ -126,7 +126,8 @@ Hooks.Menu = {
 Hooks.VideoPlayer = {
   mounted() {
     this.player = videojs("video-player", {
-      autoplay: true,
+      // TODO: uncomment
+      // autoplay: true,
       liveui: true,
       html5: {
         vhs: {
@@ -144,7 +145,7 @@ Hooks.VideoPlayer = {
       this.player.play();
       this.player.el().parentElement.classList.remove("hidden");
       this.player.el().parentElement.classList.add("flex");
-      this.player.el().scrollIntoView();
+      window.scrollTo(0, 0);
     };
 
     window.addEventListener("js:play_video", playVideo);

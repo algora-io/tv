@@ -12,10 +12,7 @@ defmodule AlgoraWeb.ChatLive do
 
   def render(assigns) do
     ~H"""
-    <aside
-      id="chat-box"
-      class="z-50 absolute top-0 right-0 lg:flex w-0 flex-col bg-gray-950 ring-1 ring-gray-800"
-    >
+    <aside id="chat-box" class="z-50 absolute top-0 right-0 lg:flex w-0 flex-col ring-1 ring-gray-800">
       <div class="p-4">
         <div class="pb-2 text-center text-gray-400 text-xs font-medium uppercase tracking-wide">
           Stream chat

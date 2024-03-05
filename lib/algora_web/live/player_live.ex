@@ -9,7 +9,7 @@ defmodule AlgoraWeb.PlayerLive do
       <video
         id="video-player"
         phx-hook="VideoPlayer"
-        class="video-js vjs-default-skin min-w-xl aspect-video h-full w-full flex-1"
+        class="video-js vjs-default-skin min-w-xl aspect-video vjs-fluid h-full w-full flex-1 rounded-2xl overflow-hidden"
         controls
       />
     </div>

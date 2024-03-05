@@ -6,6 +6,7 @@ defmodule AlgoraWeb.ChannelLive do
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
+  @impl true
   def render(assigns) do
     ~H"""
     <%!-- <:actions>
@@ -201,6 +202,7 @@ defmodule AlgoraWeb.ChannelLive do
     """
   end
 
+  @impl true
   def mount(%{"channel_handle" => channel_handle}, _session, socket) do
     %{current_user: current_user} = socket.assigns
 
@@ -209,6 +211,9 @@ defmodule AlgoraWeb.ChannelLive do
       |> Library.get_channel!()
 
     if connected?(socket) do
+      # TODO: only if user is live
+      send(self(), :play_video)
+
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
 
@@ -234,9 +239,24 @@ defmodule AlgoraWeb.ChannelLive do
     {:ok, socket}
   end
 
+  @impl true
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_info(:play_video, socket) do
+    # TODO: get live video
+    # video = socket.assigns.video
+    video = Library.get_video!(439)
+
+    {:noreply,
+     socket
+     |> push_event("js:play_video", %{
+       detail: %{player: %{src: video.url, type: Library.player_type(video)}}
+     })
+     |> push_event("join_chat", %{id: video.id, type: video.type})}
   end
 
   def handle_info({Presence, {:join, presence}}, socket) do
