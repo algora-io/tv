@@ -1,0 +1,51 @@
+<.header class="p-4 sm:p-6 lg:p-8">
+  Subtitles
+  <:actions>
+    <.link patch={~p"/videos/#{@video.id}/subtitles/new"}>
+      <.button>New Subtitle</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="subtitles"
+  rows={@streams.subtitles}
+  row_click={
+    fn {_id, subtitle} -> JS.navigate(~p"/videos/#{@video.id}/subtitles/#{subtitle}") end
+  }
+>
+  <:col :let={{_id, subtitle}} label="Start"><%= subtitle.start %></:col>
+  <:col :let={{_id, subtitle}} label="End"><%= subtitle.end %></:col>
+  <:col :let={{_id, subtitle}} label="Body"><%= subtitle.body %></:col>
+  <:action :let={{_id, subtitle}}>
+    <div class="sr-only">
+      <.link navigate={~p"/videos/#{@video.id}/subtitles/#{subtitle}"}>Show</.link>
+    </div>
+    <.link patch={~p"/videos/#{@video.id}/subtitles/#{subtitle}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, subtitle}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: subtitle.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="subtitle-modal"
+  show
+  on_cancel={JS.navigate(~p"/videos/#{@video.id}/subtitles")}
+>
+  <.live_component
+    module={AlgoraWeb.SubtitleLive.FormComponent}
+    id={@subtitle.id || :new}
+    title={@page_title}
+    action={@live_action}
+    subtitle={@subtitle}
+    video={@video}
+    patch={~p"/videos/#{@video.id}/subtitles"}
+  />
+</.modal>

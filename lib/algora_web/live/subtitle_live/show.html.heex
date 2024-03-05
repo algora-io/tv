@@ -1,0 +1,38 @@
+<div class="px-4 sm:px-6 lg:px-8">
+  <.header class="py-4 sm:py-6 lg:py-8">
+    Subtitle <%= @subtitle.id %>
+    <:subtitle>This is a subtitle record from your database.</:subtitle>
+    <:actions>
+      <.link
+        patch={~p"/videos/#{@video.id}/subtitles/#{@subtitle}/show/edit"}
+        phx-click={JS.push_focus()}
+      >
+        <.button>Edit subtitle</.button>
+      </.link>
+    </:actions>
+  </.header>
+
+  <.list>
+    <:item title="Body"><%= @subtitle.body %></:item>
+    <:item title="Start"><%= @subtitle.start %></:item>
+    <:item title="End"><%= @subtitle.end %></:item>
+  </.list>
+
+  <.back navigate={~p"/videos/#{@video.id}/subtitles"}>Back to subtitles</.back>
+
+  <.modal
+    :if={@live_action == :edit}
+    id="subtitle-modal"
+    show
+    on_cancel={JS.patch(~p"/videos/#{@video.id}/subtitles/#{@subtitle}")}
+  >
+    <.live_component
+      module={AlgoraWeb.SubtitleLive.FormComponent}
+      id={@subtitle.id}
+      title={@page_title}
+      action={@live_action}
+      subtitle={@subtitle}
+      patch={~p"/videos/#{@video.id}/subtitles/#{@subtitle}"}
+    />
+  </.modal>
+</div>

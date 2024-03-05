@@ -7,9 +7,8 @@ defmodule Algora.Library do
   import Ecto.Query, warn: false
   import Ecto.Changeset
   alias Algora.Accounts.User
-  alias Algora.Storage
-  alias Algora.{Repo, Accounts}
-  alias Algora.Library.{Channel, Video, Events}
+  alias Algora.{Repo, Accounts, Storage}
+  alias Algora.Library.{Channel, Video, Events, Subtitle}
 
   @pubsub Algora.PubSub
 
@@ -291,4 +290,31 @@ defmodule Algora.Library do
   defp topic(user_id) when is_integer(user_id), do: "channel:#{user_id}"
 
   def topic_livestreams(), do: "livestreams"
+
+  def list_subtitles(%Video{} = video) do
+    from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
+    |> Repo.replica().all()
+  end
+
+  def get_subtitle!(id), do: Repo.get!(Subtitle, id)
+
+  def create_subtitle(%Video{} = video, attrs \\ %{}) do
+    %Subtitle{video_id: video.id}
+    |> Subtitle.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_subtitle(%Subtitle{} = subtitle, attrs) do
+    subtitle
+    |> Subtitle.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_subtitle(%Subtitle{} = subtitle) do
+    Repo.delete(subtitle)
+  end
+
+  def change_subtitle(%Subtitle{} = subtitle, attrs \\ %{}) do
+    Subtitle.changeset(subtitle, attrs)
+  end
 end
