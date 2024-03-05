@@ -60,7 +60,7 @@ defmodule AlgoraWeb do
       @opts Keyword.merge(
               [
                 layout: {AlgoraWeb.Layouts, :live},
-                container: {:div, class: "relative h-screen flex overflow-hidden"}
+                container: {:div, class: "relative flex"}
               ],
               unquote(opts)
             )

@@ -36,7 +36,7 @@ defmodule AlgoraWeb.ChannelLive do
         </.button>
       </:actions> --%>
 
-    <div class="lg:mr-[20rem]">
+    <div class="lg:mr-[24rem]">
       <div class="border-b border-gray-700 px-4 py-8 sm:px-6 lg:px-8">
         <figure :if={@channel.is_live} class="relative isolate -mt-4 pt-4 pb-4">
           <svg

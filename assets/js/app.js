@@ -155,6 +155,29 @@ Hooks.VideoPlayer = {
   },
 };
 
+Hooks.Nav = {
+  mounted() {
+    const nav = document.getElementById("nav");
+
+    const offset = 16;
+    this.isOpaque = false;
+
+    const onScroll = () => {
+      if (!this.isOpaque && window.scrollY > offset) {
+        this.isOpaque = true;
+        nav.classList.add("bg-gray-950");
+        nav.classList.remove("bg-transparent");
+      } else if (this.isOpaque && window.scrollY <= offset) {
+        this.isOpaque = false;
+        nav.classList.add("bg-transparent");
+        nav.classList.remove("bg-gray-950");
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+  },
+};
+
 // Accessible focus handling
 let Focus = {
   focusMain() {

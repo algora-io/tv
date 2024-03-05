@@ -6,7 +6,7 @@ defmodule AlgoraWeb.HomeLive do
 
   def render(assigns) do
     ~H"""
-    <div class="lg:mr-[20rem]">
+    <div class="lg:mr-[24rem]">
       <.header :if={!@current_user}>
         <.logo />
         <:actions>

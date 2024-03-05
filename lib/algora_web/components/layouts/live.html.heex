@@ -5,13 +5,13 @@
   style="display: none;"
   role="region"
 >
-  <div class="fixed inset-0 bg-gray-900 bg-opacity-75" phx-click={hide_mobile_sidebar()}></div>
+  <div class="fixed inset-0 bg-gray-950 bg-opacity-50" phx-click={hide_mobile_sidebar()}></div>
 
   <div
     id="mobile-sidebar"
-    class="relative flex-1 flex-col w-full pt-5 pb-4 bg-gray-950 hidden min-h-screen sm:max-w-md"
+    class="relative flex-1 flex-col w-full pt-5 pb-4 bg-gray-950 hidden min-h-screen sm:max-w-xs"
   >
-    <div class="absolute top-0 right-2 pt-4">
+    <div class="absolute top-0 right-2 pt-3">
       <button
         type="button"
         id="hide-mobile-sidebar"
@@ -62,8 +62,8 @@
   </div>
 </div>
 <!-- Static sidebar for desktop -->
-<div :if={@current_user} class="hidden lg:flex lg:flex-shrink-0" role="region">
-  <div class="flex flex-col w-64 border-r border-gray-800 pt-5 pb-4 bg-gray-950/50">
+<div :if={@current_user && false} class="hidden lg:flex lg:flex-shrink-0" role="region">
+  <div class="flex flex-col w-64 border-r border-gray-800 pt-5 pb-4">
     <div class="flex items-center flex-shrink-0 px-6">
       <.logo />
     </div>
