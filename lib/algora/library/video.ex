@@ -13,6 +13,7 @@ defmodule Algora.Library.Video do
     field :type, Ecto.Enum, values: [vod: 1, livestream: 2]
     field :is_live, :boolean, default: false
     field :thumbnails_ready, :boolean, default: false
+    field :thumbnail_url, :string
     field :url, :string
     field :url_root, :string
     field :uuid, :string
