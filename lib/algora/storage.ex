@@ -65,10 +65,14 @@ defmodule Algora.Storage do
          contents,
          _metadata,
          %{type: :segment, mode: :binary},
-         %{video: %{thumbnails_ready: false} = video, video_header: video_header} = state
+         %{video: %{thumbnail_url: nil} = video, video_header: video_header} = state
        ) do
     with :ok <- Library.store_thumbnail(video, video_header <> contents),
-         {:ok, video} = video |> change() |> put_change(:thumbnails_ready, true) |> Repo.update(),
+         {:ok, video} =
+           video
+           |> change()
+           |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
+           |> Repo.update(),
          :ok <- broadcast_thumbnails_generated(video) do
       {:ok, %{state | video: video}}
     end

@@ -87,10 +87,10 @@ defmodule AlgoraWeb.CoreComponents do
       }
     >
       <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[16/9] bg-gray-800">
-        <Heroicons.play :if={!@video.thumbnails_ready} solid class="h-12 w-12 text-gray-500" />
+        <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
         <img
-          :if={@video.thumbnails_ready}
-          src={Library.thumbnail_url(@video)}
+          :if={@video.thumbnail_url}
+          src={@video.thumbnail_url}
           alt={@video.title}
           class="absolute w-full h-full object-cover transition-transform duration-200 scale-105 hover:scale-110 z-10"
         />

@@ -13,7 +13,7 @@ defmodule Algora.Repo.Migrations.AddThumbnailUrlToVideo do
 
   def down do
     alter table("videos") do
-      remove :thumbnail_url, :string
+      remove :thumbnail_url
     end
   end
 end

@@ -259,13 +259,6 @@ defmodule Algora.Library do
     end
   end
 
-  def thumbnail_url(%Video{} = video) do
-    case youtube_id(video) do
-      :not_found -> video.url_root <> "/index.jpeg"
-      id -> "https://i.ytimg.com/vi/#{id}/hqdefault.jpg"
-    end
-  end
-
   def player_type(%Video{type: :livestream}), do: "application/x-mpegURL"
 
   def player_type(%Video{} = video) do
