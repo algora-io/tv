@@ -125,6 +125,8 @@ Hooks.Menu = {
 
 Hooks.VideoPlayer = {
   mounted() {
+    const backdrop = document.querySelector("#video-backdrop");
+
     this.player = videojs("video-player", {
       autoplay: true,
       liveui: true,
@@ -144,6 +146,8 @@ Hooks.VideoPlayer = {
       this.player.play();
       this.player.el().parentElement.classList.remove("hidden");
       this.player.el().parentElement.classList.add("flex");
+      backdrop.classList.remove("opacity-0");
+      backdrop.classList.add("opacity-20");
       window.scrollTo(0, 0);
     };
 
