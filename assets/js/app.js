@@ -144,13 +144,34 @@ Hooks.VideoPlayer = {
       this.player.play();
       this.player.el().parentElement.classList.remove("hidden");
       this.player.el().parentElement.classList.add("flex");
-      this.player.el().scrollIntoView();
+      window.scrollTo(0, 0);
     };
 
     window.addEventListener("js:play_video", playVideo);
     this.handleEvent("js:play_video", playVideo);
 
     this.handleEvent("join_chat", Chat.join);
+  },
+};
+
+Hooks.NavBar = {
+  mounted() {
+    const offset = 16;
+    this.isOpaque = false;
+
+    const onScroll = () => {
+      if (!this.isOpaque && window.scrollY > offset) {
+        this.isOpaque = true;
+        this.el.classList.add("bg-gray-950");
+        this.el.classList.remove("bg-transparent");
+      } else if (this.isOpaque && window.scrollY <= offset) {
+        this.isOpaque = false;
+        this.el.classList.add("bg-transparent");
+        this.el.classList.remove("bg-gray-950");
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
   },
 };
 
@@ -243,7 +264,8 @@ let liveSocket = new LiveSocket("/live", Socket, {
 });
 
 let routeUpdated = () => {
-  Focus.focusMain();
+  // TODO: uncomment
+  // Focus.focusMain();
 };
 
 // Show progress bar on live navigation and form submits

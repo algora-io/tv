@@ -6,6 +6,7 @@ defmodule AlgoraWeb.ChannelLive do
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
+  @impl true
   def render(assigns) do
     ~H"""
     <%!-- <:actions>
@@ -35,8 +36,8 @@ defmodule AlgoraWeb.ChannelLive do
         </.button>
       </:actions> --%>
 
-    <div class="lg:mr-[20rem]">
-      <div class="border-b border-gray-700 px-4 py-8 sm:px-6 lg:px-8">
+    <div>
+      <div class="border-b border-gray-700 px-4 py-4">
         <figure :if={@channel.is_live} class="relative isolate -mt-4 pt-4 pb-4">
           <svg
             viewBox="0 0 162 128"
@@ -56,7 +57,7 @@ defmodule AlgoraWeb.ChannelLive do
           </blockquote>
         </figure>
 
-        <div class="flex flex-col items-start justify-start lg:flex-col lg:items-start lg:justify-start md:flex-row md:items-center md:justify-between xl:items-center xl:justify-between xl:flex-row gap-8">
+        <div class="flex flex-col items-start justify-start md:flex-row md:items-center md:justify-between gap-8">
           <div class="flex items-center gap-4">
             <div class="relative h-20 w-20 shrink-0">
               <img
@@ -196,11 +197,15 @@ defmodule AlgoraWeb.ChannelLive do
         </div>
       </div>
 
+      <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide px-4 pt-4">
+        Library
+      </h2>
       <.playlist id="playlist" videos={@streams.videos} />
     </div>
     """
   end
 
+  @impl true
   def mount(%{"channel_handle" => channel_handle}, _session, socket) do
     %{current_user: current_user} = socket.assigns
 
@@ -234,11 +239,13 @@ defmodule AlgoraWeb.ChannelLive do
     {:ok, socket}
   end
 
+  @impl true
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
+  @impl true
   def handle_info({Presence, {:join, presence}}, socket) do
     {:noreply, stream_insert(socket, :presences, presence)}
   end

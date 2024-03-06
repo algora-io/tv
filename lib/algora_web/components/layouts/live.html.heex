@@ -5,13 +5,13 @@
   style="display: none;"
   role="region"
 >
-  <div class="fixed inset-0 bg-gray-900 bg-opacity-75" phx-click={hide_mobile_sidebar()}></div>
+  <div class="fixed inset-0 bg-gray-950 bg-opacity-50" phx-click={hide_mobile_sidebar()}></div>
 
   <div
     id="mobile-sidebar"
-    class="relative flex-1 flex-col w-full pt-5 pb-4 bg-gray-950 hidden min-h-screen sm:max-w-md"
+    class="relative flex-1 flex-col w-full pt-5 pb-4 bg-gray-950 hidden min-h-screen sm:max-w-xs"
   >
-    <div class="absolute top-0 right-2 pt-4">
+    <div class="absolute top-0 right-2 pt-3">
       <button
         type="button"
         id="hide-mobile-sidebar"
@@ -46,6 +46,17 @@
     <div class="mt-5 flex-1 h-0 overflow-y-auto">
       <%= if @current_user do %>
         <.sidebar_account_dropdown id="mobile-account-dropdown" current_user={@current_user} />
+      <% else %>
+        <div class="px-4">
+          <.link
+            navigate="/auth/login"
+            class="flex items-center justify-center rounded px-4 py-2 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
+          >
+            <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
+            </span>
+            <span class="relative font-semibold text-sm">Login</span>
+          </.link>
+        </div>
       <% end %>
 
       <nav class="px-3 pt-1">
@@ -62,8 +73,8 @@
   </div>
 </div>
 <!-- Static sidebar for desktop -->
-<div :if={@current_user} class="hidden lg:flex lg:flex-shrink-0" role="region">
-  <div class="flex flex-col w-64 border-r border-gray-800 pt-5 pb-4 bg-gray-950/50">
+<%!-- <div :if={@current_user} class="hidden lg:flex lg:flex-shrink-0" role="region">
+  <div class="flex flex-col w-64 border-r border-gray-800 pt-5 pb-4">
     <div class="flex items-center flex-shrink-0 px-6">
       <.logo />
     </div>
@@ -82,11 +93,10 @@
       </nav>
     </div>
   </div>
-</div>
+</div> --%>
 <!-- Main column -->
 <div class="flex flex-col w-0 flex-1 overflow-hidden">
-  <!-- Search header -->
-  <div
+  <%!-- <div
     :if={@current_user}
     class="relative z-10 flex-shrink-0 flex h-16 border-b border-gray-800 lg:hidden"
     role="navigation"
@@ -104,11 +114,10 @@
         phx-click={show_mobile_sidebar()}
       >
         <span class="sr-only">Open sidebar</span>
-        <Heroicons.bars_2 class="h-6 w-6" />
+        <Heroicons.bars_3 class="h-6 w-6" />
       </button>
     </div>
-  </div>
-
+  </div> --%>
   <.flash flash={@flash} kind={:info} />
   <.flash flash={@flash} kind={:error} />
   <.connection_status>
@@ -118,7 +127,7 @@
   <.live_component module={AlgoraWeb.LayoutComponent} id="layout" />
 
   <%= live_render(@socket, AlgoraWeb.ChatLive, id: "chat", session: %{}, sticky: true) %>
-  <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none pb-4">
+  <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none">
     <%= live_render(@socket, AlgoraWeb.PlayerLive, id: "player", session: %{}, sticky: true) %>
     <%= @inner_content %>
   </main>

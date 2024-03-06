@@ -10,7 +10,7 @@
       <%= assigns[:page_title] || "Algora TV" %>
     </.live_title>
 
-    <%= if assigns[:channel_handle] && assigns[:channel_uname] && assigns[:channel_tagline] do %>
+    <%= if assigns[:channel_handle] && assigns[:channel_name] && assigns[:channel_tagline] do %>
       <meta name="description" content={assigns[:channel_tagline]} />
       <meta
         name="twitter:image:src"
@@ -50,7 +50,66 @@
   </head>
   <body>
     <div class="fixed left-0 top-0 z-0 h-full w-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-gray-800 via-gray-900 to-gray-950" />
-    <div class="relative">
+    <div
+      class="fixed inset-x-0 -top-[25%] -left-[10%] z-0 flex transform justify-center overflow-hidden blur-3xl"
+      aria-hidden="true"
+    >
+      <div
+        class="w-screen h-[150vh] flex-none bg-gradient-to-r from-[#a78bfa] to-[#4f46e5] opacity-25"
+        style="clip-path: polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)"
+      >
+      </div>
+    </div>
+    <div class="relative mt-[64px]">
+      <div
+        id="navbar"
+        phx-hook="NavBar"
+        class="fixed z-30 top-0 w-full transition-colors flex gap-4 items-center justify-between h-[56px] px-4"
+      >
+        <div class="flex items-center gap-4">
+          <button
+            type="button"
+            aria-expanded="false"
+            aria-controls="mobile-sidebar"
+            class="-ml-2 p-2 text-white focus:outline-none focus:bg-white/10 rounded-full"
+            phx-click={show_mobile_sidebar()}
+          >
+            <span class="sr-only">Open sidebar</span>
+            <Heroicons.bars_3 class="h-6 w-6" />
+          </button>
+          <.logo class="w-16 h-auto hidden sm:flex" />
+        </div>
+        <div class="flex sm:pr-[6vw] font-medium text-gray-300 text-sm items-center gap-1">
+          <div>Built with</div>
+          <.link navigate="https://elixir-lang.org">
+            <img src={~p"/images/elixir.png"} alt="Elixir" class="shrink-0 mb-1 h-5 mx-auto" />
+          </.link>
+          <div>and</div>
+          <.link navigate="https://www.tigrisdata.com">
+            <img src={~p"/images/tigris.svg"} alt="Tigris" class="shrink-0 mt-2 h-4 mx-auto" />
+          </.link>
+        </div>
+
+        <%= if @current_user do %>
+          <div class="shrink-0 hidden sm:block">
+            <.simple_dropdown id="navbar-account-dropdown">
+              <:img src={@current_user.avatar_url} alt={@current_user.handle} />
+              <:link navigate={channel_path(@current_user)}>Channel</:link>
+              <:link navigate={~p"/channel/settings"}>Settings</:link>
+              <:link href={~p"/auth/logout"} method={:delete}>Sign out</:link>
+            </.simple_dropdown>
+          </div>
+        <% else %>
+          <.link
+            navigate="/auth/login"
+            class="hidden sm:flex rounded px-4 py-2 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
+          >
+            <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
+            </span>
+            <span class="relative font-semibold text-sm">Login</span>
+          </.link>
+        <% end %>
+      </div>
       <%= @inner_content %>
     </div>
   </body>
