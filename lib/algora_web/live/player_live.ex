@@ -5,7 +5,7 @@ defmodule AlgoraWeb.PlayerLive do
 
   def render(assigns) do
     ~H"""
-    <div class="pl-4 w-full hidden">
+    <div class="px-4 w-full hidden">
       <video
         id="video-player"
         phx-hook="VideoPlayer"

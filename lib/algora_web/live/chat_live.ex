@@ -12,12 +12,15 @@ defmodule AlgoraWeb.ChatLive do
 
   def render(assigns) do
     ~H"""
-    <aside id="chat-box" class="hidden fixed top-[64px] right-0 w-0 flex-col px-2">
+    <aside id="chat-box" class="hidden fixed top-[64px] right-0 w-0 flex-col pr-4">
       <div class="p-4 bg-gray-800/40 backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
         <div class="pb-2 text-center text-gray-400 text-xs font-medium uppercase tracking-wide">
           Stream chat
         </div>
-        <div id="chat-messages" class="text-sm break-words flex-1 overflow-y-auto h-[calc(100vh-11rem)]">
+        <div
+          id="chat-messages"
+          class="text-sm break-words flex-1 overflow-y-auto h-[calc(100vh-11rem)]"
+        >
           <div :for={message <- @messages} id={"message-#{message.id}"}>
             <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
               <%= message.sender_handle %>:
