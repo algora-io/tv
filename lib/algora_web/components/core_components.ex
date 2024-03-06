@@ -73,6 +73,44 @@ defmodule AlgoraWeb.CoreComponents do
   attr :id, :string, required: true
   attr :video, :any, required: true
 
+  def short_entry(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      class="cursor-pointer truncate"
+      phx-click={
+        JS.push("join", value: %{video_id: @video.id}, target: "#chat-box")
+        |> JS.dispatch("js:play_video",
+          to: "#video-player",
+          detail: %{player: %{src: @video.url, type: Library.player_type(@video)}}
+        )
+      }
+    >
+      <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[9/16] bg-gray-800">
+        <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
+        <img
+          :if={@video.vertical_thumbnail_url}
+          src={@video.vertical_thumbnail_url}
+          alt={@video.title}
+          class="absolute w-full h-full object-cover transition-transform duration-200 scale-105 hover:scale-110 z-10"
+        />
+        <div
+          :if={@video.duration != 0}
+          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+        >
+          <%= Library.to_hhmmss(@video.duration) %>
+        </div>
+      </div>
+      <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
+      <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
+      <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :video, :any, required: true
+
   def video_entry(assigns) do
     ~H"""
     <div
