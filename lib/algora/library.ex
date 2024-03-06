@@ -189,7 +189,6 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       limit: ^limit,
-      # TODO: remove vod check once current vod durations are backfilled
       where:
         v.visibility == :public and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
