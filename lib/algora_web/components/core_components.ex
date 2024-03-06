@@ -298,7 +298,7 @@ defmodule AlgoraWeb.CoreComponents do
     attr :method, :any
   end
 
-  def dropdown2(assigns) do
+  def simple_dropdown(assigns) do
     ~H"""
     <!-- User account dropdown -->
     <div class="relative inline-block text-left">
