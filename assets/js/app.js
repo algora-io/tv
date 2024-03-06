@@ -154,9 +154,9 @@ Hooks.VideoPlayer = {
   },
 };
 
-Hooks.Nav = {
+Hooks.NavBar = {
   mounted() {
-    const nav = document.getElementById("nav");
+    const nav = document.getElementById("navbar");
 
     const offset = 16;
     this.isOpaque = false;

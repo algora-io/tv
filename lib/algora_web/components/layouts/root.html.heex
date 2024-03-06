@@ -61,8 +61,8 @@
       </div>
     </div>
     <div class="relative mt-[64px]">
-      <nav id="nav" phx-hook="Nav" class="fixed z-30 top-0 w-full transition-colors">
-        <header class="flex gap-4 items-center justify-between h-[56px] px-4">
+      <div id="navbar" phx-hook="NavBar" class="fixed z-30 top-0 w-full transition-colors">
+        <div class="flex gap-4 items-center justify-between h-[56px] px-4">
           <div class="flex items-center gap-4">
             <button
               type="button"
@@ -106,8 +106,8 @@
               <span class="relative font-semibold text-sm">Login</span>
             </.link>
           <% end %>
-        </header>
-      </nav>
+        </div>
+      </div>
       <%= @inner_content %>
     </div>
   </body>
