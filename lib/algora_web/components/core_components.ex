@@ -92,7 +92,7 @@ defmodule AlgoraWeb.CoreComponents do
           :if={@video.vertical_thumbnail_url}
           src={@video.vertical_thumbnail_url}
           alt={@video.title}
-          class="absolute w-full h-full object-cover transition-transform duration-200 scale-105 hover:scale-110 z-10"
+          class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
         />
         <div
           :if={@video.duration != 0}
@@ -130,7 +130,7 @@ defmodule AlgoraWeb.CoreComponents do
           :if={@video.thumbnail_url}
           src={@video.thumbnail_url}
           alt={@video.title}
-          class="absolute w-full h-full object-cover transition-transform duration-200 scale-105 hover:scale-110 z-10"
+          class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
         />
 
         <div
