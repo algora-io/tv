@@ -156,20 +156,18 @@ Hooks.VideoPlayer = {
 
 Hooks.NavBar = {
   mounted() {
-    const nav = document.getElementById("navbar");
-
     const offset = 16;
     this.isOpaque = false;
 
     const onScroll = () => {
       if (!this.isOpaque && window.scrollY > offset) {
         this.isOpaque = true;
-        nav.classList.add("bg-gray-950");
-        nav.classList.remove("bg-transparent");
+        this.el.classList.add("bg-gray-950");
+        this.el.classList.remove("bg-transparent");
       } else if (this.isOpaque && window.scrollY <= offset) {
         this.isOpaque = false;
-        nav.classList.add("bg-transparent");
-        nav.classList.remove("bg-gray-950");
+        this.el.classList.add("bg-transparent");
+        this.el.classList.remove("bg-gray-950");
       }
     };
 
