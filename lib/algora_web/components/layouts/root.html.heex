@@ -10,7 +10,7 @@
       <%= assigns[:page_title] || "Algora TV" %>
     </.live_title>
 
-    <%= if assigns[:channel_handle] && assigns[:channel_uname] && assigns[:channel_tagline] do %>
+    <%= if assigns[:channel_handle] && assigns[:channel_name] && assigns[:channel_tagline] do %>
       <meta name="description" content={assigns[:channel_tagline]} />
       <meta
         name="twitter:image:src"
