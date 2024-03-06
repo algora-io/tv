@@ -46,7 +46,7 @@ defmodule Video do
 
     url = "https://youtube.com/watch?v=#{video["id"]}"
 
-    "{1, nil} = Algora.Repo.update_all(Ecto.Query.from(v in Algora.Library.Video, where: v.url == \"#{url}\"), set: [duration: #{duration}])"
+    "{1, nil} = Repo.update_all(from(v in Library.Video, where: v.url == \"#{url}\"), set: [duration: #{duration}])"
   end
 end
 ```
