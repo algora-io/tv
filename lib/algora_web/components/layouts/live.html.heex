@@ -72,54 +72,8 @@
     <!-- Dummy element to force sidebar to shrink to fit close icon -->
   </div>
 </div>
-<!-- Static sidebar for desktop -->
-<div :if={@current_user && false} class="hidden lg:flex lg:flex-shrink-0" role="region">
-  <div class="flex flex-col w-64 border-r border-gray-800 pt-5 pb-4">
-    <div class="flex items-center flex-shrink-0 px-6">
-      <.logo />
-    </div>
-    <!-- Sidebar component, swap this element with another sidebar if you like -->
-    <div class="h-0 flex-1 flex flex-col overflow-y-auto">
-      <%= if @current_user do %>
-        <.sidebar_account_dropdown id="account-dropdown" current_user={@current_user} />
-      <% end %>
-      <!-- Navigation -->
-      <nav class="px-3 mt-6">
-        <%= if @current_user do %>
-          <.sidebar_nav_links current_user={@current_user} active_tab={@active_tab} />
-        <% end %>
-        <!-- Secondary navigation -->
-        <.sidebar_active_users id="mobile-active-users" users={@active_users} />
-      </nav>
-    </div>
-  </div>
-</div>
 <!-- Main column -->
 <div class="flex flex-col w-0 flex-1 overflow-hidden">
-  <!-- Search header -->
-  <div
-    :if={@current_user && false}
-    class="relative z-10 flex-shrink-0 flex h-16 border-b border-gray-800 lg:hidden"
-    role="navigation"
-  >
-    <div class="flex-1 flex justify-between px-4 sm:px-6 lg:px-8">
-      <div class="my-auto">
-        <.logo />
-      </div>
-      <button
-        type="button"
-        id="show-mobile-sidebar"
-        aria-expanded="false"
-        aria-controls="mobile-sidebar"
-        class="ml-auto -mr-4 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 lg:hidden"
-        phx-click={show_mobile_sidebar()}
-      >
-        <span class="sr-only">Open sidebar</span>
-        <Heroicons.bars_2 class="h-6 w-6" />
-      </button>
-    </div>
-  </div>
-
   <.flash flash={@flash} kind={:info} />
   <.flash flash={@flash} kind={:error} />
   <.connection_status>

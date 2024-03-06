@@ -266,6 +266,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
 });
 
 let routeUpdated = () => {
+  // TODO: uncomment
   // Focus.focusMain();
 };
 
