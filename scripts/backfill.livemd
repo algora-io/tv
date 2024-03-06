@@ -1,0 +1,56 @@
+<!-- livebook:{"file_entries":[{"name":"by-ids-1.json","type":"attachment"},{"name":"by-ids-2.json","type":"attachment"},{"name":"by-ids-3.json","type":"attachment"}]} -->
+
+# Notebook
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.12.0"},
+  {:jason, "~> 1.4"}
+])
+```
+
+## Section
+
+```elixir
+data =
+  [1, 2, 3]
+  |> Enum.map(&"by-ids-#{&1}.json")
+  |> Enum.flat_map(fn path ->
+    Kino.FS.file_path(path)
+    |> File.read!()
+    |> Jason.decode!()
+    |> then(& &1["items"])
+  end)
+```
+
+```elixir
+defmodule Video do
+  def parse_duration(""), do: 0
+
+  def parse_duration(x) do
+    {duration, ""} = Integer.parse(x)
+    duration
+  end
+
+  def backfill(video) do
+    %{"hours" => hours, "minutes" => minutes, "seconds" => seconds} =
+      Regex.named_captures(
+        ~r/^PT((?<hours>\d+)H)?((?<minutes>\d+)M)?((?<seconds>\d+)S)?$/,
+        video["contentDetails"]["duration"]
+      )
+
+    duration =
+      3600 * parse_duration(hours) +
+        60 * parse_duration(minutes) +
+        1 * parse_duration(seconds)
+
+    url = "https://youtube.com/watch?v=#{video["id"]}"
+
+    "{1, nil} = Algora.Repo.update_all(Ecto.Query.from(v in Algora.Library.Video, where: v.url == \"#{url}\"), set: [duration: #{duration}])"
+  end
+end
+```
+
+```elixir
+data |> Enum.map(&Video.backfill/1) |> Enum.join("\n") |> IO.puts()
+```
