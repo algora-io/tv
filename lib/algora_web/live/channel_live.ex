@@ -6,7 +6,6 @@ defmodule AlgoraWeb.ChannelLive do
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
-  @impl true
   def render(assigns) do
     ~H"""
     <%!-- <:actions>
@@ -205,7 +204,6 @@ defmodule AlgoraWeb.ChannelLive do
     """
   end
 
-  @impl true
   def mount(%{"channel_handle" => channel_handle}, _session, socket) do
     %{current_user: current_user} = socket.assigns
 
@@ -239,13 +237,11 @@ defmodule AlgoraWeb.ChannelLive do
     {:ok, socket}
   end
 
-  @impl true
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
-  @impl true
   def handle_info({Presence, {:join, presence}}, socket) do
     {:noreply, stream_insert(socket, :presences, presence)}
   end

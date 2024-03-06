@@ -191,7 +191,20 @@ defmodule Algora.Library do
       limit: ^limit,
       where:
         v.visibility == :public and
+          is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
+      select_merge: %{channel_name: u.name}
+    )
+    |> order_by_inserted(:desc)
+    |> Repo.replica().all()
+  end
+
+  def list_shorts(limit \\ 100) do
+    from(v in Video,
+      join: u in User,
+      on: v.user_id == u.id,
+      limit: ^limit,
+      where: v.visibility == :public and not is_nil(v.vertical_thumbnail_url),
       select_merge: %{channel_name: u.name}
     )
     |> order_by_inserted(:desc)
