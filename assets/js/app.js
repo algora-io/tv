@@ -146,7 +146,7 @@ Hooks.VideoPlayer = {
       this.player.play();
       this.player.el().parentElement.classList.remove("hidden");
       this.player.el().parentElement.classList.add("flex");
-      backdrop.classList.remove("opacity-0");
+      backdrop.classList.remove("opacity-10");
       backdrop.classList.add("opacity-20");
       window.scrollTo(0, 0);
     };
