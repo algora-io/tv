@@ -21,6 +21,8 @@ data =
     |> Jason.decode!()
     |> then(& &1["items"])
   end)
+
+data |> Enum.take(6) |> Kino.Tree.new()
 ```
 
 ```elixir
@@ -44,9 +46,18 @@ defmodule Video do
         60 * parse_duration(minutes) +
         1 * parse_duration(seconds)
 
+    thumbnail_url =
+      video["snippet"]["thumbnails"]
+      |> Map.values()
+      |> Enum.sort_by(& &1["height"], :desc)
+      |> Enum.at(0)
+      |> then(& &1["url"])
+
     url = "https://youtube.com/watch?v=#{video["id"]}"
 
-    "{1, nil} = Repo.update_all(from(v in Library.Video, where: v.url == \"#{url}\"), set: [duration: #{duration}])"
+    title = video["snippet"]["title"]
+
+    "{1, nil} = Repo.update_all(from(v in Library.Video, where: v.url == \"#{url}\"), set: [title: \"#{title}\", duration: #{duration}, thumbnail_url: \"#{thumbnail_url}\"])"
   end
 end
 ```
