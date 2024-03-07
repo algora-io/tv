@@ -26,13 +26,9 @@ const init = () => {
     main.classList.remove("lg:mr-[24rem]");
   };
 
-  const join = ({ id, type }) => {
+  const join = ({ id }) => {
     if (channel) {
       leave(channel);
-    }
-
-    if (type !== "livestream") {
-      return;
     }
 
     player = player;

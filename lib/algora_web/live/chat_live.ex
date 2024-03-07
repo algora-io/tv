@@ -15,7 +15,7 @@ defmodule AlgoraWeb.ChatLive do
     <aside id="chat-box" class="hidden fixed top-[64px] right-0 w-0 flex-col pr-4">
       <div class="p-4 bg-gray-800/40 backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
         <div class="pb-2 text-center text-gray-400 text-xs font-medium uppercase tracking-wide">
-          Stream chat
+          Chat
         </div>
         <div
           id="chat-messages"
@@ -56,12 +56,10 @@ defmodule AlgoraWeb.ChatLive do
   def handle_info({Library, _}, socket), do: {:noreply, socket}
 
   def handle_event("join", %{"video_id" => video_id}, socket) do
-    video = Library.get_video!(video_id)
-
     socket =
       socket
-      |> assign(messages: Chat.list_messages(%Video{id: video.id}))
-      |> push_event("join_chat", %{id: video.id, type: video.type})
+      |> assign(messages: Chat.list_messages(%Video{id: video_id}))
+      |> push_event("join_chat", %{id: video_id})
 
     {:noreply, socket}
   end
