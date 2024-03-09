@@ -126,7 +126,9 @@
 
   <.live_component module={AlgoraWeb.LayoutComponent} id="layout" />
 
-  <%= live_render(@socket, AlgoraWeb.ChatLive, id: "chat", session: %{}, sticky: true) %>
+  <aside id="video-side-panel" class="hidden fixed top-[64px] right-0 w-0 flex-col pr-4">
+    <%= live_render(@socket, AlgoraWeb.SidePanelLive, id: "side-panel", session: %{}) %>
+  </aside>
   <main class="flex-1 relative z-0 overflow-y-auto focus:outline-none">
     <%= live_render(@socket, AlgoraWeb.PlayerLive, id: "player", session: %{}, sticky: true) %>
     <%= @inner_content %>
