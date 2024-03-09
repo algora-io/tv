@@ -148,23 +148,13 @@ Hooks.VideoPlayer = {
       this.player.el().parentElement.classList.add("flex");
       backdrop.classList.remove("opacity-10");
       backdrop.classList.add("opacity-20");
-
       window.scrollTo(0, 0);
     };
 
     window.addEventListener("js:play_video", playVideo);
     this.handleEvent("js:play_video", playVideo);
 
-    // this.handleEvent("join_chat", Chat.join);
-
-    this.handleEvent("show_transcript", () => {
-      const main = document.querySelector("body");
-      const sidePanel = document.querySelector("#video-side-panel");
-      sidePanel.classList.add("lg:w-[24rem]");
-      sidePanel.classList.add("lg:flex");
-      sidePanel.classList.remove("lg:w-0");
-      main.classList.add("lg:mr-[24rem]");
-    });
+    this.handleEvent("join_chat", Chat.join);
   },
 };
 

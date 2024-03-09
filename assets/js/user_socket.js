@@ -33,7 +33,7 @@ const init = () => {
 
     player = player;
     channel = socket.channel(`room:${id}`, {});
-    chatBox = document.querySelector("#chat-box");
+    chatBox = document.querySelector("#video-side-panel");
     chatInput = document.querySelector("#chat-input");
     chatMessages = document.querySelector("#chat-messages");
     chatMessages.scrollTop = chatMessages.scrollHeight;

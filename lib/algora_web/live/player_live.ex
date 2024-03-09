@@ -3,7 +3,6 @@ defmodule AlgoraWeb.PlayerLive do
 
   on_mount {AlgoraWeb.UserAuth, :current_user}
 
-  alias Algora.Library.Video
   alias Algora.Library
 
   def render(assigns) do
@@ -24,13 +23,4 @@ defmodule AlgoraWeb.PlayerLive do
   end
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}
-
-  def handle_event("join", %{"video_id" => video_id}, socket) do
-    socket =
-      socket
-      |> assign(subtitles: Library.list_subtitles(%Video{id: video_id}))
-      |> push_event("show_transcript", %{id: video_id})
-
-    {:noreply, socket}
-  end
 end
