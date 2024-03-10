@@ -7,9 +7,9 @@ const init = () => {
   socket.connect();
 
   const main = document.querySelector("body");
+  const sidePanel = document.querySelector("#video-side-panel");
 
   let channel;
-  let chatBox;
   let chatInput;
   let chatMessages;
   let handleSend;
@@ -20,9 +20,9 @@ const init = () => {
       chatInput.value = "";
       chatInput.removeEventListener("keypress", handleSend);
     }
-    chatBox.classList.add("lg:w-0");
-    chatBox.classList.remove("lg:w-[24rem]");
-    chatBox.classList.remove("lg:flex");
+    sidePanel.classList.add("lg:w-0");
+    sidePanel.classList.remove("lg:w-[24rem]");
+    sidePanel.classList.remove("lg:flex");
     main.classList.remove("lg:mr-[24rem]");
   };
 
@@ -31,15 +31,13 @@ const init = () => {
       leave(channel);
     }
 
-    player = player;
     channel = socket.channel(`room:${id}`, {});
-    chatBox = document.querySelector("#chat-box");
     chatInput = document.querySelector("#chat-input");
     chatMessages = document.querySelector("#chat-messages");
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    chatBox.classList.add("lg:w-[24rem]");
-    chatBox.classList.add("lg:flex");
-    chatBox.classList.remove("lg:w-0");
+    sidePanel.classList.add("lg:w-[24rem]");
+    sidePanel.classList.add("lg:flex");
+    sidePanel.classList.remove("lg:w-0");
     main.classList.add("lg:mr-[24rem]");
 
     handleSend = (event) => {

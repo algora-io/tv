@@ -79,7 +79,7 @@ defmodule AlgoraWeb.CoreComponents do
       id={@id}
       class="cursor-pointer truncate"
       phx-click={
-        JS.push("join", value: %{video_id: @video.id}, target: "#chat-box")
+        JS.push("show", value: %{video_id: @video.id}, target: "#side-panel")
         |> JS.dispatch("js:play_video",
           to: "#video-player",
           detail: %{player: %{src: @video.url, type: Library.player_type(@video)}}
@@ -117,7 +117,7 @@ defmodule AlgoraWeb.CoreComponents do
       id={@id}
       class="cursor-pointer truncate"
       phx-click={
-        JS.push("join", value: %{video_id: @video.id}, target: "#chat-box")
+        JS.push("show", value: %{video_id: @video.id}, target: "#side-panel")
         |> JS.dispatch("js:play_video",
           to: "#video-player",
           detail: %{player: %{src: @video.url, type: Library.player_type(@video)}}

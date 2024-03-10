@@ -145,6 +145,10 @@ defmodule Algora.Library do
     |> Enum.map_join(":", fn count -> String.pad_leading("#{count}", 2, ["0"]) end)
   end
 
+  def to_hhmmss(duration) when is_float(duration) do
+    to_hhmmss(trunc(duration))
+  end
+
   def unsubscribe_to_channel(%Channel{} = channel) do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end
