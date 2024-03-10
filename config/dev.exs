@@ -38,6 +38,7 @@ config :algora, Algora.Repo,
 config :algora, Algora.Repo.Local,
   url: System.get_env("DATABASE_URL"),
   # database: "tv",
+  pool_size: 10,
   priv: "priv/repo"
 
 # For development, we disable any cache and enable
