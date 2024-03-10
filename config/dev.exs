@@ -28,14 +28,16 @@ config :ex_aws, :s3,
 # Configure your database
 config :algora, Algora.Repo,
   url: System.get_env("DATABASE_URL"),
+  # username: System.get_env("DATABASE_USERNAME"),
+  # password: System.get_env("DATABASE_PASSWORD"),
+  # hostname: System.get_env("DATABASE_HOSTNAME"),
+  # database: "tv",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-# Configure your replica database
-config :algora, Algora.ReplicaRepo,
+config :algora, Algora.Repo.Local,
   url: System.get_env("DATABASE_URL"),
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10,
+  # database: "tv",
   priv: "priv/repo"
 
 # For development, we disable any cache and enable

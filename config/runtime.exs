@@ -19,8 +19,6 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
-  replica_database_url = System.get_env("REPLICA_DATABASE_URL") || database_url
-
   host = System.get_env("PHX_HOST") || "example.com"
   ecto_ipv6? = System.get_env("ECTO_IPV6") == "true"
 
@@ -34,12 +32,9 @@ if config_env() == :prod do
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
-  config :algora, Algora.ReplicaRepo,
-    # ssl: true,
-    priv: "priv/repo",
-    socket_options: if(ecto_ipv6?, do: [:inet6], else: []),
-    url: replica_database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+  config :algora, Algora.Repo.Local,
+    url: database_url,
+    priv: "priv/repo"
 
   secret_key_base =
     System.get_env("SECRET_KEY_BASE") ||

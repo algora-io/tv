@@ -1,8 +1,5 @@
 import Config
 
-config :algora,
-  replica: Algora.Repo
-
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -16,17 +13,12 @@ config :algora, Algora.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
-config :algora, Algora.ReplicaRepo,
-  username: "postgres",
-  password: "postgres",
-  database: "algora_test#{System.get_env("MIX_TEST_PARTITION")}",
-  hostname: "localhost",
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10,
+config :algora, Algora.Repo.Local,
+  url: System.get_env("DATABASE_URL"),
   priv: "priv/repo"
 
 # To prevent Oban from running jobs and plugins during test runs, enable :testing mode
-config :algora, Oban, testing: :inline
+# config :algora, Oban, testing: :inline
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.

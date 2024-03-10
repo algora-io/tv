@@ -1,23 +1,20 @@
-defmodule Algora.Repo do
+defmodule Algora.Repo.Local do
   use Ecto.Repo,
     otp_app: :algora,
     adapter: Ecto.Adapters.Postgres
 
-  def replica, do: Algora.config([:replica])
+  @env Mix.env()
 
-  @locks %{playlist: 1}
+  # Dynamically configure the database url based on runtime and build
+  # environments.
+  def init(_type, config) do
+    # url = Fly.Postgres.rewrite_database_url!(config)
+    # dbg(url)
 
-  def multi_transaction_lock(multi, scope, id) when is_atom(scope) and is_integer(id) do
-    scope_int = Map.fetch!(@locks, scope)
-
-    Ecto.Multi.run(multi, scope, fn repo, _changes ->
-      repo.query("SELECT pg_advisory_xact_lock(#{scope_int}, #{id})")
-    end)
+    Fly.Postgres.config_repo_url(config, @env)
   end
 end
 
-defmodule Algora.ReplicaRepo do
-  use Ecto.Repo,
-    otp_app: :algora,
-    adapter: Ecto.Adapters.Postgres
+defmodule Algora.Repo do
+  use Fly.Repo, local_repo: Algora.Repo.Local
 end

@@ -28,10 +28,14 @@ defmodule Algora.Application do
     children = [
       {Cluster.Supervisor, [topologies, [name: Algora.ClusterSupervisor]]},
       {Task.Supervisor, name: Algora.TaskSupervisor},
+      # Start the RPC server
+      {Fly.RPC, []},
       # Start the Ecto repository
-      Algora.Repo,
-      Algora.ReplicaRepo,
-      {Oban, Application.fetch_env!(:algora, Oban)},
+      Algora.Repo.Local,
+      # Start the supervisor for LSN tracking
+      {Fly.Postgres.LSN.Supervisor, repo: Algora.Repo.Local},
+      # Start Oban system
+      # {Oban, Application.fetch_env!(:algora, Oban)},
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
       # Start the PubSub system

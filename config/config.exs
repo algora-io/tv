@@ -8,14 +8,13 @@
 import Config
 
 config :algora,
-  replica: Algora.ReplicaRepo,
-  ecto_repos: [Algora.Repo],
+  ecto_repos: [Algora.Repo.Local],
   rtmp_port: 9006
 
-config :algora, Oban,
-  repo: Algora.Repo,
-  plugins: [Oban.Plugins.Pruner],
-  queues: [default: 10]
+# config :algora, Oban,
+#   repo: Algora.Repo.Local,
+#   plugins: [Oban.Plugins.Pruner],
+#   queues: [default: 10]
 
 # Configures the endpoint
 config :algora, AlgoraWeb.Endpoint,
