@@ -1,10 +1,14 @@
 import "phoenix_html";
 import { Socket } from "phoenix";
-import { LiveSocket } from "phoenix_live_view";
+import { LiveSocket, type ViewHook } from "phoenix_live_view";
 import Chat from "./user_socket";
 import topbar from "../vendor/topbar";
 import videojs from "../vendor/video";
 import "../vendor/videojs-youtube";
+
+// TODO: add eslint & biome
+// TODO: enable strict mode
+// TODO: eliminate anys
 
 let isVisible = (el) =>
   !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length > 0);
@@ -15,175 +19,178 @@ let execJS = (selector, attr) => {
     .forEach((el) => liveSocket.execJS(el, el.getAttribute(attr)));
 };
 
-let Hooks = {};
-
-Hooks.Flash = {
-  mounted() {
-    let hide = () =>
-      liveSocket.execJS(this.el, this.el.getAttribute("phx-click"));
-    this.timer = setTimeout(() => hide(), 8000);
-    this.el.addEventListener("phx:hide-start", () => clearTimeout(this.timer));
-    this.el.addEventListener("mouseover", () => {
-      clearTimeout(this.timer);
+const Hooks = {
+  Flash: {
+    mounted() {
+      let hide = () =>
+        liveSocket.execJS(this.el, this.el.getAttribute("phx-click"));
       this.timer = setTimeout(() => hide(), 8000);
-    });
-  },
-  destroyed() {
-    clearTimeout(this.timer);
-  },
-};
-
-Hooks.Menu = {
-  getAttr(name) {
-    let val = this.el.getAttribute(name);
-    if (val === null) {
-      throw new Error(`no ${name} attribute configured for menu`);
-    }
-    return val;
-  },
-  reset() {
-    this.enabled = false;
-    this.activeClass = this.getAttr("data-active-class");
-    this.deactivate(this.menuItems());
-    this.activeItem = null;
-    window.removeEventListener("keydown", this.handleKeyDown);
-  },
-  destroyed() {
-    this.reset();
-  },
-  mounted() {
-    this.menuItemsContainer = document.querySelector(
-      `[aria-labelledby="${this.el.id}"]`
-    );
-    this.reset();
-    this.handleKeyDown = (e) => this.onKeyDown(e);
-    this.el.addEventListener("keydown", (e) => {
-      if (
-        (e.key === "Enter" || e.key === " ") &&
-        e.currentTarget.isSameNode(this.el)
-      ) {
-        this.enabled = true;
-      }
-    });
-    this.el.addEventListener("click", (e) => {
-      if (!e.currentTarget.isSameNode(this.el)) {
-        return;
-      }
-
-      window.addEventListener("keydown", this.handleKeyDown);
-      // disable if button clicked and click was not a keyboard event
-      if (this.enabled) {
-        window.requestAnimationFrame(() => this.activate(0));
-      }
-    });
-    this.menuItemsContainer.addEventListener("phx:hide-start", () =>
-      this.reset()
-    );
-  },
-  activate(index, fallbackIndex) {
-    let menuItems = this.menuItems();
-    this.activeItem = menuItems[index] || menuItems[fallbackIndex];
-    this.activeItem.classList.add(this.activeClass);
-    this.activeItem.focus();
-  },
-  deactivate(items) {
-    items.forEach((item) => item.classList.remove(this.activeClass));
-  },
-  menuItems() {
-    return Array.from(
-      this.menuItemsContainer.querySelectorAll("[role=menuitem]")
-    );
-  },
-  onKeyDown(e) {
-    if (e.key === "Escape") {
-      document.body.click();
-      this.el.focus();
-      this.reset();
-    } else if (e.key === "Enter" && !this.activeItem) {
-      this.activate(0);
-    } else if (e.key === "Enter") {
-      this.activeItem.click();
-    }
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      let menuItems = this.menuItems();
-      this.deactivate(menuItems);
-      this.activate(menuItems.indexOf(this.activeItem) + 1, 0);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      let menuItems = this.menuItems();
-      this.deactivate(menuItems);
-      this.activate(
-        menuItems.indexOf(this.activeItem) - 1,
-        menuItems.length - 1
+      this.el.addEventListener("phx:hide-start", () =>
+        clearTimeout(this.timer)
       );
-    } else if (e.key === "Tab") {
-      e.preventDefault();
-    }
-  },
-};
-
-Hooks.VideoPlayer = {
-  mounted() {
-    const backdrop = document.querySelector("#video-backdrop");
-
-    this.player = videojs("video-player", {
-      autoplay: true,
-      liveui: true,
-      html5: {
-        vhs: {
-          llhls: true,
-        },
-      },
-    });
-
-    const playVideo = ({ detail }) => {
-      const { player } = detail;
-      this.player.options({
-        techOrder: [player.type === "video/youtube" ? "youtube" : "html5"],
+      this.el.addEventListener("mouseover", () => {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => hide(), 8000);
       });
-      this.player.src({ src: player.src, type: player.type });
-      this.player.play();
-      this.player.el().parentElement.classList.remove("hidden");
-      this.player.el().parentElement.classList.add("flex");
-      backdrop.classList.remove("opacity-10");
-      backdrop.classList.add("opacity-20");
-      window.scrollTo(0, 0);
-    };
-
-    window.addEventListener("js:play_video", playVideo);
-    this.handleEvent("js:play_video", playVideo);
-
-    this.handleEvent("join_chat", Chat.join);
+    },
+    destroyed() {
+      clearTimeout(this.timer);
+    },
   },
-};
-
-Hooks.NavBar = {
-  mounted() {
-    const offset = 16;
-    this.isOpaque = false;
-
-    const onScroll = () => {
-      if (!this.isOpaque && window.scrollY > offset) {
-        this.isOpaque = true;
-        this.el.classList.add("bg-gray-950");
-        this.el.classList.remove("bg-transparent");
-      } else if (this.isOpaque && window.scrollY <= offset) {
-        this.isOpaque = false;
-        this.el.classList.add("bg-transparent");
-        this.el.classList.remove("bg-gray-950");
+  Menu: {
+    getAttr(name) {
+      let val = this.el.getAttribute(name);
+      if (val === null) {
+        throw new Error(`no ${name} attribute configured for menu`);
       }
-    };
+      return val;
+    },
+    reset() {
+      this.enabled = false;
+      this.activeClass = this.getAttr("data-active-class");
+      this.deactivate(this.menuItems());
+      this.activeItem = null;
+      window.removeEventListener("keydown", this.handleKeyDown);
+    },
+    destroyed() {
+      this.reset();
+    },
+    mounted() {
+      this.menuItemsContainer = document.querySelector(
+        `[aria-labelledby="${this.el.id}"]`
+      );
+      this.reset();
+      this.handleKeyDown = (e) => this.onKeyDown(e);
+      this.el.addEventListener("keydown", (e) => {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          e.currentTarget.isSameNode(this.el)
+        ) {
+          this.enabled = true;
+        }
+      });
+      this.el.addEventListener("click", (e) => {
+        if (!e.currentTarget.isSameNode(this.el)) {
+          return;
+        }
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("keydown", this.handleKeyDown);
+        // disable if button clicked and click was not a keyboard event
+        if (this.enabled) {
+          window.requestAnimationFrame(() => this.activate(0));
+        }
+      });
+      this.menuItemsContainer.addEventListener("phx:hide-start", () =>
+        this.reset()
+      );
+    },
+    activate(index, fallbackIndex) {
+      let menuItems = this.menuItems();
+      this.activeItem = menuItems[index] || menuItems[fallbackIndex];
+      this.activeItem.classList.add(this.activeClass);
+      this.activeItem.focus();
+    },
+    deactivate(items) {
+      items.forEach((item) => item.classList.remove(this.activeClass));
+    },
+    menuItems() {
+      return Array.from(
+        this.menuItemsContainer.querySelectorAll("[role=menuitem]")
+      );
+    },
+    onKeyDown(e) {
+      if (e.key === "Escape") {
+        document.body.click();
+        this.el.focus();
+        this.reset();
+      } else if (e.key === "Enter" && !this.activeItem) {
+        this.activate(0);
+      } else if (e.key === "Enter") {
+        this.activeItem.click();
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        let menuItems = this.menuItems();
+        this.deactivate(menuItems);
+        this.activate(menuItems.indexOf(this.activeItem) + 1, 0);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        let menuItems = this.menuItems();
+        this.deactivate(menuItems);
+        this.activate(
+          menuItems.indexOf(this.activeItem) - 1,
+          menuItems.length - 1
+        );
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+      }
+    },
   },
-};
+  VideoPlayer: {
+    mounted() {
+      const backdrop = document.querySelector("#video-backdrop");
+
+      this.player = videojs("video-player", {
+        autoplay: true,
+        liveui: true,
+        html5: {
+          vhs: {
+            llhls: true,
+          },
+        },
+      });
+
+      const playVideo = ({ detail }) => {
+        const { player } = detail;
+        this.player.options({
+          techOrder: [player.type === "video/youtube" ? "youtube" : "html5"],
+        });
+        this.player.src({ src: player.src, type: player.type });
+        this.player.play();
+        this.player.el().parentElement.classList.remove("hidden");
+        this.player.el().parentElement.classList.add("flex");
+        window.scrollTo(0, 0);
+
+        if (backdrop) {
+          backdrop.classList.remove("opacity-10");
+          backdrop.classList.add("opacity-20");
+        }
+      };
+
+      window.addEventListener("js:play_video", playVideo);
+      this.handleEvent("js:play_video", playVideo);
+
+      this.handleEvent("join_chat", Chat.join);
+    },
+  },
+  NavBar: {
+    mounted() {
+      const offset = 16;
+      this.isOpaque = false;
+
+      const onScroll = () => {
+        if (!this.isOpaque && window.scrollY > offset) {
+          this.isOpaque = true;
+          this.el.classList.add("bg-gray-950");
+          this.el.classList.remove("bg-transparent");
+        } else if (this.isOpaque && window.scrollY <= offset) {
+          this.isOpaque = false;
+          this.el.classList.add("bg-transparent");
+          this.el.classList.remove("bg-gray-950");
+        }
+      };
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+    },
+  },
+} satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
 // Accessible focus handling
 let Focus = {
   focusMain() {
     let target =
-      document.querySelector("main h1") || document.querySelector("main");
+      document.querySelector<HTMLElement>("main h1") ||
+      document.querySelector<HTMLElement>("main");
     if (target) {
       let origTabIndex = target.tabIndex;
       target.tabIndex = -1;
@@ -253,7 +260,7 @@ let Focus = {
 };
 
 let csrfToken = document
-  .querySelector("meta[name='csrf-token']")
+  .querySelector("meta[name='csrf-token']")!
   .getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {
   hooks: Hooks,
@@ -263,6 +270,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
       if (node instanceof HTMLElement && node.autofocus) {
         node.focus();
       }
+      return node;
     },
   },
 });
@@ -291,7 +299,7 @@ window.addEventListener("js:exec", (e) =>
 window.addEventListener("js:focus", (e) => {
   let parent = document.querySelector(e.detail.parent);
   if (parent && isVisible(parent)) {
-    e.target.focus();
+    (e.target as any).focus();
   }
 });
 window.addEventListener("js:focus-closest", (e) => {
@@ -310,10 +318,10 @@ window.addEventListener("js:focus-closest", (e) => {
     }
     sibling = sibling.previousElementSibling;
   }
-  Focus.attemptFocus(el.parent) || Focus.focusMain();
+  Focus.attemptFocus((el as any).parent) || Focus.focusMain();
 });
 window.addEventListener("phx:remove-el", (e) =>
-  document.getElementById(e.detail.id).remove()
+  document.getElementById(e.detail.id)?.remove()
 );
 
 // connect if there are any LiveViews on the page
