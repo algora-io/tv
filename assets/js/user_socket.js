@@ -31,7 +31,6 @@ const init = () => {
       leave(channel);
     }
 
-    player = player;
     channel = socket.channel(`room:${id}`, {});
     chatInput = document.querySelector("#chat-input");
     chatMessages = document.querySelector("#chat-messages");
