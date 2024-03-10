@@ -7,7 +7,7 @@ const init = () => {
   socket.connect();
 
   const main = document.querySelector("body");
-  const sidePanel = document.querySelector("#video-side-panel");
+  const sidePanel = document.querySelector("#side-panel");
 
   if (!main || !sidePanel) {
     throw new Error("Could not initialize chat");
