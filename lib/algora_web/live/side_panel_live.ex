@@ -5,7 +5,11 @@ defmodule AlgoraWeb.SidePanelLive do
   on_mount {AlgoraWeb.UserAuth, :current_user}
 
   def render(assigns) do
-    assigns = assigns |> assign(:tabs, [:transcript, :chat])
+    tabs =
+      [:chat]
+      |> append_if(length(assigns.subtitles) > 0, :transcript)
+
+    assigns = assigns |> assign(:tabs, tabs)
 
     ~H"""
     <div class="p-4 bg-gray-800/40 w-[23rem] backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
@@ -15,7 +19,7 @@ defmodule AlgoraWeb.SidePanelLive do
             <button
               id={"side-panel-tab-#{tab}"}
               class={[
-                "text-xs font-medium uppercase tracking-wide",
+                "text-xs font-semibold uppercase tracking-wide",
                 i == 0 && "active-tab text-white pointer-events-none"
               ]}
               phx-click={
@@ -115,5 +119,9 @@ defmodule AlgoraWeb.SidePanelLive do
 
   defp system_message?(%Chat.Message{} = message) do
     message.sender_handle == "algora"
+  end
+
+  defp append_if(list, cond, extra) do
+    if cond, do: list ++ [extra], else: list
   end
 end
