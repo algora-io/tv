@@ -29,17 +29,18 @@ config :algora, AlgoraWeb.Endpoint,
   ]
 
 config :esbuild,
-  version: "0.12.18",
-  default: [
-    args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
+  version: "0.17.11",
+  tv: [
+    args:
+      ~w(js/app.ts --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.1.8",
-  default: [
+  version: "3.4.0",
+  tv: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css

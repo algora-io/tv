@@ -1,0 +1,25 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+devDependencies:
+  '@types/phoenix':
+    specifier: ^1.6.4
+    version: 1.6.4
+  '@types/phoenix_live_view':
+    specifier: ^0.18.4
+    version: 0.18.4
+
+packages:
+
+  /@types/phoenix@1.6.4:
+    resolution: {integrity: sha512-B34A7uot1Cv0XtaHRYDATltAdKx0BvVKNgYNqE4WjtPUa4VQJM7kxeXcVKaH+KS+kCmZ+6w+QaUdcljiheiBJA==}
+    dev: true
+
+  /@types/phoenix_live_view@0.18.4:
+    resolution: {integrity: sha512-9mq6zRZfCtY8f4Kiu9ca0YodlNoL5kPfz6AO8AMIylftoT59re5+l5BxPISt/NJXyj1S/gRJmwpHgyVsyEk8cg==}
+    dependencies:
+      '@types/phoenix': 1.6.4
+    dev: true

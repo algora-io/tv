@@ -1,6 +1,6 @@
-import { Socket } from "phoenix";
+import { type Channel, Socket } from "phoenix";
 
-const system_user = (sender) => sender === "algora";
+const systemUser = (sender) => sender === "algora";
 
 const init = () => {
   let socket = new Socket("/socket", { params: { token: window.userToken } });
@@ -9,12 +9,16 @@ const init = () => {
   const main = document.querySelector("body");
   const sidePanel = document.querySelector("#video-side-panel");
 
-  let channel;
+  if (!main || !sidePanel) {
+    throw new Error("Could not initialize chat");
+  }
+
+  let channel: Channel;
   let chatInput;
   let chatMessages;
   let handleSend;
 
-  const leave = (channel) => {
+  const leave = (channel: Channel) => {
     channel.leave();
     if (chatInput) {
       chatInput.value = "";
@@ -57,9 +61,7 @@ const init = () => {
       const senderItem = document.createElement("span");
       senderItem.innerText = `${payload.user.handle}: `;
       senderItem.className = `font-semibold ${
-        system_user(payload.user.handle)
-          ? "text-emerald-400"
-          : "text-indigo-400"
+        systemUser(payload.user.handle) ? "text-emerald-400" : "text-indigo-400"
       }`;
 
       const bodyItem = document.createElement("span");
