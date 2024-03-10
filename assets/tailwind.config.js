@@ -19,7 +19,12 @@ const gray = {
 };
 
 module.exports = {
-  content: ["./js/**/*.js", "../lib/*_web.ex", "../lib/*_web/**/*.*ex"],
+  content: [
+    "./js/**/*.js",
+    "./js/**/*.ts",
+    "../lib/*_web.ex",
+    "../lib/*_web/**/*.*ex",
+  ],
   theme: {
     extend: {
       colors: {
