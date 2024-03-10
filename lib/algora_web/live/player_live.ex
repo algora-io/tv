@@ -3,8 +3,6 @@ defmodule AlgoraWeb.PlayerLive do
 
   on_mount {AlgoraWeb.UserAuth, :current_user}
 
-  alias Algora.Library
-
   def render(assigns) do
     ~H"""
     <div class="px-4 w-full hidden">
