@@ -3,8 +3,6 @@ defmodule Algora.Library.Subtitle do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @type t() :: %__MODULE__{}
-
   schema "subtitles" do
     field :start, :float
     field :end, :float
