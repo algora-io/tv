@@ -149,7 +149,6 @@ const Hooks = {
         this.player.play();
         this.player.el().parentElement.classList.remove("hidden");
         this.player.el().parentElement.classList.add("flex");
-        // window.scrollTo(0, 0);
 
         if (backdrop) {
           backdrop.classList.remove("opacity-10");
@@ -157,9 +156,7 @@ const Hooks = {
         }
       };
 
-      // window.addEventListener("js:play_video", playVideo);
       this.handleEvent("js:play_video", playVideo);
-
       this.handleEvent("join_chat", Chat.join);
     },
   },
