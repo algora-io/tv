@@ -156,7 +156,7 @@ const Hooks = {
         }
       };
 
-      this.handleEvent("js:play_video", playVideo);
+      this.handleEvent("play_video", playVideo);
       this.handleEvent("join_chat", Chat.join);
     },
   },

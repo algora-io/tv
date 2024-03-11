@@ -45,7 +45,7 @@ defmodule AlgoraWeb.SubtitleLive.Index do
 
     {:noreply,
      socket
-     |> push_event("js:play_video", %{
+     |> push_event("play_video", %{
        detail: %{player: %{src: video.url, type: Library.player_type(video)}}
      })}
   end
