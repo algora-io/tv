@@ -62,6 +62,7 @@ defmodule AlgoraWeb.Router do
       live "/", HomeLive, :show
       live "/auth/login", SignInLive, :index
       live "/:channel_handle", ChannelLive, :show
+      live "/:channel_handle/:video_id", VideoLive, :show
     end
   end
 end

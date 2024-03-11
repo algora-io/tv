@@ -17,6 +17,7 @@ defmodule Algora.Library.Video do
     field :url, :string
     field :url_root, :string
     field :uuid, :string
+    field :channel_handle, :string, virtual: true
     field :channel_name, :string, virtual: true
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
     belongs_to :user, Accounts.User

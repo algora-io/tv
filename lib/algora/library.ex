@@ -197,7 +197,7 @@ defmodule Algora.Library do
         v.visibility == :public and
           is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
-      select_merge: %{channel_name: u.name}
+      select_merge: %{channel_handle: u.handle, channel_name: u.name}
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
@@ -209,7 +209,7 @@ defmodule Algora.Library do
       on: v.user_id == u.id,
       limit: ^limit,
       where: v.visibility == :public and not is_nil(v.vertical_thumbnail_url),
-      select_merge: %{channel_name: u.name}
+      select_merge: %{channel_handle: u.handle, channel_name: u.name}
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
@@ -220,7 +220,7 @@ defmodule Algora.Library do
       limit: ^limit,
       join: u in User,
       on: v.user_id == u.id,
-      select_merge: %{channel_name: u.name},
+      select_merge: %{channel_handle: u.handle, channel_name: u.name},
       where: v.user_id == ^channel.user_id
     )
     |> order_by_inserted(:desc)
