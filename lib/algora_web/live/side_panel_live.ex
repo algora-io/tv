@@ -177,7 +177,7 @@ defmodule AlgoraWeb.SidePanelLive do
     {:noreply, socket}
   end
 
-  def handle_event("save", %{"data" => %{subtitles: subtitles}, "save" => save_type}, socket) do
+  def handle_event("save", %{"data" => %{"subtitles" => subtitles}, "save" => save_type}, socket) do
     save(save_type, subtitles)
     {:noreply, socket}
   end
