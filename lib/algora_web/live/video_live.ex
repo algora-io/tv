@@ -481,36 +481,6 @@ defmodule AlgoraWeb.VideoLive do
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}
 
-  def handle_event("show", %{"video_id" => video_id}, socket) do
-    subtitles = Library.list_subtitles(%Library.Video{id: video_id})
-
-    data = %{}
-
-    {:ok, encoded_subtitles} =
-      subtitles
-      |> Enum.map(&%{id: &1.id, start: &1.start, end: &1.end, body: &1.body})
-      |> Jason.encode(pretty: true)
-
-    types = %{subtitles: :string}
-    params = %{subtitles: encoded_subtitles}
-
-    changeset =
-      {data, types}
-      |> Ecto.Changeset.cast(params, Map.keys(types))
-
-    video = Library.get_video!(video_id)
-
-    socket =
-      socket
-      |> assign(video: video)
-      |> assign(subtitles: subtitles)
-      |> assign(messages: Chat.list_messages(video))
-      |> assign_form(changeset)
-      |> push_event("join_chat", %{id: video_id})
-
-    {:noreply, socket}
-  end
-
   def handle_event("save", %{"data" => %{"subtitles" => subtitles}, "save" => save_type}, socket) do
     save(save_type, subtitles)
     {:noreply, socket}

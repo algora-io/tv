@@ -75,16 +75,10 @@ defmodule AlgoraWeb.CoreComponents do
 
   def short_entry(assigns) do
     ~H"""
-    <div
+    <.link
       id={@id}
       class="cursor-pointer truncate"
-      phx-click={
-        JS.push("show", value: %{video_id: @video.id}, target: "#side-panel")
-        |> JS.dispatch("js:play_video",
-          to: "#video-player",
-          detail: %{player: %{src: @video.url, type: Library.player_type(@video)}}
-        )
-      }
+      navigate={~p"/#{@video.channel_handle}/#{@video.id}"}
     >
       <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[9/16] bg-gray-800">
         <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
@@ -104,7 +98,7 @@ defmodule AlgoraWeb.CoreComponents do
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
       <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
-    </div>
+    </.link>
     """
   end
 
