@@ -28,9 +28,12 @@ defmodule Algora.Application do
     children = [
       {Cluster.Supervisor, [topologies, [name: Algora.ClusterSupervisor]]},
       {Task.Supervisor, name: Algora.TaskSupervisor},
+      # Start the RPC server
+      {Fly.RPC, []},
       # Start the Ecto repository
-      Algora.Repo,
-      Algora.ReplicaRepo,
+      Algora.Repo.Local,
+      # Start the supervisor for LSN tracking
+      {Fly.Postgres.LSN.Supervisor, repo: Algora.Repo.Local},
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
       # Start the PubSub system
@@ -38,6 +41,8 @@ defmodule Algora.Application do
       # Start presence
       AlgoraWeb.Presence,
       {Finch, name: Algora.Finch},
+      # Clustering setup
+      {DNSCluster, query: Application.get_env(:algora, :dns_cluster_query) || :ignore},
       # Start the Endpoint (http/https)
       AlgoraWeb.Endpoint,
       # Start the RTMP server

@@ -4,7 +4,7 @@
 #
 
 app = 'algora-media'
-primary_region = 'otp'
+primary_region = 'lax'
 kill_signal = 'SIGTERM'
 kill_timeout = '5s'
 
@@ -17,6 +17,8 @@ kill_timeout = '5s'
   release_command = '/app/bin/migrate'
 
 [env]
+  DNS_CLUSTER_QUERY = 'algora-media.internal'
+  PRIMARY_REGION = 'lax'
   PHX_HOST = 'tv.algora.io'
   PORT = '4000'
 

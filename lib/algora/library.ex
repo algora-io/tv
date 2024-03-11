@@ -200,7 +200,7 @@ defmodule Algora.Library do
       select_merge: %{channel_name: u.name}
     )
     |> order_by_inserted(:desc)
-    |> Repo.replica().all()
+    |> Repo.all()
   end
 
   def list_shorts(limit \\ 100) do
@@ -212,7 +212,7 @@ defmodule Algora.Library do
       select_merge: %{channel_name: u.name}
     )
     |> order_by_inserted(:desc)
-    |> Repo.replica().all()
+    |> Repo.all()
   end
 
   def list_channel_videos(%Channel{} = channel, limit \\ 100) do
@@ -224,7 +224,7 @@ defmodule Algora.Library do
       where: v.user_id == ^channel.user_id
     )
     |> order_by_inserted(:desc)
-    |> Repo.replica().all()
+    |> Repo.all()
   end
 
   def list_active_channels(opts) do
@@ -234,7 +234,7 @@ defmodule Algora.Library do
       order_by: [desc: u.updated_at],
       select: struct(u, [:id, :handle, :channel_tagline, :avatar_url, :external_homepage_url])
     )
-    |> Repo.replica().all()
+    |> Repo.all()
     |> Enum.map(&get_channel!/1)
   end
 
@@ -284,7 +284,7 @@ defmodule Algora.Library do
     end
   end
 
-  def get_video!(id), do: Repo.replica().get!(Video, id)
+  def get_video!(id), do: Repo.get!(Video, id)
 
   def update_video(%Video{} = video, attrs) do
     video
@@ -302,7 +302,7 @@ defmodule Algora.Library do
 
   def list_subtitles(%Video{} = video) do
     from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
-    |> Repo.replica().all()
+    |> Repo.all()
   end
 
   def get_subtitle!(id), do: Repo.get!(Subtitle, id)

@@ -8,8 +8,7 @@
 import Config
 
 config :algora,
-  replica: Algora.ReplicaRepo,
-  ecto_repos: [Algora.Repo],
+  ecto_repos: [Algora.Repo.Local],
   rtmp_port: 9006
 
 # Configures the endpoint

@@ -1,8 +1,5 @@
 import Config
 
-config :algora,
-  replica: Algora.Repo
-
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -16,11 +13,8 @@ config :algora, Algora.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 
-config :algora, Algora.ReplicaRepo,
-  username: "postgres",
-  password: "postgres",
-  database: "algora_test#{System.get_env("MIX_TEST_PARTITION")}",
-  hostname: "localhost",
+config :algora, Algora.Repo.Local,
+  url: System.get_env("DATABASE_URL"),
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,
   priv: "priv/repo"

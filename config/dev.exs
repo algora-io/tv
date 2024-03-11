@@ -31,8 +31,7 @@ config :algora, Algora.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-# Configure your replica database
-config :algora, Algora.ReplicaRepo,
+config :algora, Algora.Repo.Local,
   url: System.get_env("DATABASE_URL"),
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,

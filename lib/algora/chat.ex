@@ -19,14 +19,14 @@ defmodule Algora.Chat do
       select_merge: %{sender_handle: u.handle}
     )
     |> order_by_inserted(:asc)
-    |> Repo.replica().all()
+    |> Repo.all()
   end
 
   defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
     from(s in query, order_by: [{^direction, s.inserted_at}])
   end
 
-  def get_message!(id), do: Repo.replica().get!(Message, id)
+  def get_message!(id), do: Repo.get!(Message, id)
 
   def create_message(attrs \\ %{}) do
     %Message{}

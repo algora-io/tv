@@ -6,11 +6,11 @@ defmodule Algora.Accounts do
   alias Algora.Accounts.{User, Identity}
 
   def list_users(opts) do
-    Repo.replica().all(from u in User, limit: ^Keyword.fetch!(opts, :limit))
+    Repo.all(from u in User, limit: ^Keyword.fetch!(opts, :limit))
   end
 
   def get_users_map(user_ids) when is_list(user_ids) do
-    Repo.replica().all(from u in User, where: u.id in ^user_ids, select: {u.id, u})
+    Repo.all(from u in User, where: u.id in ^user_ids, select: {u.id, u})
   end
 
   def admin?(%User{} = user) do
@@ -53,11 +53,11 @@ defmodule Algora.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.replica().get!(User, id)
+  def get_user!(id), do: Repo.get!(User, id)
 
-  def get_user(id), do: Repo.replica().get(User, id)
+  def get_user(id), do: Repo.get(User, id)
 
-  def get_user_by!(fields), do: Repo.replica().get_by!(User, fields)
+  def get_user_by!(fields), do: Repo.get_by!(User, fields)
 
   ## User registration
 

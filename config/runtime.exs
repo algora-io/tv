@@ -19,8 +19,6 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
-  replica_database_url = System.get_env("REPLICA_DATABASE_URL") || database_url
-
   host = System.get_env("PHX_HOST") || "example.com"
   ecto_ipv6? = System.get_env("ECTO_IPV6") == "true"
 
@@ -28,17 +26,19 @@ if config_env() == :prod do
     System.get_env("FLY_APP_NAME") ||
       raise "FLY_APP_NAME not available"
 
+  config :algora, dns_cluster_query: System.get_env("DNS_CLUSTER_QUERY")
+
   config :algora, Algora.Repo,
     # ssl: true,
     socket_options: if(ecto_ipv6?, do: [:inet6], else: []),
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
-  config :algora, Algora.ReplicaRepo,
+  config :algora, Algora.Repo.Local,
     # ssl: true,
     priv: "priv/repo",
     socket_options: if(ecto_ipv6?, do: [:inet6], else: []),
-    url: replica_database_url,
+    url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
   secret_key_base =
