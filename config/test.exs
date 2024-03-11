@@ -15,6 +15,8 @@ config :algora, Algora.Repo,
 
 config :algora, Algora.Repo.Local,
   url: System.get_env("DATABASE_URL"),
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10,
   priv: "priv/repo"
 
 # To prevent Oban from running jobs and plugins during test runs, enable :testing mode
