@@ -25,13 +25,39 @@
 
 ```mermaid
 graph
-    Streamer{Streamer} --> Fly
+    Streamers{Streamers} --> Fly
     Fly[Elixir App - Fly] --> RTMP
     Fly --> Web[Web Server - Phoenix]
     Fly --> Db[Postgres - Fly]
     RTMP[RTMP Server - Membrane] -->|First mile delivery| Tigris[Object Storage - Tigris]
     Viewers{Viewers} -->|Last mile delivery| Tigris
     Viewers --> Fly
+```
+
+```mermaid
+graph
+    Encoder{Encoder} -->|RTMP packets| Source[RTMP Source]
+    Source -->|video| H264Parser[H264 Parser]
+    Source -->|audio| AACParser[AAC Parser]
+    H264Parser --> H264Payloader[H264 Payloader]
+    AACParser --> AACPayloader[AAC Payloader]
+    H264Payloader --> CMAFMuxerVideo[CMAF Muxer]
+    AACPayloader --> CMAFMuxerAudio[CMAF Muxer]
+    CMAFMuxerVideo --> HLSSink
+    CMAFMuxerAudio --> HLSSink
+    HLSSink[HLS Sink] --> Tigris{Tigris Object Storage}
+```
+
+```mermaid
+graph
+    App[Application] --> RTMP[RTMP Server]
+    App --> Endpoint[Web Server]
+    App --> Repo[Ecto Repo]
+    App --> Telemetry
+    App --> PubSub
+    App --> Presence
+    App --> DNSCluster[DNS Cluster]
+    App --> FlyRPC[Fly RPC]
 ```
 
 <!-- GETTING STARTED -->
