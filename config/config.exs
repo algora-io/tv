@@ -12,11 +12,6 @@ config :algora,
   ecto_repos: [Algora.Repo],
   rtmp_port: 9006
 
-config :algora, Oban,
-  repo: Algora.Repo,
-  plugins: [Oban.Plugins.Pruner],
-  queues: [default: 10]
-
 # Configures the endpoint
 config :algora, AlgoraWeb.Endpoint,
   url: [host: "localhost"],

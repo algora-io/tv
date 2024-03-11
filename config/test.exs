@@ -25,9 +25,6 @@ config :algora, Algora.ReplicaRepo,
   pool_size: 10,
   priv: "priv/repo"
 
-# To prevent Oban from running jobs and plugins during test runs, enable :testing mode
-config :algora, Oban, testing: :inline
-
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :algora, AlgoraWeb.Endpoint,

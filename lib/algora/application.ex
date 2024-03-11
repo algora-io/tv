@@ -31,7 +31,6 @@ defmodule Algora.Application do
       # Start the Ecto repository
       Algora.Repo,
       Algora.ReplicaRepo,
-      {Oban, Application.fetch_env!(:algora, Oban)},
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
       # Start the PubSub system
