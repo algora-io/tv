@@ -697,6 +697,7 @@ defmodule AlgoraWeb.CoreComponents do
   attr :name, :any
   attr :label, :string, default: nil
   attr :value, :any
+  attr :class, :string, default: nil
 
   attr :type, :string,
     default: "text",
@@ -775,11 +776,12 @@ defmodule AlgoraWeb.CoreComponents do
         id={@id || @name}
         name={@name}
         class={[
-          "mt-2 block min-h-[6rem] w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
+          "bg-gray-950 mt-2 block min-h-[6rem] w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
           "text-gray-50 focus:border-gray-500 focus:outline-none focus:ring-4 focus:ring-gray-100/5 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-gray-600 phx-no-feedback:focus:border-gray-500 phx-no-feedback:focus:ring-gray-100/5",
           "border-gray-600 focus:border-gray-500 focus:ring-gray-100/5",
-          @errors != [] && "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+          @errors != [] && "border-red-500 focus:border-red-500 focus:ring-red-500/10",
+          @class
         ]}
         {@rest}
       ><%= Phoenix.HTML.Form.normalize_value("textarea", @value) %></textarea>
