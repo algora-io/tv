@@ -138,6 +138,7 @@ defmodule AlgoraWeb.VideoLive do
             <div :if={tab == :chat}>
               <div
                 id="chat-messages"
+                phx-update="ignore"
                 class="text-sm break-words flex-1 overflow-y-auto h-[calc(100vh-11rem)]"
               >
                 <div :for={message <- @messages} id={"message-#{message.id}"}>
@@ -397,8 +398,6 @@ defmodule AlgoraWeb.VideoLive do
       |> assign_form(changeset)
       |> stream(:videos, videos)
       |> stream(:presences, Presence.list_online_users(channel_handle))
-
-    dbg(current_user.handle)
 
     if connected?(socket), do: send(self(), {:play, video_id})
 
