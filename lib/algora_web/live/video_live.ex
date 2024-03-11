@@ -399,7 +399,7 @@ defmodule AlgoraWeb.VideoLive do
       |> stream(:videos, videos)
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    if connected?(socket), do: send(self(), {:play, video_id})
+    if connected?(socket), do: send(self(), {:play, video})
 
     {:ok, socket}
   end
@@ -409,15 +409,13 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def handle_info({:play, video_id}, socket) do
-    video = Library.get_video!(video_id)
-
+  def handle_info({:play, video}, socket) do
     socket =
       socket
       |> push_event("play_video", %{
         detail: %{player: %{src: video.url, type: Library.player_type(video)}}
       })
-      |> push_event("join_chat", %{id: video_id})
+      |> push_event("join_chat", %{id: video.id})
 
     {:noreply, socket}
   end
