@@ -40,19 +40,71 @@ defmodule AlgoraWeb.SidePanelLive do
             id={"side-panel-content-#{tab}"}
             class={["side-panel-content", i != 0 && "hidden"]}
           >
-            <div
-              :if={tab == :transcript}
-              id="transcript-subtitles"
-              class="text-sm break-words flex-1 overflow-y-auto h-[calc(100vh-11rem)]"
-            >
-              <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"}>
-                <span class="font-semibold text-indigo-400">
-                  <%= Library.to_hhmmss(subtitle.start) %>
-                </span>
-                <span class="font-medium text-gray-100">
-                  <%= subtitle.body %>
-                </span>
+            <div :if={tab == :transcript}>
+              <div
+                id="show-transcript"
+                phx-click={
+                  JS.hide(to: "#show-transcript")
+                  |> JS.show(to: "#edit-transcript")
+                }
+              >
+                <div class={
+                  [
+                    "overflow-y-auto text-sm break-words flex-1",
+                    # HACK:
+                    if(@current_user.handle == "zaf",
+                      do: "h-[calc(100vh-11rem)]",
+                      else: "h-[calc(100vh-8.75rem)]"
+                    )
+                  ]
+                }>
+                  <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"}>
+                    <span class="font-semibold text-indigo-400">
+                      <%= Library.to_hhmmss(subtitle.start) %>
+                    </span>
+                    <span class="font-medium text-gray-100">
+                      <%= subtitle.body %>
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  :if={@current_user.handle == "zaf"}
+                  class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                >
+                  Edit
+                </button>
               </div>
+              <.simple_form
+                :if={@current_user.handle == "zaf"}
+                id="edit-transcript"
+                for={@form}
+                phx-submit="save"
+                class="hidden h-full"
+              >
+                <.input
+                  field={@form[:subtitles]}
+                  type="textarea"
+                  label="Edit transcript"
+                  class="font-mono h-[calc(100vh-14.75rem)]"
+                />
+                <div class="grid grid-cols-2 gap-4">
+                  <button
+                    name="save"
+                    value="naive"
+                    class="w-full flex justify-center z-10 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                  >
+                    Save naive
+                  </button>
+                  <button
+                    name="save"
+                    value="fast"
+                    class="w-full flex justify-center z-10 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                  >
+                    Save fast
+                  </button>
+                </div>
+              </.simple_form>
             </div>
 
             <div :if={tab == :chat}>
@@ -96,13 +148,46 @@ defmodule AlgoraWeb.SidePanelLive do
   end
 
   def handle_event("show", %{"video_id" => video_id}, socket) do
+    subtitles = Library.list_subtitles(%Library.Video{id: video_id})
+
+    data = %{}
+
+    {:ok, encoded_subtitles} =
+      subtitles
+      |> Enum.map(&%{id: &1.id, start: &1.start, end: &1.end, body: &1.body})
+      |> Jason.encode(pretty: true)
+
+    types = %{subtitles: :string}
+    params = %{subtitles: encoded_subtitles}
+
+    changeset =
+      {data, types}
+      |> Ecto.Changeset.cast(params, Map.keys(types))
+
+    video = Library.get_video!(video_id)
+
     socket =
       socket
-      |> assign(subtitles: Library.list_subtitles(%Library.Video{id: video_id}))
-      |> assign(messages: Chat.list_messages(%Library.Video{id: video_id}))
+      |> assign(video: video)
+      |> assign(subtitles: subtitles)
+      |> assign(messages: Chat.list_messages(video))
+      |> assign_form(changeset)
       |> push_event("join_chat", %{id: video_id})
 
     {:noreply, socket}
+  end
+
+  def handle_event("save", %{"data" => %{subtitles: subtitles}, "save" => save_type}, socket) do
+    save(save_type, subtitles)
+    {:noreply, socket}
+  end
+
+  defp save("naive", subtitles) do
+    Library.save_subtitles(subtitles)
+  end
+
+  defp save("fast", subtitles) do
+    Fly.Postgres.rpc_and_wait(Library, :save_subtitles, [subtitles])
   end
 
   defp set_active_content(js \\ %JS{}, to) do
@@ -125,5 +210,9 @@ defmodule AlgoraWeb.SidePanelLive do
 
   defp append_if(list, cond, extra) do
     if cond, do: list ++ [extra], else: list
+  end
+
+  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
+    assign(socket, :form, to_form(changeset, as: :data))
   end
 end
