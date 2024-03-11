@@ -199,7 +199,7 @@ defmodule AlgoraWeb.SidePanelLive do
   defp set_active_tab(js \\ %JS{}, tab) do
     js
     |> JS.remove_class("active-tab text-white pointer-events-none",
-      to: "#video-side-panel .active-tab"
+      to: "#side-panel .active-tab"
     )
     |> JS.add_class("active-tab text-white pointer-events-none", to: tab)
   end

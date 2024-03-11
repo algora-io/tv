@@ -6,12 +6,12 @@ const init = () => {
   let socket = new Socket("/socket", { params: { token: window.userToken } });
   socket.connect();
 
-  const main = document.querySelector("body");
-  const sidePanel = document.querySelector("#side-panel");
+  // const main = document.querySelector("body");
+  // const sidePanel = document.querySelector("#side-panel");
 
-  if (!main || !sidePanel) {
-    throw new Error("Could not initialize chat");
-  }
+  // if (!main) {
+  //   throw new Error("Could not initialize chat");
+  // }
 
   let channel: Channel;
   let chatInput;
@@ -24,10 +24,10 @@ const init = () => {
       chatInput.value = "";
       chatInput.removeEventListener("keypress", handleSend);
     }
-    sidePanel.classList.add("lg:w-0");
-    sidePanel.classList.remove("lg:w-[24rem]");
-    sidePanel.classList.remove("lg:flex");
-    main.classList.remove("lg:mr-[24rem]");
+    // sidePanel.classList.add("lg:w-0");
+    // sidePanel.classList.remove("lg:w-[24rem]");
+    // sidePanel.classList.remove("lg:flex");
+    // main.classList.remove("lg:mr-[24rem]");
   };
 
   const join = ({ id }) => {
@@ -39,10 +39,10 @@ const init = () => {
     chatInput = document.querySelector("#chat-input");
     chatMessages = document.querySelector("#chat-messages");
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    sidePanel.classList.add("lg:w-[24rem]");
-    sidePanel.classList.add("lg:flex");
-    sidePanel.classList.remove("lg:w-0");
-    main.classList.add("lg:mr-[24rem]");
+    // sidePanel.classList.add("lg:w-[24rem]");
+    // sidePanel.classList.add("lg:flex");
+    // sidePanel.classList.remove("lg:w-0");
+    // main.classList.add("lg:mr-[24rem]");
 
     handleSend = (event) => {
       if (event.key === "Enter" && chatInput.value.trim()) {
