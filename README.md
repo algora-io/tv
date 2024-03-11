@@ -50,13 +50,14 @@ graph
 
 ```mermaid
 graph
-    App[Application] --> FlyRPC[Fly RPC]
+    App[Application] --> RTMP[RTMP Server]
+    App --> Endpoint[Web Server]
     App --> Repo[Ecto Repo]
     App --> Telemetry
     App --> PubSub
     App --> Presence
-    App --> Endpoint[Web Server]
-    App --> RTMP[RTMP Server]
+    App --> DNSCluster[DNS Cluster]
+    App --> FlyRPC[Fly RPC]
 ```
 
 <!-- GETTING STARTED -->

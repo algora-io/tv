@@ -35,6 +35,7 @@ defmodule Algora.MixProject do
       {:castore, "~> 0.1.13"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
+      {:dns_cluster, "~> 0.1.1"},
       {:ecto_network, "~> 1.3.0"},
       {:ecto_sql, "~> 3.6"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},

@@ -43,6 +43,8 @@ defmodule Algora.Application do
       # Start presence
       AlgoraWeb.Presence,
       {Finch, name: Algora.Finch},
+      # Clustering setup
+      {DNSCluster, query: Application.get_env(:algora, :dns_cluster_query) || :ignore},
       # Start the Endpoint (http/https)
       AlgoraWeb.Endpoint,
       # Start the RTMP server

@@ -26,6 +26,8 @@ if config_env() == :prod do
     System.get_env("FLY_APP_NAME") ||
       raise "FLY_APP_NAME not available"
 
+  config :algora, dns_cluster_query: System.get_env("DNS_CLUSTER_QUERY")
+
   config :algora, Algora.Repo,
     # ssl: true,
     socket_options: if(ecto_ipv6?, do: [:inet6], else: []),
