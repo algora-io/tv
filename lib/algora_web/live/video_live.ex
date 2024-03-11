@@ -389,20 +389,17 @@ defmodule AlgoraWeb.VideoLive do
       |> assign(
         channel: channel,
         owns_channel?: current_user && Library.owns_channel?(current_user, channel),
-        videos_count: Enum.count(videos)
+        videos_count: Enum.count(videos),
+        video: video,
+        subtitles: subtitles,
+        messages: Chat.list_messages(video)
       )
-      |> assign(video: video)
-      |> assign(subtitles: subtitles)
-      |> assign(messages: Chat.list_messages(video))
       |> assign_form(changeset)
-      # |> push_event("js:play_video", %{
-      #   detail: %{player: %{src: video.url, type: Library.player_type(video)}}
-      # })
-      |> push_event("join_chat", %{id: video_id})
       |> stream(:videos, videos)
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    # send(self(), {:play, video_id})
+    dbg(current_user.handle)
+
     if connected?(socket), do: send(self(), {:play, video_id})
 
     {:ok, socket}
@@ -421,6 +418,7 @@ defmodule AlgoraWeb.VideoLive do
       |> push_event("js:play_video", %{
         detail: %{player: %{src: video.url, type: Library.player_type(video)}}
       })
+      |> push_event("join_chat", %{id: video_id})
 
     {:noreply, socket}
   end
