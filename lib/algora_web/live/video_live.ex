@@ -170,15 +170,6 @@ defmodule AlgoraWeb.VideoLive do
       </div>
     </aside>
     <div class="lg:mr-[24rem]">
-      <%!-- <div class="px-4 w-full">
-        <video
-          id="video-player"
-          phx-hook="VideoPlayer"
-          class="video-js vjs-default-skin min-w-xl max-w-2xl aspect-video vjs-fluid h-full w-full flex-1 rounded-2xl overflow-hidden"
-          controls
-        />
-      </div> --%>
-
       <div class="border-b border-gray-700 px-4 py-4">
         <figure :if={@channel.is_live} class="relative isolate -mt-4 pt-4 pb-4">
           <svg
@@ -479,9 +470,23 @@ defmodule AlgoraWeb.VideoLive do
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}
 
+  defp fmt(num) do
+    chars = num |> Integer.to_string() |> String.to_charlist()
+    {h, t} = Enum.split(chars, rem(length(chars), 3))
+    t = t |> Enum.chunk_every(3) |> Enum.join(",")
+
+    case {h, t} do
+      {~c"", _} -> t
+      {_, ""} -> "#{h}"
+      _ -> "#{h}," <> t
+    end
+  end
+
   def handle_event("save", %{"data" => %{"subtitles" => subtitles}, "save" => save_type}, socket) do
-    save(save_type, subtitles)
-    {:noreply, socket}
+    {time, count} = :timer.tc(&save/2, [save_type, subtitles])
+    msg = "Updated #{count} subtitles in #{fmt(round(time / 1000))} ms"
+
+    {:noreply, socket |> put_flash(:info, msg)}
   end
 
   defp save("naive", subtitles) do

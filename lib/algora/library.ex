@@ -327,17 +327,16 @@ defmodule Algora.Library do
     Subtitle.changeset(subtitle, attrs)
   end
 
-  def save_subtitles(data) do
-    {:ok, subs} = Jason.decode(data)
+  def save_subtitle(sub) do
+    %Subtitle{id: sub["id"]}
+    |> Subtitle.changeset(%{start: sub["start"], end: sub["end"], body: sub["body"]})
+    |> Repo.update!()
+  end
 
-    Enum.each(subs, fn sub ->
-      %Subtitle{id: sub["id"]}
-      |> Subtitle.changeset(%{
-        start: sub["start"],
-        end: sub["end"],
-        body: sub["body"]
-      })
-      |> Repo.update!()
-    end)
+  def save_subtitles(data) do
+    Jason.decode!(data)
+    |> Enum.take(100)
+    |> Enum.map(&save_subtitle/1)
+    |> length
   end
 end
