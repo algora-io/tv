@@ -11,7 +11,13 @@ defmodule AlgoraWeb.VideoLive do
       [:chat]
       |> append_if(length(assigns.subtitles) > 0, :transcript)
 
-    assigns = assigns |> assign(:tabs, tabs)
+    assigns =
+      assigns
+      |> assign(
+        # HACK: properly implement
+        can_edit: assigns.current_user && assigns.current_user.handle == "zaf",
+        tabs: tabs
+      )
 
     ~H"""
     <%!-- <:actions>
@@ -72,20 +78,21 @@ defmodule AlgoraWeb.VideoLive do
               <div
                 id="show-transcript"
                 phx-click={
-                  JS.hide(to: "#show-transcript")
-                  |> JS.show(to: "#edit-transcript")
+                  if(@can_edit,
+                    do:
+                      JS.hide(to: "#show-transcript")
+                      |> JS.show(to: "#edit-transcript"),
+                    else: nil
+                  )
                 }
               >
-                <div class={
-                  [
-                    "overflow-y-auto text-sm break-words flex-1",
-                    # HACK:
-                    if(@current_user && @current_user.handle == "zaf",
-                      do: "h-[calc(100vh-11rem)]",
-                      else: "h-[calc(100vh-8.75rem)]"
-                    )
-                  ]
-                }>
+                <div class={[
+                  "overflow-y-auto text-sm break-words flex-1",
+                  if(@can_edit,
+                    do: "h-[calc(100vh-11rem)]",
+                    else: "h-[calc(100vh-8.75rem)]"
+                  )
+                ]}>
                   <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"}>
                     <span class="font-semibold text-indigo-400">
                       <%= Library.to_hhmmss(subtitle.start) %>
@@ -97,14 +104,14 @@ defmodule AlgoraWeb.VideoLive do
                 </div>
 
                 <button
-                  :if={@current_user && @current_user.handle == "zaf"}
+                  :if={@can_edit}
                   class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
                 >
                   Edit
                 </button>
               </div>
               <.simple_form
-                :if={@current_user && @current_user.handle == "zaf"}
+                :if={@can_edit}
                 id="edit-transcript"
                 for={@form}
                 phx-submit="save"
