@@ -71,7 +71,7 @@ defmodule Algora.MixProject do
       # ex_aws
       {:ex_aws_s3, "~> 2.3"},
       {:ex_doc, "~> 0.29.0"},
-      {:hackney, ">= 0.0.0"},
+      {:hackney, ">= 1.20.1"},
       {:sweet_xml, ">= 0.0.0", optional: true}
     ]
   end
