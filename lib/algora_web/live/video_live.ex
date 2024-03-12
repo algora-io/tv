@@ -108,6 +108,7 @@ defmodule AlgoraWeb.VideoLive do
                 id="edit-transcript"
                 for={@form}
                 phx-submit="save"
+                phx-update="ignore"
                 class="hidden h-full"
               >
                 <.input
