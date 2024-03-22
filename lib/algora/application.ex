@@ -15,7 +15,7 @@ defmodule Algora.Application do
         :binary,
         packet: :raw,
         active: false,
-        ip: {0, 0, 0, 0, 0, 0, 0, 0}
+        ip: {0, 0, 0, 0}
       ],
       socket_handler: fn socket ->
         {:ok, _sup, pid} =
