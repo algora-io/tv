@@ -92,9 +92,8 @@ defmodule Algora.Library do
           }
         })
 
-      {:ok, _} =
-        Finch.build(:post, sink_url, [{"content-type", "application/json"}], body)
-        |> Finch.request(Algora.Finch)
+      Finch.build(:post, sink_url, [{"content-type", "application/json"}], body)
+      |> Finch.request(Algora.Finch)
     end
   end
 
