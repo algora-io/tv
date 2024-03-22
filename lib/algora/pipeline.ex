@@ -7,13 +7,14 @@ defmodule Algora.Pipeline do
     video = Library.init_livestream!()
 
     spec = [
+      # audio
       child(:src, %Membrane.RTMP.SourceBin{
         socket: socket,
         validator: %Algora.MessageValidator{video_id: video.id}
       })
       |> via_out(:audio)
       |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(1)]
+        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
       )
       |> child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
         mode: :live,
@@ -22,10 +23,12 @@ defmodule Algora.Pipeline do
         persist?: false,
         storage: %Algora.Storage{video: video}
       }),
+
+      # video
       get_child(:src)
       |> via_out(:video)
       |> via_in(Pad.ref(:input, :video),
-        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(1)]
+        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
       )
       |> get_child(:sink)
     ]
