@@ -102,16 +102,11 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
-  attr :id, :string, required: true
   attr :video, :any, required: true
 
   def video_entry(assigns) do
     ~H"""
-    <.link
-      id={@id}
-      class="cursor-pointer truncate"
-      navigate={~p"/#{@video.channel_handle}/#{@video.id}"}
-    >
+    <.link class="cursor-pointer truncate" navigate={~p"/#{@video.channel_handle}/#{@video.id}"}>
       <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[16/9] bg-gray-800">
         <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
         <img
@@ -156,7 +151,7 @@ defmodule AlgoraWeb.CoreComponents do
             class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-3"
             phx-update="stream"
           >
-            <.video_entry :for={{id, video} <- @videos} id={id} video={video} />
+            <.video_entry :for={{_id, video} <- @videos} video={video} />
           </div>
         </div>
       </div>

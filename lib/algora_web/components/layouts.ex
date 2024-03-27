@@ -89,7 +89,30 @@ defmodule AlgoraWeb.Layouts do
         >
           <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 13a3 3 0 1 0 0 -6a3 3 0 0 0 0 6z" /><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" /><path d="M6 20.05v-.05a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v.05" />
         </svg>
-        Your channel
+        Channel
+      </.link>
+      <.link
+        navigate="/channel/studio"
+        class={
+            "text-gray-200 hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md #{if @active_tab == :studio, do: "bg-gray-800", else: "hover:bg-gray-900"}"
+          }
+        aria-current={if @active_tab == :studio, do: "true", else: "false"}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="text-gray-400 group-hover:text-gray-300 mr-3 flex-shrink-0 h-6 w-6"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4z" /><path d="M3 6m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z" />
+        </svg>
+        Studio
       </.link>
       <.link
         navigate={~p"/channel/settings"}
