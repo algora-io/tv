@@ -21,28 +21,26 @@ defmodule AlgoraWeb.ChatLive do
 
     ~H"""
     <aside id="side-panel" class="hidden lg:w-[24rem] lg:flex fixed top-[64px] right-0 w-0 pr-4">
-      <div class="inset-0 h-screen w-screen z-[999999999] fixed">
-        <div class="p-4">
-          <div>
-            <div
-              :for={{tab, i} <- Enum.with_index(@tabs)}
-              id={"side-panel-content-#{tab}"}
-              class={["side-panel-content", i != 0 && "hidden"]}
-            >
-              <div>
-                <div
-                  id="chat-messages"
-                  phx-update="ignore"
-                  class="text-sm break-words flex-1 overflow-y-auto h-[calc(100vh-11rem)]"
-                >
-                  <div :for={message <- @messages} id={"message-#{message.id}"}>
-                    <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
-                      <%= message.sender_handle %>:
-                    </span>
-                    <span class="font-medium text-gray-100">
-                      <%= message.body %>
-                    </span>
-                  </div>
+      <div class="p-4">
+        <div>
+          <div
+            :for={{tab, i} <- Enum.with_index(@tabs)}
+            id={"side-panel-content-#{tab}"}
+            class={["side-panel-content", i != 0 && "hidden"]}
+          >
+            <div>
+              <div
+                id="chat-messages"
+                phx-update="ignore"
+                class="text-sm break-words flex-1 overflow-y-auto  inset-0 h-[400px] w-[400px] z-[999999999] fixed overflow-hidden"
+              >
+                <div :for={message <- @messages} id={"message-#{message.id}"}>
+                  <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
+                    <%= message.sender_handle %>:
+                  </span>
+                  <span class="font-medium text-gray-100">
+                    <%= message.body %>
+                  </span>
                 </div>
               </div>
             </div>
