@@ -25,11 +25,12 @@ defmodule Algora.Library do
       title: "",
       duration: 0,
       type: :livestream,
+      format: :hls,
       is_live: true,
       visibility: :unlisted
     }
     |> change()
-    |> Video.put_video_path(:livestream)
+    |> Video.put_video_path(:hls)
     |> Repo.insert!()
   end
 
@@ -120,7 +121,7 @@ defmodule Algora.Library do
     end
   end
 
-  def get_duration(%Video{type: :livestream} = video) do
+  def get_duration(%Video{format: :hls} = video) do
     with {:ok, playlist} <- get_media_playlist(video) do
       duration =
         playlist.timeline
@@ -131,7 +132,7 @@ defmodule Algora.Library do
     end
   end
 
-  def get_duration(%Video{type: :vod}) do
+  def get_duration(_video) do
     {:error, :not_implemented}
   end
 
@@ -256,32 +257,9 @@ defmodule Algora.Library do
     user.id == channel.user_id
   end
 
-  defp youtube_id(%Video{url: url}) do
-    url = URI.parse(url)
-    root = ".#{url.host}"
-
-    cond do
-      root |> String.ends_with?(".youtube.com") ->
-        %{"v" => id} = URI.decode_query(url.query)
-        id
-
-      root |> String.ends_with?(".youtu.be") ->
-        "/" <> id = url.path
-        id
-
-      true ->
-        :not_found
-    end
-  end
-
-  def player_type(%Video{type: :livestream}), do: "application/x-mpegURL"
-
-  def player_type(%Video{} = video) do
-    case youtube_id(video) do
-      :not_found -> "video/mp4"
-      _ -> "video/youtube"
-    end
-  end
+  def player_type(%Video{format: :mp4}), do: "video/mp4"
+  def player_type(%Video{format: :hls}), do: "application/x-mpegURL"
+  def player_type(%Video{format: :youtube}), do: "video/youtube"
 
   def get_video!(id), do: Repo.get!(Video, id)
 

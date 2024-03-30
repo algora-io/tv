@@ -11,6 +11,7 @@ defmodule Algora.Library.Video do
     field :duration, :integer
     field :title, :string
     field :type, Ecto.Enum, values: [vod: 1, livestream: 2]
+    field :format, Ecto.Enum, values: [mp4: 1, hls: 2, youtube: 3]
     field :is_live, :boolean, default: false
     field :thumbnail_url, :string
     field :vertical_thumbnail_url, :string
@@ -36,11 +37,11 @@ defmodule Algora.Library.Video do
     put_assoc(changeset, :user, user)
   end
 
-  def put_video_path(%Ecto.Changeset{} = changeset, type)
-      when type in [:vod, :livestream] do
+  def put_video_path(%Ecto.Changeset{} = changeset, format)
+      when format in [:mp4, :hls] do
     if changeset.valid? do
       uuid = Ecto.UUID.generate()
-      filename = "index#{fileext(type)}"
+      filename = "index#{fileext(format)}"
 
       changeset
       |> put_change(:uuid, uuid)
@@ -51,8 +52,8 @@ defmodule Algora.Library.Video do
     end
   end
 
-  defp fileext(:vod), do: ".mp4"
-  defp fileext(:livestream), do: ".m3u8"
+  defp fileext(:mp4), do: ".mp4"
+  defp fileext(:hls), do: ".m3u8"
 
   defp url_root(uuid) do
     bucket = Algora.config([:files, :bucket])
