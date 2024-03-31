@@ -83,7 +83,11 @@ defmodule Algora.Library do
 
     System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", mp4_local_path])
     Storage.upload_from_filename(mp4_local_path, mp4_remote_path, cb)
-    Repo.insert!(mp4_video)
+    mp4_video = Repo.insert!(mp4_video)
+
+    File.rm!(mp4_local_path)
+
+    mp4_video
   end
 
   def transmux_to_hls(%Video{} = video, cb) do
