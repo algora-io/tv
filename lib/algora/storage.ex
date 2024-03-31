@@ -1,9 +1,8 @@
 defmodule Algora.Storage do
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
-  import Ecto.Changeset
   require Membrane.Logger
-  alias Algora.{Repo, Library}
+  alias Algora.Library
 
   @pubsub Algora.PubSub
 
@@ -69,13 +68,7 @@ defmodule Algora.Storage do
          %{type: :segment, mode: :binary},
          %{video: %{thumbnail_url: nil} = video, video_header: video_header} = state
        ) do
-    with :ok <- Library.store_thumbnail(video, video_header <> contents) do
-      {:ok, video} =
-        video
-        |> change()
-        |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
-        |> Repo.update()
-
+    with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents) do
       broadcast_thumbnails_generated!(video)
       {:ok, %{state | video: video}}
     end

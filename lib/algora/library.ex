@@ -277,20 +277,29 @@ defmodule Algora.Library do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end
 
-  defp create_thumbnail(%Video{} = video, contents) do
-    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
+  defp create_thumbnail_from_file(%Video{} = video, src_path) do
     dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
 
-    with :ok <- File.write(src_path, contents),
-         :ok <- Thumbnex.create_thumbnail(src_path, dst_path) do
+    with :ok <- Thumbnex.create_thumbnail(src_path, dst_path) do
       File.read(dst_path)
+    end
+  end
+
+  defp create_thumbnail(%Video{} = video, contents) do
+    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
+
+    with :ok <- File.write(src_path, contents) do
+      create_thumbnail_from_file(video, src_path)
     end
   end
 
   def store_thumbnail(%Video{} = video, contents) do
     with {:ok, thumbnail} <- create_thumbnail(video, contents),
          {:ok, _} <- Storage.upload(thumbnail, "#{video.uuid}/index.jpeg") do
-      :ok
+      video
+      |> change()
+      |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
+      |> Repo.update()
     end
   end
 
