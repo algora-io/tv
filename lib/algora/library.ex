@@ -38,6 +38,28 @@ defmodule Algora.Library do
     |> Repo.insert!()
   end
 
+  def upload_mp4(%Phoenix.LiveView.UploadEntry{} = entry, path, %User{} = user, cb) do
+    title = Path.basename(entry.client_name, ".mp4")
+    basename = Slug.slugify(title)
+
+    mp4_video =
+      %Video{
+        title: title,
+        type: :vod,
+        format: :mp4,
+        is_live: false,
+        visibility: :unlisted,
+        user_id: user.id
+      }
+      |> change()
+      |> Video.put_video_path(:mp4, basename)
+
+    %{uuid: mp4_uuid, filename: mp4_filename} = mp4_video.changes
+
+    Storage.upload_file(path, "#{mp4_uuid}/#{mp4_filename}", cb)
+    Repo.insert!(mp4_video)
+  end
+
   def transmux_to_mp4(%Video{} = video, cb) do
     mp4_basename = Slug.slugify("#{Date.to_string(video.inserted_at)}-#{video.title}")
 

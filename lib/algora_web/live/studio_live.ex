@@ -155,10 +155,9 @@ defmodule AlgoraWeb.StudioLive do
 
   def handle_event("save", _params, socket) do
     uploaded_videos =
-      consume_uploaded_entries(socket, :video, fn %{path: path}, _entry ->
-        dst_path = Path.join([:code.priv_dir(:algora), "static", "uploads", Path.basename(path)])
-        File.cp!(path, dst_path)
-        {:ok, ~p"/uploads/#{Path.basename(dst_path)}"}
+      consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
+        video = Library.upload_mp4(entry, path, socket.assigns.current_user, fn _ -> nil end)
+        {:ok, video.url}
       end)
 
     {:noreply, update(socket, :uploaded_videos, &(&1 ++ uploaded_videos))}
