@@ -11,6 +11,10 @@ defmodule Algora.Library.Events do
     defstruct video: nil
   end
 
+  defmodule TransmuxingQueued do
+    defstruct video: nil
+  end
+
   defmodule TransmuxingProgressed do
     defstruct video: nil, pct: nil
   end

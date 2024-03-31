@@ -653,7 +653,7 @@ defmodule AlgoraWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-gray-50 hover:bg-gray-200 py-2 px-3",
+        "phx-submit-loading:opacity-75 disabled:opacity-75 rounded-lg bg-gray-50 hover:bg-gray-200 py-2 px-3",
         "text-sm font-semibold leading-6 text-gray-950 active:text-gray-950/80",
         @class
       ]}
