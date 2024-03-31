@@ -60,10 +60,10 @@ defmodule Algora.Library do
 
     dir = Path.join(System.tmp_dir!(), mp4_uuid)
     File.mkdir_p!(dir)
-    output_path = Path.join(dir, mp4_filename)
+    dst_path = Path.join(dir, mp4_filename)
 
-    System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", output_path])
-    Storage.upload_file(output_path, "#{mp4_uuid}/#{mp4_filename}", cb)
+    System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", dst_path])
+    Storage.upload_file(dst_path, "#{mp4_uuid}/#{mp4_filename}", cb)
     Repo.insert!(mp4_video)
   end
 
@@ -228,12 +228,12 @@ defmodule Algora.Library do
   end
 
   defp create_thumbnail(%Video{} = video, contents) do
-    input_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
-    output_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
+    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
+    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
 
-    with :ok <- File.write(input_path, contents),
-         :ok <- Thumbnex.create_thumbnail(input_path, output_path) do
-      File.read(output_path)
+    with :ok <- File.write(src_path, contents),
+         :ok <- Thumbnex.create_thumbnail(src_path, dst_path) do
+      File.read(dst_path)
     end
   end
 
