@@ -154,10 +154,10 @@ defmodule Algora.Library do
 
     {:ok, hls_video} = store_thumbnail_from_file(hls_video, video.local_path)
 
-    Repo.delete!(video)
     File.rm!(video.local_path)
 
-    hls_video
+    Repo.delete!(video)
+    hls_video |> put_change(:id, video.id) |> Repo.update!()
   end
 
   def get_mp4_video(id) do
