@@ -42,17 +42,17 @@ defmodule AlgoraWeb.StudioLive do
 
   @impl true
   def handle_event("download_video", %{"id" => id}, socket) do
-    # {:noreply,
-    #  redirect(socket,
-    #    external:
-    #      "https://fly.storage.tigris.dev/mediadev/775f9b6e-d360-43fc-98b4-702e22373e0e/index.mp4"
-    #  )}
+    video = Library.get_mp4_video(id)
 
-    %{video_id: id}
-    |> Library.Jobs.Mp4Transmuxer.new()
-    |> Oban.insert()
+    if video do
+      {:noreply, redirect(socket, external: video.url)}
+    else
+      %{video_id: id}
+      |> Library.Jobs.Mp4Transmuxer.new()
+      |> Oban.insert()
 
-    {:noreply, socket}
+      {:noreply, socket}
+    end
   end
 
   defp apply_action(socket, :show, _params) do

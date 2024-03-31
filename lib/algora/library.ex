@@ -20,19 +20,6 @@ defmodule Algora.Library do
     Phoenix.PubSub.subscribe(@pubsub, topic(channel.user_id))
   end
 
-  def init_video() do
-    %Video{
-      title: "",
-      duration: 0,
-      type: :livestream,
-      format: :hls,
-      is_live: true,
-      visibility: :unlisted
-    }
-    |> change()
-    |> Video.put_video_path(:hls)
-  end
-
   def init_livestream!() do
     %Video{
       title: "",
@@ -58,7 +45,9 @@ defmodule Algora.Library do
         format: :mp4,
         is_live: false,
         visibility: :unlisted,
-        transmuxed_from_id: video.id
+        user_id: video.user_id,
+        transmuxed_from_id: video.id,
+        thumbnail_url: video.thumbnail_url
       }
       |> change()
       |> Video.put_video_path(:mp4, mp4_basename)
@@ -72,6 +61,16 @@ defmodule Algora.Library do
     System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", output_path])
     Storage.upload_file(output_path, "#{mp4_uuid}/#{mp4_filename}")
     Repo.insert(mp4_video)
+  end
+
+  def get_mp4_video(id) do
+    from(v in Video,
+      where: v.format == :mp4 and (v.transmuxed_from_id == ^id or v.id == ^id),
+      join: u in User,
+      on: v.user_id == u.id,
+      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+    )
+    |> Repo.one()
   end
 
   def toggle_streamer_live(%Video{} = video, is_live) do
@@ -234,7 +233,8 @@ defmodule Algora.Library do
       on: v.user_id == u.id,
       limit: ^limit,
       where:
-        v.visibility == :public and
+        is_nil(v.transmuxed_from_id) and
+          v.visibility == :public and
           is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
       select_merge: %{channel_handle: u.handle, channel_name: u.name}
@@ -248,7 +248,9 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       limit: ^limit,
-      where: v.visibility == :public and not is_nil(v.vertical_thumbnail_url),
+      where:
+        is_nil(v.transmuxed_from_id) and v.visibility == :public and
+          not is_nil(v.vertical_thumbnail_url),
       select_merge: %{channel_handle: u.handle, channel_name: u.name}
     )
     |> order_by_inserted(:desc)
@@ -261,7 +263,7 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       select_merge: %{channel_handle: u.handle, channel_name: u.name},
-      where: v.user_id == ^channel.user_id
+      where: is_nil(v.transmuxed_from_id) and v.user_id == ^channel.user_id
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
