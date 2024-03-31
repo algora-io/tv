@@ -14,11 +14,22 @@ defmodule AlgoraWeb.StudioLive do
         </.link>
       </:actions>
     </.header>
-
     <.table id="videos" rows={@streams.videos}>
-      <:col :let={{_id, video}} label="">
+      <:col :let={{_id, video}}>
         <div class="max-w-xs">
           <.video_entry video={video} />
+        </div>
+      </:col>
+      <:col :let={{_id, video}}>
+        <div :if={@progress[video.id]} class="text-sm text-center">
+          <div>
+            Transmuxing your video to MP4
+          </div>
+          <div>
+            [<%= :erlang.float_to_binary(@progress[video.id] * 100.0,
+              decimals: 0
+            ) %>%]
+          </div>
         </div>
       </:col>
       <:action :let={{_id, video}}>
@@ -31,13 +42,41 @@ defmodule AlgoraWeb.StudioLive do
   @impl true
   def mount(_params, _session, socket) do
     channel = Library.get_channel!(socket.assigns.current_user)
-    socket = socket |> stream(:videos, Library.list_channel_videos(channel))
+
+    if connected?(socket), do: Library.subscribe_to_studio()
+
+    socket =
+      socket
+      |> assign(:progress, %{})
+      |> stream(:videos, Library.list_channel_videos(channel))
+
     {:ok, socket}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_info(
+        {Library, %Library.Events.TransmuxingProgressed{video: video, pct: pct}},
+        socket
+      ) do
+    {
+      :noreply,
+      socket
+      |> assign(:progress, socket.assigns.progress |> Map.put(video.id, pct))
+      |> stream_insert(:videos, video)
+    }
+  end
+
+  @impl true
+  def handle_info(
+        {Library, %Library.Events.TransmuxingCompleted{url: url}},
+        socket
+      ) do
+    {:noreply, socket |> redirect(external: url)}
   end
 
   @impl true

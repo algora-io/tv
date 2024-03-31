@@ -12,6 +12,10 @@ defmodule Algora.Library do
 
   @pubsub Algora.PubSub
 
+  def subscribe_to_studio() do
+    Phoenix.PubSub.subscribe(@pubsub, topic_studio())
+  end
+
   def subscribe_to_livestreams() do
     Phoenix.PubSub.subscribe(@pubsub, topic_livestreams())
   end
@@ -34,7 +38,7 @@ defmodule Algora.Library do
     |> Repo.insert!()
   end
 
-  def transmux_to_mp4(%Video{} = video) do
+  def transmux_to_mp4(%Video{} = video, cb) do
     mp4_basename = Slug.slugify("#{Date.to_string(video.inserted_at)}-#{video.title}")
 
     mp4_video =
@@ -55,12 +59,12 @@ defmodule Algora.Library do
     %{uuid: mp4_uuid, filename: mp4_filename} = mp4_video.changes
 
     dir = Path.join(System.tmp_dir!(), mp4_uuid)
-    File.mkdir!(dir)
+    File.mkdir_p!(dir)
     output_path = Path.join(dir, mp4_filename)
 
     System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", output_path])
-    Storage.upload_file(output_path, "#{mp4_uuid}/#{mp4_filename}")
-    Repo.insert(mp4_video)
+    Storage.upload_file(output_path, "#{mp4_uuid}/#{mp4_filename}", cb)
+    Repo.insert!(mp4_video)
   end
 
   def get_mp4_video(id) do
@@ -269,6 +273,18 @@ defmodule Algora.Library do
     |> Repo.all()
   end
 
+  def list_studio_videos(%Channel{} = channel, limit \\ 100) do
+    from(v in Video,
+      limit: ^limit,
+      join: u in User,
+      on: v.user_id == u.id,
+      select_merge: %{channel_handle: u.handle, channel_name: u.name},
+      where: is_nil(v.transmuxed_from_id) and v.user_id == ^channel.user_id
+    )
+    |> order_by_inserted(:desc)
+    |> Repo.all()
+  end
+
   def list_active_channels(opts) do
     from(u in Algora.Accounts.User,
       where: u.is_live,
@@ -303,7 +319,15 @@ defmodule Algora.Library do
   def player_type(%Video{format: :hls}), do: "application/x-mpegURL"
   def player_type(%Video{format: :youtube}), do: "video/youtube"
 
-  def get_video!(id), do: Repo.get!(Video, id)
+  def get_video!(id),
+    do:
+      from(v in Video,
+        where: v.id == ^id,
+        join: u in User,
+        on: v.user_id == u.id,
+        select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      )
+      |> Repo.one!()
 
   def update_video(%Video{} = video, attrs) do
     video
@@ -318,6 +342,8 @@ defmodule Algora.Library do
   defp topic(user_id) when is_integer(user_id), do: "channel:#{user_id}"
 
   def topic_livestreams(), do: "livestreams"
+
+  def topic_studio(), do: "studio"
 
   def list_subtitles(%Video{} = video) do
     from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
@@ -357,5 +383,17 @@ defmodule Algora.Library do
     |> Enum.take(100)
     |> Enum.map(&save_subtitle/1)
     |> length
+  end
+
+  defp broadcast!(topic, msg) do
+    Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
+  end
+
+  def broadcast_transmuxing_progressed!(video, pct) do
+    broadcast!(topic_studio(), %Events.TransmuxingProgressed{video: video, pct: pct})
+  end
+
+  def broadcast_transmuxing_completed!(video, url) do
+    broadcast!(topic_studio(), %Events.TransmuxingCompleted{video: video, url: url})
   end
 end
