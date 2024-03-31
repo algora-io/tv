@@ -1,5 +1,5 @@
 defmodule Algora.Workers.HlsTransmuxer do
-  use Oban.Worker, queue: :default, max_attempts: 3
+  use Oban.Worker, queue: :default, max_attempts: 3, unique: [period: 86_400]
 
   alias Algora.Library
   import Ecto.Query, warn: false
