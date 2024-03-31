@@ -14,6 +14,45 @@ defmodule AlgoraWeb.StudioLive do
         </.link>
       </:actions>
     </.header>
+    <form id="upload-form" phx-submit="save" phx-change="validate">
+      <.live_file_input upload={@uploads.video} />
+      <button type="submit">Upload</button>
+    </form>
+    <%!-- lib/my_app_web/live/upload_live.html.heex --%>
+
+    <%!-- use phx-drop-target with the upload ref to enable file drag and drop --%>
+    <section phx-drop-target={@uploads.video.ref}>
+      <%!-- render each video entry --%>
+      <%= for entry <- @uploads.video.entries do %>
+        <article class="upload-entry">
+          <div><%= entry.client_name %></div>
+
+          <%!-- entry.progress will update automatically for in-flight entries --%>
+          <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
+
+          <%!-- a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 --%>
+          <button
+            type="button"
+            phx-click="cancel-upload"
+            phx-value-ref={entry.ref}
+            aria-label="cancel"
+          >
+            &times;
+          </button>
+
+          <%!-- Phoenix.Component.upload_errors/2 returns a list of error atoms --%>
+          <%= for err <- upload_errors(@uploads.video, entry) do %>
+            <p class="alert alert-danger"><%= error_to_string(err) %></p>
+          <% end %>
+        </article>
+      <% end %>
+
+      <%!-- Phoenix.Component.upload_errors/1 returns a list of error atoms --%>
+      <%= for err <- upload_errors(@uploads.video) do %>
+        <p class="alert alert-danger"><%= error_to_string(err) %></p>
+      <% end %>
+    </section>
+
     <.table id="videos" rows={@streams.videos}>
       <:col :let={{_id, video}}>
         <div class="max-w-xs">
@@ -49,6 +88,8 @@ defmodule AlgoraWeb.StudioLive do
       socket
       |> assign(:status, %{})
       |> stream(:videos, Library.list_channel_videos(channel))
+      |> assign(:uploaded_videos, [])
+      |> allow_upload(:video, accept: ~w(.mp4), max_entries: 2)
 
     {:ok, socket}
   end
@@ -108,9 +149,28 @@ defmodule AlgoraWeb.StudioLive do
     end
   end
 
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("save", _params, socket) do
+    uploaded_videos =
+      consume_uploaded_entries(socket, :video, fn %{path: path}, _entry ->
+        dst_path = Path.join([:code.priv_dir(:algora), "static", "uploads", Path.basename(path)])
+        File.cp!(path, dst_path)
+        {:ok, ~p"/uploads/#{Path.basename(dst_path)}"}
+      end)
+
+    {:noreply, update(socket, :uploaded_videos, &(&1 ++ uploaded_videos))}
+  end
+
   defp apply_action(socket, :show, _params) do
     socket |> assign(:page_title, "Studio")
   end
+
+  defp error_to_string(:too_large), do: "Too large"
+  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
+  defp error_to_string(:too_many_files), do: "You have selected too many files"
 
   defmodule Status do
     use Phoenix.Component
