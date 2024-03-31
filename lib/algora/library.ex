@@ -87,13 +87,16 @@ defmodule Algora.Library do
   end
 
   def transmux_to_hls(%Video{} = video, cb) do
-    # TODO: delete tmp mp4 & record
-    # TODO: generate thumbnail
-    # TODO: calculate duration
+    duration =
+      case get_duration(video) do
+        {:error, _} -> 0
+        duration -> duration
+      end
+
     hls_video =
       %Video{
         title: video.title,
-        duration: 0,
+        duration: duration,
         type: :vod,
         format: :hls,
         is_live: false,
@@ -144,6 +147,11 @@ defmodule Algora.Library do
     end)
 
     hls_video = Repo.insert!(hls_video)
+
+    {:ok, hls_video} = store_thumbnail_from_file(hls_video, video.local_path)
+
+    Repo.delete!(video)
+    File.rm!(video.local_path)
 
     hls_video
   end
@@ -256,8 +264,14 @@ defmodule Algora.Library do
     end
   end
 
-  def get_duration(_video) do
-    {:error, :not_implemented}
+  def get_duration(%Video{local_path: nil}), do: {:error, :not_implemented}
+
+  def get_duration(%Video{local_path: local_path}) do
+    case FFprobe.duration(local_path) do
+      :no_duration -> {:error, :no_duration}
+      {:error, error} -> {:error, error}
+      duration -> {:ok, round(duration)}
+    end
   end
 
   def to_hhmmss(duration) when is_integer(duration) do
