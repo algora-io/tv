@@ -27,7 +27,7 @@ defmodule Algora.Storage do
       ) do
     path = "#{video.uuid}/#{name}"
 
-    with {:ok, _} <- upload_contents(contents, path, upload_opts(ctx)),
+    with {:ok, _} <- upload(contents, path, upload_opts(ctx)),
          {:ok, state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
       {:ok, state}
     else
@@ -82,24 +82,24 @@ defmodule Algora.Storage do
     {:ok, state}
   end
 
-  def upload_contents(body, dst, opts \\ []) do
+  def upload(contents, remote_path, opts \\ []) do
     Algora.config([:files, :bucket])
-    |> ExAws.S3.put_object(dst, body, opts)
+    |> ExAws.S3.put_object(remote_path, contents, opts)
     |> ExAws.request([])
   end
 
-  def upload_file(src, dst, cb \\ fn -> nil end, opts \\ []) do
-    %{size: size} = File.stat!(src)
+  def upload_from_filename(local_path, remote_path, cb \\ fn -> nil end, opts \\ []) do
+    %{size: size} = File.stat!(local_path)
 
     chunk_size = 5 * 1024 * 1024
 
     result =
-      ExAws.S3.Upload.stream_file(src, [{:chunk_size, chunk_size}])
+      ExAws.S3.Upload.stream_file(local_path, [{:chunk_size, chunk_size}])
       |> Stream.map(fn chunk ->
         cb.(%{done: chunk_size, total: size})
         chunk
       end)
-      |> ExAws.S3.upload(Algora.config([:files, :bucket]), dst, opts)
+      |> ExAws.S3.upload(Algora.config([:files, :bucket]), remote_path, opts)
       |> ExAws.request([])
 
     result

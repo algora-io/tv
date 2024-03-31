@@ -82,7 +82,7 @@ defmodule Algora.Library do
     mp4_local_path = Path.join(dir, mp4_filename)
 
     System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", mp4_local_path])
-    Storage.upload_file(mp4_local_path, mp4_remote_path, cb)
+    Storage.upload_from_filename(mp4_local_path, mp4_remote_path, cb)
     Repo.insert!(mp4_video)
   end
 
@@ -137,7 +137,10 @@ defmodule Algora.Library do
       hls_local_path
     end)
     |> Enum.each(fn hls_local_path ->
-      Storage.upload_file(hls_local_path, "#{hls_url_root}/#{Path.basename(hls_local_path)}")
+      Storage.upload_from_filename(
+        hls_local_path,
+        "#{hls_url_root}/#{Path.basename(hls_local_path)}"
+      )
     end)
 
     hls_video = Repo.insert!(hls_video)
@@ -286,7 +289,7 @@ defmodule Algora.Library do
 
   def store_thumbnail(%Video{} = video, contents) do
     with {:ok, thumbnail} <- create_thumbnail(video, contents),
-         {:ok, _} <- Storage.upload_contents(thumbnail, "#{video.uuid}/index.jpeg") do
+         {:ok, _} <- Storage.upload(thumbnail, "#{video.uuid}/index.jpeg") do
       :ok
     end
   end
