@@ -7,10 +7,11 @@ defmodule Algora.Library do
   import Ecto.Query, warn: false
   import Ecto.Changeset
   alias Algora.Accounts.User
-  alias Algora.{Repo, Accounts, Storage}
+  alias Algora.{Repo, Accounts, Storage, MP4Stat}
   alias Algora.Library.{Channel, Video, Events, Subtitle}
 
   @pubsub Algora.PubSub
+  @max_videos 100
 
   def subscribe_to_studio() do
     Phoenix.PubSub.subscribe(@pubsub, topic_studio())
@@ -366,8 +367,110 @@ defmodule Algora.Library do
     |> Repo.update()
   end
 
+  def change_video(video_or_changeset, attrs \\ %{})
+
+  def change_video(%Video{} = video, attrs) do
+    Video.changeset(video, attrs)
+  end
+
+  @keep_changes []
+  def change_video(%Ecto.Changeset{} = prev_changeset, attrs) do
+    %Video{}
+    |> change_video(attrs)
+    |> Ecto.Changeset.change(Map.take(prev_changeset.changes, @keep_changes))
+  end
+
   defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
     from(s in query, order_by: [{^direction, s.inserted_at}])
+  end
+
+  def store_mp4(%Video{} = video, tmp_path) do
+    File.mkdir_p!(Path.dirname(video.mp4_filepath))
+    File.cp!(tmp_path, video.mp4_filepath)
+  end
+
+  def put_stats(%Ecto.Changeset{} = changeset, %MP4Stat{} = stat) do
+    chset = Video.put_stats(changeset, stat)
+
+    if error = chset.errors[:duration] do
+      {:error, %{duration: error}}
+    else
+      {:ok, chset}
+    end
+  end
+
+  def import_videos(%Accounts.User{} = user, changesets, consume_file)
+      when is_map(changesets) and is_function(consume_file, 2) do
+    # refetch user for fresh video count
+    user = Accounts.get_user!(user.id)
+
+    multi =
+      Ecto.Multi.new()
+      # TODO: lock playlist
+      # |> lock_playlist(user.id)
+      |> Ecto.Multi.run(:starting_position, fn repo, _changes ->
+        count = repo.one(from s in Video, where: s.user_id == ^user.id, select: count(s.id))
+        {:ok, count - 1}
+      end)
+
+    multi =
+      changesets
+      |> Enum.with_index()
+      |> Enum.reduce(multi, fn {{ref, chset}, i}, acc ->
+        Ecto.Multi.insert(acc, {:video, ref}, fn %{starting_position: pos_start} ->
+          chset
+          |> Video.put_user(user)
+          |> Video.put_video_path(:mp4)
+          |> Ecto.Changeset.put_change(:position, pos_start + i + 1)
+        end)
+      end)
+      |> Ecto.Multi.run(:valid_videos_count, fn _repo, changes ->
+        new_videos_count =
+          changes |> Enum.filter(&match?({{:video, _ref}, _}, &1)) |> Enum.count()
+
+        validate_videos_limit(user.videos_count, new_videos_count)
+      end)
+      |> Ecto.Multi.update_all(
+        :update_videos_count,
+        fn %{valid_videos_count: new_count} ->
+          from(u in Accounts.User,
+            where: u.id == ^user.id and u.videos_count == ^user.videos_count,
+            update: [inc: [videos_count: ^new_count]]
+          )
+        end,
+        []
+      )
+      |> Ecto.Multi.run(:is_videos_count_updated?, fn _repo, %{update_videos_count: result} ->
+        case result do
+          {1, _} -> {:ok, user}
+          _ -> {:error, :invalid}
+        end
+      end)
+
+    case Algora.Repo.transaction(multi) do
+      {:ok, results} ->
+        videos =
+          results
+          |> Enum.filter(&match?({{:video, _ref}, _}, &1))
+          |> Enum.map(fn {{:video, ref}, video} ->
+            consume_file.(ref, fn tmp_path -> store_mp4(video, tmp_path) end)
+            {ref, video}
+          end)
+
+        broadcast_imported(user, videos)
+
+        {:ok, Enum.into(videos, %{})}
+
+      {:error, failed_op, failed_val, _changes} ->
+        failed_op =
+          case failed_op do
+            {:video, _number} -> "Invalid video (#{failed_val.changes.title})"
+            :is_videos_count_updated? -> :invalid
+            failed_op -> failed_op
+          end
+
+        {:error, {failed_op, failed_val}}
+    end
   end
 
   defp topic(user_id) when is_integer(user_id), do: "channel:#{user_id}"
@@ -416,8 +519,20 @@ defmodule Algora.Library do
     |> length
   end
 
+  def parse_file_name(name) do
+    case Regex.split(~r/[-–]/, Path.rootname(name), parts: 2) do
+      [title] -> %{title: String.trim(title), artist: nil}
+      [title, artist] -> %{title: String.trim(title), artist: String.trim(artist)}
+    end
+  end
+
   defp broadcast!(topic, msg) do
     Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
+  end
+
+  defp broadcast_imported(%Accounts.User{} = user, videos) do
+    videos = Enum.map(videos, fn {_ref, video} -> video end)
+    broadcast!(user.id, %Events.VideosImported{user_id: user.id, videos: videos})
   end
 
   def broadcast_transmuxing_progressed!(video, pct) do
@@ -426,5 +541,13 @@ defmodule Algora.Library do
 
   def broadcast_transmuxing_completed!(video, url) do
     broadcast!(topic_studio(), %Events.TransmuxingCompleted{video: video, url: url})
+  end
+
+  defp validate_videos_limit(user_videos, new_videos_count) do
+    if user_videos + new_videos_count <= @max_videos do
+      {:ok, new_videos_count}
+    else
+      {:error, :videos_limit_exceeded}
+    end
   end
 end

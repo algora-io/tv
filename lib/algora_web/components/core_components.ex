@@ -1065,4 +1065,13 @@ defmodule AlgoraWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  def translate_changeset_errors(changeset) do
+    changeset.errors
+    |> Enum.map_join("\n", fn {key, value} -> "#{key} #{translate_error(value)}" end)
+  end
+
+  def js_exec(js \\ %JS{}, to, call, args) do
+    JS.dispatch(js, "js:exec", to: to, detail: %{call: call, args: args})
+  end
 end

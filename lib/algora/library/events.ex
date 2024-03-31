@@ -22,4 +22,8 @@ defmodule Algora.Library.Events do
   defmodule TransmuxingCompleted do
     defstruct video: nil, url: nil
   end
+
+  defmodule VideosImported do
+    defstruct user_id: nil, videos: []
+  end
 end

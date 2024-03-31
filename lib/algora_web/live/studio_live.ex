@@ -2,6 +2,8 @@ defmodule AlgoraWeb.StudioLive do
   use AlgoraWeb, :live_view
 
   alias Algora.{Library, Workers}
+  alias AlgoraWeb.LayoutComponent
+  alias AlgoraWeb.StudioLive.UploadFormComponent
 
   @impl true
   def render(assigns) do
@@ -9,7 +11,7 @@ defmodule AlgoraWeb.StudioLive do
     <.header class="p-4 sm:p-6 lg:p-8">
       Studio
       <:actions>
-        <.link patch={~p"/studio/upload"}>
+        <.link patch={~p"/channel/studio/upload"}>
           <.button>Upload video</.button>
         </.link>
       </:actions>
@@ -110,6 +112,26 @@ defmodule AlgoraWeb.StudioLive do
 
   defp apply_action(socket, :show, _params) do
     socket |> assign(:page_title, "Studio")
+  end
+
+  defp apply_action(socket, :upload, _params) do
+    socket
+    |> assign(:page_title, "Upload Video")
+    |> assign(:video, %Library.Video{})
+    |> show_upload_modal()
+  end
+
+  defp show_upload_modal(socket) do
+    LayoutComponent.show_modal(UploadFormComponent, %{
+      id: :upload,
+      confirm: {"Save", type: "submit", form: "video-form"},
+      patch: channel_path(socket.assigns.current_user),
+      video: socket.assigns.video,
+      title: socket.assigns.page_title,
+      current_user: socket.assigns.current_user
+    })
+
+    socket
   end
 
   defmodule Status do
