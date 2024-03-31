@@ -137,22 +137,30 @@ defmodule AlgoraWeb.StudioLive do
     end
   end
 
+  def handle_event("upload_videos", _params, socket) do
+    uploaded_videos =
+      consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
+        video = Library.init_mp4!(entry, path, socket.assigns.current_user)
+
+        %{video_id: video.id}
+        |> Workers.HLSTransmuxer.new()
+        |> Oban.insert()
+
+        {:ok, video}
+      end)
+
+    {:noreply,
+     socket
+     |> update(:uploaded_videos, &(&1 ++ uploaded_videos))
+     |> stream(:videos, uploaded_videos)}
+  end
+
   def handle_event("validate_uploads", _params, socket) do
     {:noreply, socket}
   end
 
   def handle_event("cancel_upload", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :avatar, ref)}
-  end
-
-  def handle_event("upload_videos", _params, socket) do
-    uploaded_videos =
-      consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
-        video = Library.upload_mp4(entry, path, socket.assigns.current_user, fn _ -> nil end)
-        {:ok, video.url}
-      end)
-
-    {:noreply, update(socket, :uploaded_videos, &(&1 ++ uploaded_videos))}
   end
 
   defp apply_action(socket, :show, _params) do

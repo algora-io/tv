@@ -34,30 +34,27 @@ defmodule Algora.Library do
       visibility: :unlisted
     }
     |> change()
-    |> Video.put_video_path(:hls)
+    |> Video.put_video_url(:hls)
     |> Repo.insert!()
   end
 
-  def upload_mp4(%Phoenix.LiveView.UploadEntry{} = entry, path, %User{} = user, cb) do
+  def init_mp4!(%Phoenix.LiveView.UploadEntry{} = entry, path, %User{} = user) do
     title = Path.basename(entry.client_name, ".mp4")
     basename = Slug.slugify(title)
 
-    mp4_video =
-      %Video{
-        title: title,
-        type: :vod,
-        format: :mp4,
-        is_live: false,
-        visibility: :unlisted,
-        user_id: user.id
-      }
-      |> change()
-      |> Video.put_video_path(:mp4, basename)
-
-    %{uuid: mp4_uuid, filename: mp4_filename} = mp4_video.changes
-
-    Storage.upload_file(path, "#{mp4_uuid}/#{mp4_filename}", cb)
-    Repo.insert!(mp4_video)
+    %Video{
+      title: title,
+      duration: 0,
+      type: :vod,
+      format: :mp4,
+      is_live: false,
+      visibility: :unlisted,
+      user_id: user.id,
+      local_path: path
+    }
+    |> change()
+    |> Video.put_video_meta(:mp4, basename)
+    |> Repo.insert!()
   end
 
   def transmux_to_mp4(%Video{} = video, cb) do
@@ -76,48 +73,62 @@ defmodule Algora.Library do
         thumbnail_url: video.thumbnail_url
       }
       |> change()
-      |> Video.put_video_path(:mp4, mp4_basename)
+      |> Video.put_video_url(:mp4, mp4_basename)
 
-    %{uuid: mp4_uuid, filename: mp4_filename} = mp4_video.changes
+    %{uuid: mp4_uuid, filename: mp4_filename, remote_path: mp4_remote_path} = mp4_video.changes
 
     dir = Path.join(System.tmp_dir!(), mp4_uuid)
     File.mkdir_p!(dir)
     dst_path = Path.join(dir, mp4_filename)
 
     System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", dst_path])
-    Storage.upload_file(dst_path, "#{mp4_uuid}/#{mp4_filename}", cb)
+    Storage.upload_file(dst_path, mp4_remote_path, cb)
     Repo.insert!(mp4_video)
   end
 
-  def transmux_to_hls(%Video{} = _video, _cb) do
-    todo = true
-    src_path = ""
-    uuid = ""
-    filename = ""
+  def transmux_to_hls(%Video{} = video, cb) do
+    # TODO: delete tmp mp4
+    # TODO: generate thumbnail
+    # TODO: calculate duration
+    hls_basename = Slug.slugify(video.title)
 
-    dir = Path.join(System.tmp_dir!(), uuid)
+    hls_video =
+      %Video{
+        title: video.title,
+        duration: 0,
+        type: :vod,
+        format: :hls,
+        is_live: false,
+        visibility: :public,
+        user_id: video.user_id
+      }
+      |> change()
+      |> Video.put_video_url(:hls, hls_basename)
+
+    %{uuid: hls_uuid, filename: hls_filename, remote_path: hls_remote_path} = hls_video.changes
+
+    dir = Path.join(System.tmp_dir!(), hls_uuid)
     File.mkdir_p!(dir)
-    dst_path = Path.join(dir, filename)
+    dst_path = Path.join(dir, hls_filename)
 
-    if !todo do
-      System.cmd("ffmpeg", [
-        "-i",
-        src_path,
-        "-c",
-        "copy",
-        "-start_number",
-        0,
-        "-hls_time",
-        2,
-        "-hls_list_size",
-        0,
-        "-f",
-        "hls",
-        dst_path
-      ])
-    end
+    System.cmd("ffmpeg", [
+      "-i",
+      video.local_path,
+      "-c",
+      "copy",
+      "-start_number",
+      0,
+      "-hls_time",
+      2,
+      "-hls_list_size",
+      0,
+      "-f",
+      "hls",
+      dst_path
+    ])
 
-    {:error, :not_implemented}
+    Storage.upload_file(dst_path, hls_remote_path, cb)
+    Repo.insert!(hls_video)
   end
 
   def get_mp4_video(id) do

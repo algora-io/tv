@@ -22,6 +22,8 @@ defmodule Algora.Library.Video do
     field :channel_handle, :string, virtual: true
     field :channel_name, :string, virtual: true
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
+    field :remote_path, :string
+    field :local_path, :string
     belongs_to :user, Accounts.User
     belongs_to :transmuxed_from, Algora.Library.Video
 
@@ -39,7 +41,7 @@ defmodule Algora.Library.Video do
     put_assoc(changeset, :user, user)
   end
 
-  def put_video_path(%Ecto.Changeset{} = changeset, format, basename \\ "index")
+  def put_video_meta(%Ecto.Changeset{} = changeset, format, basename \\ "index")
       when format in [:mp4, :hls] do
     if changeset.valid? do
       uuid = Ecto.UUID.generate()
@@ -48,8 +50,21 @@ defmodule Algora.Library.Video do
       changeset
       |> put_change(:filename, filename)
       |> put_change(:uuid, uuid)
+    else
+      changeset
+    end
+  end
+
+  def put_video_url(%Ecto.Changeset{} = changeset, format, basename \\ "index")
+      when format in [:mp4, :hls] do
+    if changeset.valid? do
+      %{uuid: uuid, filename: filename} = changeset.changes
+
+      changeset
+      |> put_video_meta(format, basename)
       |> put_change(:url, url(uuid, filename))
       |> put_change(:url_root, url_root(uuid))
+      |> put_change(:remote_path, "#{uuid}/#{filename}")
     else
       changeset
     end
