@@ -1,4 +1,4 @@
-defmodule Algora.Workers.Mp4Transmuxer do
+defmodule Algora.Workers.MP4Transmuxer do
   use Oban.Worker, queue: :default, max_attempts: 3, unique: [period: 86_400]
 
   alias Algora.Library

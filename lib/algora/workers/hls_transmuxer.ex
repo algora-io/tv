@@ -1,4 +1,4 @@
-defmodule Algora.Workers.HlsTransmuxer do
+defmodule Algora.Workers.HLSTransmuxer do
   use Oban.Worker, queue: :default, max_attempts: 3, unique: [period: 86_400]
 
   alias Algora.Library

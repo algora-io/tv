@@ -142,7 +142,7 @@ defmodule AlgoraWeb.StudioLive do
       send(self(), {Library, %Library.Events.TransmuxingQueued{video: video}})
 
       %{video_id: id}
-      |> Workers.Mp4Transmuxer.new()
+      |> Workers.MP4Transmuxer.new()
       |> Oban.insert()
 
       {:noreply, socket}
