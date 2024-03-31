@@ -79,19 +79,17 @@ defmodule Algora.Library do
 
     dir = Path.join(System.tmp_dir!(), mp4_uuid)
     File.mkdir_p!(dir)
-    dst_path = Path.join(dir, mp4_filename)
+    mp4_local_path = Path.join(dir, mp4_filename)
 
-    System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", dst_path])
-    Storage.upload_file(dst_path, mp4_remote_path, cb)
+    System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", mp4_local_path])
+    Storage.upload_file(mp4_local_path, mp4_remote_path, cb)
     Repo.insert!(mp4_video)
   end
 
   def transmux_to_hls(%Video{} = video, cb) do
-    # TODO: delete tmp mp4
+    # TODO: delete tmp mp4 & record
     # TODO: generate thumbnail
     # TODO: calculate duration
-    hls_basename = Slug.slugify(video.title)
-
     hls_video =
       %Video{
         title: video.title,
@@ -103,13 +101,17 @@ defmodule Algora.Library do
         user_id: video.user_id
       }
       |> change()
-      |> Video.put_video_url(:hls, hls_basename)
+      |> Video.put_video_url(:hls)
 
-    %{uuid: hls_uuid, filename: hls_filename, remote_path: hls_remote_path} = hls_video.changes
+    %{
+      uuid: hls_uuid,
+      url_root: hls_url_root,
+      filename: hls_filename
+    } = hls_video.changes
 
     dir = Path.join(System.tmp_dir!(), hls_uuid)
     File.mkdir_p!(dir)
-    dst_path = Path.join(dir, hls_filename)
+    hls_local_path = Path.join(dir, hls_filename)
 
     System.cmd("ffmpeg", [
       "-i",
@@ -124,11 +126,23 @@ defmodule Algora.Library do
       0,
       "-f",
       "hls",
-      dst_path
+      hls_local_path
     ])
 
-    Storage.upload_file(dst_path, hls_remote_path, cb)
-    Repo.insert!(hls_video)
+    files = Path.wildcard("#{dir}/*")
+
+    files
+    |> Stream.map(fn hls_local_path ->
+      cb.(%{done: 1, total: length(files)})
+      hls_local_path
+    end)
+    |> Enum.each(fn hls_local_path ->
+      Storage.upload_file(hls_local_path, "#{hls_url_root}/#{Path.basename(hls_local_path)}")
+    end)
+
+    hls_video = Repo.insert!(hls_video)
+
+    hls_video
   end
 
   def get_mp4_video(id) do
@@ -272,14 +286,13 @@ defmodule Algora.Library do
 
   def store_thumbnail(%Video{} = video, contents) do
     with {:ok, thumbnail} <- create_thumbnail(video, contents),
-         {:ok, _} <- Storage.upload_contents("#{video.uuid}/index.jpeg", thumbnail) do
+         {:ok, _} <- Storage.upload_contents(thumbnail, "#{video.uuid}/index.jpeg") do
       :ok
     end
   end
 
   def reconcile_livestream(%Video{} = video, stream_key) do
-    user =
-      Accounts.get_user_by!(stream_key: stream_key)
+    user = Accounts.get_user_by!(stream_key: stream_key)
 
     result =
       Repo.update_all(from(v in Video, where: v.id == ^video.id),
@@ -287,11 +300,8 @@ defmodule Algora.Library do
       )
 
     case result do
-      {1, _} ->
-        {:ok, video}
-
-      _ ->
-        {:error, :invalid}
+      {1, _} -> {:ok, video}
+      _ -> {:error, :invalid}
     end
   end
 

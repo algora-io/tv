@@ -27,7 +27,7 @@ defmodule Algora.Storage do
       ) do
     path = "#{video.uuid}/#{name}"
 
-    with {:ok, _} <- upload_contents(path, contents, upload_opts(ctx)),
+    with {:ok, _} <- upload_contents(contents, path, upload_opts(ctx)),
          {:ok, state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
       {:ok, state}
     else
@@ -82,7 +82,7 @@ defmodule Algora.Storage do
     {:ok, state}
   end
 
-  def upload_contents(dst, body, opts \\ []) do
+  def upload_contents(body, dst, opts \\ []) do
     Algora.config([:files, :bucket])
     |> ExAws.S3.put_object(dst, body, opts)
     |> ExAws.request([])
