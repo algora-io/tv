@@ -1,7 +1,7 @@
 defmodule AlgoraWeb.StudioLive do
   use AlgoraWeb, :live_view
 
-  alias Algora.Library
+  alias Algora.{Library, Workers}
 
   @impl true
   def render(assigns) do
@@ -48,7 +48,7 @@ defmodule AlgoraWeb.StudioLive do
       {:noreply, redirect(socket, external: video.url)}
     else
       %{video_id: id}
-      |> Library.Jobs.Mp4Transmuxer.new()
+      |> Workers.Mp4Transmuxer.new()
       |> Oban.insert()
 
       {:noreply, socket}
