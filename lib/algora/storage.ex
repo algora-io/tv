@@ -27,7 +27,7 @@ defmodule Algora.Storage do
       ) do
     path = "#{video.uuid}/#{name}"
 
-    with {:ok, _} <- upload_file(path, contents, upload_opts(ctx)),
+    with {:ok, _} <- upload_contents(path, contents, upload_opts(ctx)),
          {:ok, state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
       {:ok, state}
     else
@@ -82,10 +82,20 @@ defmodule Algora.Storage do
     {:ok, state}
   end
 
-  def upload_file(path, contents, opts \\ []) do
+  def upload_contents(dst, body, opts \\ []) do
     Algora.config([:files, :bucket])
-    |> ExAws.S3.put_object(path, contents, opts)
+    |> ExAws.S3.put_object(dst, body, opts)
     |> ExAws.request([])
+  end
+
+  def upload_file(src, dst, opts \\ []) do
+    result =
+      ExAws.S3.Upload.stream_file(src)
+      |> ExAws.S3.upload(Algora.config([:files, :bucket]), dst, opts)
+      |> ExAws.request([])
+
+    dbg(result, label: "result")
+    result
   end
 
   defp broadcast_thumbnails_generated(video) do

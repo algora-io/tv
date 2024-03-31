@@ -34,6 +34,8 @@ defmodule Algora.Application do
       Algora.Repo.Local,
       # Start the supervisor for LSN tracking
       {Fly.Postgres.LSN.Supervisor, repo: Algora.Repo.Local},
+      # Start the Oban system
+      {Oban, Application.fetch_env!(:algora, Oban)},
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
       # Start the PubSub system

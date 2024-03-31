@@ -20,6 +20,19 @@ defmodule Algora.Library do
     Phoenix.PubSub.subscribe(@pubsub, topic(channel.user_id))
   end
 
+  def init_video() do
+    %Video{
+      title: "",
+      duration: 0,
+      type: :livestream,
+      format: :hls,
+      is_live: true,
+      visibility: :unlisted
+    }
+    |> change()
+    |> Video.put_video_path(:hls)
+  end
+
   def init_livestream!() do
     %Video{
       title: "",
@@ -32,6 +45,33 @@ defmodule Algora.Library do
     |> change()
     |> Video.put_video_path(:hls)
     |> Repo.insert!()
+  end
+
+  def transmux_to_mp4(%Video{} = video) do
+    mp4_basename = Slug.slugify("#{Date.to_string(video.inserted_at)}-#{video.title}")
+
+    mp4_video =
+      %Video{
+        title: video.title,
+        duration: video.duration,
+        type: :vod,
+        format: :mp4,
+        is_live: false,
+        visibility: :unlisted,
+        transmuxed_from_id: video.id
+      }
+      |> change()
+      |> Video.put_video_path(:mp4, mp4_basename)
+
+    %{uuid: mp4_uuid, filename: mp4_filename} = mp4_video.changes
+
+    dir = Path.join(System.tmp_dir!(), mp4_uuid)
+    File.mkdir!(dir)
+    output_path = Path.join(dir, mp4_filename)
+
+    System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", output_path])
+    Storage.upload_file(output_path, "#{mp4_uuid}/#{mp4_filename}")
+    Repo.insert(mp4_video)
   end
 
   def toggle_streamer_live(%Video{} = video, is_live) do
@@ -154,8 +194,8 @@ defmodule Algora.Library do
   end
 
   defp create_thumbnail(%Video{} = video, contents) do
-    input_path = Path.join(System.tmp_dir(), "#{video.uuid}.mp4")
-    output_path = Path.join(System.tmp_dir(), "#{video.uuid}.jpeg")
+    input_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
+    output_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
 
     with :ok <- File.write(input_path, contents),
          :ok <- Thumbnex.create_thumbnail(input_path, output_path) do
@@ -165,7 +205,7 @@ defmodule Algora.Library do
 
   def store_thumbnail(%Video{} = video, contents) do
     with {:ok, thumbnail} <- create_thumbnail(video, contents),
-         {:ok, _} <- Storage.upload_file("#{video.uuid}/index.jpeg", thumbnail) do
+         {:ok, _} <- Storage.upload_contents("#{video.uuid}/index.jpeg", thumbnail) do
       :ok
     end
   end
