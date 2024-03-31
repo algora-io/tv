@@ -14,7 +14,7 @@ defmodule AlgoraWeb.StudioLive do
         </.link>
       </:actions>
     </.header>
-    <form id="upload-form" phx-submit="save" phx-change="validate">
+    <form id="upload-form" phx-submit="upload_videos" phx-change="validate_uploads">
       <.live_file_input upload={@uploads.video} />
       <button type="submit">Upload</button>
     </form>
@@ -137,7 +137,7 @@ defmodule AlgoraWeb.StudioLive do
     end
   end
 
-  def handle_event("validate", _params, socket) do
+  def handle_event("validate_uploads", _params, socket) do
     {:noreply, socket}
   end
 
@@ -145,7 +145,7 @@ defmodule AlgoraWeb.StudioLive do
     {:noreply, cancel_upload(socket, :avatar, ref)}
   end
 
-  def handle_event("save", _params, socket) do
+  def handle_event("upload_videos", _params, socket) do
     uploaded_videos =
       consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
         video = Library.upload_mp4(entry, path, socket.assigns.current_user, fn _ -> nil end)
