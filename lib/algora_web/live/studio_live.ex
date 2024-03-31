@@ -18,36 +18,24 @@ defmodule AlgoraWeb.StudioLive do
       <.live_file_input upload={@uploads.video} />
       <button type="submit">Upload</button>
     </form>
-    <%!-- lib/my_app_web/live/upload_live.html.heex --%>
-
-    <%!-- use phx-drop-target with the upload ref to enable file drag and drop --%>
     <section phx-drop-target={@uploads.video.ref}>
-      <%!-- render each video entry --%>
       <%= for entry <- @uploads.video.entries do %>
         <article class="upload-entry">
           <div><%= entry.client_name %></div>
-
-          <%!-- entry.progress will update automatically for in-flight entries --%>
           <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
-
-          <%!-- a regular click event whose handler will invoke Phoenix.LiveView.cancel_upload/3 --%>
           <button
             type="button"
-            phx-click="cancel-upload"
+            phx-click="cancel_upload"
             phx-value-ref={entry.ref}
             aria-label="cancel"
           >
             &times;
           </button>
-
-          <%!-- Phoenix.Component.upload_errors/2 returns a list of error atoms --%>
           <%= for err <- upload_errors(@uploads.video, entry) do %>
             <p class="alert alert-danger"><%= error_to_string(err) %></p>
           <% end %>
         </article>
       <% end %>
-
-      <%!-- Phoenix.Component.upload_errors/1 returns a list of error atoms --%>
       <%= for err <- upload_errors(@uploads.video) do %>
         <p class="alert alert-danger"><%= error_to_string(err) %></p>
       <% end %>
@@ -151,6 +139,10 @@ defmodule AlgoraWeb.StudioLive do
 
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("cancel_upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :avatar, ref)}
   end
 
   def handle_event("save", _params, socket) do
