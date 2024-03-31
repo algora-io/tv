@@ -68,6 +68,33 @@ defmodule Algora.Library do
   end
 
   def transmux_to_hls(%Video{} = _video, _cb) do
+    todo = true
+    src_path = ""
+    uuid = ""
+    filename = ""
+
+    dir = Path.join(System.tmp_dir!(), uuid)
+    File.mkdir_p!(dir)
+    dst_path = Path.join(dir, filename)
+
+    if !todo do
+      System.cmd("ffmpeg", [
+        "-i",
+        src_path,
+        "-c",
+        "copy",
+        "-start_number",
+        0,
+        "-hls_time",
+        2,
+        "-hls_list_size",
+        0,
+        "-f",
+        "hls",
+        dst_path
+      ])
+    end
+
     {:error, :not_implemented}
   end
 
