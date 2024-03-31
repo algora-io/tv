@@ -67,6 +67,10 @@ defmodule Algora.Library do
     Repo.insert!(mp4_video)
   end
 
+  def transmux_to_hls(%Video{} = _video, _cb) do
+    {:error, :not_implemented}
+  end
+
   def get_mp4_video(id) do
     from(v in Video,
       where: v.format == :mp4 and (v.transmuxed_from_id == ^id or v.id == ^id),
