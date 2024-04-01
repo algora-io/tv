@@ -22,6 +22,10 @@ config :algora, AlgoraWeb.Endpoint,
     layout: false
   ]
 
+config :algora, Oban,
+  repo: Algora.Repo.Local,
+  queues: [default: 10]
+
 config :esbuild,
   version: "0.17.11",
   tv: [

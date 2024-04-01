@@ -90,19 +90,13 @@
   border-radius: 4px;
 }
 .alert-info {
-  color: #31708f;
-  background-color: #d9edf7;
-  border-color: #bce8f1;
+  @apply text-blue-300 bg-blue-950/50 border-blue-500;
 }
 .alert-warning {
-  color: #8a6d3b;
-  background-color: #fcf8e3;
-  border-color: #faebcc;
+  @apply text-yellow-300 bg-yellow-950/50 border-yellow-500;
 }
 .alert-danger {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
+  @apply text-red-300 bg-red-950/50 border-red-500;
 }
 .alert p {
   margin-bottom: 0;

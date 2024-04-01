@@ -13,7 +13,7 @@ defmodule AlgoraWeb.HomeLive do
             Videos
           </h2>
           <div class="pt-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <.video_entry :for={video <- videos} id={"video-#{video.id}"} video={video} />
+            <.video_entry :for={video <- videos} video={video} />
           </div>
         </div>
 
@@ -33,7 +33,7 @@ defmodule AlgoraWeb.HomeLive do
             ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg>Shorts
           </h2>
           <div class="pt-4 gap-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-            <.short_entry :for={video <- shorts} id={"short-#{video.id}"} video={video} />
+            <.short_entry :for={video <- shorts} video={video} />
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@ defmodule AlgoraWeb.HomeLive do
           Videos
         </h2>
         <div class="pt-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <.video_entry :for={video <- @leftover_videos} id={"video-#{video.id}"} video={video} />
+          <.video_entry :for={video <- @leftover_videos} video={video} />
         </div>
       </div>
 
@@ -63,7 +63,7 @@ defmodule AlgoraWeb.HomeLive do
           ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg>Shorts
         </h2>
         <div class="pt-4 gap-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-          <.short_entry :for={video <- @leftover_shorts} id={"short-#{video.id}"} video={video} />
+          <.short_entry :for={video <- @leftover_shorts} video={video} />
         </div>
       </div>
     </div>

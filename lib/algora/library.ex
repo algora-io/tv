@@ -12,6 +12,10 @@ defmodule Algora.Library do
 
   @pubsub Algora.PubSub
 
+  def subscribe_to_studio() do
+    Phoenix.PubSub.subscribe(@pubsub, topic_studio())
+  end
+
   def subscribe_to_livestreams() do
     Phoenix.PubSub.subscribe(@pubsub, topic_livestreams())
   end
@@ -25,12 +29,163 @@ defmodule Algora.Library do
       title: "",
       duration: 0,
       type: :livestream,
+      format: :hls,
       is_live: true,
       visibility: :unlisted
     }
     |> change()
-    |> Video.put_video_path(:livestream)
+    |> Video.put_video_url(:hls)
     |> Repo.insert!()
+  end
+
+  def init_mp4!(%Phoenix.LiveView.UploadEntry{} = entry, tmp_path, %User{} = user) do
+    title = Path.basename(entry.client_name, ".mp4")
+    basename = Slug.slugify(title)
+
+    video =
+      %Video{
+        title: title,
+        duration: 0,
+        type: :vod,
+        format: :mp4,
+        is_live: false,
+        visibility: :unlisted,
+        user_id: user.id,
+        local_path: tmp_path,
+        channel_handle: user.handle,
+        channel_name: user.name
+      }
+      |> change()
+      |> Video.put_video_meta(:mp4, basename)
+
+    dir = Path.join(System.tmp_dir!(), video.changes.uuid)
+    File.mkdir_p!(dir)
+    local_path = Path.join(dir, video.changes.filename)
+    File.cp!(tmp_path, local_path)
+
+    video
+    |> put_change(:local_path, local_path)
+    |> Repo.insert!()
+  end
+
+  def transmux_to_mp4(%Video{} = video, cb) do
+    mp4_basename = Slug.slugify("#{Date.to_string(video.inserted_at)}-#{video.title}")
+
+    mp4_video =
+      %Video{
+        title: video.title,
+        duration: video.duration,
+        type: :vod,
+        format: :mp4,
+        is_live: false,
+        visibility: :unlisted,
+        user_id: video.user_id,
+        transmuxed_from_id: video.id,
+        thumbnail_url: video.thumbnail_url
+      }
+      |> change()
+      |> Video.put_video_url(:mp4, mp4_basename)
+
+    %{uuid: mp4_uuid, filename: mp4_filename, remote_path: mp4_remote_path} = mp4_video.changes
+
+    dir = Path.join(System.tmp_dir!(), mp4_uuid)
+    File.mkdir_p!(dir)
+    mp4_local_path = Path.join(dir, mp4_filename)
+
+    cb.(%{stage: :transmuxing, done: 1, total: 1})
+    System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", mp4_local_path])
+
+    Storage.upload_from_filename(mp4_local_path, mp4_remote_path, cb)
+    mp4_video = Repo.insert!(mp4_video)
+
+    File.rm!(mp4_local_path)
+
+    mp4_video
+  end
+
+  def transmux_to_hls(%Video{} = video, cb) do
+    duration =
+      case get_duration(video) do
+        {:ok, duration} -> duration
+        {:error, _} -> 0
+      end
+
+    hls_video =
+      %Video{
+        title: video.title,
+        duration: duration,
+        type: :vod,
+        format: :hls,
+        is_live: false,
+        visibility: video.visibility,
+        user_id: video.user_id
+      }
+      |> change()
+      |> Video.put_video_url(:hls)
+
+    %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
+
+    dir = Path.join(System.tmp_dir!(), hls_uuid)
+    File.mkdir_p!(dir)
+    hls_local_path = Path.join(dir, hls_filename)
+
+    cb.(%{stage: :transmuxing, done: 1, total: 1})
+
+    System.cmd("ffmpeg", [
+      "-i",
+      video.local_path,
+      "-c",
+      "copy",
+      "-start_number",
+      "0",
+      "-hls_time",
+      "2",
+      "-hls_list_size",
+      "0",
+      "-f",
+      "hls",
+      hls_local_path
+    ])
+
+    files = Path.wildcard("#{dir}/*")
+
+    files
+    |> Stream.map(fn hls_local_path ->
+      cb.(%{stage: :persisting, done: 1, total: length(files)})
+      hls_local_path
+    end)
+    |> Enum.each(fn hls_local_path ->
+      Storage.upload_from_filename(
+        hls_local_path,
+        "#{hls_uuid}/#{Path.basename(hls_local_path)}"
+      )
+    end)
+
+    hls_video = Repo.insert!(hls_video)
+
+    cb.(%{stage: :generating_thumbnail, done: 1, total: 1})
+    {:ok, hls_video} = store_thumbnail_from_file(hls_video, video.local_path)
+
+    # TODO: should probably keep the file around for a while for any additional processing
+    # requests from user?
+    File.rm!(video.local_path)
+
+    Repo.delete!(video)
+
+    hls_video
+    |> change()
+    |> put_change(:id, video.id)
+    |> Repo.update!()
+  end
+
+  def get_mp4_video(id) do
+    from(v in Video,
+      where: v.format == :mp4 and (v.transmuxed_from_id == ^id or v.id == ^id),
+      join: u in User,
+      on: v.user_id == u.id,
+      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+    )
+    |> Repo.one()
   end
 
   def toggle_streamer_live(%Video{} = video, is_live) do
@@ -97,10 +252,18 @@ defmodule Algora.Library do
     end
   end
 
-  defp get_playlist(%Video{} = video) do
-    url = "#{video.url_root}/index.m3u8"
+  def toggle_visibility!(%Video{} = video) do
+    new_visibility =
+      case video.visibility do
+        :public -> :unlisted
+        _ -> :public
+      end
 
-    with {:ok, resp} <- Finch.build(:get, url) |> Finch.request(Algora.Finch) do
+    video |> change() |> put_change(:visibility, new_visibility) |> Repo.update!()
+  end
+
+  defp get_playlist(%Video{} = video) do
+    with {:ok, resp} <- Finch.build(:get, video.url) |> Finch.request(Algora.Finch) do
       ExM3U8.deserialize_playlist(resp.body, [])
     end
   end
@@ -120,7 +283,7 @@ defmodule Algora.Library do
     end
   end
 
-  def get_duration(%Video{type: :livestream} = video) do
+  def get_duration(%Video{format: :hls} = video) do
     with {:ok, playlist} <- get_media_playlist(video) do
       duration =
         playlist.timeline
@@ -131,8 +294,14 @@ defmodule Algora.Library do
     end
   end
 
-  def get_duration(%Video{type: :vod}) do
-    {:error, :not_implemented}
+  def get_duration(%Video{local_path: nil}), do: {:error, :not_implemented}
+
+  def get_duration(%Video{local_path: local_path}) do
+    case FFprobe.duration(local_path) do
+      :no_duration -> {:error, :no_duration}
+      {:error, error} -> {:error, error}
+      duration -> {:ok, round(duration)}
+    end
   end
 
   def to_hhmmss(duration) when is_integer(duration) do
@@ -152,26 +321,44 @@ defmodule Algora.Library do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end
 
-  defp create_thumbnail(%Video{} = video, contents) do
-    input_path = Path.join(System.tmp_dir(), "#{video.uuid}.mp4")
-    output_path = Path.join(System.tmp_dir(), "#{video.uuid}.jpeg")
+  defp create_thumbnail_from_file(%Video{} = video, src_path) do
+    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
 
-    with :ok <- File.write(input_path, contents),
-         :ok <- Thumbnex.create_thumbnail(input_path, output_path) do
-      File.read(output_path)
+    with :ok <- Thumbnex.create_thumbnail(src_path, dst_path) do
+      File.read(dst_path)
+    end
+  end
+
+  defp create_thumbnail(%Video{} = video, contents) do
+    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
+
+    with :ok <- File.write(src_path, contents) do
+      create_thumbnail_from_file(video, src_path)
+    end
+  end
+
+  def store_thumbnail_from_file(%Video{} = video, src_path) do
+    with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path),
+         {:ok, _} <- Storage.upload(thumbnail, "#{video.uuid}/index.jpeg") do
+      video
+      |> change()
+      |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
+      |> Repo.update()
     end
   end
 
   def store_thumbnail(%Video{} = video, contents) do
     with {:ok, thumbnail} <- create_thumbnail(video, contents),
-         {:ok, _} <- Storage.upload_file("#{video.uuid}/index.jpeg", thumbnail) do
-      :ok
+         {:ok, _} <- Storage.upload(thumbnail, "#{video.uuid}/index.jpeg") do
+      video
+      |> change()
+      |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
+      |> Repo.update()
     end
   end
 
   def reconcile_livestream(%Video{} = video, stream_key) do
-    user =
-      Accounts.get_user_by!(stream_key: stream_key)
+    user = Accounts.get_user_by!(stream_key: stream_key)
 
     result =
       Repo.update_all(from(v in Video, where: v.id == ^video.id),
@@ -179,11 +366,8 @@ defmodule Algora.Library do
       )
 
     case result do
-      {1, _} ->
-        {:ok, video}
-
-      _ ->
-        {:error, :invalid}
+      {1, _} -> {:ok, video}
+      _ -> {:error, :invalid}
     end
   end
 
@@ -193,7 +377,9 @@ defmodule Algora.Library do
       on: v.user_id == u.id,
       limit: ^limit,
       where:
-        v.visibility == :public and
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and
+          v.visibility == :public and
           is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
       select_merge: %{channel_handle: u.handle, channel_name: u.name}
@@ -207,7 +393,10 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       limit: ^limit,
-      where: v.visibility == :public and not is_nil(v.vertical_thumbnail_url),
+      where:
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and v.visibility == :public and
+          not is_nil(v.vertical_thumbnail_url),
       select_merge: %{channel_handle: u.handle, channel_name: u.name}
     )
     |> order_by_inserted(:desc)
@@ -220,7 +409,29 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       select_merge: %{channel_handle: u.handle, channel_name: u.name},
-      where: v.user_id == ^channel.user_id
+      where:
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and
+          v.user_id == ^channel.user_id
+    )
+    |> order_by_inserted(:desc)
+    |> Repo.all()
+  end
+
+  def list_studio_videos(%Channel{} = channel, limit \\ 100) do
+    from(v in Video,
+      limit: ^limit,
+      join: u in assoc(v, :user),
+      left_join: m in assoc(v, :messages),
+      group_by: [v.id, u.handle, u.name],
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        messages_count: count(m.id)
+      },
+      where:
+        is_nil(v.transmuxed_from_id) and
+          v.user_id == ^channel.user_id
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
@@ -256,39 +467,28 @@ defmodule Algora.Library do
     user.id == channel.user_id
   end
 
-  defp youtube_id(%Video{url: url}) do
-    url = URI.parse(url)
-    root = ".#{url.host}"
+  def player_type(%Video{format: :mp4}), do: "video/mp4"
+  def player_type(%Video{format: :hls}), do: "application/x-mpegURL"
+  def player_type(%Video{format: :youtube}), do: "video/youtube"
 
-    cond do
-      root |> String.ends_with?(".youtube.com") ->
-        %{"v" => id} = URI.decode_query(url.query)
-        id
-
-      root |> String.ends_with?(".youtu.be") ->
-        "/" <> id = url.path
-        id
-
-      true ->
-        :not_found
-    end
-  end
-
-  def player_type(%Video{type: :livestream}), do: "application/x-mpegURL"
-
-  def player_type(%Video{} = video) do
-    case youtube_id(video) do
-      :not_found -> "video/mp4"
-      _ -> "video/youtube"
-    end
-  end
-
-  def get_video!(id), do: Repo.get!(Video, id)
+  def get_video!(id),
+    do:
+      from(v in Video,
+        where: v.id == ^id,
+        join: u in User,
+        on: v.user_id == u.id,
+        select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      )
+      |> Repo.one!()
 
   def update_video(%Video{} = video, attrs) do
     video
     |> Video.changeset(attrs)
     |> Repo.update()
+  end
+
+  def delete_video(%Video{} = video) do
+    Repo.delete(video)
   end
 
   defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
@@ -298,6 +498,8 @@ defmodule Algora.Library do
   defp topic(user_id) when is_integer(user_id), do: "channel:#{user_id}"
 
   def topic_livestreams(), do: "livestreams"
+
+  def topic_studio(), do: "studio"
 
   def list_subtitles(%Video{} = video) do
     from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
@@ -337,5 +539,25 @@ defmodule Algora.Library do
     |> Enum.take(100)
     |> Enum.map(&save_subtitle/1)
     |> length
+  end
+
+  defp broadcast!(topic, msg) do
+    Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
+  end
+
+  def broadcast_processing_progressed!(stage, video, pct) do
+    broadcast!(topic_studio(), %Events.ProcessingProgressed{video: video, stage: stage, pct: pct})
+  end
+
+  def broadcast_processing_completed!(action, video, url) do
+    broadcast!(topic_studio(), %Events.ProcessingCompleted{action: action, video: video, url: url})
+  end
+
+  def broadcast_processing_failed!(video, attempt, max_attempts) do
+    broadcast!(topic_studio(), %Events.ProcessingFailed{
+      video: video,
+      attempt: attempt,
+      max_attempts: max_attempts
+    })
   end
 end

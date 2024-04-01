@@ -70,31 +70,71 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
-  attr :id, :string, required: true
+  attr :video, :any, required: true
+  attr :class, :string, default: nil
+
+  def short_thumbnail(assigns) do
+    ~H"""
+    <div class={[
+      "relative flex items-center justify-center overflow-hidden aspect-[9/16] bg-gray-800",
+      @class
+    ]}>
+      <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
+      <img
+        :if={@video.vertical_thumbnail_url}
+        src={@video.vertical_thumbnail_url}
+        alt={@video.title}
+        class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
+      />
+      <div
+        :if={@video.duration != 0}
+        class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+      >
+        <%= Library.to_hhmmss(@video.duration) %>
+      </div>
+    </div>
+    """
+  end
+
+  attr :video, :any, required: true
+  attr :class, :string, default: nil
+
+  def video_thumbnail(assigns) do
+    ~H"""
+    <div class={[
+      "relative flex items-center justify-center overflow-hidden aspect-[16/9] bg-gray-800",
+      @class
+    ]}>
+      <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
+      <img
+        :if={@video.thumbnail_url}
+        src={@video.thumbnail_url}
+        alt={@video.title}
+        class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
+      />
+
+      <div
+        :if={@video.is_live}
+        class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+      >
+        🔴 LIVE
+      </div>
+      <div
+        :if={not @video.is_live and @video.duration != 0}
+        class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+      >
+        <%= Library.to_hhmmss(@video.duration) %>
+      </div>
+    </div>
+    """
+  end
+
   attr :video, :any, required: true
 
   def short_entry(assigns) do
     ~H"""
-    <.link
-      id={@id}
-      class="cursor-pointer truncate"
-      navigate={~p"/#{@video.channel_handle}/#{@video.id}"}
-    >
-      <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[9/16] bg-gray-800">
-        <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
-        <img
-          :if={@video.vertical_thumbnail_url}
-          src={@video.vertical_thumbnail_url}
-          alt={@video.title}
-          class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
-        />
-        <div
-          :if={@video.duration != 0}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          <%= Library.to_hhmmss(@video.duration) %>
-        </div>
-      </div>
+    <.link class="cursor-pointer truncate" navigate={~p"/#{@video.channel_handle}/#{@video.id}"}>
+      <.short_thumbnail video={@video} class="rounded-2xl" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
       <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
@@ -102,38 +142,12 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
-  attr :id, :string, required: true
   attr :video, :any, required: true
 
   def video_entry(assigns) do
     ~H"""
-    <.link
-      id={@id}
-      class="cursor-pointer truncate"
-      navigate={~p"/#{@video.channel_handle}/#{@video.id}"}
-    >
-      <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[16/9] bg-gray-800">
-        <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
-        <img
-          :if={@video.thumbnail_url}
-          src={@video.thumbnail_url}
-          alt={@video.title}
-          class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
-        />
-
-        <div
-          :if={@video.is_live}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          🔴 LIVE
-        </div>
-        <div
-          :if={not @video.is_live and @video.duration != 0}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          <%= Library.to_hhmmss(@video.duration) %>
-        </div>
-      </div>
+    <.link class="cursor-pointer truncate" navigate={~p"/#{@video.channel_handle}/#{@video.id}"}>
+      <.video_thumbnail video={@video} class="rounded-2xl" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
       <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
@@ -156,7 +170,7 @@ defmodule AlgoraWeb.CoreComponents do
             class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-3"
             phx-update="stream"
           >
-            <.video_entry :for={{id, video} <- @videos} id={id} video={video} />
+            <.video_entry :for={{_id, video} <- @videos} video={video} />
           </div>
         </div>
       </div>
@@ -474,7 +488,7 @@ defmodule AlgoraWeb.CoreComponents do
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-gray-900 p-14 shadow-lg shadow-gray-200/10 ring-1 ring-gray-200/10 transition"
+              class="hidden relative rounded-2xl bg-gray-900 py-6 px-10 shadow-lg shadow-gray-200/10 ring-1 ring-gray-200/10 transition"
             >
               <div class="absolute top-6 right-5">
                 <button
@@ -658,7 +672,7 @@ defmodule AlgoraWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-gray-50 hover:bg-gray-200 py-2 px-3",
+        "phx-submit-loading:opacity-75 disabled:opacity-75 rounded-lg bg-gray-50 hover:bg-gray-200 py-2 px-3",
         "text-sm font-semibold leading-6 text-gray-950 active:text-gray-950/80",
         @class
       ]}
@@ -876,6 +890,7 @@ defmodule AlgoraWeb.CoreComponents do
 
   slot :col, required: true do
     attr :label, :string
+    attr :align, :string
   end
 
   slot :action, doc: "the slot for showing user actions in the last table column"
@@ -893,7 +908,11 @@ defmodule AlgoraWeb.CoreComponents do
           <tr>
             <th
               :for={{col, i} <- Enum.with_index(@col)}
-              class={["p-0 pb-4 pr-6 font-normal", i == 0 && "pl-4 sm:pl-6 lg:pl-8"]}
+              class={[
+                "p-0 pb-4 pr-4 font-medium text-sm text-gray-300",
+                i == 0 && "pl-4",
+                col[:align] == "right" && "text-right"
+              ]}
             >
               <%= col[:label] %>
             </th>
@@ -915,7 +934,7 @@ defmodule AlgoraWeb.CoreComponents do
               phx-click={@row_click && @row_click.(row)}
               class={["relative p-0", @row_click && "hover:cursor-pointer"]}
             >
-              <div class={["block py-4 pr-6", i == 0 && "pl-4 sm:pl-6 lg:pl-8"]}>
+              <div class={["block py-4 pr-4", i == 0 && "pl-4"]}>
                 <span class={["relative", i == 0 && "font-semibold text-gray-50"]}>
                   <%= render_slot(col, @row_item.(row)) %>
                 </span>

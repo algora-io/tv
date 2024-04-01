@@ -1,9 +1,10 @@
 defmodule Algora.Storage do
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
-  import Ecto.Changeset
   require Membrane.Logger
-  alias Algora.{Repo, Library}
+  alias Algora.Library
+
+  @pubsub Algora.PubSub
 
   @enforce_keys [:video]
   defstruct @enforce_keys ++ [video_header: <<>>]
@@ -27,7 +28,7 @@ defmodule Algora.Storage do
       ) do
     path = "#{video.uuid}/#{name}"
 
-    with {:ok, _} <- upload_file(path, contents, upload_opts(ctx)),
+    with {:ok, _} <- upload(contents, path, upload_opts(ctx)),
          {:ok, state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
       {:ok, state}
     else
@@ -67,13 +68,8 @@ defmodule Algora.Storage do
          %{type: :segment, mode: :binary},
          %{video: %{thumbnail_url: nil} = video, video_header: video_header} = state
        ) do
-    with :ok <- Library.store_thumbnail(video, video_header <> contents),
-         {:ok, video} =
-           video
-           |> change()
-           |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
-           |> Repo.update(),
-         :ok <- broadcast_thumbnails_generated(video) do
+    with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents) do
+      broadcast_thumbnails_generated!(video)
       {:ok, %{state | video: video}}
     end
   end
@@ -82,17 +78,31 @@ defmodule Algora.Storage do
     {:ok, state}
   end
 
-  def upload_file(path, contents, opts \\ []) do
+  def upload(contents, remote_path, opts \\ []) do
     Algora.config([:files, :bucket])
-    |> ExAws.S3.put_object(path, contents, opts)
+    |> ExAws.S3.put_object(remote_path, contents, opts)
     |> ExAws.request([])
   end
 
-  defp broadcast_thumbnails_generated(video) do
-    Phoenix.PubSub.broadcast(
-      Algora.PubSub,
-      Library.topic_livestreams(),
-      {__MODULE__, %Library.Events.ThumbnailsGenerated{video: video}}
-    )
+  def upload_from_filename(local_path, remote_path, cb \\ fn _ -> nil end, opts \\ []) do
+    %{size: size} = File.stat!(local_path)
+
+    chunk_size = 5 * 1024 * 1024
+
+    ExAws.S3.Upload.stream_file(local_path, [{:chunk_size, chunk_size}])
+    |> Stream.map(fn chunk ->
+      cb.(%{stage: :persisting, done: chunk_size, total: size})
+      chunk
+    end)
+    |> ExAws.S3.upload(Algora.config([:files, :bucket]), remote_path, opts)
+    |> ExAws.request([])
+  end
+
+  defp broadcast!(topic, msg) do
+    Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
+  end
+
+  defp broadcast_thumbnails_generated!(video) do
+    broadcast!(Library.topic_livestreams(), %Library.Events.ThumbnailsGenerated{video: video})
   end
 end

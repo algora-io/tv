@@ -62,6 +62,7 @@ defmodule Algora.MixProject do
       {:phoenix_live_view, "~> 0.20.2"},
       {:phoenix, "~> 1.7.11"},
       {:plug_cowboy, "~> 2.5"},
+      {:slugify, "~> 1.3"},
       {:swoosh, "~> 1.3"},
       {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:telemetry_metrics, "~> 0.6"},
