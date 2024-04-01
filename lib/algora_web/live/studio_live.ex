@@ -30,31 +30,41 @@ defmodule AlgoraWeb.StudioLive do
           phx-change="validate_uploads"
           class="min-h-[8rem] pt-4"
         >
-          <.live_file_input upload={@uploads.video} />
-          <.button type="submit">Upload</.button>
+          <div class="col-span-full">
+            <div class="mt-2 flex justify-center rounded-lg border border-dashed border-white/25 px-6 py-10">
+              <div class="text-center">
+                <Heroicons.film class="mx-auto h-12 w-12 text-gray-500" aria-hidden="true" />
+                <div class="mt-4 flex text-sm leading-6 text-gray-400">
+                  <label
+                    html-for="file-upload"
+                    class="mx-auto relative cursor-pointer rounded-md bg-gray-900 font-semibold text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-purple-600 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 hover:text-purple-500"
+                  >
+                    <span>Upload files</span>
+                    <.live_file_input id="file-upload" upload={@uploads.video} class="sr-only" />
+                  </label>
+                </div>
+                <p class="text-xs leading-5 text-gray-400">MP4 up to 5GB</p>
+              </div>
+            </div>
+          </div>
+          <section phx-drop-target={@uploads.video.ref} class="mt-4">
+            <%= for entry <- @uploads.video.entries do %>
+              <article class="upload-entry">
+                <div><%= entry.client_name %></div>
+                <progress class="w-full" value={entry.progress} max="100">
+                  <%= entry.progress %>%
+                </progress>
+                <%= for err <- upload_errors(@uploads.video, entry) do %>
+                  <p class="alert alert-danger"><%= error_to_string(err) %></p>
+                <% end %>
+              </article>
+            <% end %>
+            <%= for err <- upload_errors(@uploads.video) do %>
+              <p class="alert alert-danger"><%= error_to_string(err) %></p>
+            <% end %>
+          </section>
+          <.button type="submit" class="ml-auto mt-4 block">Submit</.button>
         </form>
-        <section phx-drop-target={@uploads.video.ref}>
-          <%= for entry <- @uploads.video.entries do %>
-            <article class="upload-entry">
-              <div><%= entry.client_name %></div>
-              <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
-              <button
-                type="button"
-                phx-click="cancel_upload"
-                phx-value-ref={entry.ref}
-                aria-label="cancel"
-              >
-                &times;
-              </button>
-              <%= for err <- upload_errors(@uploads.video, entry) do %>
-                <p class="alert alert-danger"><%= error_to_string(err) %></p>
-              <% end %>
-            </article>
-          <% end %>
-          <%= for err <- upload_errors(@uploads.video) do %>
-            <p class="alert alert-danger"><%= error_to_string(err) %></p>
-          <% end %>
-        </section>
       </div>
     </.modal>
 
@@ -264,10 +274,6 @@ defmodule AlgoraWeb.StudioLive do
 
   def handle_event("validate_uploads", _params, socket) do
     {:noreply, socket}
-  end
-
-  def handle_event("cancel_upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :avatar, ref)}
   end
 
   defp apply_action(socket, :show, _params) do
