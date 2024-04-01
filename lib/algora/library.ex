@@ -81,7 +81,9 @@ defmodule Algora.Library do
     File.mkdir_p!(dir)
     mp4_local_path = Path.join(dir, mp4_filename)
 
+    cb.(%{stage: :transmuxing, done: 1, total: 1})
     System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", mp4_local_path])
+
     Storage.upload_from_filename(mp4_local_path, mp4_remote_path, cb)
     mp4_video = Repo.insert!(mp4_video)
 
@@ -120,6 +122,8 @@ defmodule Algora.Library do
     File.mkdir_p!(dir)
     hls_local_path = Path.join(dir, hls_filename)
 
+    cb.(%{stage: :transmuxing, done: 1, total: 1})
+
     System.cmd("ffmpeg", [
       "-i",
       video.local_path,
@@ -140,7 +144,7 @@ defmodule Algora.Library do
 
     files
     |> Stream.map(fn hls_local_path ->
-      cb.(%{done: 1, total: length(files)})
+      cb.(%{stage: :uploading, done: 1, total: length(files)})
       hls_local_path
     end)
     |> Enum.each(fn hls_local_path ->
@@ -152,6 +156,7 @@ defmodule Algora.Library do
 
     hls_video = Repo.insert!(hls_video)
 
+    cb.(%{stage: :generating_thumbnail, done: 1, total: 1})
     {:ok, hls_video} = store_thumbnail_from_file(hls_video, video.local_path)
 
     File.rm!(video.local_path)
@@ -503,11 +508,19 @@ defmodule Algora.Library do
     Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
   end
 
-  def broadcast_transmuxing_progressed!(video, pct) do
-    broadcast!(topic_studio(), %Events.TransmuxingProgressed{video: video, pct: pct})
+  def broadcast_processing_progressed!(stage, video, pct) do
+    broadcast!(topic_studio(), %Events.ProcessingProgressed{video: video, stage: stage, pct: pct})
   end
 
-  def broadcast_transmuxing_completed!(video, url) do
-    broadcast!(topic_studio(), %Events.TransmuxingCompleted{video: video, url: url})
+  def broadcast_processing_completed!(video, url) do
+    broadcast!(topic_studio(), %Events.ProcessingCompleted{video: video, url: url})
+  end
+
+  def broadcast_processing_failed!(video, attempt, max_attempts) do
+    broadcast!(topic_studio(), %Events.ProcessingFailed{
+      video: video,
+      attempt: attempt,
+      max_attempts: max_attempts
+    })
   end
 end

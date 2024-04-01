@@ -92,7 +92,7 @@ defmodule Algora.Storage do
     result =
       ExAws.S3.Upload.stream_file(local_path, [{:chunk_size, chunk_size}])
       |> Stream.map(fn chunk ->
-        cb.(%{done: chunk_size, total: size})
+        cb.(%{stage: :uploading, done: chunk_size, total: size})
         chunk
       end)
       |> ExAws.S3.upload(Algora.config([:files, :bucket]), remote_path, opts)

@@ -11,15 +11,19 @@ defmodule Algora.Library.Events do
     defstruct video: nil
   end
 
-  defmodule TransmuxingQueued do
+  defmodule ProcessingQueued do
     defstruct video: nil
   end
 
-  defmodule TransmuxingProgressed do
-    defstruct video: nil, pct: nil
+  defmodule ProcessingProgressed do
+    defstruct video: nil, stage: nil, pct: nil
   end
 
-  defmodule TransmuxingCompleted do
+  defmodule ProcessingCompleted do
     defstruct video: nil, url: nil
+  end
+
+  defmodule ProcessingFailed do
+    defstruct video: nil, attempt: nil, max_attempts: nil
   end
 end

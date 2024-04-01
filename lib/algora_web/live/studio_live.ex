@@ -89,7 +89,7 @@ defmodule AlgoraWeb.StudioLive do
 
   @impl true
   def handle_info(
-        {Library, %Library.Events.TransmuxingQueued{video: video} = status},
+        {Library, %Library.Events.ProcessingQueued{video: video} = status},
         socket
       ) do
     {
@@ -101,7 +101,7 @@ defmodule AlgoraWeb.StudioLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.TransmuxingProgressed{video: video} = status},
+        {Library, %Library.Events.ProcessingProgressed{video: video} = status},
         socket
       ) do
     {
@@ -113,10 +113,24 @@ defmodule AlgoraWeb.StudioLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.TransmuxingCompleted{url: url}},
+        {Library, %Library.Events.ProcessingCompleted{video: video, url: url} = status},
         socket
       ) do
-    {:noreply, socket |> redirect(external: url)}
+    {:noreply,
+     socket
+     |> assign(:status, socket.assigns.status |> Map.put(video.id, status))
+     |> stream_insert(:videos, video)
+     |> redirect(external: url)}
+  end
+
+  def handle_info(
+        {Library, %Library.Events.ProcessingFailed{video: video} = status},
+        socket
+      ) do
+    {:noreply,
+     socket
+     |> assign(:status, socket.assigns.status |> Map.put(video.id, status))
+     |> stream_insert(:videos, video)}
   end
 
   @impl true
@@ -127,7 +141,7 @@ defmodule AlgoraWeb.StudioLive do
       {:noreply, redirect(socket, external: mp4_video.url)}
     else
       video = Library.get_video!(id)
-      send(self(), {Library, %Library.Events.TransmuxingQueued{video: video}})
+      send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
       %{video_id: id}
       |> Workers.MP4Transmuxer.new()
@@ -141,6 +155,7 @@ defmodule AlgoraWeb.StudioLive do
     uploaded_videos =
       consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
         video = Library.init_mp4!(entry, path, socket.assigns.current_user)
+        send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
         %{video_id: video.id}
         |> Workers.HLSTransmuxer.new()
@@ -174,7 +189,7 @@ defmodule AlgoraWeb.StudioLive do
   defmodule Status do
     use Phoenix.Component
 
-    def info(%{status: %Library.Events.TransmuxingQueued{}} = assigns) do
+    def info(%{status: %Library.Events.ProcessingQueued{}} = assigns) do
       ~H"""
       <div>
         Queued for processing...
@@ -182,10 +197,10 @@ defmodule AlgoraWeb.StudioLive do
       """
     end
 
-    def info(%{status: %Library.Events.TransmuxingProgressed{pct: _pct}} = assigns) do
+    def info(%{status: %Library.Events.ProcessingProgressed{}} = assigns) do
       ~H"""
       <div>
-        Transmuxing into MP4...
+        Processing your video: <%= @status.stage %>
       </div>
       <div>
         [<%= :erlang.float_to_binary(@status.pct * 100.0, decimals: 0) %>%]
@@ -193,10 +208,21 @@ defmodule AlgoraWeb.StudioLive do
       """
     end
 
-    def info(%{status: %Library.Events.TransmuxingCompleted{}} = assigns) do
+    def info(%{status: %Library.Events.ProcessingCompleted{}} = assigns) do
       ~H"""
       <div>
         Ready to download!
+      </div>
+      """
+    end
+
+    def info(%{status: %Library.Events.ProcessingFailed{}} = assigns) do
+      ~H"""
+      <div>
+        Processing failed
+      </div>
+      <div>
+        Attempt: <%= @status.attempt %>/<%= @status.max_attempts %>
       </div>
       """
     end
