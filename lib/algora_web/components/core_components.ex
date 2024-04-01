@@ -70,31 +70,71 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
-  attr :id, :string, required: true
+  attr :video, :any, required: true
+  attr :class, :string, default: nil
+
+  def short_thumbnail(assigns) do
+    ~H"""
+    <div class={[
+      "relative flex items-center justify-center overflow-hidden aspect-[9/16] bg-gray-800",
+      @class
+    ]}>
+      <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
+      <img
+        :if={@video.vertical_thumbnail_url}
+        src={@video.vertical_thumbnail_url}
+        alt={@video.title}
+        class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
+      />
+      <div
+        :if={@video.duration != 0}
+        class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+      >
+        <%= Library.to_hhmmss(@video.duration) %>
+      </div>
+    </div>
+    """
+  end
+
+  attr :video, :any, required: true
+  attr :class, :string, default: nil
+
+  def video_thumbnail(assigns) do
+    ~H"""
+    <div class={[
+      "relative flex items-center justify-center overflow-hidden aspect-[16/9] bg-gray-800",
+      @class
+    ]}>
+      <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
+      <img
+        :if={@video.thumbnail_url}
+        src={@video.thumbnail_url}
+        alt={@video.title}
+        class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
+      />
+
+      <div
+        :if={@video.is_live}
+        class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+      >
+        🔴 LIVE
+      </div>
+      <div
+        :if={not @video.is_live and @video.duration != 0}
+        class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
+      >
+        <%= Library.to_hhmmss(@video.duration) %>
+      </div>
+    </div>
+    """
+  end
+
   attr :video, :any, required: true
 
   def short_entry(assigns) do
     ~H"""
-    <.link
-      id={@id}
-      class="cursor-pointer truncate"
-      navigate={~p"/#{@video.channel_handle}/#{@video.id}"}
-    >
-      <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[9/16] bg-gray-800">
-        <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
-        <img
-          :if={@video.vertical_thumbnail_url}
-          src={@video.vertical_thumbnail_url}
-          alt={@video.title}
-          class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
-        />
-        <div
-          :if={@video.duration != 0}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          <%= Library.to_hhmmss(@video.duration) %>
-        </div>
-      </div>
+    <.link class="cursor-pointer truncate" navigate={~p"/#{@video.channel_handle}/#{@video.id}"}>
+      <.short_thumbnail video={@video} class="rounded-2xl" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
       <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
@@ -107,28 +147,7 @@ defmodule AlgoraWeb.CoreComponents do
   def video_entry(assigns) do
     ~H"""
     <.link class="cursor-pointer truncate" navigate={~p"/#{@video.channel_handle}/#{@video.id}"}>
-      <div class="relative flex items-center justify-center overflow-hidden rounded-2xl aspect-[16/9] bg-gray-800">
-        <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
-        <img
-          :if={@video.thumbnail_url}
-          src={@video.thumbnail_url}
-          alt={@video.title}
-          class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
-        />
-
-        <div
-          :if={@video.is_live}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          🔴 LIVE
-        </div>
-        <div
-          :if={not @video.is_live and @video.duration != 0}
-          class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20"
-        >
-          <%= Library.to_hhmmss(@video.duration) %>
-        </div>
-      </div>
+      <.video_thumbnail video={@video} class="rounded-2xl" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
       <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>

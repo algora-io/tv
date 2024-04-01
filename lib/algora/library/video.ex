@@ -3,7 +3,9 @@ defmodule Algora.Library.Video do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Algora.Accounts
+  alias Algora.Accounts.User
+  alias Algora.Library.Video
+  alias Algora.Chat.Message
 
   @type t() :: %__MODULE__{}
 
@@ -21,11 +23,15 @@ defmodule Algora.Library.Video do
     field :filename, :string
     field :channel_handle, :string, virtual: true
     field :channel_name, :string, virtual: true
+    field :messages_count, :integer, virtual: true, default: 0
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
     field :remote_path, :string
     field :local_path, :string
-    belongs_to :user, Accounts.User
-    belongs_to :transmuxed_from, Algora.Library.Video
+
+    belongs_to :user, User
+    belongs_to :transmuxed_from, Video
+
+    has_many :messages, Message
 
     timestamps()
   end
@@ -37,7 +43,7 @@ defmodule Algora.Library.Video do
     |> validate_required([:title])
   end
 
-  def put_user(%Ecto.Changeset{} = changeset, %Accounts.User{} = user) do
+  def put_user(%Ecto.Changeset{} = changeset, %User{} = user) do
     put_assoc(changeset, :user, user)
   end
 

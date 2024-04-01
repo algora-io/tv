@@ -411,9 +411,14 @@ defmodule Algora.Library do
   def list_studio_videos(%Channel{} = channel, limit \\ 100) do
     from(v in Video,
       limit: ^limit,
-      join: u in User,
-      on: v.user_id == u.id,
-      select_merge: %{channel_handle: u.handle, channel_name: u.name},
+      join: u in assoc(v, :user),
+      left_join: m in assoc(v, :messages),
+      group_by: [v.id, u.handle, u.name],
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        messages_count: count(m.id)
+      },
       where:
         is_nil(v.transmuxed_from_id) and
           v.user_id == ^channel.user_id

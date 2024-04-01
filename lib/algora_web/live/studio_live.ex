@@ -42,26 +42,77 @@ defmodule AlgoraWeb.StudioLive do
     </section>
 
     <.table id="videos" rows={@streams.videos}>
-      <:col :let={{_id, video}}>
-        <div class="max-w-xs">
-          <.video_entry video={video} />
+      <:col :let={{_id, video}} label="Video">
+        <div class="flex items-center gap-4 max-w-xl">
+          <.video_thumbnail
+            video={video}
+            class="shrink-0 rounded-lg w-full max-w-[12rem] pointer-events-none"
+          />
+          <div class="max-w-md">
+            <.link
+              class="font-medium text-white text-lg truncate hover:underline"
+              navigate={~p"/#{video.channel_handle}/#{video.id}"}
+            >
+              <%= video.title %>
+            </.link>
+            <div :if={!@status[video.id]} class="h-10">
+              <div class="group-hover:hidden flex items-center gap-1.5 pt-1">
+                <Heroicons.chat_bubble_bottom_center_text class="h-5 w-5 text-gray-300" />
+                <div class="text-gray-100 text-base font-medium">
+                  <%= video.messages_count %>
+                </div>
+              </div>
+              <div class="hidden group-hover:flex items-center gap-1 -ml-1">
+                <button
+                  phx-click="download_video"
+                  phx-value-id={video.id}
+                  class="text-gray-100 hover:text-white p-1 font-medium text-base"
+                >
+                  Download
+                </button>
+                &bull;
+                <button
+                  phx-click="view_transcript"
+                  phx-value-id={video.id}
+                  disabled
+                  class="text-gray-100 hover:text-gray-300 p-1 font-medium text-base cursor-not-allowed"
+                >
+                  View transcript
+                </button>
+                &bull;
+                <button
+                  phx-click="delete_video"
+                  phx-value-id={video.id}
+                  class="text-red-300 hover:text-white p-1 font-medium text-base"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+            <div :if={@status[video.id]} class="h-10 pt-1 text-base font-mono">
+              <AlgoraWeb.StudioLive.Status.info status={@status[video.id]} />
+            </div>
+          </div>
         </div>
       </:col>
-      <:col :let={{_id, video}}>
-        <div :if={@status[video.id]} class="text-sm text-center">
-          <AlgoraWeb.StudioLive.Status.info status={@status[video.id]} />
+      <:col :let={{_id, video}} label="Visibility">
+        <div class="flex items-center gap-2">
+          <Heroicons.globe_alt :if={video.visibility == :public} class="h-6 w-6 text-gray-300" />
+          <Heroicons.link :if={video.visibility == :unlisted} class="h-6 w-6 text-gray-300" />
+          <div class="text-gray-100 font-medium">
+            <%= String.capitalize(to_string(video.visibility)) %>
+          </div>
         </div>
       </:col>
-      <:action :let={{_id, video}}>
-        <.button
-          phx-click="download_video"
-          phx-value-id={video.id}
-          disabled={!is_nil(@status[video.id])}
-          class={"#{if(!is_nil(@status[video.id]), do: "cursor-wait opacity-50")}"}
-        >
-          Download
-        </.button>
-      </:action>
+      <:col :let={{_id, video}} label="Date">
+        <div class="font-medium text-gray-100">
+          <%= video.inserted_at |> Calendar.strftime("%b %d, %Y") %>
+        </div>
+        <div class="text-gray-400">
+          <div :if={video.type == :vod}>Uploaded</div>
+          <div :if={video.type == :livestream}>Streamed</div>
+        </div>
+      </:col>
     </.table>
     """
   end
@@ -196,7 +247,7 @@ defmodule AlgoraWeb.StudioLive do
 
     def info(%{status: %Library.Events.ProcessingQueued{}} = assigns) do
       ~H"""
-      <div>
+      <div class="text-yellow-400">
         Queued for processing...
       </div>
       """
@@ -204,7 +255,7 @@ defmodule AlgoraWeb.StudioLive do
 
     def info(%{status: %Library.Events.ProcessingProgressed{}} = assigns) do
       ~H"""
-      <div>
+      <div class="text-blue-400">
         Processing your video: <%= @status.stage %>
       </div>
       <div>
@@ -215,7 +266,7 @@ defmodule AlgoraWeb.StudioLive do
 
     def info(%{status: %Library.Events.ProcessingCompleted{}} = assigns) do
       ~H"""
-      <div>
+      <div class="text-green-400">
         Processing completed!
       </div>
       """
@@ -223,11 +274,15 @@ defmodule AlgoraWeb.StudioLive do
 
     def info(%{status: %Library.Events.ProcessingFailed{}} = assigns) do
       ~H"""
-      <div>
-        Processing failed
-      </div>
-      <div>
-        Attempt: <%= @status.attempt %>/<%= @status.max_attempts %>
+      <div class={
+        if(@status.attempt == @status.max_attempts, do: "text-red-400", else: "text-orange-400")
+      }>
+        <div>
+          Processing failed
+        </div>
+        <div>
+          Attempt: <%= @status.attempt %>/<%= @status.max_attempts %>
+        </div>
       </div>
       """
     end
