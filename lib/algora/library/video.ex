@@ -12,6 +12,7 @@ defmodule Algora.Library.Video do
   schema "videos" do
     field :duration, :integer
     field :title, :string
+    field :description, :string
     field :type, Ecto.Enum, values: [vod: 1, livestream: 2]
     field :format, Ecto.Enum, values: [mp4: 1, hls: 2, youtube: 3]
     field :is_live, :boolean, default: false

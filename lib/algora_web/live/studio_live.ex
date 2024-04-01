@@ -7,7 +7,8 @@ defmodule AlgoraWeb.StudioLive do
   def render(assigns) do
     ~H"""
     <.header class="p-4 sm:p-6 lg:p-8">
-      Studio
+      <h2 class="text-3xl font-semibold">Studio</h2>
+      <p class="text-base font-medium text-gray-200">Manage your content</p>
       <:actions>
         <.link patch={~p"/studio/upload"}>
           <.button>Upload video</.button>
@@ -43,12 +44,12 @@ defmodule AlgoraWeb.StudioLive do
 
     <.table id="videos" rows={@streams.videos}>
       <:col :let={{_id, video}} label="Video">
-        <div class="flex items-center gap-4 max-w-xl">
+        <div class="flex items-center gap-4">
           <.video_thumbnail
             video={video}
             class="shrink-0 rounded-lg w-full max-w-[12rem] pointer-events-none"
           />
-          <div class="max-w-md">
+          <div class="max-w-2xl truncate">
             <.link
               class="font-medium text-white text-lg truncate hover:underline"
               navigate={~p"/#{video.channel_handle}/#{video.id}"}
@@ -56,28 +57,28 @@ defmodule AlgoraWeb.StudioLive do
               <%= video.title %>
             </.link>
             <div :if={!@status[video.id]} class="h-10">
-              <div class="group-hover:hidden flex items-center gap-1.5 pt-1">
-                <Heroicons.chat_bubble_bottom_center_text class="h-5 w-5 text-gray-300" />
-                <div class="text-gray-100 text-base font-medium">
-                  <%= video.messages_count %>
-                </div>
+              <div class={[
+                "group-hover:hidden pt-1 font-medium text-base truncate",
+                video.description && "text-gray-300",
+                !video.description && "italic text-gray-500"
+              ]}>
+                <%= video.description || "No description" %>
               </div>
               <div class="hidden group-hover:flex items-center gap-1 -ml-1">
                 <button
                   phx-click="download_video"
                   phx-value-id={video.id}
-                  class="text-gray-100 hover:text-white p-1 font-medium text-base"
+                  class="text-gray-200 hover:text-white p-1 font-medium text-base"
                 >
                   Download
                 </button>
                 &bull;
                 <button
-                  phx-click="view_transcript"
+                  phx-click="toggle_visibility"
                   phx-value-id={video.id}
-                  disabled
-                  class="text-gray-100 hover:text-gray-300 p-1 font-medium text-base cursor-not-allowed"
+                  class="text-gray-200 hover:text-white p-1 font-medium text-base"
                 >
-                  View transcript
+                  Toggle visibility
                 </button>
                 &bull;
                 <button
@@ -111,6 +112,11 @@ defmodule AlgoraWeb.StudioLive do
         <div class="text-gray-400">
           <div :if={video.type == :vod}>Uploaded</div>
           <div :if={video.type == :livestream}>Streamed</div>
+        </div>
+      </:col>
+      <:col :let={{_id, video}} label="Messages" align="right">
+        <div class="text-gray-100 text-base font-medium text-right">
+          <%= video.messages_count %>
         </div>
       </:col>
     </.table>

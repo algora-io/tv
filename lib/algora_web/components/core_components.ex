@@ -890,6 +890,7 @@ defmodule AlgoraWeb.CoreComponents do
 
   slot :col, required: true do
     attr :label, :string
+    attr :align, :string
   end
 
   slot :action, doc: "the slot for showing user actions in the last table column"
@@ -907,7 +908,11 @@ defmodule AlgoraWeb.CoreComponents do
           <tr>
             <th
               :for={{col, i} <- Enum.with_index(@col)}
-              class={["p-0 pb-4 pr-6 font-normal", i == 0 && "pl-4 sm:pl-6 lg:pl-8"]}
+              class={[
+                "p-0 pb-4 pr-6 font-normal",
+                i == 0 && "pl-4 sm:pl-6 lg:pl-8",
+                col[:align] == "right" && "text-right"
+              ]}
             >
               <%= col[:label] %>
             </th>
