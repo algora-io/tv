@@ -3,6 +3,8 @@ defmodule AlgoraWeb.StudioLive do
 
   alias Algora.{Library, Workers}
 
+  @max_entries 10
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -43,7 +45,7 @@ defmodule AlgoraWeb.StudioLive do
                     <.live_file_input id="file-upload" upload={@uploads.video} class="sr-only" />
                   </label>
                 </div>
-                <p class="text-xs leading-5 text-gray-400">MP4 up to 5GB</p>
+                <p class="text-xs leading-5 text-gray-400">MP4 up to <%= max_file_size() %>GB</p>
               </div>
             </div>
           </div>
@@ -159,7 +161,11 @@ defmodule AlgoraWeb.StudioLive do
       socket
       |> assign(:status, %{})
       |> stream(:videos, Library.list_studio_videos(channel))
-      |> allow_upload(:video, accept: ~w(.mp4), max_entries: 2)
+      |> allow_upload(:video,
+        accept: ~w(.mp4),
+        max_entries: @max_entries,
+        max_file_size: max_file_size() * 1_000_000_000
+      )
 
     {:ok, socket}
   end
@@ -287,6 +293,8 @@ defmodule AlgoraWeb.StudioLive do
   defp error_to_string(:too_large), do: "Too large"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(:too_many_files), do: "You have selected too many files"
+
+  defp max_file_size(), do: 5
 
   defmodule Status do
     use Phoenix.Component
