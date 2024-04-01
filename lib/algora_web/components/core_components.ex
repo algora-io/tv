@@ -909,8 +909,8 @@ defmodule AlgoraWeb.CoreComponents do
             <th
               :for={{col, i} <- Enum.with_index(@col)}
               class={[
-                "p-0 pb-4 pr-6 font-medium text-sm text-gray-300",
-                i == 0 && "pl-4 sm:pl-6 lg:pl-8",
+                "p-0 pb-4 pr-4 font-medium text-sm text-gray-300",
+                i == 0 && "pl-4",
                 col[:align] == "right" && "text-right"
               ]}
             >
@@ -934,7 +934,7 @@ defmodule AlgoraWeb.CoreComponents do
               phx-click={@row_click && @row_click.(row)}
               class={["relative p-0", @row_click && "hover:cursor-pointer"]}
             >
-              <div class={["block py-4 pr-6", i == 0 && "pl-4 sm:pl-6 lg:pl-8"]}>
+              <div class={["block py-4 pr-4", i == 0 && "pl-4"]}>
                 <span class={["relative", i == 0 && "font-semibold text-gray-50"]}>
                   <%= render_slot(col, @row_item.(row)) %>
                 </span>

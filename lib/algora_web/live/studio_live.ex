@@ -6,7 +6,7 @@ defmodule AlgoraWeb.StudioLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.header class="p-4 sm:p-6 lg:p-8">
+    <.header class="p-4">
       <h2 class="text-3xl font-semibold">Studio</h2>
       <p class="text-base font-medium text-gray-200">Manage your content</p>
       <:actions>
