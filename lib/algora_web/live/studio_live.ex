@@ -3,7 +3,7 @@ defmodule AlgoraWeb.StudioLive do
 
   alias Algora.{Library, Workers}
 
-  @max_entries 10
+  @max_entries 5
 
   @impl true
   def render(assigns) do
@@ -294,7 +294,7 @@ defmodule AlgoraWeb.StudioLive do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(:too_many_files), do: "You have selected too many files"
 
-  defp max_file_size(), do: 5
+  defp max_file_size(), do: 1
 
   defmodule Status do
     use Phoenix.Component
