@@ -171,7 +171,11 @@ defmodule Algora.Library do
     File.rm!(video.local_path)
 
     Repo.delete!(video)
+
     hls_video
+    |> change()
+    |> put_change(:id, video.id)
+    |> Repo.update!()
   end
 
   def get_mp4_video(id) do

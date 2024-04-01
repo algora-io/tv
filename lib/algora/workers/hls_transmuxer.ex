@@ -39,10 +39,10 @@ defmodule Algora.Workers.HLSTransmuxer do
         done_total = if(stage == stage_now, do: done, else: 0)
         await_transmuxer(video, stage_now, done_total + done_now)
 
-      {:complete, %Library.Video{url: url}} ->
+      {:complete, video} ->
         Library.broadcast_processing_progressed!(stage, video, 1)
-        Library.broadcast_processing_completed!(video, url)
-        {:ok, url}
+        Library.broadcast_processing_completed!(video, video.url)
+        {:ok, video.url}
 
       {:error, e, %Oban.Job{attempt: attempt, max_attempts: max_attempts}} ->
         Library.broadcast_processing_failed!(video, attempt, max_attempts)
