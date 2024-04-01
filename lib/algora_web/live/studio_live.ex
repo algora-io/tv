@@ -11,13 +11,13 @@ defmodule AlgoraWeb.StudioLive do
       <p class="text-base font-medium text-gray-200">Manage your content</p>
       <:actions>
         <.link patch={~p"/studio/upload"}>
-          <.button>Upload video</.button>
+          <.button>Upload videos</.button>
         </.link>
       </:actions>
     </.header>
     <form id="upload-form" phx-submit="upload_videos" phx-change="validate_uploads">
       <.live_file_input upload={@uploads.video} />
-      <button type="submit">Upload</button>
+      <.button type="submit">Upload</.button>
     </form>
     <section phx-drop-target={@uploads.video.ref}>
       <%= for entry <- @uploads.video.entries do %>
