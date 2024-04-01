@@ -10,37 +10,53 @@ defmodule AlgoraWeb.StudioLive do
       <h2 class="text-3xl font-semibold">Studio</h2>
       <p class="text-base font-medium text-gray-200">Manage your content</p>
       <:actions>
-        <.link patch={~p"/studio/upload"}>
+        <.link patch={~p"/channel/studio/upload"}>
           <.button>Upload videos</.button>
         </.link>
       </:actions>
     </.header>
-    <form id="upload-form" phx-submit="upload_videos" phx-change="validate_uploads">
-      <.live_file_input upload={@uploads.video} />
-      <.button type="submit">Upload</.button>
-    </form>
-    <section phx-drop-target={@uploads.video.ref}>
-      <%= for entry <- @uploads.video.entries do %>
-        <article class="upload-entry">
-          <div><%= entry.client_name %></div>
-          <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
-          <button
-            type="button"
-            phx-click="cancel_upload"
-            phx-value-ref={entry.ref}
-            aria-label="cancel"
-          >
-            &times;
-          </button>
-          <%= for err <- upload_errors(@uploads.video, entry) do %>
+
+    <.modal
+      :if={@live_action in [:upload]}
+      id="upload-modal"
+      show
+      on_cancel={JS.navigate(~p"/channel/studio")}
+    >
+      <:title>Upload videos</:title>
+      <div>
+        <form
+          id="upload-form"
+          phx-submit="upload_videos"
+          phx-change="validate_uploads"
+          class="min-h-[8rem] pt-4"
+        >
+          <.live_file_input upload={@uploads.video} />
+          <.button type="submit">Upload</.button>
+        </form>
+        <section phx-drop-target={@uploads.video.ref}>
+          <%= for entry <- @uploads.video.entries do %>
+            <article class="upload-entry">
+              <div><%= entry.client_name %></div>
+              <progress value={entry.progress} max="100"><%= entry.progress %>%</progress>
+              <button
+                type="button"
+                phx-click="cancel_upload"
+                phx-value-ref={entry.ref}
+                aria-label="cancel"
+              >
+                &times;
+              </button>
+              <%= for err <- upload_errors(@uploads.video, entry) do %>
+                <p class="alert alert-danger"><%= error_to_string(err) %></p>
+              <% end %>
+            </article>
+          <% end %>
+          <%= for err <- upload_errors(@uploads.video) do %>
             <p class="alert alert-danger"><%= error_to_string(err) %></p>
           <% end %>
-        </article>
-      <% end %>
-      <%= for err <- upload_errors(@uploads.video) do %>
-        <p class="alert alert-danger"><%= error_to_string(err) %></p>
-      <% end %>
-    </section>
+        </section>
+      </div>
+    </.modal>
 
     <.table id="videos" rows={@streams.videos}>
       <:col :let={{_id, video}} label="Video">
@@ -231,10 +247,9 @@ defmodule AlgoraWeb.StudioLive do
   end
 
   def handle_event("upload_videos", _params, socket) do
-    videos =
+    _videos =
       consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
         video = Library.init_mp4!(entry, path, socket.assigns.current_user)
-
         send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
         %{video_id: video.id}
@@ -244,7 +259,7 @@ defmodule AlgoraWeb.StudioLive do
         {:ok, video}
       end)
 
-    {:noreply, socket |> stream(:videos, videos, at: 0)}
+    {:noreply, socket |> redirect(to: ~p"/channel/studio")}
   end
 
   def handle_event("validate_uploads", _params, socket) do
@@ -257,6 +272,10 @@ defmodule AlgoraWeb.StudioLive do
 
   defp apply_action(socket, :show, _params) do
     socket |> assign(:page_title, "Studio")
+  end
+
+  defp apply_action(socket, :upload, _params) do
+    socket |> assign(:page_title, "Upload Videos")
   end
 
   defp error_to_string(:too_large), do: "Too large"

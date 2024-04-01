@@ -488,7 +488,7 @@ defmodule AlgoraWeb.CoreComponents do
               phx-window-keydown={hide_modal(@on_cancel, @id)}
               phx-key="escape"
               phx-click-away={hide_modal(@on_cancel, @id)}
-              class="hidden relative rounded-2xl bg-gray-900 p-14 shadow-lg shadow-gray-200/10 ring-1 ring-gray-200/10 transition"
+              class="hidden relative rounded-2xl bg-gray-900 py-6 px-10 shadow-lg shadow-gray-200/10 ring-1 ring-gray-200/10 transition"
             >
               <div class="absolute top-6 right-5">
                 <button

@@ -4,7 +4,7 @@ defmodule AlgoraWeb.ChannelLive do
 
   alias Algora.{Accounts, Library, Storage}
   alias AlgoraWeb.{LayoutComponent, Presence}
-  alias AlgoraWeb.ChannelLive.{StreamFormComponent}
+  alias AlgoraWeb.ChannelLive.StreamFormComponent
 
   def render(assigns) do
     ~H"""

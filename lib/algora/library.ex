@@ -151,7 +151,7 @@ defmodule Algora.Library do
 
     files
     |> Stream.map(fn hls_local_path ->
-      cb.(%{stage: :uploading, done: 1, total: length(files)})
+      cb.(%{stage: :persisting, done: 1, total: length(files)})
       hls_local_path
     end)
     |> Enum.each(fn hls_local_path ->
