@@ -909,7 +909,7 @@ defmodule AlgoraWeb.CoreComponents do
             <th
               :for={{col, i} <- Enum.with_index(@col)}
               class={[
-                "p-0 pb-4 pr-6 font-normal",
+                "p-0 pb-4 pr-6 font-medium text-sm text-gray-300",
                 i == 0 && "pl-4 sm:pl-6 lg:pl-8",
                 col[:align] == "right" && "text-right"
               ]}
