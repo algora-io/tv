@@ -58,10 +58,10 @@ defmodule Algora.Library.Video do
   def put_video_url(%Ecto.Changeset{} = changeset, format, basename \\ "index")
       when format in [:mp4, :hls] do
     if changeset.valid? do
+      changeset = changeset |> put_video_meta(format, basename)
       %{uuid: uuid, filename: filename} = changeset.changes
 
       changeset
-      |> put_video_meta(format, basename)
       |> put_change(:url, url(uuid, filename))
       |> put_change(:url_root, url_root(uuid))
       |> put_change(:remote_path, "#{uuid}/#{filename}")

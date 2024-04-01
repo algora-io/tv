@@ -155,6 +155,7 @@ defmodule AlgoraWeb.StudioLive do
     uploaded_videos =
       consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
         video = Library.init_mp4!(entry, path, socket.assigns.current_user)
+
         send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
         %{video_id: video.id}

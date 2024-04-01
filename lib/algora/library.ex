@@ -38,22 +38,31 @@ defmodule Algora.Library do
     |> Repo.insert!()
   end
 
-  def init_mp4!(%Phoenix.LiveView.UploadEntry{} = entry, path, %User{} = user) do
+  def init_mp4!(%Phoenix.LiveView.UploadEntry{} = entry, tmp_path, %User{} = user) do
     title = Path.basename(entry.client_name, ".mp4")
     basename = Slug.slugify(title)
 
-    %Video{
-      title: title,
-      duration: 0,
-      type: :vod,
-      format: :mp4,
-      is_live: false,
-      visibility: :unlisted,
-      user_id: user.id,
-      local_path: path
-    }
-    |> change()
-    |> Video.put_video_meta(:mp4, basename)
+    video =
+      %Video{
+        title: title,
+        duration: 0,
+        type: :vod,
+        format: :mp4,
+        is_live: false,
+        visibility: :unlisted,
+        user_id: user.id,
+        local_path: tmp_path
+      }
+      |> change()
+      |> Video.put_video_meta(:mp4, basename)
+
+    dir = Path.join(System.tmp_dir!(), video.changes.uuid)
+    File.mkdir_p!(dir)
+    local_path = Path.join(dir, video.changes.filename)
+    File.cp!(tmp_path, local_path)
+
+    video
+    |> put_change(:local_path, local_path)
     |> Repo.insert!()
   end
 
@@ -95,8 +104,8 @@ defmodule Algora.Library do
   def transmux_to_hls(%Video{} = video, cb) do
     duration =
       case get_duration(video) do
+        {:ok, duration} -> duration
         {:error, _} -> 0
-        duration -> duration
       end
 
     hls_video =
@@ -112,11 +121,7 @@ defmodule Algora.Library do
       |> change()
       |> Video.put_video_url(:hls)
 
-    %{
-      uuid: hls_uuid,
-      url_root: hls_url_root,
-      filename: hls_filename
-    } = hls_video.changes
+    %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
 
     dir = Path.join(System.tmp_dir!(), hls_uuid)
     File.mkdir_p!(dir)
@@ -130,11 +135,11 @@ defmodule Algora.Library do
       "-c",
       "copy",
       "-start_number",
-      0,
+      "0",
       "-hls_time",
-      2,
+      "2",
       "-hls_list_size",
-      0,
+      "0",
       "-f",
       "hls",
       hls_local_path
@@ -150,7 +155,7 @@ defmodule Algora.Library do
     |> Enum.each(fn hls_local_path ->
       Storage.upload_from_filename(
         hls_local_path,
-        "#{hls_url_root}/#{Path.basename(hls_local_path)}"
+        "#{hls_uuid}/#{Path.basename(hls_local_path)}"
       )
     end)
 
@@ -240,9 +245,7 @@ defmodule Algora.Library do
   end
 
   defp get_playlist(%Video{} = video) do
-    url = "#{video.url_root}/index.m3u8"
-
-    with {:ok, resp} <- Finch.build(:get, url) |> Finch.request(Algora.Finch) do
+    with {:ok, resp} <- Finch.build(:get, video.url) |> Finch.request(Algora.Finch) do
       ExM3U8.deserialize_playlist(resp.body, [])
     end
   end
@@ -356,7 +359,8 @@ defmodule Algora.Library do
       on: v.user_id == u.id,
       limit: ^limit,
       where:
-        is_nil(v.transmuxed_from_id) and
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and
           v.visibility == :public and
           is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
@@ -372,7 +376,8 @@ defmodule Algora.Library do
       on: v.user_id == u.id,
       limit: ^limit,
       where:
-        is_nil(v.transmuxed_from_id) and v.visibility == :public and
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and v.visibility == :public and
           not is_nil(v.vertical_thumbnail_url),
       select_merge: %{channel_handle: u.handle, channel_name: u.name}
     )
@@ -386,7 +391,10 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       select_merge: %{channel_handle: u.handle, channel_name: u.name},
-      where: is_nil(v.transmuxed_from_id) and v.user_id == ^channel.user_id
+      where:
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and
+          v.user_id == ^channel.user_id
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
@@ -398,7 +406,9 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       select_merge: %{channel_handle: u.handle, channel_name: u.name},
-      where: is_nil(v.transmuxed_from_id) and v.user_id == ^channel.user_id
+      where:
+        is_nil(v.transmuxed_from_id) and
+          v.user_id == ^channel.user_id
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
