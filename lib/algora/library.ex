@@ -117,7 +117,7 @@ defmodule Algora.Library do
         type: :vod,
         format: :hls,
         is_live: false,
-        visibility: :public,
+        visibility: video.visibility,
         user_id: video.user_id
       }
       |> change()
