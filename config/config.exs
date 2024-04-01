@@ -23,7 +23,8 @@ config :algora, AlgoraWeb.Endpoint,
   ]
 
 config :algora, Oban,
-  repo: Algora.Repo.Local,
+  repo: Algora.Repo,
+  notifier: Oban.Notifiers.PG,
   queues: [default: 10]
 
 config :esbuild,

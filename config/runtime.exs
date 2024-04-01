@@ -41,6 +41,13 @@ if config_env() == :prod do
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
+  unless Fly.RPC.is_primary?() do
+    config :algora, Oban,
+      queues: false,
+      plugins: false,
+      peer: false
+  end
+
   secret_key_base =
     System.get_env("SECRET_KEY_BASE") ||
       raise """
