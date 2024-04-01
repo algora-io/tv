@@ -19,7 +19,7 @@ defmodule Algora.Workers.MP4Transmuxer do
     Task.async(fn ->
       try do
         mp4_video =
-          Library.transmux_to_hls(video, fn progress ->
+          Library.transmux_to_mp4(video, fn progress ->
             send(job_pid, {:progress, progress})
           end)
 
@@ -41,7 +41,7 @@ defmodule Algora.Workers.MP4Transmuxer do
 
       {:complete, %Library.Video{url: url}} ->
         Library.broadcast_processing_progressed!(stage, video, 1)
-        Library.broadcast_processing_completed!(video, url)
+        Library.broadcast_processing_completed!(:download, video, url)
         {:ok, url}
 
       {:error, e, %Oban.Job{attempt: attempt, max_attempts: max_attempts}} ->

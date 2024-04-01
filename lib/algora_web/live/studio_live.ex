@@ -90,7 +90,7 @@ defmodule AlgoraWeb.StudioLive do
                 </button>
               </div>
             </div>
-            <div :if={@status[video.id]} class="h-10 pt-1 text-base font-mono">
+            <div :if={@status[video.id]} class="pt-1 text-base font-mono">
               <AlgoraWeb.StudioLive.Status.info status={@status[video.id]} />
             </div>
           </div>
@@ -169,7 +169,8 @@ defmodule AlgoraWeb.StudioLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.ProcessingCompleted{video: video, url: url} = status},
+        {Library,
+         %Library.Events.ProcessingCompleted{action: action, video: video, url: url} = status},
         socket
       ) do
     socket =
@@ -178,7 +179,7 @@ defmodule AlgoraWeb.StudioLive do
       |> stream_insert(:videos, video)
 
     socket =
-      if video.transmuxed_from_id do
+      if action == :download do
         socket |> redirect(external: url)
       else
         socket

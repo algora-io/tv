@@ -20,7 +20,7 @@ defmodule Algora.Library.Events do
   end
 
   defmodule ProcessingCompleted do
-    defstruct video: nil, url: nil
+    defstruct video: nil, action: nil, url: nil
   end
 
   defmodule ProcessingFailed do

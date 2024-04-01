@@ -41,7 +41,7 @@ defmodule Algora.Workers.HLSTransmuxer do
 
       {:complete, video} ->
         Library.broadcast_processing_progressed!(stage, video, 1)
-        Library.broadcast_processing_completed!(video, video.url)
+        Library.broadcast_processing_completed!(:upload, video, video.url)
         {:ok, video.url}
 
       {:error, e, %Oban.Job{attempt: attempt, max_attempts: max_attempts}} ->

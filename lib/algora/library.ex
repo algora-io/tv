@@ -549,8 +549,8 @@ defmodule Algora.Library do
     broadcast!(topic_studio(), %Events.ProcessingProgressed{video: video, stage: stage, pct: pct})
   end
 
-  def broadcast_processing_completed!(video, url) do
-    broadcast!(topic_studio(), %Events.ProcessingCompleted{video: video, url: url})
+  def broadcast_processing_completed!(action, video, url) do
+    broadcast!(topic_studio(), %Events.ProcessingCompleted{action: action, video: video, url: url})
   end
 
   def broadcast_processing_failed!(video, attempt, max_attempts) do
