@@ -198,6 +198,20 @@ defmodule AlgoraWeb.StudioLive do
   end
 
   @impl true
+  def handle_event("toggle_visibility", %{"id" => id}, socket) do
+    video = Library.get_video!(id) |> Library.toggle_visibility!()
+    {:noreply, socket |> stream_insert(:videos, video)}
+  end
+
+  @impl true
+  def handle_event("delete_video", %{"id" => id}, socket) do
+    # TODO: schedule deletion from bucket
+    video = Library.get_video!(id)
+    :ok = video |> Library.delete_video()
+    {:noreply, socket |> stream_delete(:videos, video)}
+  end
+
+  @impl true
   def handle_event("download_video", %{"id" => id}, socket) do
     mp4_video = Library.get_mp4_video(id)
 

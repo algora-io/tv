@@ -252,6 +252,16 @@ defmodule Algora.Library do
     end
   end
 
+  def toggle_visibility!(%Video{} = video) do
+    new_visibility =
+      case video.visibility do
+        :public -> :unlisted
+        _ -> :public
+      end
+
+    video |> change() |> put_change(:visibility, new_visibility) |> Repo.update!()
+  end
+
   defp get_playlist(%Video{} = video) do
     with {:ok, resp} <- Finch.build(:get, video.url) |> Finch.request(Algora.Finch) do
       ExM3U8.deserialize_playlist(resp.body, [])
@@ -475,6 +485,10 @@ defmodule Algora.Library do
     video
     |> Video.changeset(attrs)
     |> Repo.update()
+  end
+
+  def delete_video(%Video{} = video) do
+    Repo.delete(video)
   end
 
   defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
