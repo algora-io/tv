@@ -68,9 +68,14 @@ defmodule Algora.Storage do
          %{type: :segment, mode: :binary},
          %{video: %{thumbnail_url: nil} = video, video_header: video_header} = state
        ) do
-    with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents) do
-      broadcast_thumbnails_generated!(video)
-      {:ok, %{state | video: video}}
+    case Library.store_thumbnail(video, video_header <> contents) do
+      {:ok, video} ->
+        broadcast_thumbnails_generated!(video)
+        {:ok, %{state | video: video}}
+
+      _ ->
+        Membrane.Logger.error("Could not generate thumbnails for video #{video.id}")
+        {:ok, state}
     end
   end
 
