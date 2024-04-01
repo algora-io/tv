@@ -76,7 +76,6 @@ defmodule AlgoraWeb.StudioLive do
       socket
       |> assign(:status, %{})
       |> stream(:videos, Library.list_channel_videos(channel))
-      |> assign(:uploaded_videos, [])
       |> allow_upload(:video, accept: ~w(.mp4), max_entries: 2)
 
     {:ok, socket}
@@ -116,11 +115,19 @@ defmodule AlgoraWeb.StudioLive do
         {Library, %Library.Events.ProcessingCompleted{video: video, url: url} = status},
         socket
       ) do
-    {:noreply,
-     socket
-     |> assign(:status, socket.assigns.status |> Map.put(video.id, status))
-     |> stream_insert(:videos, video)
-     |> redirect(external: url)}
+    socket =
+      socket
+      |> assign(:status, socket.assigns.status |> Map.put(video.id, status))
+      |> stream_insert(:videos, video)
+
+    socket =
+      if video.transmuxed_from_id do
+        socket |> redirect(external: url)
+      else
+        socket
+      end
+
+    {:noreply, socket}
   end
 
   def handle_info(
@@ -152,11 +159,11 @@ defmodule AlgoraWeb.StudioLive do
   end
 
   def handle_event("upload_videos", _params, socket) do
-    uploaded_videos =
+    videos =
       consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
         video = Library.init_mp4!(entry, path, socket.assigns.current_user)
 
-        send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
+        # send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
         %{video_id: video.id}
         |> Workers.HLSTransmuxer.new()
@@ -165,10 +172,7 @@ defmodule AlgoraWeb.StudioLive do
         {:ok, video}
       end)
 
-    {:noreply,
-     socket
-     |> update(:uploaded_videos, &(&1 ++ uploaded_videos))
-     |> stream(:videos, uploaded_videos)}
+    {:noreply, socket |> stream(:videos, videos)}
   end
 
   def handle_event("validate_uploads", _params, socket) do

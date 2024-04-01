@@ -51,7 +51,9 @@ defmodule Algora.Library do
         is_live: false,
         visibility: :unlisted,
         user_id: user.id,
-        local_path: tmp_path
+        local_path: tmp_path,
+        channel_handle: user.handle,
+        channel_name: user.name
       }
       |> change()
       |> Video.put_video_meta(:mp4, basename)
@@ -164,10 +166,12 @@ defmodule Algora.Library do
     cb.(%{stage: :generating_thumbnail, done: 1, total: 1})
     {:ok, hls_video} = store_thumbnail_from_file(hls_video, video.local_path)
 
+    # TODO: should probably keep the file around for a while for any additional processing
+    # requests from user?
     File.rm!(video.local_path)
 
     Repo.delete!(video)
-    hls_video |> put_change(:id, video.id) |> Repo.update!()
+    hls_video
   end
 
   def get_mp4_video(id) do
