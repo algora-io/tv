@@ -75,7 +75,7 @@ defmodule AlgoraWeb.StudioLive do
     socket =
       socket
       |> assign(:status, %{})
-      |> stream(:videos, Library.list_channel_videos(channel))
+      |> stream(:videos, Library.list_studio_videos(channel))
       |> allow_upload(:video, accept: ~w(.mp4), max_entries: 2)
 
     {:ok, socket}
@@ -163,7 +163,7 @@ defmodule AlgoraWeb.StudioLive do
       consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
         video = Library.init_mp4!(entry, path, socket.assigns.current_user)
 
-        # send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
+        send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
         %{video_id: video.id}
         |> Workers.HLSTransmuxer.new()
@@ -172,7 +172,7 @@ defmodule AlgoraWeb.StudioLive do
         {:ok, video}
       end)
 
-    {:noreply, socket |> stream(:videos, videos)}
+    {:noreply, socket |> stream(:videos, videos, at: 0)}
   end
 
   def handle_event("validate_uploads", _params, socket) do
@@ -216,7 +216,7 @@ defmodule AlgoraWeb.StudioLive do
     def info(%{status: %Library.Events.ProcessingCompleted{}} = assigns) do
       ~H"""
       <div>
-        Ready to download!
+        Processing completed!
       </div>
       """
     end
