@@ -97,7 +97,7 @@ defmodule AlgoraWeb.StudioLive do
         </div>
       </:col>
       <:col :let={{_id, video}} label="Visibility">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 min-w-[6rem]">
           <Heroicons.globe_alt :if={video.visibility == :public} class="h-6 w-6 text-gray-300" />
           <Heroicons.link :if={video.visibility == :unlisted} class="h-6 w-6 text-gray-300" />
           <div class="text-gray-100 font-medium">
