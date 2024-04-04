@@ -21,7 +21,7 @@ defmodule AlgoraWeb.ChatLive do
               <div
                 id="chat-messages"
                 phx-update="ignore"
-                class="text-sm break-words flex-1 m-1 overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden p-4 rounded-lg ring-1 ring-gray-800"
+                class="text-sm break-words flex-1 m-1 scrollbar-thin overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden p-4 rounded ring-1 ring-purple-300"
               >
                 <div :for={message <- @messages} id={"message-#{message.id}"}>
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>

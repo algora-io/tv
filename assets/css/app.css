@@ -20,6 +20,11 @@
   }
 }
 
+.scrollbar-thin::-webkit-scrollbar {
+  width: 0.25em;
+  height: 0.25em;
+}
+
 /* animations */
 .fade-in-scale {
   animation: 0.2s ease-in 0s normal forwards 1 fade-in-scale-keys;
