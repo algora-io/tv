@@ -7,7 +7,7 @@ defmodule Algora.Library do
   import Ecto.Query, warn: false
   import Ecto.Changeset
   alias Algora.Accounts.User
-  alias Algora.{Repo, Accounts, Storage}
+  alias Algora.{Repo, Accounts, Storage, Cache, ML}
   alias Algora.Library.{Channel, Video, Events, Subtitle}
 
   @pubsub Algora.PubSub
@@ -188,6 +188,25 @@ defmodule Algora.Library do
       limit: 1
     )
     |> Repo.one()
+  end
+
+  def transcribe_video(%Video{} = video, _cb) do
+    # dir = Path.join(System.tmp_dir!(), video.uuid)
+    # File.mkdir_p!(dir)
+    # mp3_local_path = Path.join(dir, "index.mp3")
+
+    # cb.(%{stage: :transmuxing, done: 1, total: 1})
+    # System.cmd("ffmpeg", ["-i", video.url, "-vn", mp3_local_path])
+
+    # Storage.upload_from_filename(mp3_local_path, "#{video.uuid}/index.mp3", cb, [
+    #   {:content_type, "audio/mpeg"}
+    # ])
+
+    # File.rm!(mp3_local_path)
+
+    Cache.fetch("#{Video.slug(video)}/transcription", fn ->
+      ML.transcribe_video_async("https://fly.storage.tigris.dev/mediadev/tmp/million.mp3")
+    end)
   end
 
   def get_mp4_video(id) do

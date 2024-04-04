@@ -1,7 +1,7 @@
 import Ecto.Query
 import Ecto.Changeset
 
-alias Algora.{Accounts, Library, Repo, Storage}
+alias Algora.{Accounts, Library, Repo, Storage, Cache, ML}
 
 IEx.configure(inspect: [charlists: :as_lists])
 

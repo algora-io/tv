@@ -87,4 +87,8 @@ defmodule Algora.Library.Video do
   end
 
   defp url(uuid, filename), do: "#{url_root(uuid)}/#{filename}"
+
+  def slug(%Video{} = video), do: Slug.slugify("#{video.id}-#{video.title}")
+
+  def id_from_slug(slug), do: slug |> String.split("-") |> Enum.at(0)
 end

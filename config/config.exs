@@ -23,8 +23,7 @@ config :algora, AlgoraWeb.Endpoint,
   ]
 
 config :algora, Oban,
-  repo: Algora.Repo,
-  notifier: Oban.Notifiers.PG,
+  repo: Algora.Repo.Local,
   queues: [default: 10]
 
 config :esbuild,
@@ -55,6 +54,11 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :nx, default_backend: EXLA.Backend
+
+config :replicate,
+  replicate_api_token: System.get_env("REPLICATE_API_TOKEN")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
