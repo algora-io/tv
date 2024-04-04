@@ -38,6 +38,7 @@ npm-debug.log
 # Ignore local files
 /tmp
 /.local
+/priv/cache
 
 # TODO: remove this once we start serving og images dynamically
 /priv/static/images/og

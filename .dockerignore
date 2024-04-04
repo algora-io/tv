@@ -26,3 +26,4 @@ node_modules
 # Local files
 /tmp
 /.local
+/priv/cache
