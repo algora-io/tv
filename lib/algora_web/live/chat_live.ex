@@ -9,7 +9,7 @@ defmodule AlgoraWeb.ChatLive do
     assigns = assigns |> assign(tabs: [:chat])
 
     ~H"""
-    <aside id="side-panel" class="hidden lg:w-[24rem] lg:flex fixed top-[64px] right-0 w-0 pr-4">
+    <aside id="side-panel">
       <div class="p-4">
         <div>
           <div
@@ -21,7 +21,7 @@ defmodule AlgoraWeb.ChatLive do
               <div
                 id="chat-messages"
                 phx-update="ignore"
-                class="text-sm break-words flex-1 overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden"
+                class="text-sm break-words flex-1 m-1 overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden p-4 rounded-lg ring-1 ring-gray-800"
               >
                 <div :for={message <- @messages} id={"message-#{message.id}"}>
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
