@@ -65,6 +65,11 @@ defmodule AlgoraWeb.Router do
       live "/auth/login", SignInLive, :index
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
+    end
+
+    live_session :embed,
+      layout: {AlgoraWeb.Layouts, :live_bare},
+      root_layout: {AlgoraWeb.Layouts, :root_bare} do
       live "/:channel_handle/:video_id/chat", ChatLive, :show
     end
   end

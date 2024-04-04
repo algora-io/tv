@@ -4,20 +4,9 @@ defmodule AlgoraWeb.ChatLive do
 
   alias Algora.{Accounts, Library, Storage, Chat}
   alias AlgoraWeb.{LayoutComponent, Presence}
-  alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
   def render(assigns) do
-    tabs =
-      [:chat]
-      |> append_if(length(assigns.subtitles) > 0, :transcript)
-
-    assigns =
-      assigns
-      |> assign(
-        # HACK: properly implement
-        can_edit: assigns.current_user && assigns.current_user.handle == "zaf",
-        tabs: tabs
-      )
+    assigns = assigns |> assign(tabs: [:chat])
 
     ~H"""
     <aside id="side-panel" class="hidden lg:w-[24rem] lg:flex fixed top-[64px] right-0 w-0 pr-4">
@@ -32,7 +21,7 @@ defmodule AlgoraWeb.ChatLive do
               <div
                 id="chat-messages"
                 phx-update="ignore"
-                class="text-sm break-words flex-1 overflow-y-auto  inset-0 h-[400px] w-[400px] mt-[64px] fixed overflow-hidden"
+                class="text-sm break-words flex-1 overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden"
               >
                 <div :for={message <- @messages} id={"message-#{message.id}"}>
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
@@ -52,8 +41,6 @@ defmodule AlgoraWeb.ChatLive do
   end
 
   def mount(%{"channel_handle" => channel_handle, "video_id" => video_id}, _session, socket) do
-    %{current_user: current_user} = socket.assigns
-
     channel =
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
@@ -61,10 +48,6 @@ defmodule AlgoraWeb.ChatLive do
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
-
-      Presence.track_user(channel_handle, %{
-        id: if(current_user, do: current_user.handle, else: "")
-      })
 
       Presence.subscribe(channel_handle)
     end
@@ -93,7 +76,6 @@ defmodule AlgoraWeb.ChatLive do
       socket
       |> assign(
         channel: channel,
-        owns_channel?: current_user && Library.owns_channel?(current_user, channel),
         videos_count: Enum.count(videos),
         video: video,
         subtitles: subtitles,
@@ -177,70 +159,12 @@ defmodule AlgoraWeb.ChatLive do
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}
 
-  defp fmt(num) do
-    chars = num |> Integer.to_string() |> String.to_charlist()
-    {h, t} = Enum.split(chars, rem(length(chars), 3))
-    t = t |> Enum.chunk_every(3) |> Enum.join(",")
-
-    case {h, t} do
-      {~c"", _} -> t
-      {_, ""} -> "#{h}"
-      _ -> "#{h}," <> t
-    end
-  end
-
-  def handle_event("save", %{"data" => %{"subtitles" => subtitles}, "save" => save_type}, socket) do
-    {time, count} = :timer.tc(&save/2, [save_type, subtitles])
-    msg = "Updated #{count} subtitles in #{fmt(round(time / 1000))} ms"
-
-    {:noreply, socket |> put_flash(:info, msg)}
-  end
-
-  defp save("naive", subtitles) do
-    Library.save_subtitles(subtitles)
-  end
-
-  defp save("fast", subtitles) do
-    Fly.Postgres.rpc_and_wait(Library, :save_subtitles, [subtitles])
-  end
-
-  defp set_active_content(js \\ %JS{}, to) do
-    js
-    |> JS.hide(to: ".side-panel-content")
-    |> JS.show(to: to)
-  end
-
-  defp set_active_tab(js \\ %JS{}, tab) do
-    js
-    |> JS.remove_class("active-tab text-white pointer-events-none",
-      to: "#side-panel .active-tab"
-    )
-    |> JS.add_class("active-tab text-white pointer-events-none", to: tab)
-  end
-
   defp system_message?(%Chat.Message{} = message) do
     message.sender_handle == "algora"
   end
 
-  defp append_if(list, cond, extra) do
-    if cond, do: list ++ [extra], else: list
-  end
-
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset, as: :data))
-  end
-
-  defp apply_action(socket, :stream, _params) do
-    if socket.assigns.owns_channel? do
-      socket
-      |> assign(:page_title, "Start streaming")
-      |> assign(:video, %Library.Video{})
-      |> show_stream_modal()
-    else
-      socket
-      |> put_flash(:error, "You can't do that")
-      |> redirect(to: channel_path(socket.assigns.current_user))
-    end
   end
 
   defp apply_action(socket, :show, params) do
@@ -250,19 +174,5 @@ defmodule AlgoraWeb.ChatLive do
     |> assign(:channel_name, socket.assigns.channel.name)
     |> assign(:channel_tagline, socket.assigns.channel.tagline)
     |> assign(:video, nil)
-  end
-
-  defp show_stream_modal(socket) do
-    LayoutComponent.show_modal(StreamFormComponent, %{
-      id: :stream,
-      confirm: {"Save", type: "submit", form: "stream-form"},
-      patch: channel_path(socket.assigns.current_user),
-      video: socket.assigns.video,
-      title: socket.assigns.page_title,
-      current_user: socket.assigns.current_user,
-      changeset: Accounts.change_settings(socket.assigns.current_user, %{})
-    })
-
-    socket
   end
 end

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+
+    <.live_title suffix={assigns[:page_title] && " | Algora TV"}>
+      <%= assigns[:page_title] || "Algora TV" %>
+    </.live_title>
+
+    <%= if assigns[:channel_handle] && assigns[:channel_name] && assigns[:channel_tagline] do %>
+      <meta name="description" content={assigns[:channel_tagline]} />
+      <meta
+        name="twitter:image:src"
+        content={"#{AlgoraWeb.Endpoint.url()}/images/og/#{assigns[:channel_handle]}.png"}
+      />
+      <meta name="twitter:site" content="@algoraio" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={"#{assigns[:channel_name]} | Algora TV"} />
+      <meta name="twitter:description" content={assigns[:channel_tagline]} />
+      <meta
+        property="og:image"
+        content={"#{AlgoraWeb.Endpoint.url()}/images/og/#{assigns[:channel_handle]}.png"}
+      />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:site_name" content="Algora TV" />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content={"#{assigns[:channel_name]} | Algora TV"} />
+      <meta property="og:url" content={"#{AlgoraWeb.Endpoint.url()}/#{assigns[:channel_handle]}"} />
+      <meta property="og:description" content={assigns[:channel_tagline]} />
+    <% else %>
+      <meta
+        name="description"
+        content="Algora TV is an interactive livestreaming & video sharing service for developers."
+      />
+    <% end %>
+
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <script>
+      window.userToken = "<%= assigns[:user_token] %>";
+    </script>
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
+    <script defer data-domain="tv.algora.io" src="https://plausible.io/js/script.js">
+    </script>
+  </head>
+  <body>
+    <%= @inner_content %>
+  </body>
+</html>
