@@ -3,6 +3,10 @@ defmodule AlgoraWeb.Plugs.AllowIframe do
   def init(_), do: %{}
 
   def call(conn, _opts) do
-    put_resp_header(conn, "content-security-policy", "frame-ancestors *")
+    put_resp_header(
+      conn,
+      "content-security-policy",
+      "frame-ancestors 'self' *"
+    )
   end
 end
