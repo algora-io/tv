@@ -1,28 +1,39 @@
 defmodule Algora.Pipeline do
-  alias Algora.Library
   use Membrane.Pipeline
 
   @impl true
   def handle_init(_context, socket: socket) do
-    video = Library.init_livestream!()
+    # IO.puts(DateTime.utc_now() |> DateTime.truncate(:second) |> to_string)
+    # video = Library.init_livestream!()
+    dir = "/tmp/tv"
+    File.mkdir_p!(dir)
 
     spec = [
+      # child(:src, %Membrane.RTMP.Source{
+      #   socket: socket,
+      #   validator: %Algora.MessageValidator{video_id: video.id}
+      # })
+      # |> child(:sink, %Membrane.File.Sink{location: Path.join(dir, "#{video.id}.rtmp")})
+
       # audio
-      child(:src, %Membrane.RTMP.SourceBin{
-        socket: socket,
-        validator: %Algora.MessageValidator{video_id: video.id}
+      child(:src, %Algora.SourceBin{
+        location: Path.join(dir, "777.rtmp")
+        # socket: socket
+        # validator: %Algora.MessageValidator{video_id: video.id}
       })
       |> via_out(:audio)
       |> via_in(Pad.ref(:input, :audio),
         options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
       )
-      |> child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
-        mode: :live,
-        manifest_module: Membrane.HTTPAdaptiveStream.HLS,
-        target_window_duration: :infinity,
-        persist?: false,
-        storage: %Algora.Storage{video: video}
-      }),
+      |> child(:sink, %Membrane.File.Sink{location: Path.join(dir, "777-01.mp4")}),
+
+      # |> child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
+      #   mode: :live,
+      #   manifest_module: Membrane.HTTPAdaptiveStream.HLS,
+      #   target_window_duration: :infinity,
+      #   persist?: false,
+      #   storage: %Algora.Storage{video: video}
+      # }),
 
       # video
       get_child(:src)
@@ -33,7 +44,11 @@ defmodule Algora.Pipeline do
       |> get_child(:sink)
     ]
 
-    {[spec: spec], %{socket: socket, video: video}}
+    {[spec: spec],
+     %{
+       socket: socket
+       # , video: video
+     }}
   end
 
   @impl true
