@@ -48,6 +48,7 @@ defmodule AlgoraWeb.Router do
   scope "/", AlgoraWeb do
     pipe_through [:browser, :embed]
 
+    get "/:channel_handle/latest", VideoPopoutController, :get
     get "/:channel_handle/chat", ChatPopoutController, :get
     get "/:channel_handle/embed", EmbedPopoutController, :get
 
