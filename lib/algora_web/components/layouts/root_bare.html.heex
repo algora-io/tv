@@ -14,16 +14,13 @@
       <meta name="description" content={assigns[:channel_tagline]} />
       <meta
         name="twitter:image:src"
-        content={"#{AlgoraWeb.Endpoint.url()}/images/og/#{assigns[:channel_handle]}.png"}
+        content={"#{AlgoraWeb.Endpoint.url()}/images/og/default.png"}
       />
       <meta name="twitter:site" content="@algoraio" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={"#{assigns[:channel_name]} | Algora TV"} />
       <meta name="twitter:description" content={assigns[:channel_tagline]} />
-      <meta
-        property="og:image"
-        content={"#{AlgoraWeb.Endpoint.url()}/images/og/#{assigns[:channel_handle]}.png"}
-      />
+      <meta property="og:image" content={"#{AlgoraWeb.Endpoint.url()}/images/og/default.png"} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:site_name" content="Algora TV" />
