@@ -178,6 +178,18 @@ defmodule Algora.Library do
     |> Repo.update!()
   end
 
+  def get_latest_video(%User{} = user) do
+    from(v in Video,
+      join: u in User,
+      on: v.user_id == u.id,
+      where: u.id == ^user.id,
+      select_merge: %{channel_handle: u.handle, channel_name: u.name},
+      order_by: [desc: v.inserted_at],
+      limit: 1
+    )
+    |> Repo.one()
+  end
+
   def get_mp4_video(id) do
     from(v in Video,
       where: v.format == :mp4 and (v.transmuxed_from_id == ^id or v.id == ^id),

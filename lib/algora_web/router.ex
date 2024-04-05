@@ -46,6 +46,27 @@ defmodule AlgoraWeb.Router do
   end
 
   scope "/", AlgoraWeb do
+    pipe_through [:browser, :embed]
+
+    get "/:channel_handle/chat", ChatPopoutController, :get
+    get "/:channel_handle/embed", EmbedPopoutController, :get
+
+    # TODO: consolidate live_sessions
+
+    live_session :chat,
+      layout: {AlgoraWeb.Layouts, :live_chat},
+      root_layout: {AlgoraWeb.Layouts, :root_bare} do
+      live "/:channel_handle/:video_id/chat", ChatLive, :show
+    end
+
+    live_session :embed,
+      layout: {AlgoraWeb.Layouts, :live_bare},
+      root_layout: {AlgoraWeb.Layouts, :root_bare} do
+      live "/:channel_handle/:video_id/embed", EmbedLive, :show
+    end
+  end
+
+  scope "/", AlgoraWeb do
     pipe_through :browser
 
     delete "/auth/logout", OAuthCallbackController, :sign_out
@@ -69,24 +90,6 @@ defmodule AlgoraWeb.Router do
       live "/auth/login", SignInLive, :index
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
-    end
-  end
-
-  scope "/", AlgoraWeb do
-    pipe_through [:browser, :embed]
-
-    # TODO: consolidate live_sessions
-
-    live_session :chat,
-      layout: {AlgoraWeb.Layouts, :live_chat},
-      root_layout: {AlgoraWeb.Layouts, :root_bare} do
-      live "/:channel_handle/:video_id/chat", ChatLive, :show
-    end
-
-    live_session :embed,
-      layout: {AlgoraWeb.Layouts, :live_bare},
-      root_layout: {AlgoraWeb.Layouts, :root_bare} do
-      live "/:channel_handle/:video_id/embed", EmbedLive, :show
     end
   end
 end
