@@ -22,6 +22,10 @@ kill_timeout = '5s'
   PHX_HOST = 'tv.algora.io'
   PORT = '4000'
 
+[mounts]
+  source="algora_media_tmp"
+  destination="/data"
+
 [[services]]
   protocol = 'tcp'
   internal_port = 4000
