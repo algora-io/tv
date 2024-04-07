@@ -58,7 +58,7 @@ defmodule Algora.Library do
       |> change()
       |> Video.put_video_meta(:mp4, basename)
 
-    dir = Path.join(System.tmp_dir!(), video.changes.uuid)
+    dir = Path.join("/data", video.changes.uuid)
     File.mkdir_p!(dir)
     local_path = Path.join(dir, video.changes.filename)
     File.cp!(tmp_path, local_path)
@@ -88,7 +88,7 @@ defmodule Algora.Library do
 
     %{uuid: mp4_uuid, filename: mp4_filename, remote_path: mp4_remote_path} = mp4_video.changes
 
-    dir = Path.join(System.tmp_dir!(), mp4_uuid)
+    dir = Path.join("/data", mp4_uuid)
     File.mkdir_p!(dir)
     mp4_local_path = Path.join(dir, mp4_filename)
 
@@ -125,7 +125,7 @@ defmodule Algora.Library do
 
     %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
 
-    dir = Path.join(System.tmp_dir!(), hls_uuid)
+    dir = Path.join("/data", hls_uuid)
     File.mkdir_p!(dir)
     hls_local_path = Path.join(dir, hls_filename)
 
