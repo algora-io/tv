@@ -33,9 +33,9 @@ defmodule Algora.ML do
     end
   end
 
-  def add_embeddings_from_prediction(%Prediction{output: output}, index) do
-    for embedding <- output do
-      HNSWLib.Index.add_items(index, Nx.tensor(embedding["embedding"]))
+  def add_embeddings(index, %Prediction{output: output}) do
+    for x <- output do
+      HNSWLib.Index.add_items(index, Nx.tensor(x["embedding"]))
     end
 
     save_index(index)

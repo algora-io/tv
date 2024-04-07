@@ -198,14 +198,12 @@ defmodule Algora.Library do
     # cb.(%{stage: :transmuxing, done: 1, total: 1})
     # System.cmd("ffmpeg", ["-i", video.url, "-vn", mp3_local_path])
 
-    # Storage.upload_from_filename(mp3_local_path, "#{video.uuid}/index.mp3", cb, [
-    #   {:content_type, "audio/mpeg"}
-    # ])
+    # Storage.upload_from_filename(mp3_local_path, "#{video.uuid}/index.mp3", cb)
 
     # File.rm!(mp3_local_path)
 
     Cache.fetch("#{Video.slug(video)}/transcription", fn ->
-      ML.transcribe_video_async("https://fly.storage.tigris.dev/mediadev/tmp/million.mp3")
+      ML.transcribe_video_async("#{video.url_root}/index.mp3")
     end)
   end
 
