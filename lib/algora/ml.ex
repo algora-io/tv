@@ -116,8 +116,11 @@ defmodule Algora.ML do
     Library.Segment.init(subtitles) |> tokenize_and_measure(tokenizer)
   end
 
+  def format_segment(%Library.Segment{start: start, body: body}),
+    do: "#{Library.to_hhmmss(start)}\n#{body}"
+
   def chunk(video) do
-    subtitles = Library.list_subtitles(video) |> dbg
+    subtitles = Library.list_subtitles(video)
     chunk(load_tokenizer!(), [], [], subtitles)
   end
 
@@ -139,7 +142,7 @@ defmodule Algora.ML do
     if valid? do
       chunk(tokenizer, chunks, new_chunk, subtitles)
     else
-      chunk(tokenizer, [new_chunk | chunks], [], subtitles)
+      chunk(tokenizer, [chunk | chunks], [], [subtitle | subtitles])
     end
   end
 end
