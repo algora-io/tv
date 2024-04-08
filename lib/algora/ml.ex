@@ -116,19 +116,18 @@ defmodule Algora.ML do
     Library.Segment.init(subtitles) |> tokenize_and_measure(tokenizer)
   end
 
-  def format_segment(%Library.Segment{start: start, body: body}),
-    do: "#{Library.to_hhmmss(start)}\n#{body}"
+  def format_segment(%Library.Segment{start: start, body: body} = segment),
+    do:
+      "#{Library.to_hhmmss(start)} - [#{segment.starting_subtitle_id}, #{segment.ending_subtitle_id}]\n#{body}"
 
   def chunk(video) do
     subtitles = Library.list_subtitles(video)
+
     chunk(load_tokenizer!(), [], [], subtitles)
+    |> Enum.map(&Library.Segment.init/1)
   end
 
-  def chunk(_, chunks, [], []),
-    do:
-      chunks
-      |> Enum.map(&Library.Segment.init/1)
-      |> Enum.reverse()
+  def chunk(_, chunks, [], []), do: Enum.reverse(chunks)
 
   def chunk(tokenizer, chunks, chunk, []), do: chunk(tokenizer, [chunk | chunks], [], [])
 
@@ -142,7 +141,12 @@ defmodule Algora.ML do
     if valid? do
       chunk(tokenizer, chunks, new_chunk, subtitles)
     else
-      chunk(tokenizer, [Enum.reverse(chunk) | chunks], [], [subtitle | subtitles])
+      chunk(
+        tokenizer,
+        [Enum.reverse(chunk) | chunks],
+        chunk |> Enum.take(2),
+        [subtitle | subtitles]
+      )
     end
   end
 end
