@@ -3,7 +3,7 @@ defmodule Algora.ML do
   alias Replicate.Predictions.Prediction
   alias Algora.{Cache, Library}
 
-  @chunk_size 256
+  @chunk_size 128
 
   @mistral "mistralai/Mixtral-8x7B-Instruct-v0.1"
   @mpnet "replicate/all-mpnet-base-v2"

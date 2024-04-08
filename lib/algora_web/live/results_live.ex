@@ -6,10 +6,10 @@ defmodule AlgoraWeb.ResultsLive do
 
   def render(assigns) do
     ~H"""
-    <div class="text-white min-h-screen max-w-5xl mx-auto">
+    <div class="text-white min-h-screen max-w-7xl mx-auto">
       <div class="flex">
         <div class="flex-1 p-4 space-y-12">
-          <div :for={%{video: video, segments: segments} <- @results} class="grid grid-cols-2 gap-4">
+          <div :for={%{video: video, segments: segments} <- @results} class="flex gap-8">
             <div>
               <img
                 src={video.thumbnail_url}
@@ -19,37 +19,29 @@ defmodule AlgoraWeb.ResultsLive do
                 height="180"
                 style="aspect-ratio: 320 / 180; object-fit: cover;"
               />
-              <div class="mt-4">
-                <div class="flex">
-                  <span class="relative flex h-12 w-12 shrink-0 overflow-hidden rounded-full">
+            </div>
+            <div>
+              <div>
+                <h3 class="text-lg font-bold line-clamp-2"><%= video.title %></h3>
+                <p class="text-sm text-gray-300"><%= Timex.from_now(video.inserted_at) %></p>
+                <div class="mt-2 flex items-center gap-2">
+                  <span class="relative flex items-center h-8 w-8 shrink-0 overflow-hidden rounded-full">
                     <img
                       class="aspect-square h-full w-full"
                       alt={video.channel_name}
                       src={video.channel_avatar_url}
                     />
                   </span>
-                  <div class="ml-4">
-                    <h3 class="text-lg font-bold line-clamp-2"><%= video.title %></h3>
-                    <span class="text-sm text-gray-300"><%= video.channel_name %></span>
-                    <p class="text-sm text-gray-300"><%= Timex.from_now(video.inserted_at) %></p>
-                  </div>
+                  <span class="text-sm text-gray-300"><%= video.channel_name %></span>
                 </div>
               </div>
-            </div>
-            <div class="bg-gray-800 p-4 rounded-xl space-y-4">
-              <h4 class="text-sm font-bold">Matching segments</h4>
-              <div class="flex flex-col space-y-4">
-                <div :for={segment <- segments} class="flex space-x-2">
-                  <img
-                    src={video.thumbnail_url}
-                    alt="Chapter thumbnail"
-                    class="rounded-md aspect-video object-cover h-10"
-                  />
-                  <div>
+              <div class="mt-4 bg-gray-800 p-4 rounded-xl flex gap-4 w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
+                <div :for={segment <- segments} class="space-x-2">
+                  <div class="w-[28rem]">
                     <p class="text-base font-semibold text-green-400">
                       <%= Library.to_hhmmss(segment.start) %>
                     </p>
-                    <p class="text-sm"><%= segment.body %></p>
+                    <p class="mt-2 text-sm"><%= segment.body %></p>
                   </div>
                 </div>
               </div>
