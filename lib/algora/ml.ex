@@ -1,15 +1,15 @@
 defmodule Algora.ML do
   alias Replicate.Predictions
   alias Replicate.Predictions.Prediction
-  alias Algora.Cache
+  alias Algora.{Cache, Library}
 
-  @chunk_size 400
+  @chunk_size 256
 
   @mistral "mistralai/Mixtral-8x7B-Instruct-v0.1"
   @mpnet "replicate/all-mpnet-base-v2"
   @whisper "vaibhavs10/incredibly-fast-whisper"
 
-  @mistral_version ""
+  # @mistral_version ""
   @mpnet_version "b6b7585c9640cd7a9572c6e129c9549d79c9c31f0d3fdce7baac7c67ca38f305"
   @whisper_version "3ab86df6c8f54c11309d4d1f930ac292bad43ace52d10c80d87eb258b3c9f79c"
 
@@ -106,40 +106,40 @@ defmodule Algora.ML do
     tokenizer
   end
 
-  def tokenize_and_measure(tokenizer, input) do
-    %{"input_ids" => tensor} = Bumblebee.apply_tokenizer(tokenizer, input)
+  def tokenize_and_measure(%Library.Segment{body: body}, tokenizer) do
+    %{"input_ids" => tensor} = Bumblebee.apply_tokenizer(tokenizer, body)
     {1, len} = Nx.shape(tensor)
     len
   end
 
-  def chunk(text), do: chunk(load_tokenizer!(), [], "", text |> String.graphemes())
+  def tokenize_and_measure(subtitles, tokenizer) do
+    Library.Segment.init(subtitles) |> tokenize_and_measure(tokenizer)
+  end
 
-  def chunk(_, chunks, [], []), do: Enum.reverse(chunks)
+  def chunk(video) do
+    subtitles = Library.list_subtitles(video) |> dbg
+    chunk(load_tokenizer!(), [], [], subtitles)
+  end
+
+  def chunk(_, chunks, [], []),
+    do:
+      chunks
+      |> Enum.map(&Library.Segment.init/1)
+      |> Enum.reverse()
 
   def chunk(tokenizer, chunks, chunk, []), do: chunk(tokenizer, [chunk | chunks], [], [])
 
   # HACK: loops forever when given a word that doesn't fit in a chunk
   # TODO: overlap chunks
   # TODO: ensure each chunk contains content from one speaker only
-  def chunk(tokenizer, chunks, chunk, graphemes) do
-    next_index = Enum.find_index(graphemes, &is_whitespace?/1)
+  def chunk(tokenizer, chunks, chunk, [subtitle | subtitles]) do
+    new_chunk = chunk ++ [subtitle]
+    valid? = tokenize_and_measure(new_chunk, tokenizer) <= @chunk_size
 
-    {head, rest} =
-      case next_index do
-        nil -> {graphemes, []}
-        idx -> Enum.split(graphemes, idx + 1)
-      end
-
-    new_chunk = (chunk <> to_string(head)) |> dbg
-    is_valid? = tokenize_and_measure(tokenizer, new_chunk) <= @chunk_size
-
-    if is_valid? do
-      chunk(tokenizer, chunks, new_chunk, rest)
+    if valid? do
+      chunk(tokenizer, chunks, new_chunk, subtitles)
     else
-      chunk(tokenizer, [new_chunk | chunks], "", graphemes)
+      chunk(tokenizer, [new_chunk | chunks], [], subtitles)
     end
   end
-
-  # HACK: implement properly
-  defp is_whitespace?(s), do: s == "\n" or s == " "
 end
