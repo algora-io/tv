@@ -105,6 +105,10 @@ defmodule AlgoraWeb.ResultsLive do
      |> assign(:results, results)}
   end
 
+  def handle_params(params, _url, socket) do
+    {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+  end
+
   defp apply_action(socket, :index, _params) do
     socket |> assign(:page_title, "Results")
   end
