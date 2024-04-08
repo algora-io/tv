@@ -136,13 +136,13 @@ defmodule Algora.ML do
   # TODO: overlap chunks
   # TODO: ensure each chunk contains content from one speaker only
   def chunk(tokenizer, chunks, chunk, [subtitle | subtitles]) do
-    new_chunk = chunk ++ [subtitle]
+    new_chunk = [subtitle | chunk]
     valid? = tokenize_and_measure(new_chunk, tokenizer) <= @chunk_size
 
     if valid? do
       chunk(tokenizer, chunks, new_chunk, subtitles)
     else
-      chunk(tokenizer, [chunk | chunks], [], [subtitle | subtitles])
+      chunk(tokenizer, [Enum.reverse(chunk) | chunks], [], [subtitle | subtitles])
     end
   end
 end
