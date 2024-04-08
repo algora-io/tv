@@ -9,17 +9,9 @@ defmodule AlgoraWeb.ResultsLive do
     <div class="text-white min-h-screen max-w-7xl mx-auto">
       <div class="flex">
         <div class="flex-1 p-4 space-y-12">
-          <div :for={%{video: video, segments: segments} <- @results} class="flex gap-8">
-            <div>
-              <img
-                src={video.thumbnail_url}
-                alt={video.title}
-                class="w-full h-auto rounded-xl"
-                width="320"
-                height="180"
-                style="aspect-ratio: 320 / 180; object-fit: cover;"
-              />
-            </div>
+          <div :for={%{video: video, segments: segments} <- @results} class="flex gap-4">
+            <.video_thumbnail video={video} class="w-full rounded-2xl" />
+
             <div>
               <div>
                 <h3 class="text-lg font-bold line-clamp-2"><%= video.title %></h3>
@@ -35,13 +27,17 @@ defmodule AlgoraWeb.ResultsLive do
                   <span class="text-sm text-gray-300"><%= video.channel_name %></span>
                 </div>
               </div>
-              <div class="mt-4 bg-gray-800 p-4 rounded-xl flex gap-4 w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
-                <div :for={segment <- segments} class="space-x-2">
-                  <div class="w-[28rem]">
-                    <p class="text-base font-semibold text-green-400">
-                      <%= Library.to_hhmmss(segment.start) %>
-                    </p>
-                    <p class="mt-2 text-sm"><%= segment.body %></p>
+              <div class="mt-4 relative">
+                <div class="w-full h-full pointer-events-none absolute bg-gradient-to-r from-transparent from-[75%] to-gray-900 rounded-xl">
+                </div>
+                <div class="bg-white/[7.5%] border border-white/[20%] p-4 rounded-xl flex gap-8 w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
+                  <div :for={segment <- segments} class="space-x-2">
+                    <div class="w-[28rem]">
+                      <p class="text-base font-semibold text-green-400">
+                        <%= Library.to_hhmmss(segment.start) %>
+                      </p>
+                      <p class="mt-2 text-sm"><%= segment.body %></p>
+                    </div>
                   </div>
                 </div>
               </div>
