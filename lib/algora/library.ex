@@ -183,7 +183,11 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       where: u.id == ^user.id,
-      select_merge: %{channel_handle: u.handle, channel_name: u.name},
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      },
       order_by: [desc: v.inserted_at],
       limit: 1
     )
@@ -212,7 +216,11 @@ defmodule Algora.Library do
       where: v.format == :mp4 and (v.transmuxed_from_id == ^id or v.id == ^id),
       join: u in User,
       on: v.user_id == u.id,
-      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      }
     )
     |> Repo.one()
   end
@@ -411,7 +419,11 @@ defmodule Algora.Library do
           v.visibility == :public and
           is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
-      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      }
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
@@ -426,7 +438,11 @@ defmodule Algora.Library do
         not is_nil(v.url) and
           is_nil(v.transmuxed_from_id) and v.visibility == :public and
           not is_nil(v.vertical_thumbnail_url),
-      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      }
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
@@ -437,7 +453,11 @@ defmodule Algora.Library do
       limit: ^limit,
       join: u in User,
       on: v.user_id == u.id,
-      select_merge: %{channel_handle: u.handle, channel_name: u.name},
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      },
       where:
         not is_nil(v.url) and
           is_nil(v.transmuxed_from_id) and
@@ -456,6 +476,7 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
+        channel_avatar_url: u.avatar_url,
         messages_count: count(m.id)
       },
       where:
@@ -506,7 +527,11 @@ defmodule Algora.Library do
         where: v.id == ^id,
         join: u in User,
         on: v.user_id == u.id,
-        select_merge: %{channel_handle: u.handle, channel_name: u.name}
+        select_merge: %{
+          channel_handle: u.handle,
+          channel_name: u.name,
+          channel_avatar_url: u.avatar_url
+        }
       )
       |> Repo.one!()
 

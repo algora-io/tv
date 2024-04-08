@@ -24,6 +24,7 @@ defmodule Algora.Library.Video do
     field :filename, :string
     field :channel_handle, :string, virtual: true
     field :channel_name, :string, virtual: true
+    field :channel_avatar_url, :string, virtual: true
     field :messages_count, :integer, virtual: true, default: 0
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
     field :remote_path, :string
