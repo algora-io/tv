@@ -8,7 +8,7 @@ defmodule Algora.Library.Segment do
     field :start, :float
     field :end, :float
     field :body, :string
-    field :embedding, :map
+    field :embedding, {:array, :float}
     belongs_to :video, Library.Video
     belongs_to :starting_subtitle, Library.Subtitle
     belongs_to :ending_subtitle, Library.Subtitle

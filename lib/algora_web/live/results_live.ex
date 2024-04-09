@@ -53,17 +53,19 @@ defmodule AlgoraWeb.ResultsLive do
             <.video_thumbnail video={video} class="w-full rounded-2xl" />
             <div>
               <div>
-                <h3 class="text-lg font-bold line-clamp-2"><%= video.title %></h3>
-                <p class="text-sm text-gray-300"><%= Timex.from_now(video.inserted_at) %></p>
+                <h3 class="text-lg font-bold line-clamp-2">
+                  🔥 Investor Open Office Hours - post your Qs 💸👀
+                </h3>
+                <p class="text-sm text-gray-300">2 days ago</p>
                 <div class="mt-2 flex items-center gap-2">
                   <span class="relative flex items-center h-8 w-8 shrink-0 overflow-hidden rounded-full">
                     <img
                       class="aspect-square h-full w-full"
-                      alt={video.channel_name}
-                      src={video.channel_avatar_url}
+                      alt="Andreas Klinger"
+                      src="https://avatars.githubusercontent.com/u/245833?v=4"
                     />
                   </span>
-                  <span class="text-sm text-gray-300"><%= video.channel_name %></span>
+                  <span class="text-sm text-gray-300">Andreas Klinger</span>
                 </div>
               </div>
               <div class="mt-4 relative">
@@ -90,19 +92,13 @@ defmodule AlgoraWeb.ResultsLive do
 
   def mount(_params, _session, socket) do
     # TODO: implement properly
-    segments = Cache.fetch("tmp/segments", fn -> Library.get_video!(779) |> ML.chunk() end)
+    segments = Cache.fetch("tmp/results", fn -> :ok end)
 
     videos = Library.list_videos(150)
 
-    results =
-      videos
-      |> Enum.map(fn video ->
-        %{video: video, segments: Enum.take_random(segments, 3)}
-      end)
+    results = videos |> Enum.map(fn video -> %{video: video, segments: segments} end)
 
-    {:ok,
-     socket
-     |> assign(:results, results)}
+    {:ok, socket |> assign(:results, results)}
   end
 
   def handle_params(params, _url, socket) do

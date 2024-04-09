@@ -108,7 +108,7 @@ defmodule AlgoraWeb.CoreComponents do
       <Heroicons.play :if={!@video.thumbnail_url} solid class="h-12 w-12 text-gray-500" />
       <img
         :if={@video.thumbnail_url}
-        src={@video.thumbnail_url}
+        src={"https://fly.storage.tigris.dev/algora/9745f817-4466-402c-9d49-bcdcc7efc9d9/index.png"}
         alt={@video.title}
         class="absolute w-full h-full object-cover transition-transform duration-200 hover:scale-105 z-10"
       />

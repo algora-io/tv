@@ -43,13 +43,11 @@ defmodule Algora.ML do
 
   def get_relevant_chunks(index, chunks, embedding) do
     {:ok, labels, _dist} =
-      HNSWLib.Index.knn_query(index, Nx.tensor(embedding), k: 3)
-
-    IO.puts("")
+      HNSWLib.Index.knn_query(index, Nx.tensor(embedding), k: 10)
 
     labels
     |> Nx.to_flat_list()
-    |> Enum.map_join("\n\n", fn idx -> "[...] " <> Enum.at(chunks, idx) <> " [...]" end)
+    |> Enum.map(fn idx -> Enum.at(chunks, idx) end)
   end
 
   def transcribe_video_async(path) do
@@ -64,12 +62,26 @@ defmodule Algora.ML do
     )
   end
 
-  def create_embeddings(chunks) do
-    run(@mpnet, @mpnet_version, text_batch: Jason.encode!(chunks))
+  def create_embedding(text) do
+    run(@mpnet, @mpnet_version, text: text)
   end
 
-  def create_embeddings_async(chunks) do
-    run_async(@mpnet, @mpnet_version, text_batch: Jason.encode!(chunks))
+  def create_embeddings(segments) do
+    text_batch =
+      segments
+      |> Enum.map(fn %Library.Segment{body: body} -> body end)
+      |> Jason.encode!()
+
+    run(@mpnet, @mpnet_version, text_batch: text_batch)
+  end
+
+  def create_embeddings_async(segments) do
+    text_batch =
+      segments
+      |> Enum.map(fn %Library.Segment{body: body} -> body end)
+      |> Jason.encode!()
+
+    run_async(@mpnet, @mpnet_version, text_batch: text_batch)
   end
 
   def test do

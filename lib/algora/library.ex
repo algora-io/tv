@@ -8,7 +8,7 @@ defmodule Algora.Library do
   import Ecto.Changeset
   alias Algora.Accounts.User
   alias Algora.{Repo, Accounts, Storage, Cache, ML}
-  alias Algora.Library.{Channel, Video, Events, Subtitle}
+  alias Algora.Library.{Channel, Video, Events, Subtitle, Segment}
 
   @pubsub Algora.PubSub
 
@@ -472,7 +472,7 @@ defmodule Algora.Library do
       limit: ^limit,
       join: u in assoc(v, :user),
       left_join: m in assoc(v, :messages),
-      group_by: [v.id, u.handle, u.name],
+      group_by: [v.id, u.handle, u.name, u.avatar_url],
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
@@ -554,6 +554,11 @@ defmodule Algora.Library do
   def topic_livestreams(), do: "livestreams"
 
   def topic_studio(), do: "studio"
+
+  def list_segments(%Video{} = video) do
+    from(s in Segment, where: s.video_id == ^video.id, order_by: [asc: s.start])
+    |> Repo.all()
+  end
 
   def list_subtitles(%Video{} = video) do
     from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
