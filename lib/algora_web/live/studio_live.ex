@@ -268,9 +268,12 @@ defmodule AlgoraWeb.StudioLive do
         video = Library.init_mp4!(entry, path, socket.assigns.current_user)
         send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
-        %{video_id: video.id}
-        |> Workers.HLSTransmuxer.new()
-        |> Oban.insert()
+        # TODO: add to oban queue instead
+        # ensure that the worker runs in the same machine where the upload is consumed
+        # %{video_id: video.id}
+        # |> Workers.HLSTransmuxer.new()
+        # |> Oban.insert()
+        Library.transmux_to_hls(video, fn _ -> nil end)
 
         {:ok, video}
       end)
