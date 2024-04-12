@@ -55,6 +55,11 @@ config :algora, AlgoraWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:tv, ~w(--watch)]}
   ]
 
+config :algora, AlgoraWeb.Embed.Endpoint,
+  # Binding to loopback ipv4 address prevents access from other machines.
+  # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
+  http: [ip: {0, 0, 0, 0}, port: 4001]
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

@@ -27,6 +27,10 @@ config :algora, AlgoraWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   server: false
 
+  config :algora, AlgoraWeb.Embed.Endpoint,
+  http: [ip: {127, 0, 0, 1}, port: 4003],
+  server: false
+
 # Print only warnings and errors during test
 config :logger, level: :warn
 
