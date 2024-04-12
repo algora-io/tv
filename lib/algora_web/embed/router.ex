@@ -3,13 +3,8 @@ defmodule AlgoraWeb.Embed.Router do
 
   pipeline :browser do
     plug :accepts, ["html"]
-    # plug :fetch_current_user
     plug :put_root_layout, {AlgoraWeb.Layouts, :root_embed}
     plug :put_secure_browser_headers
-  end
-
-  pipeline :api do
-    plug :accepts, ["json"]
   end
 
   pipeline :embed do
