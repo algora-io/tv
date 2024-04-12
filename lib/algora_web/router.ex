@@ -51,19 +51,12 @@ defmodule AlgoraWeb.Router do
     get "/:channel_handle/latest", VideoPopoutController, :get
     get "/:channel_handle/chat", ChatPopoutController, :get
     get "/:channel_handle/embed", EmbedPopoutController, :get
-
-    # TODO: consolidate live_sessions
+    get "/:channel_handle/:video_id/embed", EmbedPopoutController, :get_by_id
 
     live_session :chat,
       layout: {AlgoraWeb.Layouts, :live_chat},
-      root_layout: {AlgoraWeb.Layouts, :root_bare} do
+      root_layout: {AlgoraWeb.Layouts, :root_embed} do
       live "/:channel_handle/:video_id/chat", ChatLive, :show
-    end
-
-    live_session :embed,
-      layout: {AlgoraWeb.Layouts, :live_bare},
-      root_layout: {AlgoraWeb.Layouts, :root_bare} do
-      live "/:channel_handle/:video_id/embed", EmbedLive, :show
     end
   end
 

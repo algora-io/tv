@@ -6,7 +6,7 @@ defmodule AlgoraWeb.Plugs.AllowIframe do
     put_resp_header(
       conn,
       "content-security-policy",
-      "frame-ancestors 'self' *"
+      "frame-ancestors *"
     )
   end
 end

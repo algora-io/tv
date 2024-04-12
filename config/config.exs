@@ -22,6 +22,16 @@ config :algora, AlgoraWeb.Endpoint,
     layout: false
   ]
 
+config :algora, AlgoraWeb.Embed.Endpoint,
+  url: [host: "localhost"],
+  secret_key_base: "H04mI/fsBvjCX3HO+P2bxFEM7PG3SaGTV+DE1f/BbTVG9oiOXSXsq+3tjDXxRXSe",
+  pubsub_server: Algora.PubSub,
+  live_view: [signing_salt: "fMm4VTD0Mkn/AB41KV+GwgofkocpAGOf"],
+  render_errors: [
+    formats: [html: AlgoraWeb.ErrorHTML, json: AlgoraWeb.ErrorJSON],
+    layout: false
+  ]
+
 config :algora, Oban,
   repo: Algora.Repo,
   notifier: Oban.Notifiers.PG,
