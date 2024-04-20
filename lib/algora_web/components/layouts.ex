@@ -8,11 +8,11 @@ defmodule AlgoraWeb.Layouts do
 
   def sidebar_active_users(assigns) do
     ~H"""
-    <div :if={length(@users) > 0} class="mt-8">
+    <div :if={length(@users) > 0}>
       <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider" id={@id}>
-        For you
+        Live now
       </h3>
-      <ul class="mt-2 space-y-1" role="group" aria-labelledby={@id}>
+      <ul class="mt-4 space-y-1" role="group" aria-labelledby={@id}>
         <%= for user <- @users do %>
           <li class="relative col-span-1 flex shadow-sm rounded-md overflow-hidden">
             <.link
