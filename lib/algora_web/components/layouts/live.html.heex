@@ -48,12 +48,7 @@
       <%= if @current_user do %>
         <.sidebar_account_dropdown id="mobile-account-dropdown" current_user={@current_user} />
       <% else %>
-        <a
-          class="group outline-none w-full"
-          target="_self"
-          rel="noopener noreferrer"
-          href="/auth/login"
-        >
+        <a class="group outline-none w-full" target="_self" href="/auth/login">
           <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none transition bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 h-10 px-2.5 text-base font-semibold rounded mx-3">
             <div class="justify-center flex w-full items-center gap-x-1">
               <span class="mx-auto grow self-center truncate px-1 text-gray-100 text-base font-semibold">
@@ -75,14 +70,54 @@
 
       <div class="text-white mt-1 flex origin-top flex-col overflow-y-auto pt-4 text-lg focus:outline-none focus:ring-0">
         <p class="font-sans font-semibold text-xs uppercase tracking-wider mb-2 px-3 text-gray-400">
+          Resources
+        </p>
+        <a class="group outline-none w-full" target="_blank" href="https://tv.algora.io/zaf/8434">
+          <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none p-2 w-full gap-2 rounded-sm bg-transparent group-hover:bg-gray-800 buttonSize iconSize fontSize text-gray-400 group-hover:text-gray-300 px-3 -ml-1 border-b border-gray-800 transition hover:bg-gray-800">
+            <div class="text-left flex w-full items-center gap-x-1">
+              <div class="group mr-1 rounded border border-gray-900 bg-gray-900/40 p-1.5 group-hover:bg-gray-950">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-5 w-5 text-gray-300 group-hover:text-gray-200 group-hover-transition group-hover:duration-500 opacity-75 group-hover:opacity-90"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18.364 19.364a9 9 0 1 0 -12.728 0" /><path d="M15.536 16.536a5 5 0 1 0 -7.072 0" /><path d="M12 13m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                </svg>
+              </div>
+              <span class="mx-auto grow self-center truncate px-1 text-gray-200 group-hover:text-gray-100 transition text-sm font-semibold">
+                How to livestream
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                class="h-3.5 text-gray-200 group-hover:text-gray-100 transition text-base font-normal ml-0.5 shrink-0 justify-end"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clip-rule="evenodd"
+                >
+                </path>
+              </svg>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="text-white mt-1 flex origin-top flex-col overflow-y-auto pt-4 text-lg focus:outline-none focus:ring-0">
+        <p class="font-sans font-semibold text-xs uppercase tracking-wider mb-2 px-3 text-gray-400">
           Community
         </p>
-        <a
-          class="group outline-none w-full"
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://algora.io/discord"
-        >
+        <a class="group outline-none w-full" target="_blank" href="https://algora.io/discord">
           <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none p-2 w-full gap-2 rounded-sm bg-transparent group-hover:bg-gray-800 buttonSize iconSize fontSize text-gray-400 group-hover:text-gray-300 px-3 -ml-1 border-b border-gray-800 transition hover:bg-gray-800">
             <div class="text-left flex w-full items-center gap-x-1">
               <div class="group mr-1 rounded border border-gray-900 bg-gray-900/40 p-1.5 group-hover:bg-gray-950">
@@ -196,7 +231,7 @@
                 </svg>
               </div>
               <span class="mx-auto grow self-center truncate px-1 text-sm font-semibold text-gray-200 transition group-hover:text-gray-100">
-                Star us on GitHub: <span class="font-normal">22</span>
+                Star us on GitHub
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
