@@ -43,28 +43,179 @@
     <div class="flex-shrink-0 flex items-center px-4">
       <.logo />
     </div>
-    <div class="mt-5 flex-1 h-0 overflow-y-auto">
+
+    <div class="mt-4 flex-1 h-0 overflow-y-auto">
       <%= if @current_user do %>
         <.sidebar_account_dropdown id="mobile-account-dropdown" current_user={@current_user} />
       <% else %>
-        <div class="px-4">
-          <.link
-            navigate="/auth/login"
-            class="flex items-center justify-center rounded px-4 py-2 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
-          >
-            <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
-            </span>
-            <span class="relative font-semibold text-sm">Login</span>
-          </.link>
-        </div>
+        <a
+          class="group outline-none w-full"
+          target="_self"
+          rel="noopener noreferrer"
+          href="/auth/login"
+        >
+          <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none transition bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 h-10 px-2.5 text-base font-semibold rounded mx-3">
+            <div class="justify-center flex w-full items-center gap-x-1">
+              <span class="mx-auto grow self-center truncate px-1 text-gray-100 text-base font-semibold">
+                Login
+              </span>
+            </div>
+          </div>
+        </a>
       <% end %>
 
-      <nav class="px-3 pt-1">
+      <nav class="px-3 pt-4">
         <%= if @current_user do %>
-          <.sidebar_nav_links current_user={@current_user} active_tab={@active_tab} />
+          <div class="mb-4">
+            <.sidebar_nav_links current_user={@current_user} active_tab={@active_tab} />
+          </div>
         <% end %>
         <.sidebar_active_users id="desktop-active-users" users={@active_users} />
       </nav>
+
+      <div class="text-white mt-1 flex origin-top flex-col overflow-y-auto pt-4 text-lg focus:outline-none focus:ring-0">
+        <p class="font-sans font-semibold text-xs uppercase tracking-wider mb-2 px-3 text-gray-400">
+          Community
+        </p>
+        <a
+          class="group outline-none w-full"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://algora.io/discord"
+        >
+          <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none p-2 w-full gap-2 rounded-sm bg-transparent group-hover:bg-gray-800 buttonSize iconSize fontSize text-gray-400 group-hover:text-gray-300 px-3 -ml-1 border-b border-gray-800 transition hover:bg-gray-800">
+            <div class="text-left flex w-full items-center gap-x-1">
+              <div class="group mr-1 rounded border border-gray-900 bg-gray-900/40 p-1.5 group-hover:bg-gray-950">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 text-gray-300 group-hover:text-gray-200 group-hover-transition group-hover:duration-500 opacity-75 group-hover:opacity-90"
+                >
+                  <path
+                    d="M20.3303 4.25588C18.7767 3.52901 17.1156 3.00075 15.3789 2.69995C15.1656 3.08556 14.9164 3.60422 14.7446 4.0168C12.8985 3.73917 11.0693 3.73917 9.25716 4.0168C9.08539 3.60422 8.83055 3.08556 8.61536 2.69995C6.87681 3.00075 5.21376 3.53095 3.66019 4.25973C0.526643 8.99494 -0.322811 13.6125 0.101917 18.1645C2.18025 19.7166 4.19441 20.6594 6.17457 21.2764C6.66349 20.6035 7.09953 19.8882 7.47518 19.1344C6.75975 18.8625 6.07453 18.527 5.42707 18.1376C5.59884 18.0103 5.76686 17.8773 5.92918 17.7404C9.87819 19.5874 14.1689 19.5874 18.0707 17.7404C18.235 17.8773 18.403 18.0103 18.5728 18.1376C17.9235 18.5289 17.2364 18.8644 16.521 19.1363C16.8966 19.8882 17.3308 20.6054 17.8216 21.2783C19.8036 20.6613 21.8197 19.7185 23.898 18.1645C24.3964 12.8876 23.0467 8.31241 20.3303 4.25588ZM8.01318 15.3651C6.82772 15.3651 5.85555 14.2584 5.85555 12.9107C5.85555 11.563 6.80696 10.4544 8.01318 10.4544C9.21942 10.4544 10.1916 11.5611 10.1708 12.9107C10.1727 14.2584 9.21942 15.3651 8.01318 15.3651ZM15.9867 15.3651C14.8013 15.3651 13.8291 14.2584 13.8291 12.9107C13.8291 11.563 14.7805 10.4544 15.9867 10.4544C17.193 10.4544 18.1651 11.5611 18.1444 12.9107C18.1444 14.2584 17.193 15.3651 15.9867 15.3651Z"
+                    fill="#FFFF"
+                  >
+                  </path>
+                </svg>
+              </div>
+              <span class="mx-auto grow self-center truncate px-1 text-gray-200 group-hover:text-gray-100 transition text-sm font-semibold">
+                Join the Discord community
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                class="h-3.5 text-gray-200 group-hover:text-gray-100 transition text-base font-normal ml-0.5 shrink-0 justify-end"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clip-rule="evenodd"
+                >
+                </path>
+              </svg>
+            </div>
+          </div>
+        </a>
+        <a
+          class="group outline-none w-full"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://github.com/algora-io/tv/issues"
+        >
+          <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none p-2 w-full gap-2 rounded-sm bg-transparent group-hover:bg-gray-800 buttonSize iconSize fontSize text-gray-400 group-hover:text-gray-300 px-3 -ml-1 border-b border-gray-800 transition hover:bg-gray-800">
+            <div class="text-left flex w-full items-center gap-x-1">
+              <div class="group mr-1 rounded border border-gray-900 bg-gray-900/40 p-1.5 group-hover:bg-gray-950">
+                <svg
+                  class="h-4 w-4 text-gray-300 group-hover:text-gray-200 group-hover-transition group-hover:duration-500"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g clip-path="url(#clip0_571_3822)">
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M12 0C5.37017 0 0 5.50708 0 12.306C0 17.745 3.44015 22.3532 8.20626 23.9849C8.80295 24.0982 9.02394 23.7205 9.02394 23.3881C9.02394 23.0935 9.01657 22.3229 9.00921 21.2956C5.67219 22.0359 4.96501 19.6487 4.96501 19.6487C4.41989 18.2285 3.63168 17.8508 3.63168 17.8508C2.54144 17.0878 3.71271 17.1029 3.71271 17.1029C4.91344 17.1936 5.55433 18.372 5.55433 18.372C6.62247 20.2531 8.36096 19.7092 9.04604 19.3919C9.15654 18.5987 9.46593 18.0548 9.80479 17.745C7.13812 17.4353 4.33886 16.3777 4.33886 11.6638C4.33886 10.3192 4.80295 9.2238 5.57643 8.36261C5.4512 8.05288 5.03867 6.79887 5.69429 5.1067C5.69429 5.1067 6.7035 4.77432 8.99447 6.36827C9.95212 6.09632 10.9761 5.96034 12 5.95279C13.0166 5.95279 14.0479 6.09632 15.0055 6.36827C17.2965 4.77432 18.3057 5.1067 18.3057 5.1067C18.9613 6.79887 18.5488 8.05288 18.4236 8.36261C19.1897 9.2238 19.6538 10.3192 19.6538 11.6638C19.6538 16.3928 16.8471 17.4278 14.1731 17.7375C14.6004 18.1152 14.9908 18.8706 14.9908 20.0189C14.9908 21.6657 14.9761 22.9877 14.9761 23.3957C14.9761 23.728 15.1897 24.1058 15.8011 23.9849C20.5672 22.3532 24 17.745 24 12.3135C24 5.50708 18.6298 0 12 0Z"
+                      fill="currentColor"
+                    >
+                    </path>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_571_3822">
+                      <rect width="24" height="24" fill="currentColor"></rect>
+                    </clipPath>
+                  </defs>
+                </svg>
+              </div>
+              <span class="mx-auto grow self-center truncate px-1 text-gray-200 group-hover:text-gray-100 transition text-sm font-semibold">
+                Recent GitHub issues
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                class="h-3.5 text-gray-200 group-hover:text-gray-100 transition text-base font-normal ml-0.5 shrink-0 justify-end"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clip-rule="evenodd"
+                >
+                </path>
+              </svg>
+            </div>
+          </div>
+        </a>
+        <a
+          class="group outline-none w-full"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://github.com/algora-io/tv"
+        >
+          <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none p-2 w-full gap-2 rounded-sm bg-transparent group-hover:bg-gray-800 buttonSize iconSize fontSize text-gray-400 group-hover:text-gray-300 px-3 -ml-1 border-b border-gray-800 transition hover:bg-gray-800">
+            <div class="text-left flex w-full items-center gap-x-1">
+              <div class="group mr-1 rounded border border-gray-900 bg-gray-900/40 p-1.5 group-hover:bg-gray-950">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  class="h-4 w-4 text-gray-300 group-hover:text-gray-200 group-hover-transition group-hover:duration-500"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+                    clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </div>
+              <span class="mx-auto grow self-center truncate px-1 text-sm font-semibold text-gray-200 transition group-hover:text-gray-100">
+                Star us on GitHub: <span class="font-normal">22</span>
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                class="h-3.5 text-gray-200 group-hover:text-gray-100 transition text-base font-normal ml-0.5 shrink-0 justify-end"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clip-rule="evenodd"
+                >
+                </path>
+              </svg>
+            </div>
+          </div>
+        </a>
+      </div>
     </div>
   </div>
 

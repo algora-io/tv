@@ -241,7 +241,7 @@ defmodule AlgoraWeb.CoreComponents do
   def dropdown(assigns) do
     ~H"""
     <!-- User account dropdown -->
-    <div class="px-3 mt-6 w-full relative inline-block text-left">
+    <div class="px-3 w-full relative inline-block text-left">
       <div>
         <button
           id={@id}
