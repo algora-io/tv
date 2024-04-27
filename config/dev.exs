@@ -29,13 +29,15 @@ config :ex_aws, :s3,
 config :algora, Algora.Repo,
   url: System.get_env("DATABASE_URL"),
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  log: false
 
 config :algora, Algora.Repo.Local,
   url: System.get_env("DATABASE_URL"),
   show_sensitive_data_on_connection_error: true,
   pool_size: 10,
-  priv: "priv/repo"
+  priv: "priv/repo",
+  log: false
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
