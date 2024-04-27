@@ -52,8 +52,8 @@ defmodule Algora.Application do
       %{
         id: Membrane.RTMP.Source.TcpServer,
         start: {Membrane.RTMP.Source.TcpServer, :start_link, [tcp_server_options]}
-      }
-
+      },
+      Algora.Stargazer
       # Start a worker by calling: Algora.Worker.start_link(arg)
       # {Algora.Worker, arg}
     ]

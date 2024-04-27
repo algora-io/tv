@@ -137,6 +137,7 @@
             </div>
           </a>
           <a
+            :if={Algora.Stargazer.count()}
             class="group outline-none w-fit"
             target="_blank"
             rel="noopener noreferrer"
@@ -166,7 +167,7 @@
                   </defs>
                 </svg>
                 <span class="hidden xl:block">Star</span>
-                <span class="font-semibold text-gray-300">22</span>
+                <span class="font-semibold text-gray-300"><%= Algora.Stargazer.count() %></span>
               </div>
             </div>
           </a>
