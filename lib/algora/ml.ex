@@ -167,7 +167,7 @@ defmodule Algora.ML do
       chunk(
         tokenizer,
         [Enum.reverse(chunk) | chunks],
-        chunk |> Enum.take(2),
+        if(length(chunk) > 2, do: chunk |> Enum.take(2), else: []),
         [subtitle | subtitles]
       )
     end
