@@ -82,7 +82,7 @@ defmodule AlgoraWeb.Router do
     live_session :default, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
       live "/", HomeLive, :show
       live "/auth/login", SignInLive, :index
-      live "/results", ResultsLive, :index
+      live "/cossgpt", COSSGPTLive, :index
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
     end

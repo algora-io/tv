@@ -1,4 +1,4 @@
-defmodule AlgoraWeb.ResultsLive do
+defmodule AlgoraWeb.COSSGPTLive do
   use AlgoraWeb, :live_view
   require Logger
 
