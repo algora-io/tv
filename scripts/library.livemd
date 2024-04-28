@@ -1,0 +1,276 @@
+# Library
+
+## Section
+
+```elixir
+audios = [
+  {0, "Supertokens Interview Highlights.mp3"},
+  {0, "COSS Founder Interview Highlights _ Turso.mp3"},
+  {0, "Demo _ Optimize ReactJS _ Million.mp3"},
+  {0, "Hanko full interview.mp3"},
+  {6363, "UnkeyCofounders.mp3"},
+  {0, "OpenBB Full Interview.mp3"},
+  {0, "Signoz Interview Highlights.mp3"},
+  {0, "Remotion Interview Highlights.mp3"},
+  {0, "Nango Interview Highlights.mp3"},
+  {0, "Demo _ API Platform _ Tailcall.mp3"},
+  {0, "Demo _ Document Signing _ Documenso.mp3"},
+  {0, "Linen Interview Highlights.mp3"},
+  {0, "Medplum Full Interview.mp3"},
+  {0, "Demo _ Mobile Apps _ Tauri.mp3"},
+  {0, "Windmill Interview Highlights.mp3"},
+  {0, "Advice for OSS Maintainers _ Unkey.mp3"},
+  {0, "My experience using bounties _ Documenso.mp3"},
+  {0, "Elementary Data Highlights.mp3"},
+  {0, "Sematic Interview Highlights.mp3"},
+  {0, "Demo _ SQLite for Production _ Turso.mp3"},
+  {0, "Marketing for Technical Founders _ Timeplus.mp3"},
+  {0, "Infisical Interview Highlights.mp3"},
+  {0, "Novu Interview Highlights.mp3"},
+  {0, "Hydra Full Interview.mp3"},
+  {0, "Founder Interview Highlights _ Tauri.mp3"},
+  {0, "My experience with bounties _ Remotion.mp3"},
+  {0, "shuttle.rs Interview Highlights.mp3"},
+  {0, "Interview Highlights _ Nuxt.mp3"},
+  {0, "Ivy Interview Highlights.mp3"},
+  {0, "Nextcloud Interview Highlights.mp3"},
+  {0, "How to launch _ Dozer.mp3"},
+  {0, "Demo _ Self-hosted Git _ Gitea.mp3"},
+  {6348, "Demo _ OSS Search _ Orama.mp3"},
+  {0, "My experience using bounties _ Tailcall.mp3"},
+  {0, "Okteto Interview Highlights .mp3"},
+  {0, "My experience using bounties _ Maybe Finance.mp3"},
+  {0, "OSS Sustainability & Commercialization _ Gitea.mp3"},
+  {0, "How to DevRel in 2024 _ Unkey.mp3"},
+  {0, "How I met my co-founder _ Documenso.mp3"},
+  {0, "COSS Founder Interview Highlights _ Million.mp3"},
+  {0, "Demo _ API Authentication _ Unkey.mp3"},
+  {0, "Tigris Data Interview Highlights.mp3"},
+  {0, "Advice for Content Creators _ Unkey.mp3"},
+  {0, "Refine Interview Highlights.mp3"},
+  {0, "Founder Interview Highlights _ Orama.mp3"},
+  {0, "Demo _ Personal Finance _ Maybe.mp3"},
+  {0, "Cal.com Interview Highlights.mp3"},
+  {0, "Hoppscotch Interview Highlights.mp3"},
+  {0, "IHP Interview Highlights.mp3"}
+]
+
+# audios |> IO.inspect(limit: :infinity)
+:ok
+```
+
+```elixir
+videos = [
+  {6309, "shuttle.rs (YC S20) Founder Interview Highlights"},
+  {6310, "Algora Demo"},
+  {6334, "Open source interviews #26 - Lucas Smith, co-founder of Documenso.com"},
+  {6335, "Open Data, Machine Learning & OSS in Education"},
+  {6387, "IHP Founder Interview Highlights"},
+  {8332, "Hoppscotch Interview Highlights"},
+  {8335, "Cal.com Interview Highlights"},
+  {6357, "Open source interviews #12 - Civan Özseyhan, founder of Refine.dev"},
+  {6360, "Advice for Software Engineers starting their careers"},
+  {8336, "Cal.com Interview Highlights"},
+  {6389, "Open source interviews #14 - Maayan Salom, founder of Elementary Data"},
+  {6390, "Remotion.dev Founder Interview Highlights"},
+  {6391, "Open source interviews #33 - Daniel Roe, maintainer of Nuxt"},
+  {6293, "Tailcall.run Founder Background | Edge Computing"},
+  {6294, "Bounties | Pay developers on Github in 60 seconds"},
+  {6336, "Open source interviews #32 - Josh Pigford, founder of Maybe.co"},
+  {6346, "Live Demo 💻 Tailcall.run | GraphQL & API Orchestration"},
+  {6347, "Linen.dev (YC S20) - Founder Interview Highlights"},
+  {6324, "Open source interviews #30 - James Perkins, founder of Unkey.dev"},
+  {6325, "Hydra.so Founder Interview Highlights | Column-oriented Postgres"},
+  {6330, "COSS Founder Interviews #21 - Joe Sciarrino, founder of Hydra"},
+  {6331, "Open source interviews #31 - Matt R, maintainer of Gitea.com"},
+  {6333, "SuperTokens.com (YC S20) Founder Interview Highlights"},
+  {6353, "COSS Founder Interviews #24 - Matija Sosic, founder of Wasp (YC W21)"},
+  {6361, "Why we use open source bounties"},
+  {6362, "OSS Sustainability with Bounties"},
+  {6363, "How I met my co-founder at Unkey.dev"},
+  {6376, "Turso Founder Interview Highlights"},
+  {6377, "Live demo 💻 Unkey.dev #opensource API authentication & authorization"},
+  {6378, "Functional Programming Javascript?!"},
+  {6379, "Nuxt | Daniel Roe | Interview Highlights"},
+  {6364, "Open source interviews #18 - Dima Grossman, founder of Novu"},
+  {6380, "Engineering Salaries 💸 🖥️ Big Tech vs Startups vs Founder"},
+  {6393, "Windmill.dev (YC S22) Founder Interview Highlights"},
+  {6395, "Open source interviews #8 - Ramiro Berrelleza, founder of Okteto (YC W19)"},
+  {6401, "Learn Nuxt in 15min 💻 Live Demo by Daniel Roe"},
+  {6403, "Open source interviews #10 - Frank Karlitschek, founder of Nextcloud"},
+  {6404, "Open source interviews #5 - Peer Richelsen, founder of Cal.com"},
+  {6405, "Tigris Data Founder Interview Highlights"},
+  {6406, "Open source interviews #1 - Daniel Lenton, founder of Ivy (YC W23)"},
+  {6407, "Open source interviews #20 - Didier Lopes, founder of OpenBB"},
+  {6385, "Open source interviews #9 - Liyas Thomas, founder of Hoppscotch.io"},
+  {6384, "Open source interviews #3 - Robin Guldener, founder of Nango (YC W23)"},
+  {6388, "Open source interviews #13 - Advait Ruia, founder of Supertokens.com"},
+  {6396, "Advice to Open Source Contributors"},
+  {6397, "Live demo 💻 Scalar.com #opensource API docs"},
+  {6398, "Algora.io Demo"},
+  {6399, "High school student solves #opensource bounties"},
+  {6400, "Sematic (YC S22) Interview Highlights"},
+  {6409, "Open source interviews #6 - Jonny Burger, founder of Remotion.dev"},
+  {6410, "Open source interviews #2 - Kam Leung, founder of Linen.dev (YC S20)"},
+  {6411, "☁️ Nextcloud.com Founder Interview Highlights"},
+  {6413, "Cal.com Founder Interview Highlights"},
+  {6414, "Open source interviews #15 - Ovais Tariq, founder of Tigris Data"},
+  {6415, "Refine.dev Founder Interview Highlights"},
+  {6416, "Dozer Founder Interview Highlights | Real-time Data Apps"},
+  {6417, "Open source interviews #11 - Pranay Prateek, founder of SigNoz.io"},
+  {6418, "Developer Marketing | How to DevRel in 2024"},
+  {6419, "Elementary Data (YC W22) Founder Interview Highlights"},
+  {6420, "Live demo 💻 Gitea.com #opensource Github alternative"},
+  {6421, "Novu.co Founder Interview Highlights"},
+  {6422, "Signoz (YC W21) Founder Interview Highlights"},
+  {6423, "COSS Founder Interviews #4 - Emmanuel Turlay, founder Sematic (YC S22)"},
+  {6424, "OpenBB Founder Interview Highlights"},
+  {6425, "Okteto.com (YC W19) Founder Interview Highlights"},
+  {6426, "Open source Interviews #28 - Marc Laventure, founder of Scalar.com"},
+  {6427, "Open source interviews #27 - Tushar Mathur, founder of Tailcall"},
+  {6431, "COSS Founder Interviews #23 - Matteo Pelati, founder of Dozer"},
+  {6381, "Wasp (YC W21) Founder Interview Highlights"},
+  {6412, "Open source interviews #7 - Ruben Fiszel, founder of Windmill.dev (YC S22)"},
+  {6402, "Ivy (YC W23) - Founder Interview Highlights"},
+  {6313, "Hanko.io Founder Interview Highlights"},
+  {6301, "Live Demo 💻 Documenso.com"},
+  {6302, "🛸 Hoppscotch.io Founder Interview Highlights"},
+  {6303, "SQLite & Turso 💻 Live demo | Database per user"},
+  {6304, "Building Healthcare Tech in the US | Medplum.com"},
+  {6305, "Nango (YC W23) - Founder Interview Highlights"},
+  {6306, "Open source bounties | Maybe.co founder"},
+  {6339, "COSS Founder Interviews #22 - Felix Magedanz, founder of Hanko.io"},
+  {6327, "Michele Riva, founder of Orama - Open source interviews #35"},
+  {6392, "Live Demo 💻 Maybe Finance #opensource"},
+  {6307, "Advice to Open Source Maintainers"},
+  {6317, "Open Source Coding Bounties 💎 Remotion.dev founder"},
+  {6318, "Live demo 💻 Timeplus.com #opensource SQL Streaming"},
+  {6319, "Open source interviews #17 - Nodar Daneliya, founder of shuttle.rs"},
+  {6320, "Open source interviews #19 - Tony Dang, founder of Infisical (YC W23)"},
+  {6348, "Live Demo 💻 OramaSearch.com #opensource"},
+  {6295, "Glauber Costa, founder of Turso - Open source interviews Ep.34"},
+  {6296, "💎 Algora.io demo + activity timeline | March 2023"},
+  {6297, "Algora Bounties API - Pay engineers on Github"},
+  {6428, "Open source interviews #16 - Marc Scholten, founder of IHP"},
+  {6429, "Open source interviews #25 - Cody Ebberson, founder of Medplum.com"},
+  {6430, "Open source Interviews #29 - Jove Zhong, co-founder of Timeplus.com"},
+  {6298, "💎 Create, solve & reward bounties on Github!"},
+  {6299, "Live demo 💎 Algora.io | Improving Onboarding"},
+  {6300, "Infisical (YC W23) Founder Interview Highlights"}
+]
+
+#  videos |> IO.inspect(limit: :infinity)
+:ok
+```
+
+```elixir
+import Ecto.Query
+import Ecto.Changeset
+
+alias Algora.{Accounts, Library, Repo, Storage, Cache, ML}
+
+IEx.configure(inspect: [charlists: :as_lists])
+
+if Code.ensure_loaded?(ExSync) && function_exported?(ExSync, :register_group_leader, 0) do
+  ExSync.register_group_leader()
+end
+```
+
+```elixir
+defmodule Util do
+  @dir "/home/zaf/Desktop/podcast audio"
+
+  alias Algora.Library.Video
+
+  def transcribe_video(id, filename) do
+    video = Library.get_video!(id)
+
+    index = ML.load_index!()
+
+    video =
+      case video.uuid do
+        nil ->
+          video |> change() |> Video.put_video_uuid() |> Repo.update!()
+
+        _ ->
+          video
+      end
+
+    slug = Video.slug(video)
+
+    Cache.fetch("#{slug}/upload", fn ->
+      Storage.upload_from_filename("#{@dir}/#{filename}", "#{video.uuid}/index.mp3")
+      :ok
+    end)
+
+    Cache.fetch("#{slug}/transcription", fn ->
+      transcription = ML.transcribe_video("#{video.url_root}/index.mp3")
+
+      :ok =
+        transcription["chunks"]
+        |> Enum.map(fn %{"text" => text, "timestamp" => [tstart, tend]} ->
+          %Library.Subtitle{
+            body: text,
+            start: :erlang.float(tstart),
+            end: :erlang.float(tend),
+            video_id: video.id
+          }
+        end)
+        |> Enum.each(&Repo.insert!/1)
+
+      transcription
+    end)
+
+    chunks = ML.chunk(video)
+
+    embeddings =
+      Cache.fetch("#{slug}/embeddings", fn ->
+        ML.create_embeddings(chunks)
+      end)
+
+    segments =
+      Cache.refetch("#{slug}/segments", fn ->
+        segments =
+          Enum.zip(chunks, embeddings)
+          |> Enum.map(fn {chunk, embedding} ->
+            %Library.Segment{chunk | embedding: embedding["embedding"]}
+          end)
+          |> Enum.map(&Repo.insert!/1)
+
+        ML.add_embeddings(index, segments)
+
+        segments
+      end)
+
+    segments
+  end
+end
+```
+
+```elixir
+index = ML.load_index!()
+
+videos = [
+  {6363, "UnkeyCofounders.mp3"},
+  {6348, "Demo _ OSS Search _ Orama.mp3"}
+]
+
+for {id, filename} <- videos do
+  Util.transcribe_video(id, filename)
+end
+
+query =
+  Cache.fetch("tmp/query", fn -> ML.create_embedding("Any tips for open source founders?") end)
+  |> Enum.at(0)
+  |> then(& &1["embedding"])
+
+results =
+  Cache.refetch("tmp/results", fn ->
+    ML.get_relevant_chunks(index, query)
+  end)
+
+results
+|> Enum.map(fn %Library.Segment{video_id: video_id, body: body} -> "#{video_id}\n#{body}" end)
+|> Enum.intersperse("\n")
+|> Enum.each(&IO.puts/1)
+```
