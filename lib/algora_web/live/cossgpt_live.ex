@@ -97,7 +97,7 @@ defmodule AlgoraWeb.COSSGPTLive do
     results =
       segments
       |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
-      |> Enum.dedup()
+      |> Enum.uniq()
       |> Library.list_videos_by_ids()
       |> Enum.map(fn video ->
         %{video: video, segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)}

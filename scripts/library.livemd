@@ -52,7 +52,10 @@ audios = [
   {0, "Demo _ Personal Finance _ Maybe.mp3"},
   {0, "Cal.com Interview Highlights.mp3"},
   {0, "Hoppscotch Interview Highlights.mp3"},
-  {0, "IHP Interview Highlights.mp3"}
+  {0, "IHP Interview Highlights.mp3"},
+  {8539, "millionfull.mp3"},
+  {8540, "Tauri-Full-Final.mp3"},
+  {8541, "TailcallFull-correct.mp3"}
 ]
 
 # audios |> IO.inspect(limit: :infinity)
@@ -252,7 +255,9 @@ index = ML.load_index!()
 
 videos = [
   {6363, "UnkeyCofounders.mp3"},
-  {6348, "Demo _ OSS Search _ Orama.mp3"}
+  {6348, "Demo _ OSS Search _ Orama.mp3"},
+  {8539, "millionfull.mp3"},
+  {6324, "unkeyfull.mp3"}
 ]
 
 for {id, filename} <- videos do
@@ -260,7 +265,7 @@ for {id, filename} <- videos do
 end
 
 query =
-  Cache.fetch("tmp/query", fn -> ML.create_embedding("Any tips for open source founders?") end)
+  Cache.fetch("tmp/query", fn -> ML.create_embedding("How do you do DevRel?") end)
   |> Enum.at(0)
   |> then(& &1["embedding"])
 
@@ -280,5 +285,5 @@ results =
 
 results
 |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
-|> Enum.dedup()
+|> Enum.uniq()
 ```
