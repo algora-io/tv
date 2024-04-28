@@ -9,7 +9,8 @@ import Config
 
 config :algora,
   ecto_repos: [Algora.Repo.Local],
-  rtmp_port: 9006
+  rtmp_port: 9006,
+  hf_token: System.get_env("HF_TOKEN")
 
 # Configures the endpoint
 config :algora, AlgoraWeb.Endpoint,

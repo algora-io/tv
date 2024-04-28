@@ -114,7 +114,11 @@ defmodule Algora.ML do
   end
 
   def load_tokenizer!() do
-    {:ok, tokenizer} = Bumblebee.load_tokenizer({:hf, @mistral}, [{:type, :llama}])
+    {:ok, tokenizer} =
+      Bumblebee.load_tokenizer({:hf, @mistral, auth_token: Algora.config([:hf_token])}, [
+        {:type, :llama}
+      ])
+
     tokenizer
   end
 
