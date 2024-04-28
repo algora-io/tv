@@ -45,14 +45,15 @@ defmodule Algora.Application do
       {Finch, name: Algora.Finch},
       # Clustering setup
       {DNSCluster, query: Application.get_env(:algora, :dns_cluster_query) || :ignore},
-      # Start the Endpoint (http/https)
+      # Start the Endpoints (http/https)
       AlgoraWeb.Endpoint,
+      AlgoraWeb.Embed.Endpoint,
       # Start the RTMP server
       %{
         id: Membrane.RTMP.Source.TcpServer,
         start: {Membrane.RTMP.Source.TcpServer, :start_link, [tcp_server_options]}
-      }
-
+      },
+      Algora.Stargazer
       # Start a worker by calling: Algora.Worker.start_link(arg)
       # {Algora.Worker, arg}
     ]
@@ -68,6 +69,7 @@ defmodule Algora.Application do
   @impl true
   def config_change(changed, _new, removed) do
     AlgoraWeb.Endpoint.config_change(changed, removed)
+    AlgoraWeb.Embed.Endpoint.config_change(changed, removed)
     :ok
   end
 end

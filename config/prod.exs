@@ -13,6 +13,10 @@ config :algora, AlgoraWeb.Endpoint,
   url: [host: "tv.algora.io", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+config :algora, AlgoraWeb.Embed.Endpoint,
+  url: [host: "tv.algora.io", port: 81],
+  cache_static_manifest: "priv/static/cache_manifest.json"
+
 # Do not print debug messages in production
 config :logger, level: :info
 

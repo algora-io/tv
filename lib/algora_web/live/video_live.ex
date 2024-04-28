@@ -179,7 +179,7 @@ defmodule AlgoraWeb.VideoLive do
     </aside>
     <div class="lg:mr-[24rem]">
       <div class="border-b border-gray-700 px-4 py-4">
-        <figure :if={@channel.is_live} class="relative isolate -mt-4 pt-4 pb-4">
+        <figure class="relative isolate -mt-4 pt-4 pb-4">
           <svg
             viewBox="0 0 162 128"
             fill="none"
@@ -194,7 +194,7 @@ defmodule AlgoraWeb.VideoLive do
             <use href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" x="86"></use>
           </svg>
           <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9">
-            <p><%= @channel.tagline %></p>
+            <p><%= @video["title"] || @channel.tagline %></p>
           </blockquote>
         </figure>
 
