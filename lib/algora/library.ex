@@ -429,6 +429,31 @@ defmodule Algora.Library do
     |> Repo.all()
   end
 
+  def list_videos_by_ids(ids) do
+    videos =
+      from(v in Video,
+        join: u in User,
+        on: v.user_id == u.id,
+        select_merge: %{
+          channel_handle: u.handle,
+          channel_name: u.name,
+          channel_avatar_url: u.avatar_url
+        },
+        where: v.id in ^ids
+      )
+      |> Repo.all()
+
+    video_by_id = fn id ->
+      videos
+      |> Enum.find(fn s -> s.id == id end)
+    end
+
+    ids
+    |> Enum.reduce([], fn id, acc -> [video_by_id.(id) | acc] end)
+    |> Enum.filter(& &1)
+    |> Enum.reverse()
+  end
+
   def list_shorts(limit \\ 100) do
     from(v in Video,
       join: u in User,

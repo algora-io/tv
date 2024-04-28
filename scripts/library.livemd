@@ -229,7 +229,7 @@ defmodule Util do
       end)
 
     segments =
-      Cache.refetch("#{slug}/segments", fn ->
+      Cache.fetch("#{slug}/segments", fn ->
         segments =
           Enum.zip(chunks, embeddings)
           |> Enum.map(fn {chunk, embedding} ->
@@ -264,13 +264,21 @@ query =
   |> Enum.at(0)
   |> then(& &1["embedding"])
 
+{:ok, labels, _} = HNSWLib.Index.knn_query(index, Nx.tensor(query), k: 10)
+
+# labels |> Nx.to_flat_list() |> Library.list_segments_by_ids()
+
 results =
   Cache.refetch("tmp/results", fn ->
     ML.get_relevant_chunks(index, query)
   end)
 
+# results
+# |> Enum.map(fn %Library.Segment{video_id: video_id, body: body} -> "#{video_id}\n#{body}" end)
+# |> Enum.intersperse("\n")
+# |> Enum.each(&IO.puts/1)
+
 results
-|> Enum.map(fn %Library.Segment{video_id: video_id, body: body} -> "#{video_id}\n#{body}" end)
-|> Enum.intersperse("\n")
-|> Enum.each(&IO.puts/1)
+|> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
+|> Enum.dedup()
 ```

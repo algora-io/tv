@@ -54,18 +54,18 @@ defmodule AlgoraWeb.ResultsLive do
             <div>
               <div>
                 <h3 class="text-lg font-bold line-clamp-2">
-                  🔥 Investor Open Office Hours - post your Qs 💸👀
+                  <%= video.title %>
                 </h3>
-                <p class="text-sm text-gray-300">2 days ago</p>
+                <p class="text-sm text-gray-300"><%= Timex.from_now(video.inserted_at) %></p>
                 <div class="mt-2 flex items-center gap-2">
                   <span class="relative flex items-center h-8 w-8 shrink-0 overflow-hidden rounded-full">
                     <img
                       class="aspect-square h-full w-full"
-                      alt="Andreas Klinger"
-                      src="https://avatars.githubusercontent.com/u/245833?v=4"
+                      alt={video.channel_name}
+                      src={video.channel_avatar_url}
                     />
                   </span>
-                  <span class="text-sm text-gray-300">Andreas Klinger</span>
+                  <span class="text-sm text-gray-300"><%= video.channel_name %></span>
                 </div>
               </div>
               <div class="mt-4 relative">
@@ -94,9 +94,14 @@ defmodule AlgoraWeb.ResultsLive do
     # TODO: implement properly
     segments = Cache.fetch("tmp/results", fn -> :ok end)
 
-    videos = Library.list_videos(150)
-
-    results = videos |> Enum.map(fn video -> %{video: video, segments: segments} end)
+    results =
+      segments
+      |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
+      |> Enum.dedup()
+      |> Library.list_videos_by_ids()
+      |> Enum.map(fn video ->
+        %{video: video, segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)}
+      end)
 
     {:ok, socket |> assign(:results, results)}
   end
