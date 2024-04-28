@@ -49,15 +49,26 @@ defmodule Algora.Library.Video do
     put_assoc(changeset, :user, user)
   end
 
+  def put_video_uuid(%Ecto.Changeset{} = changeset) do
+    if changeset.valid? do
+      uuid = Ecto.UUID.generate()
+
+      changeset
+      |> put_change(:uuid, uuid)
+      |> put_change(:url_root, url_root(uuid))
+    else
+      changeset
+    end
+  end
+
   def put_video_meta(%Ecto.Changeset{} = changeset, format, basename \\ "index")
       when format in [:mp4, :hls] do
     if changeset.valid? do
-      uuid = Ecto.UUID.generate()
       filename = "#{basename}#{fileext(format)}"
 
       changeset
+      |> put_video_uuid()
       |> put_change(:filename, filename)
-      |> put_change(:uuid, uuid)
     else
       changeset
     end
@@ -71,7 +82,6 @@ defmodule Algora.Library.Video do
 
       changeset
       |> put_change(:url, url(uuid, filename))
-      |> put_change(:url_root, url_root(uuid))
       |> put_change(:remote_path, "#{uuid}/#{filename}")
     else
       changeset
