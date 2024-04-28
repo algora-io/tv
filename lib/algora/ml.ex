@@ -33,25 +33,35 @@ defmodule Algora.ML do
     end
   end
 
-  def add_embeddings(index, %Prediction{output: output}) do
-    for x <- output do
-      HNSWLib.Index.add_items(index, Nx.tensor(x["embedding"]))
+  def add_embeddings(index, segments) do
+    for %Library.Segment{id: id, embedding: embedding} <- segments do
+      HNSWLib.Index.add_items(index, Nx.tensor(embedding), ids: [id])
     end
 
     save_index(index)
   end
 
-  def get_relevant_chunks(index, chunks, embedding) do
+  def get_relevant_chunks(index, embedding) do
     {:ok, labels, _dist} =
       HNSWLib.Index.knn_query(index, Nx.tensor(embedding), k: 10)
 
-    labels
-    |> Nx.to_flat_list()
-    |> Enum.map(fn idx -> Enum.at(chunks, idx) end)
+    labels |> Nx.to_flat_list() |> Library.list_segments_by_ids()
   end
 
   def transcribe_video_async(path) do
     run_async(
+      @whisper,
+      @whisper_version,
+      audio: path,
+      language: "english",
+      timestamp: "chunk",
+      batch_size: 64,
+      diarise_audio: false
+    )
+  end
+
+  def transcribe_video(path) do
+    run(
       @whisper,
       @whisper_version,
       audio: path,
@@ -92,10 +102,7 @@ defmodule Algora.ML do
   end
 
   def run(model, version, input) do
-    case Replicate.run("#{model}:#{version}", input) do
-      {:ok, %Prediction{} = prediction} -> prediction
-      {:error, message} -> {:error, message}
-    end
+    Replicate.run("#{model}:#{version}", input)
   end
 
   def run_async(model, version, input) do
