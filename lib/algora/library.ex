@@ -560,6 +560,20 @@ defmodule Algora.Library do
     |> Repo.all()
   end
 
+  def list_segments_by_ids(ids) do
+    segments = from(s in Segment, where: s.id in ^ids) |> Repo.all()
+
+    segment_by_id = fn id ->
+      segments
+      |> Enum.find(fn s -> s.id == id end)
+    end
+
+    ids
+    |> Enum.reduce([], fn id, acc -> [segment_by_id.(id) | acc] end)
+    |> Enum.filter(& &1)
+    |> Enum.reverse()
+  end
+
   def list_subtitles(%Video{} = video) do
     from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
     |> Repo.all()
