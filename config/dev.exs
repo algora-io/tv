@@ -1,5 +1,7 @@
 import Config
 
+config :algora, mode: :dev
+
 config :algora, :files, bucket: System.get_env("BUCKET_NAME")
 
 config :algora, :github,

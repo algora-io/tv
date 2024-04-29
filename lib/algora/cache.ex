@@ -14,7 +14,14 @@ defmodule Algora.Cache do
 
   def path(key) do
     path = key |> String.split("/") |> Enum.map(&Slug.slugify/1)
-    Path.join([:code.priv_dir(:algora), "cache"] ++ path)
+
+    dir =
+      case Algora.config([:mode]) do
+        :prod -> "/data"
+        _ -> :code.priv_dir(:algora)
+      end
+
+    Path.join([dir, "cache"] ++ path)
   end
 
   defp write(path, content) do
