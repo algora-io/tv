@@ -78,14 +78,18 @@ defmodule AlgoraWeb.COSSGPTLive do
                 <div class="w-full h-full pointer-events-none absolute bg-gradient-to-r from-transparent from-[75%] to-gray-900 rounded-xl">
                 </div>
                 <div class="bg-white/[7.5%] border border-white/[20%] p-4 rounded-xl flex gap-8 w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
-                  <div :for={segment <- segments} class="space-x-2">
+                  <.link
+                    :for={segment <- segments}
+                    class="space-x-2"
+                    navigate={"/#{video.channel_handle}/#{video.id}?t=#{trunc(segment.start)}"}
+                  >
                     <div class="w-[28rem]">
                       <p class="text-base font-semibold text-green-400">
                         <%= Library.to_hhmmss(segment.start) %>
                       </p>
                       <p class="mt-2 text-sm"><%= segment.body %></p>
                     </div>
-                  </div>
+                  </.link>
                 </div>
               </div>
             </div>
