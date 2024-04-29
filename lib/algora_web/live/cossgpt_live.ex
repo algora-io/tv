@@ -2,7 +2,7 @@ defmodule AlgoraWeb.COSSGPTLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Library, ML}
+  alias Algora.{Library, ML, Cache}
 
   @impl true
   def render(assigns) do
@@ -48,8 +48,8 @@ defmodule AlgoraWeb.COSSGPTLive do
           </button>
         </div>
       </form>
-      <div :if={@results} class="flex mt-8">
-        <div class="flex-1 p-4 space-y-8">
+      <div class="flex mt-8">
+        <div :if={@results} class="flex-1 p-4 space-y-8">
           <div :for={%{video: video, segments: segments} <- @results} class="flex gap-8">
             <.link navigate={"/#{video.channel_handle}/#{video.id}"} class="w-full">
               <.video_thumbnail video={video} class="w-full rounded-2xl" />
@@ -91,6 +91,12 @@ defmodule AlgoraWeb.COSSGPTLive do
             </div>
           </div>
         </div>
+        <div :if={@task} class="flex-1 p-4 space-y-8">
+          <div :for={_ <- 1..2} class="flex gap-8">
+            <div class="w-1/2 rounded-2xl aspect-video bg-white/10 animate-pulse"></div>
+            <div class="w-1/2 rounded-2xl aspect-video bg-white/10 animate-pulse"></div>
+          </div>
+        </div>
       </div>
     </div>
     """
@@ -98,7 +104,7 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:results, nil)}
+    {:ok, socket |> assign(text: nil, task: nil, results: nil)}
   end
 
   @impl true
@@ -115,24 +121,26 @@ defmodule AlgoraWeb.COSSGPTLive do
       text ->
         task =
           Task.async(fn ->
-            %{"embedding" => embedding} = ML.create_embedding(query) |> Enum.at(0)
+            Cache.refetch("tmp/results", fn ->
+              %{"embedding" => embedding} = ML.create_embedding(query) |> Enum.at(0)
 
-            index = ML.load_index!()
+              index = ML.load_index!()
 
-            segments = ML.get_relevant_chunks(index, embedding)
+              segments = ML.get_relevant_chunks(index, embedding)
 
-            to_result = fn video ->
-              %{
-                video: video,
-                segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
-              }
-            end
+              to_result = fn video ->
+                %{
+                  video: video,
+                  segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
+                }
+              end
 
-            segments
-            |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
-            |> Enum.uniq()
-            |> Library.list_videos_by_ids()
-            |> Enum.map(to_result)
+              segments
+              |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
+              |> Enum.uniq()
+              |> Library.list_videos_by_ids()
+              |> Enum.map(to_result)
+            end)
           end)
 
         {:noreply, assign(socket, text: text, task: task, results: nil)}

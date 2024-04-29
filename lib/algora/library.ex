@@ -588,10 +588,7 @@ defmodule Algora.Library do
   def list_segments_by_ids(ids) do
     segments = from(s in Segment, where: s.id in ^ids) |> Repo.all()
 
-    segment_by_id = fn id ->
-      segments
-      |> Enum.find(fn s -> s.id == id end)
-    end
+    segment_by_id = fn id -> segments |> Enum.find(fn s -> s.id == id end) end
 
     ids
     |> Enum.reduce([], fn id, acc -> [segment_by_id.(id) | acc] end)
