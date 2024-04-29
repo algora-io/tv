@@ -50,14 +50,19 @@ defmodule AlgoraWeb.COSSGPTLive do
       <div class="flex mt-8">
         <div class="flex-1 p-4 space-y-8">
           <div :for={%{video: video, segments: segments} <- @results} class="flex gap-8">
-            <.video_thumbnail video={video} class="w-full rounded-2xl" />
+            <.link navigate={"/#{video.channel_handle}/#{video.id}"} class="w-full">
+              <.video_thumbnail video={video} class="w-full rounded-2xl" />
+            </.link>
             <div>
               <div>
-                <h3 class="text-lg font-bold line-clamp-2">
+                <.link
+                  navigate={"/#{video.channel_handle}/#{video.id}"}
+                  class="text-lg font-bold line-clamp-2"
+                >
                   <%= video.title %>
-                </h3>
+                </.link>
                 <p class="text-sm text-gray-300"><%= Timex.from_now(video.inserted_at) %></p>
-                <div class="mt-2 flex items-center gap-2">
+                <.link navigate={"/#{video.channel_handle}"} class="mt-2 flex items-center gap-2">
                   <span class="relative flex items-center h-8 w-8 shrink-0 overflow-hidden rounded-full">
                     <img
                       class="aspect-square h-full w-full"
@@ -66,7 +71,7 @@ defmodule AlgoraWeb.COSSGPTLive do
                     />
                   </span>
                   <span class="text-sm text-gray-300"><%= video.channel_name %></span>
-                </div>
+                </.link>
               </div>
               <div class="mt-4 relative">
                 <div class="w-full h-full pointer-events-none absolute bg-gradient-to-r from-transparent from-[75%] to-gray-900 rounded-xl">
