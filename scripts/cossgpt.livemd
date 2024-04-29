@@ -1,4 +1,4 @@
-# Library
+# COSSgpt
 
 ```elixir
 import Ecto.Query
