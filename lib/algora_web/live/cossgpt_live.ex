@@ -2,7 +2,7 @@ defmodule AlgoraWeb.COSSGPTLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Library, Cache}
+  alias Algora.{Library, ML}
 
   @impl true
   def render(assigns) do
@@ -115,19 +115,24 @@ defmodule AlgoraWeb.COSSGPTLive do
       text ->
         task =
           Task.async(fn ->
-            # TODO: fetch actual results
-            segments = Cache.fetch("tmp/results", fn -> :ok end)
+            %{"embedding" => embedding} = ML.create_embedding(query) |> Enum.at(0)
+
+            index = ML.load_index!()
+
+            segments = ML.get_relevant_chunks(index, embedding)
+
+            to_result = fn video ->
+              %{
+                video: video,
+                segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
+              }
+            end
 
             segments
             |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
             |> Enum.uniq()
             |> Library.list_videos_by_ids()
-            |> Enum.map(fn video ->
-              %{
-                video: video,
-                segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
-              }
-            end)
+            |> Enum.map(to_result)
           end)
 
         {:noreply, assign(socket, text: text, task: task, results: nil)}
