@@ -68,7 +68,6 @@ defmodule COSSgpt do
 
     IO.puts("- chunking transcript")
 
-    # TODO: fix infinite loop
     chunks = ML.chunk(video)
 
     IO.puts("- creating embeddings")

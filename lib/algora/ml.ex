@@ -154,7 +154,6 @@ defmodule Algora.ML do
 
   def chunk(tokenizer, chunks, chunk, []), do: chunk(tokenizer, [chunk | chunks], [], [])
 
-  # TODO: ensure each chunk contains content from one speaker only
   def chunk(tokenizer, chunks, chunk, [subtitle | subtitles]) do
     new_chunk = [subtitle | chunk]
     valid? = tokenize_and_measure(new_chunk, tokenizer) <= @chunk_size
