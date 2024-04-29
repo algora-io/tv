@@ -97,8 +97,8 @@ defmodule AlgoraWeb.COSSGPTLive do
         </div>
         <div :if={@task} class="flex-1 p-4 space-y-8">
           <div :for={_ <- 1..2} class="flex gap-8">
-            <div class="w-1/2 rounded-2xl aspect-video bg-white/10 animate-pulse"></div>
-            <div class="w-1/2 rounded-2xl aspect-video bg-white/10 animate-pulse"></div>
+            <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
+            <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
           </div>
         </div>
       </div>

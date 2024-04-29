@@ -102,14 +102,6 @@ defmodule AlgoraWeb.StudioLive do
                 </button>
                 &bull;
                 <button
-                  phx-click="transcribe_video"
-                  phx-value-id={video.id}
-                  class="text-gray-200 hover:text-white p-1 font-medium text-base"
-                >
-                  Transcribe video
-                </button>
-                &bull;
-                <button
                   phx-click="toggle_visibility"
                   phx-value-id={video.id}
                   class="text-gray-200 hover:text-white p-1 font-medium text-base"

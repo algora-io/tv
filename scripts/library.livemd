@@ -267,76 +267,56 @@ end
 index = ML.load_index!()
 
 videos = [
-  {6348, "Demo _ OSS Search _ Orama.mp3"},
-  {6333, "Supertokens Interview Highlights.mp3"},
-  {6313, "Hanko full interview.mp3"},
-  {6363, "UnkeyCofounders.mp3"},
-  {6424, "OpenBB Full Interview.mp3"},
-  {6422, "Signoz Interview Highlights.mp3"},
-  {6390, "Remotion Interview Highlights.mp3"},
-  {6305, "Nango Interview Highlights.mp3"},
-  {6347, "Linen Interview Highlights.mp3"},
-  {6429, "Medplum Full Interview.mp3"},
-  {6393, "Windmill Interview Highlights.mp3"},
-  {6419, "Elementary Data Highlights.mp3"},
-  {6400, "Sematic Interview Highlights.mp3"},
-  {6300, "Infisical Interview Highlights.mp3"},
-  {6421, "Novu Interview Highlights.mp3"},
-  {6325, "Hydra Full Interview.mp3"},
-  {6309, "shuttle.rs Interview Highlights.mp3"},
-  {6402, "Ivy Interview Highlights.mp3"},
-  {6411, "Nextcloud Interview Highlights.mp3"},
-  {6425, "Okteto Interview Highlights .mp3"},
-  {6405, "Tigris Data Interview Highlights.mp3"},
-  {6415, "Refine Interview Highlights.mp3"},
-  {6413, "Cal.com Interview Highlights.mp3"},
-  {6302, "Hoppscotch Interview Highlights.mp3"}
-  # {6387, "IHP Interview Highlights.mp3"},
-  # {8196, "peer-1.mp3"},
-  # {8236, "peer-2.mp3"},
-  # {8412, "peer-3.mp3"},
-  # {8428, "peer-4.mp3"},
-  # {8231, "andreas-1.mp3"},
-  # {8411, "andreas-2.mp3"},
-  # {8426, "andreas-3.mp3"},
+  # {6348, "Demo _ OSS Search _ Orama.mp3"},
+  # {6333, "Supertokens Interview Highlights.mp3"},
+  # {6313, "Hanko full interview.mp3"},
+  # {6363, "UnkeyCofounders.mp3"},
+  # {6424, "OpenBB Full Interview.mp3"},
+  # {6422, "Signoz Interview Highlights.mp3"},
+  # {6390, "Remotion Interview Highlights.mp3"},
+  # {6305, "Nango Interview Highlights.mp3"},
+  # {6347, "Linen Interview Highlights.mp3"},
+  # {6429, "Medplum Full Interview.mp3"},
+  # {6393, "Windmill Interview Highlights.mp3"},
+  # {6419, "Elementary Data Highlights.mp3"},
+  # {6400, "Sematic Interview Highlights.mp3"},
+  # {6300, "Infisical Interview Highlights.mp3"},
+  # {6421, "Novu Interview Highlights.mp3"},
+  # {6325, "Hydra Full Interview.mp3"},
+  # {6309, "shuttle.rs Interview Highlights.mp3"},
+  # {6402, "Ivy Interview Highlights.mp3"},
+  # {6411, "Nextcloud Interview Highlights.mp3"},
+  # {6425, "Okteto Interview Highlights .mp3"},
+  # {6405, "Tigris Data Interview Highlights.mp3"},
+  # {6415, "Refine Interview Highlights.mp3"},
+  # {6413, "Cal.com Interview Highlights.mp3"},
+  # {6302, "Hoppscotch Interview Highlights.mp3"},
   # {6334, "MAIN-Documenso.mp3"},
   # {6331, "GiteaFull.mp3"},
   # {6336, "maybefull.mp3"},
   # {6391, "NuxtFull.mp3"},
   # {6327, "OramaFull.mp3"},
-  # {6426, "Scalarfullinterviw.mp3"},
   # {6430, "FinalTimeplusFullInterview.mp3"},
   # {6295, "tursofull.mp3"},
   # {6324, "unkeyfull.mp3"},
   # {8540, "Tauri-Full-Final.mp3"},
   # {8541, "TailcallFull-correct.mp3"},
   # {8539, "millionfull.mp3"}
+  # {6426, "Scalarfullinterview.mp3"}
+  # {6387, "IHP Interview Highlights.mp3"}
+  # {8428, "peer-4.mp3"},
+  # {8426, "andreas-3.mp3"}
+
+  {8196, "peer-1.mp3"},
+  {8236, "peer-2.mp3"},
+  {8412, "peer-3.mp3"},
+  {8231, "andreas-1.mp3"},
+  {8411, "andreas-2.mp3"}
 ]
+
+# videos |> Enum.map(fn {id, _} -> id end)
 
 for {id, filename} <- videos do
   COSSgpt.transcribe_video(id, filename)
 end
-
-query =
-  Cache.fetch("tmp/query", fn -> ML.create_embedding("How do you do DevRel?") end)
-  |> Enum.at(0)
-  |> then(& &1["embedding"])
-
-{:ok, labels, _} = HNSWLib.Index.knn_query(index, Nx.tensor(query), k: 10)
-
-# labels |> Nx.to_flat_list() |> Library.list_segments_by_ids()
-
-segments =
-  Cache.refetch("tmp/results", fn ->
-    ML.get_relevant_chunks(index, query)
-  end)
-
-segments
-|> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
-|> Enum.uniq()
-```
-
-```elixir
-ML.load_index!()
-|> HNSWLib.Index.get_current_count()
 ```
