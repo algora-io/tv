@@ -49,7 +49,7 @@ defmodule AlgoraWeb.COSSGPTLive do
         </div>
       </form>
       <div class="flex mt-8">
-        <div :if={@results} class="flex-1 p-4 space-y-8">
+        <div :if={@results} class="flex-1 p-4 space-y-8 shrink-0">
           <div :for={%{video: video, segments: segments} <- @results} class="flex gap-8">
             <.link navigate={"/#{video.channel_handle}/#{video.id}"} class="w-full">
               <.video_thumbnail video={video} class="w-full rounded-2xl" />
