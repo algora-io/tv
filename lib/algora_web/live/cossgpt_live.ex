@@ -161,6 +161,6 @@ defmodule AlgoraWeb.COSSGPTLive do
   end
 
   defp apply_action(socket, :index, _params) do
-    socket |> assign(:page_title, "Results")
+    socket |> assign(:page_title, "COSSgpt")
   end
 end
