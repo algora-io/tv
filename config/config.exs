@@ -9,8 +9,7 @@ import Config
 
 config :algora,
   ecto_repos: [Algora.Repo.Local],
-  rtmp_port: 9006,
-  hf_token: System.get_env("HF_TOKEN")
+  rtmp_port: 9006
 
 # Configures the endpoint
 config :algora, AlgoraWeb.Endpoint,
@@ -67,9 +66,6 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :nx, default_backend: EXLA.Backend
-
-config :replicate,
-  replicate_api_token: System.get_env("REPLICATE_API_TOKEN")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

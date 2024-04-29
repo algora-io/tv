@@ -12,6 +12,12 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
   config :algora, AlgoraWeb.Embed.Endpoint, server: true
 end
 
+config :algora,
+  hf_token: System.get_env("HF_TOKEN")
+
+config :replicate,
+  replicate_api_token: System.get_env("REPLICATE_API_TOKEN")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
