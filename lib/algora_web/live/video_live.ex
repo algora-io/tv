@@ -346,7 +346,11 @@ defmodule AlgoraWeb.VideoLive do
     """
   end
 
-  def mount(%{"channel_handle" => channel_handle, "video_id" => video_id}, _session, socket) do
+  def mount(
+        %{"channel_handle" => channel_handle, "video_id" => video_id} = params,
+        _session,
+        socket
+      ) do
     %{current_user: current_user} = socket.assigns
 
     channel =
@@ -378,11 +382,10 @@ defmodule AlgoraWeb.VideoLive do
       |> Jason.encode(pretty: true)
 
     types = %{subtitles: :string}
-    params = %{subtitles: encoded_subtitles}
 
     changeset =
       {data, types}
-      |> Ecto.Changeset.cast(params, Map.keys(types))
+      |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
     socket =
       socket
@@ -398,7 +401,7 @@ defmodule AlgoraWeb.VideoLive do
       |> stream(:videos, videos)
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    if connected?(socket), do: send(self(), {:play, video})
+    if connected?(socket), do: send(self(), {:play, {video, params["t"]}})
 
     {:ok, socket}
   end
@@ -408,11 +411,19 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def handle_info({:play, video}, socket) do
+  def handle_info({:play, {video, t}}, socket) do
+    dbg(t)
+
     socket =
       socket
       |> push_event("play_video", %{
-        detail: %{player: %{src: video.url, type: Library.player_type(video)}}
+        detail: %{
+          player: %{
+            src: video.url,
+            type: Library.player_type(video),
+            currentTime: t
+          }
+        }
       })
       |> push_event("join_chat", %{id: video.id})
 

@@ -144,9 +144,15 @@ const Hooks = {
         const { player } = detail;
         this.player.options({
           techOrder: [player.type === "video/youtube" ? "youtube" : "html5"],
+          ...(player.currentTime && player.type === "video/youtube"
+            ? { youtube: { customVars: { start: player.currentTime } } }
+            : {}),
         });
         this.player.src({ src: player.src, type: player.type });
         this.player.play();
+        if (player.currentTime && player.type !== "video/youtube") {
+          this.player.currentTime(player.currentTime);
+        }
         this.player.el().parentElement.classList.remove("hidden");
         this.player.el().parentElement.classList.add("flex");
 
