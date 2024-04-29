@@ -154,22 +154,30 @@ defmodule Algora.ML do
 
   def chunk(tokenizer, chunks, chunk, []), do: chunk(tokenizer, [chunk | chunks], [], [])
 
-  # HACK: loops forever when given a word that doesn't fit in a chunk
-  # TODO: overlap chunks
   # TODO: ensure each chunk contains content from one speaker only
   def chunk(tokenizer, chunks, chunk, [subtitle | subtitles]) do
     new_chunk = [subtitle | chunk]
     valid? = tokenize_and_measure(new_chunk, tokenizer) <= @chunk_size
 
-    if valid? do
-      chunk(tokenizer, chunks, new_chunk, subtitles)
-    else
-      chunk(
-        tokenizer,
-        [Enum.reverse(chunk) | chunks],
-        if(length(chunk) > 2, do: chunk |> Enum.take(2), else: []),
-        [subtitle | subtitles]
-      )
+    cond do
+      valid? ->
+        chunk(tokenizer, chunks, new_chunk, subtitles)
+
+      chunk == [] ->
+        chunk(
+          tokenizer,
+          chunks,
+          [],
+          subtitles
+        )
+
+      true ->
+        chunk(
+          tokenizer,
+          [Enum.reverse(chunk) | chunks],
+          chunk |> Enum.take(min(2, length(chunk) - 1)),
+          [subtitle | subtitles]
+        )
     end
   end
 end
