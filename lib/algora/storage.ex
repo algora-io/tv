@@ -92,7 +92,7 @@ defmodule Algora.Storage do
   def upload_from_filename(local_path, remote_path, cb \\ fn _ -> nil end, opts \\ []) do
     %{size: size} = File.stat!(local_path)
 
-    chunk_size = 1 * 1024 * 1024
+    chunk_size = 5 * 1024 * 1024
 
     ExAws.S3.Upload.stream_file(local_path, [{:chunk_size, chunk_size}])
     |> Stream.map(fn chunk ->
