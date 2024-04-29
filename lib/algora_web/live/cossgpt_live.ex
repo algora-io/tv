@@ -125,7 +125,7 @@ defmodule AlgoraWeb.COSSGPTLive do
       text ->
         task =
           Task.async(fn ->
-            Cache.refetch("tmp/results", fn ->
+            Cache.fetch("cossgpt/#{Slug.slugify(query)}", fn ->
               %{"embedding" => embedding} = ML.create_embedding(query) |> Enum.at(0)
 
               index = ML.load_index!()
