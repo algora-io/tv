@@ -4,10 +4,11 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   alias Algora.{Library, Cache}
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="text-white min-h-screen max-w-7xl mx-auto">
-      <form class="mt-8 max-w-lg mx-auto">
+      <form class="mt-8 max-w-lg mx-auto" phx-submit="search">
         <label
           for="default-search"
           class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
@@ -34,7 +35,7 @@ defmodule AlgoraWeb.COSSGPTLive do
           </div>
           <input
             type="search"
-            id="default-search"
+            name="query"
             class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-purple-500 focus:border-purple-500 dark:bg-white/[7.5%] dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500"
             placeholder="Search..."
             required
@@ -47,7 +48,7 @@ defmodule AlgoraWeb.COSSGPTLive do
           </button>
         </div>
       </form>
-      <div class="flex mt-8">
+      <div :if={@results} class="flex mt-8">
         <div class="flex-1 p-4 space-y-8">
           <div :for={%{video: video, segments: segments} <- @results} class="flex gap-8">
             <.link navigate={"/#{video.channel_handle}/#{video.id}"} class="w-full">
@@ -95,24 +96,51 @@ defmodule AlgoraWeb.COSSGPTLive do
     """
   end
 
+  @impl true
   def mount(_params, _session, socket) do
-    # TODO: implement properly
-    segments = Cache.fetch("tmp/results", fn -> :ok end)
-
-    results =
-      segments
-      |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
-      |> Enum.uniq()
-      |> Library.list_videos_by_ids()
-      |> Enum.map(fn video ->
-        %{video: video, segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)}
-      end)
-
-    {:ok, socket |> assign(:results, results)}
+    {:ok, socket |> assign(:results, nil)}
   end
 
+  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_event("search", %{"query" => query}, socket) do
+    case query do
+      "" ->
+        {:noreply, assign(socket, text: nil, task: nil, results: nil)}
+
+      text ->
+        task =
+          Task.async(fn ->
+            # TODO: fetch actual results
+            segments = Cache.fetch("tmp/results", fn -> :ok end)
+
+            segments
+            |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
+            |> Enum.uniq()
+            |> Library.list_videos_by_ids()
+            |> Enum.map(fn video ->
+              %{
+                video: video,
+                segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
+              }
+            end)
+          end)
+
+        {:noreply, assign(socket, text: text, task: task, results: nil)}
+    end
+  end
+
+  @impl true
+  def handle_info({ref, result}, socket) when socket.assigns.task.ref == ref do
+    {:noreply, assign(socket, task: nil, results: result)}
+  end
+
+  def handle_info(_, socket) do
+    {:noreply, socket}
   end
 
   defp apply_action(socket, :index, _params) do
