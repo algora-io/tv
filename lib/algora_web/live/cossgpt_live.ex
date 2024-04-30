@@ -1,7 +1,5 @@
 defmodule AlgoraWeb.COSSGPTLive do
   use AlgoraWeb, :live_view
-  require Logger
-
   alias Algora.{Library, ML, Cache, Util}
 
   @impl true
