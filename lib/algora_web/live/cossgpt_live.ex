@@ -6,9 +6,24 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   @impl true
   def render(assigns) do
+    query_words =
+      assigns.text
+      |> String.split(~r/\s/)
+      |> Stream.map(&String.replace(&1, ~r/[^A-Za-z0-9]/, ""))
+      |> Stream.map(&String.downcase/1)
+
+    matches_query? = fn s ->
+      Enum.member?(
+        query_words,
+        s
+        |> String.replace(~r/[^A-Za-z0-9]/, "")
+        |> String.downcase()
+      )
+    end
+
     ~H"""
-    <div class="text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
-      <form class="px-4 mt-4 lg:mt-8 max-w-lg mx-auto" phx-submit="search">
+    <div class="py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
+      <form class="px-4 max-w-lg mx-auto" phx-submit="search">
         <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">
           Search
         </label>
@@ -89,7 +104,14 @@ defmodule AlgoraWeb.COSSGPTLive do
                       <p class="text-base font-semibold text-green-400">
                         <%= Library.to_hhmmss(segment.start) %>
                       </p>
-                      <p class="mt-2 text-sm"><%= segment.body %></p>
+                      <p class="mt-2 text-sm">
+                        <span
+                          :for={word <- segment.body |> String.split(~r/\s/)}
+                          class={[matches_query?.(word) && "text-green-300 font-medium"]}
+                        >
+                          <%= word %>
+                        </span>
+                      </p>
                     </div>
                   </.link>
                 </div>
