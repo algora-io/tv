@@ -6,8 +6,6 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   @impl true
   def render(assigns) do
-    query_words = assigns.text |> String.split(~r/\s/) |> Enum.map(&normalize_word/1)
-
     ~H"""
     <div class="px-4 py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
       <form class="max-w-lg mx-auto" phx-submit="search">
@@ -35,7 +33,7 @@ defmodule AlgoraWeb.COSSGPTLive do
           <input
             type="search"
             name="query"
-            value={@text}
+            value={@query}
             autocomplete="off"
             class="block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
             placeholder="Search..."
@@ -63,7 +61,8 @@ defmodule AlgoraWeb.COSSGPTLive do
                 "How to get your first customers",
                 "Fundraising",
                 "B2B startup metrics",
-                "Setting KPIs and goals"
+                "Setting KPIs and goals",
+                "Developer marketing"
               ]
             }
             phx-click="search"
@@ -119,7 +118,7 @@ defmodule AlgoraWeb.COSSGPTLive do
                       <p class="mt-2 text-sm">
                         <span
                           :for={word <- segment.body |> String.split(~r/\s/)}
-                          class={[matches_query?(query_words, word) && "text-green-300 font-medium"]}
+                          class={[matches_query?(@query_words, word) && "text-green-300 font-medium"]}
                         >
                           <%= word %>
                         </span>
@@ -154,10 +153,7 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    query = "b2b enterprise sales"
-    results = fetch_results("b2b enterprise sales")
-    {:ok, socket |> assign(text: query, task: nil, results: results)}
-    # {:ok, socket |> assign(text: nil, task: nil, results: nil)}
+    {:ok, socket}
   end
 
   @impl true
@@ -167,14 +163,7 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   @impl true
   def handle_event("search", %{"query" => query}, socket) do
-    case query do
-      "" ->
-        {:noreply, assign(socket, text: nil, task: nil, results: nil)}
-
-      text ->
-        task = Task.async(fn -> fetch_results(query) end)
-        {:noreply, assign(socket, text: text, task: task, results: nil)}
-    end
+    {:noreply, socket |> push_patch(to: ~p"/cossgpt?#{%{query: query}}")}
   end
 
   @impl true
@@ -186,7 +175,28 @@ defmodule AlgoraWeb.COSSGPTLive do
     {:noreply, socket}
   end
 
-  defp apply_action(socket, :index, _params) do
+  defp apply_action(socket, :index, params) do
+    socket =
+      case params["query"] || "" do
+        "" ->
+          socket
+          |> assign(
+            query: nil,
+            query_words: nil,
+            task: nil,
+            results: nil
+          )
+
+        query ->
+          socket
+          |> assign(
+            query: query,
+            query_words: query |> String.split(~r/\s/) |> Enum.map(&normalize_word/1),
+            task: Task.async(fn -> fetch_results(query) end),
+            results: nil
+          )
+      end
+
     socket |> assign(:page_title, "COSSgpt")
   end
 
