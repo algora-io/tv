@@ -201,26 +201,27 @@ defmodule AlgoraWeb.COSSGPTLive do
   end
 
   defp fetch_results(query) do
-    Cache.fetch("cossgpt/#{Slug.slugify(query)}", fn ->
-      %{"embedding" => embedding} = ML.create_embedding(query) |> Enum.at(0)
+    [%{"embedding" => embedding}] =
+      Cache.fetch("embeddings/#{Slug.slugify(query)}", fn ->
+        ML.create_embedding(query)
+      end)
 
-      index = ML.load_index!()
+    index = ML.load_index!()
 
-      segments = ML.get_relevant_chunks(index, embedding)
+    segments = ML.get_relevant_chunks(index, embedding)
 
-      to_result = fn video ->
-        %{
-          video: video,
-          segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
-        }
-      end
+    to_result = fn video ->
+      %{
+        video: video,
+        segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
+      }
+    end
 
-      segments
-      |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
-      |> Enum.uniq()
-      |> Library.list_videos_by_ids()
-      |> Enum.map(to_result)
-    end)
+    segments
+    |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
+    |> Enum.uniq()
+    |> Library.list_videos_by_ids()
+    |> Enum.map(to_result)
   end
 
   defp normalize_word(s) do
