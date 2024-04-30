@@ -6,20 +6,7 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   @impl true
   def render(assigns) do
-    query_words =
-      assigns.text
-      |> String.split(~r/\s/)
-      |> Stream.map(&String.replace(&1, ~r/[^A-Za-z0-9]/, ""))
-      |> Stream.map(&String.downcase/1)
-
-    matches_query? = fn s ->
-      Enum.member?(
-        query_words,
-        s
-        |> String.replace(~r/[^A-Za-z0-9]/, "")
-        |> String.downcase()
-      )
-    end
+    query_words = assigns.text |> String.split(~r/\s/) |> Enum.map(&normalize_word/1)
 
     ~H"""
     <div class="py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
@@ -107,7 +94,7 @@ defmodule AlgoraWeb.COSSGPTLive do
                       <p class="mt-2 text-sm">
                         <span
                           :for={word <- segment.body |> String.split(~r/\s/)}
-                          class={[matches_query?.(word) && "text-green-300 font-medium"]}
+                          class={[matches_query?(query_words, word) && "text-green-300 font-medium"]}
                         >
                           <%= word %>
                         </span>
@@ -188,6 +175,102 @@ defmodule AlgoraWeb.COSSGPTLive do
       |> Enum.uniq()
       |> Library.list_videos_by_ids()
       |> Enum.map(to_result)
+    end)
+  end
+
+  defp normalize_word(s) do
+    s
+    |> String.replace(~r/[^A-Za-z0-9]/, "")
+    |> String.downcase()
+  end
+
+  defp matches_query?(query_words, s) do
+    query_words
+    |> Enum.any?(fn s2 ->
+      s1 = normalize_word(s)
+
+      common_words = [
+        "as",
+        "i",
+        "his",
+        "that",
+        "he",
+        "was",
+        "for",
+        "on",
+        "are",
+        "with",
+        "they",
+        "be",
+        "at",
+        "one",
+        "have",
+        "this",
+        "from",
+        "by",
+        "but",
+        "what",
+        "some",
+        "is",
+        "it",
+        "you",
+        "or",
+        "had",
+        "the",
+        "of",
+        "to",
+        "and",
+        "a",
+        "in",
+        "we",
+        "can",
+        "out",
+        "other",
+        "were",
+        "which",
+        "do",
+        "their",
+        "if",
+        "will",
+        "how",
+        "said",
+        "an",
+        "each",
+        "tell",
+        "does",
+        "set",
+        "want",
+        "air",
+        "well",
+        "also",
+        "end",
+        "put",
+        "add",
+        "even",
+        "here",
+        "must",
+        "such",
+        "act",
+        "why",
+        "ask",
+        "men",
+        "went",
+        "kind",
+        "off",
+        "need",
+        "try",
+        "us",
+        "again",
+        "near",
+        "self",
+        "use",
+        "get",
+        "have",
+        "my",
+        "our"
+      ]
+
+      String.contains?(s2, s1) and !Enum.member?(common_words, s1)
     end)
   end
 end
