@@ -412,8 +412,6 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   def handle_info({:play, {video, t}}, socket) do
-    dbg(t)
-
     socket =
       socket
       |> push_event("play_video", %{
