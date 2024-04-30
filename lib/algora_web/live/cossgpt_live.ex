@@ -313,10 +313,16 @@ defmodule AlgoraWeb.COSSGPTLive do
         "get",
         "have",
         "my",
-        "our"
+        "our",
+        "you're",
+        "your"
       ]
 
-      String.contains?(s2, s1) and !Enum.member?(common_words, s1)
+      String.length(s1) >= 3 and
+        String.length(s2) >= 3 and
+        (String.contains?(s1, s2) or String.contains?(s2, s1)) and
+        !Enum.member?(common_words, s1) and
+        !Enum.member?(common_words, s2)
     end)
   end
 end
