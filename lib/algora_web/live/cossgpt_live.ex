@@ -2,7 +2,7 @@ defmodule AlgoraWeb.COSSGPTLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Library, ML, Cache}
+  alias Algora.{Library, ML, Cache, Util}
 
   @impl true
   def render(assigns) do
@@ -235,94 +235,11 @@ defmodule AlgoraWeb.COSSGPTLive do
     |> Enum.any?(fn s2 ->
       s1 = normalize_word(s)
 
-      common_words = [
-        "a",
-        "add",
-        "again",
-        "air",
-        "also",
-        "an",
-        "and",
-        "are",
-        "as",
-        "ask",
-        "at",
-        "be",
-        "but",
-        "by",
-        "can",
-        "do",
-        "does",
-        "each",
-        "end",
-        "even",
-        "for",
-        "from",
-        "get",
-        "got",
-        "had",
-        "have",
-        "he",
-        "here",
-        "his",
-        "how",
-        "i",
-        "if",
-        "in",
-        "is",
-        "it",
-        "kind",
-        "men",
-        "must",
-        "my",
-        "near",
-        "need",
-        "of",
-        "off",
-        "on",
-        "one",
-        "or",
-        "other",
-        "our",
-        "out",
-        "put",
-        "said",
-        "self",
-        "set",
-        "some",
-        "such",
-        "tell",
-        "that",
-        "the",
-        "their",
-        "they",
-        "this",
-        "to",
-        "try",
-        "us",
-        "use",
-        "want",
-        "was",
-        "we're",
-        "we",
-        "well",
-        "went",
-        "were",
-        "what",
-        "which",
-        "why",
-        "will",
-        "with",
-        "you're",
-        "you",
-        "your"
-      ]
-
       String.length(s1) >= 3 and
         String.length(s2) >= 3 and
         (String.contains?(s1, s2) or String.contains?(s2, s1)) and
-        !Enum.member?(common_words, s1) and
-        !Enum.member?(common_words, s2)
+        !Util.is_common_word(s1) and
+        !Util.is_common_word(s2)
     end)
   end
 end
