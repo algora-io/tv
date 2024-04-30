@@ -43,7 +43,7 @@ defmodule Algora.ML do
 
   def get_relevant_chunks(index, embedding) do
     {:ok, labels, _dist} =
-      HNSWLib.Index.knn_query(index, Nx.tensor(embedding), k: 10)
+      HNSWLib.Index.knn_query(index, Nx.tensor(embedding), k: 20)
 
     labels |> Nx.to_flat_list() |> Library.list_segments_by_ids()
   end
