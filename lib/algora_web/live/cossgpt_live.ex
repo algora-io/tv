@@ -49,6 +49,31 @@ defmodule AlgoraWeb.COSSGPTLive do
           </button>
         </div>
       </form>
+      <div class="mt-4">
+        <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
+          Suggestions
+        </div>
+        <div class="mt-2 flex flex-wrap gap-2 justify-center">
+          <button
+            :for={
+              suggestion <- [
+                "Business models and pricing",
+                "Enterprise sales",
+                "Building an MVP",
+                "How to get your first customers",
+                "Fundraising",
+                "B2B startup metrics",
+                "Setting KPIs and goals"
+              ]
+            }
+            phx-click="search"
+            phx-value-query={suggestion}
+            class="bg-white/10 text-gray-200 font-medium text-sm px-3 py-2 ring-1 ring-white/20 shadow-inner inline-flex rounded-lg hover:ring-white/25 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <%= suggestion %>
+          </button>
+        </div>
+      </div>
       <div class="flex mt-4 lg:mt-8">
         <div :if={@results} class="flex-1 px-4 space-y-8">
           <div
