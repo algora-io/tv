@@ -22,7 +22,7 @@ defmodule Algora.ML do
   end
 
   def load_index!() do
-    case HNSWLib.Index.load_index(:cosine, 768, index_path(), max_elements: 1_000_000) do
+    case HNSWLib.Index.load_index(:cosine, 768, index_path(), max_elements: 100_000) do
       {:ok, index} ->
         index
 
