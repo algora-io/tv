@@ -51,7 +51,7 @@ defmodule AlgoraWeb.COSSGPTLive do
         <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
           Suggestions
         </div>
-        <div class="mt-2 flex flex-wrap gap-2 justify-center">
+        <div class="mt-2 flex flex-wrap gap-2 justify-center max-w-3xl mx-auto">
           <button
             :for={
               suggestion <- [
