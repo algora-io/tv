@@ -33,7 +33,9 @@ defmodule AlgoraWeb.COSSGPTLive do
           <input
             type="search"
             name="query"
-            class="block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[7.5%] placeholder-gray-400 text-white ring-purple-500 ring-1"
+            value={@text}
+            autocomplete="off"
+            class="block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
             placeholder="Search..."
             required
           />
