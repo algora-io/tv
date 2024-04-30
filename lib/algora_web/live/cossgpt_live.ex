@@ -9,8 +9,8 @@ defmodule AlgoraWeb.COSSGPTLive do
     query_words = assigns.text |> String.split(~r/\s/) |> Enum.map(&normalize_word/1)
 
     ~H"""
-    <div class="py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
-      <form class="px-4 max-w-lg mx-auto" phx-submit="search">
+    <div class="px-4 py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
+      <form class="max-w-lg mx-auto" phx-submit="search">
         <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">
           Search
         </label>
@@ -75,7 +75,7 @@ defmodule AlgoraWeb.COSSGPTLive do
         </div>
       </div>
       <div class="flex mt-4 lg:mt-8">
-        <div :if={@results} class="flex-1 px-4 space-y-8">
+        <div :if={@results} class="flex-1 space-y-8">
           <div
             :for={%{video: video, segments: segments} <- @results}
             class="flex flex-col lg:flex-row gap-8"
@@ -131,7 +131,7 @@ defmodule AlgoraWeb.COSSGPTLive do
             </div>
           </div>
         </div>
-        <div :if={@task} class="flex-1 px-4 space-y-8">
+        <div :if={@task} class="flex-1 space-y-8">
           <div :for={_ <- 1..2} class="flex gap-8">
             <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
             <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
