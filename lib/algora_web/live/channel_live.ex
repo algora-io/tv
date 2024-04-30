@@ -305,7 +305,6 @@ defmodule AlgoraWeb.ChannelLive do
     if socket.assigns.owns_channel? do
       socket
       |> assign(:page_title, "Start streaming")
-      |> assign(:video, %Library.Video{})
       |> show_stream_modal()
     else
       socket
@@ -320,7 +319,6 @@ defmodule AlgoraWeb.ChannelLive do
     |> assign(:channel_handle, socket.assigns.channel.handle)
     |> assign(:channel_name, socket.assigns.channel.name)
     |> assign(:channel_tagline, socket.assigns.channel.tagline)
-    |> assign(:video, nil)
   end
 
   defp show_stream_modal(socket) do
