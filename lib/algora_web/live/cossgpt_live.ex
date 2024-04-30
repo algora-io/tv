@@ -80,13 +80,13 @@ defmodule AlgoraWeb.COSSGPTLive do
             :for={%{video: video, segments: segments} <- @results}
             class="flex flex-col lg:flex-row gap-8"
           >
-            <.link navigate={"/#{video.channel_handle}/#{video.id}"} class="w-full shrink-0 lg:shrink">
+            <.link navigate={video_url(video, Enum.at(segments, 0))} class="w-full shrink-0 lg:shrink">
               <.video_thumbnail video={video} class="w-full rounded-2xl" />
             </.link>
             <div>
               <div>
                 <.link
-                  navigate={"/#{video.channel_handle}/#{video.id}"}
+                  navigate={video_url(video, Enum.at(segments, 0))}
                   class="text-lg font-bold line-clamp-2"
                 >
                   <%= video.title %>
@@ -110,7 +110,7 @@ defmodule AlgoraWeb.COSSGPTLive do
                   <.link
                     :for={segment <- segments}
                     class="space-x-2"
-                    navigate={"/#{video.channel_handle}/#{video.id}?t=#{trunc(segment.start)}"}
+                    navigate={video_url(video, segment)}
                   >
                     <div class="w-[66vw] lg:w-[20rem] xl:w-[28rem]">
                       <p class="text-base font-semibold text-green-400">
@@ -140,6 +140,16 @@ defmodule AlgoraWeb.COSSGPTLive do
       </div>
     </div>
     """
+  end
+
+  defp video_url(video, segment) do
+    params =
+      case segment do
+        nil -> ""
+        s -> "?t=#{trunc(s.start)}"
+      end
+
+    "/#{video.channel_handle}/#{video.id}#{params}"
   end
 
   @impl true
