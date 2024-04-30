@@ -7,8 +7,8 @@ defmodule AlgoraWeb.COSSGPTLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="text-white min-h-screen max-w-7xl mx-auto">
-      <form class="mt-8 max-w-lg mx-auto" phx-submit="search">
+    <div class="text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
+      <form class="px-4 mt-4 lg:mt-8 max-w-lg mx-auto" phx-submit="search">
         <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">
           Search
         </label>
@@ -45,10 +45,13 @@ defmodule AlgoraWeb.COSSGPTLive do
           </button>
         </div>
       </form>
-      <div class="flex mt-8">
-        <div :if={@results} class="flex-1 p-4 space-y-8 shrink-0">
-          <div :for={%{video: video, segments: segments} <- @results} class="flex gap-8">
-            <.link navigate={"/#{video.channel_handle}/#{video.id}"} class="w-full">
+      <div class="flex mt-4 lg:mt-8">
+        <div :if={@results} class="flex-1 px-4 space-y-8">
+          <div
+            :for={%{video: video, segments: segments} <- @results}
+            class="flex flex-col lg:flex-row gap-8"
+          >
+            <.link navigate={"/#{video.channel_handle}/#{video.id}"} class="w-full shrink-0 lg:shrink">
               <.video_thumbnail video={video} class="w-full rounded-2xl" />
             </.link>
             <div>
@@ -74,13 +77,13 @@ defmodule AlgoraWeb.COSSGPTLive do
               <div class="mt-4 relative">
                 <div class="w-full h-full pointer-events-none absolute bg-gradient-to-r from-transparent from-[75%] to-gray-900 rounded-xl">
                 </div>
-                <div class="bg-white/[7.5%] border border-white/[20%] p-4 rounded-xl flex gap-8 w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
+                <div class="bg-white/[7.5%] border border-white/[20%] p-4 rounded-xl flex gap-8 w-[calc(100vw-2rem)] lg:w-[22rem] xl:w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
                   <.link
                     :for={segment <- segments}
                     class="space-x-2"
                     navigate={"/#{video.channel_handle}/#{video.id}?t=#{trunc(segment.start)}"}
                   >
-                    <div class="w-[28rem]">
+                    <div class="w-[66vw] lg:w-[20rem] xl:w-[28rem]">
                       <p class="text-base font-semibold text-green-400">
                         <%= Library.to_hhmmss(segment.start) %>
                       </p>
@@ -92,7 +95,7 @@ defmodule AlgoraWeb.COSSGPTLive do
             </div>
           </div>
         </div>
-        <div :if={@task} class="flex-1 p-4 space-y-8">
+        <div :if={@task} class="flex-1 px-4 space-y-8">
           <div :for={_ <- 1..2} class="flex gap-8">
             <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
             <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
@@ -105,7 +108,10 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket |> assign(text: nil, task: nil, results: nil)}
+    query = "b2b enterprise sales"
+    results = fetch_results("b2b enterprise sales")
+    {:ok, socket |> assign(text: query, task: nil, results: results)}
+    # {:ok, socket |> assign(text: nil, task: nil, results: nil)}
   end
 
   @impl true
@@ -120,30 +126,7 @@ defmodule AlgoraWeb.COSSGPTLive do
         {:noreply, assign(socket, text: nil, task: nil, results: nil)}
 
       text ->
-        task =
-          Task.async(fn ->
-            Cache.fetch("cossgpt/#{Slug.slugify(query)}", fn ->
-              %{"embedding" => embedding} = ML.create_embedding(query) |> Enum.at(0)
-
-              index = ML.load_index!()
-
-              segments = ML.get_relevant_chunks(index, embedding)
-
-              to_result = fn video ->
-                %{
-                  video: video,
-                  segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
-                }
-              end
-
-              segments
-              |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
-              |> Enum.uniq()
-              |> Library.list_videos_by_ids()
-              |> Enum.map(to_result)
-            end)
-          end)
-
+        task = Task.async(fn -> fetch_results(query) end)
         {:noreply, assign(socket, text: text, task: task, results: nil)}
     end
   end
@@ -159,5 +142,28 @@ defmodule AlgoraWeb.COSSGPTLive do
 
   defp apply_action(socket, :index, _params) do
     socket |> assign(:page_title, "COSSgpt")
+  end
+
+  defp fetch_results(query) do
+    Cache.fetch("cossgpt/#{Slug.slugify(query)}", fn ->
+      %{"embedding" => embedding} = ML.create_embedding(query) |> Enum.at(0)
+
+      index = ML.load_index!()
+
+      segments = ML.get_relevant_chunks(index, embedding)
+
+      to_result = fn video ->
+        %{
+          video: video,
+          segments: segments |> Enum.filter(fn s -> s.video_id == video.id end)
+        }
+      end
+
+      segments
+      |> Enum.map(fn %Library.Segment{video_id: video_id} -> video_id end)
+      |> Enum.uniq()
+      |> Library.list_videos_by_ids()
+      |> Enum.map(to_result)
+    end)
   end
 end
