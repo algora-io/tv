@@ -87,13 +87,13 @@ defmodule AlgoraWeb.COSSGPTOGLive do
               :for={
                 suggestion <- [
                   "Business models and pricing",
-                  "Enterprise sales",
-                  "Building an MVP",
+                  "Choosing a license",
+                  "How to hire engineers",
+                  "Developer marketing",
                   "How to get your first customers",
-                  "Fundraising",
                   "B2B startup metrics",
                   "Setting KPIs and goals",
-                  "Developer marketing"
+                  "How to fundraise"
                 ]
               }
               phx-click="search"
