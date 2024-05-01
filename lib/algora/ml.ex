@@ -1,7 +1,7 @@
 defmodule Algora.ML do
   alias Replicate.Predictions
   alias Replicate.Predictions.Prediction
-  alias Algora.{Cache, Library}
+  alias Algora.{Storage, Library}
 
   @chunk_size 128
 
@@ -15,27 +15,27 @@ defmodule Algora.ML do
 
   def get!(id), do: Predictions.get!(id)
 
-  defp index_path(), do: Cache.path("hnswlib/index")
+  defp index_local_dir(), do: Path.join(System.tmp_dir!(), "algora/hnswlib")
+  defp index_local_path(), do: Path.join(index_local_dir(), "index")
 
   def save_index(index) do
-    HNSWLib.Index.save_index(index, index_path())
+    local_path = index_local_path()
+    HNSWLib.Index.save_index(index, local_path)
+    Storage.upload_from_filename_to_bucket(local_path, "index", :ml)
   end
 
   def load_index!() do
-    tmp_dir = Path.join(System.tmp_dir!(), "algora/hnswlib")
-    tmp_path = Path.join(tmp_dir, "index")
+    local_path = index_local_path()
 
-    if File.exists?(tmp_path) do
-      load_index_from_disk!(tmp_path)
-    else
-      File.mkdir_p!(tmp_dir)
+    if !File.exists?(local_path) do
+      File.mkdir_p!(index_local_dir())
 
       {:ok, _} =
-        ExAws.S3.download_file(Algora.config([:buckets, :ml]), "index", tmp_path)
+        ExAws.S3.download_file(Algora.config([:buckets, :ml]), "index", local_path)
         |> ExAws.request()
-
-      load_index_from_disk!(tmp_path)
     end
+
+    load_index_from_disk!(local_path)
   end
 
   defp load_index_from_disk!(path) do

@@ -83,13 +83,19 @@ defmodule Algora.Storage do
     {:ok, state}
   end
 
-  def upload(contents, remote_path, opts \\ []) do
-    Algora.config([:buckets, :media])
+  def upload_to_bucket(contents, remote_path, bucket, opts \\ []) do
+    Algora.config([:buckets, bucket])
     |> ExAws.S3.put_object(remote_path, contents, opts)
     |> ExAws.request([])
   end
 
-  def upload_from_filename(local_path, remote_path, cb \\ fn _ -> nil end, opts \\ []) do
+  def upload_from_filename_to_bucket(
+        local_path,
+        remote_path,
+        bucket,
+        cb \\ fn _ -> nil end,
+        opts \\ []
+      ) do
     %{size: size} = File.stat!(local_path)
 
     chunk_size = 5 * 1024 * 1024
@@ -99,8 +105,22 @@ defmodule Algora.Storage do
       cb.(%{stage: :persisting, done: chunk_size, total: size})
       chunk
     end)
-    |> ExAws.S3.upload(Algora.config([:buckets, :media]), remote_path, opts)
+    |> ExAws.S3.upload(Algora.config([:buckets, bucket]), remote_path, opts)
     |> ExAws.request([])
+  end
+
+  def upload(contents, remote_path, opts \\ []) do
+    upload_to_bucket(contents, remote_path, :media, opts)
+  end
+
+  def upload_from_filename(local_path, remote_path, cb \\ fn _ -> nil end, opts \\ []) do
+    upload_from_filename_to_bucket(
+      local_path,
+      remote_path,
+      :media,
+      cb,
+      opts
+    )
   end
 
   defp broadcast!(topic, msg) do
