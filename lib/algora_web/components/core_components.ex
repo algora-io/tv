@@ -133,7 +133,9 @@ defmodule AlgoraWeb.CoreComponents do
 
   def short_entry(assigns) do
     ~H"""
-    <.link class="cursor-pointer truncate" navigate={~p"/#{@video.channel_handle}/#{@video.id}"}>
+    <%!-- HACK: should use navigate instead of href here --%>
+    <%!-- but it breaks navigating from youtube video to another video --%>
+    <.link class="cursor-pointer truncate" href={~p"/#{@video.channel_handle}/#{@video.id}"}>
       <.short_thumbnail video={@video} class="rounded-2xl" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
@@ -146,7 +148,9 @@ defmodule AlgoraWeb.CoreComponents do
 
   def video_entry(assigns) do
     ~H"""
-    <.link class="cursor-pointer truncate" navigate={~p"/#{@video.channel_handle}/#{@video.id}"}>
+    <%!-- HACK: should use navigate instead of href here --%>
+    <%!-- but it breaks navigating from youtube video to another video --%>
+    <.link class="cursor-pointer truncate" href={~p"/#{@video.channel_handle}/#{@video.id}"}>
       <.video_thumbnail video={@video} class="rounded-2xl" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
