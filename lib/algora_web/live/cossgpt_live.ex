@@ -49,26 +49,35 @@ defmodule AlgoraWeb.COSSGPTLive do
         <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
           Suggestions
         </div>
-        <div class="mt-2 flex flex-wrap gap-2 justify-center max-w-3xl mx-auto">
-          <button
+        <div class="mt-4 flex flex-wrap gap-2 justify-center max-w-3xl mx-auto">
+          <div
             :for={
-              suggestion <- [
-                "Business models and pricing",
-                "Enterprise sales",
-                "Building an MVP",
-                "How to get your first customers",
-                "Fundraising",
-                "B2B startup metrics",
-                "Setting KPIs and goals",
-                "Developer marketing"
+              suggestion_group <- [
+                [
+                  "Business models and pricing",
+                  "Enterprise sales",
+                  "Building an MVP",
+                  "How to get your first customers"
+                ],
+                [
+                  "Fundraising",
+                  "B2B startup metrics",
+                  "Setting KPIs and goals",
+                  "Developer marketing"
+                ]
               ]
             }
-            phx-click="search"
-            phx-value-query={suggestion}
-            class="bg-white/10 text-gray-200 font-medium text-sm px-3 py-2 ring-1 ring-white/20 shadow-inner inline-flex rounded-lg hover:ring-white/25 hover:bg-white/5 hover:text-white transition-colors"
+            class="-ml-2 -mt-2 p-2 z-10 flex md:justify-center whitespace-nowrap md:flex-wrap gap-4 overflow-x-auto md:overflow-x-hidden"
           >
-            <%= suggestion %>
-          </button>
+            <button
+              :for={suggestion <- suggestion_group}
+              phx-click="search"
+              phx-value-query={suggestion}
+              class="bg-white/10 text-gray-200 font-medium text-sm px-3 py-2 ring-1 ring-white/20 shadow-inner inline-flex rounded-lg hover:ring-white/25 hover:bg-white/5 hover:text-white transition-colors"
+            >
+              <%= suggestion %>
+            </button>
+          </div>
         </div>
       </div>
       <div class="flex mt-4 lg:mt-8">
