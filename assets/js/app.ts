@@ -281,6 +281,21 @@ let liveSocket = new LiveSocket("/live", Socket, {
 let routeUpdated = () => {
   // TODO: uncomment
   // Focus.focusMain();
+
+  const player = document.querySelector("#video-player")?.parentElement;
+  if (!player) {
+    return;
+  }
+
+  const pipClasses = ["fixed", "bottom-0", "right-0", "z-[1000]", "w-[30vw]"];
+
+  if (/^\/[^\/]+\/\d+$/.test(new URL(window.location.href).pathname)) {
+    player.classList.add("lg:pr-[24rem]");
+    player.classList.remove(...pipClasses);
+  } else {
+    player.classList.remove("lg:pr-[24rem]");
+    player.classList.add(...pipClasses);
+  }
 };
 
 // Show progress bar on live navigation and form submits
