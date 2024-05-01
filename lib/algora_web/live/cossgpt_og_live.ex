@@ -6,7 +6,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
   def render(assigns) do
     ~H"""
     <div class="px-4 py-8 text-white mx-auto overflow-hidden flex gap-[20rem]">
-      <div class="ml-[12rem] h-[calc(100vh-88px)] flex flex-col items-center justify-center scale-150">
+      <div class="ml-[18rem] h-[calc(100vh-88px)] flex flex-col items-center justify-center scale-150">
         <h1 class="flex items-center gap-4 text-8xl font-bold font-mono text-green-300 [text-shadow:#000_10px_5px_10px]">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -38,7 +38,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
             <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
           </svg>
         </h1>
-        <form class="mt-10 w-full max-w-lg mx-auto scale-125" phx-submit="search">
+        <form class="mt-10 w-full max-w-lg mx-auto scale-[1.3]" phx-submit="search">
           <label for="query" class="mb-2 text-sm font-medium sr-only text-white">
             Search
           </label>
@@ -66,7 +66,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
               name="query"
               value={@query}
               autocomplete="off"
-              class="block w-full p-4 ps-16 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-green-100 ring-4 ring-green-400 focus:outline-none text-2xl font-medium"
+              class="block w-full p-4 ps-14 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-green-100 ring-4 ring-green-400 focus:outline-none text-2xl font-medium"
               placeholder="Anything about commercial open-source software..."
               required
             />
@@ -82,19 +82,13 @@ defmodule AlgoraWeb.COSSGPTOGLive do
           <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
             Suggestions
           </div>
-          <div class="mt-2 flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
+          <div class="mt-2 flex flex-wrap gap-4 justify-center max-w-2xl mx-auto">
             <button
               :for={
                 suggestion <- [
-                  "Benefits of going open source",
                   "Business models and pricing",
                   "Choosing a license",
-                  "How to hire engineers",
-                  "How to get your first customers",
-                  "B2B startup metrics",
-                  "Setting KPIs and goals",
-                  "How to fundraise",
-                  "Developer marketing"
+                  "How to hire engineers"
                 ]
               }
               phx-click="search"
@@ -106,7 +100,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
           </div>
         </div>
       </div>
-      <div class="flex -ml-[6rem]">
+      <div class="flex">
         <div :if={@results} class="flex-1 space-y-8">
           <div
             :for={%{video: video, segments: segments} <- @results}
