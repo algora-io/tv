@@ -6,14 +6,45 @@ defmodule AlgoraWeb.COSSGPTLive do
   def render(assigns) do
     ~H"""
     <div class="px-4 py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
-      <form class="max-w-lg mx-auto" phx-submit="search">
+      <h1 class="flex items-center justify-center gap-2 sm:gap-4 text-4xl sm:text-6xl font-bold font-mono text-purple-300 [text-shadow:#000_10px_5px_10px]">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-8 w-8 -mt-4 sm:h-16 sm:w-16 sm:-mt-8"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
+        </svg>
+        <span class="text-purple-300">COSS</span><span class="text-purple-300">gpt</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-8 w-8 -mb-4 sm:h-16 sm:w-16 sm:-mb-8 text-purple-300"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
+        </svg>
+      </h1>
+      <form class="mt-4 sm:mt-8 max-w-lg mx-auto" phx-submit="search">
         <label class="mb-2 text-sm font-medium sr-only text-white">
           Search
         </label>
         <div class="relative">
           <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
             <svg
-              class="w-4 h-4 text-gray-400"
+              class="w-4 h-4 text-purple-300"
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -33,8 +64,8 @@ defmodule AlgoraWeb.COSSGPTLive do
             name="query"
             value={@query}
             autocomplete="off"
-            class="hidden sm:block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder="Anything about commercial open-source software..."
+            class="hidden sm:block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-purple-300 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            placeholder="Ask anything about commercial open-source software..."
             required
           />
           <input
@@ -42,8 +73,8 @@ defmodule AlgoraWeb.COSSGPTLive do
             name="query"
             value={@query}
             autocomplete="off"
-            class="block sm:hidden w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder="Anything about COSS..."
+            class="block sm:hidden w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-purple-300 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            placeholder="Ask anything about COSS..."
             required
           />
           <button
