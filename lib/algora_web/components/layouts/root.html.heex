@@ -10,17 +10,37 @@
       <%= assigns[:page_title] || "Algora TV" %>
     </.live_title>
 
+    <%= if assigns[:page_image] do %>
+      <meta name="description" content={assigns[:page_description]} />
+      <meta name="twitter:image:src" content={assigns[:page_image]} />
+      <meta name="twitter:site" content="@algoraio" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={"#{assigns[:page_title]} | Algora TV"} />
+      <meta name="twitter:description" content={assigns[:page_description]} />
+      <meta property="og:image" content={assigns[:page_image]} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:site_name" content="Algora TV" />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content={"#{assigns[:page_title]} | Algora TV"} />
+      <meta property="og:url" content={"#{assigns[:page_url]}"} />
+      <meta property="og:description" content={assigns[:page_description]} />
+    <% end %>
+
     <%= if assigns[:channel_handle] && assigns[:channel_name] && assigns[:channel_tagline] do %>
       <meta name="description" content={assigns[:channel_tagline]} />
       <meta
         name="twitter:image:src"
-        content={"#{AlgoraWeb.Endpoint.url()}/images/og/default.png"}
+        content={assigns[:page_image] || "#{AlgoraWeb.Endpoint.url()}/images/og/default.png"}
       />
       <meta name="twitter:site" content="@algoraio" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={"#{assigns[:channel_name]} | Algora TV"} />
       <meta name="twitter:description" content={assigns[:channel_tagline]} />
-      <meta property="og:image" content={"#{AlgoraWeb.Endpoint.url()}/images/og/default.png"} />
+      <meta
+        property="og:image"
+        content={assigns[:page_image] || "#{AlgoraWeb.Endpoint.url()}/images/og/default.png"}
+      />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:site_name" content="Algora TV" />
