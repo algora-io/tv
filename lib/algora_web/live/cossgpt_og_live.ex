@@ -7,15 +7,45 @@ defmodule AlgoraWeb.COSSGPTOGLive do
     ~H"""
     <div class="px-4 py-8 text-white mx-auto overflow-hidden flex gap-[20rem]">
       <div class="ml-[12rem] h-[calc(100vh-88px)] flex flex-col items-center justify-center scale-150">
-        <h1 class="text-8xl font-bold font-mono text-purple-400">COSSgpt</h1>
-        <form class="mt-20 w-full max-w-lg mx-auto" phx-submit="search">
+        <h1 class="flex items-center gap-4 text-8xl font-bold font-mono text-green-300 [text-shadow:#000_10px_5px_10px]">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-20 w-20 -mt-12"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
+          </svg>
+          <span>COSSgpt</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-20 w-20 -mb-12"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
+          </svg>
+        </h1>
+        <form class="mt-20 w-full max-w-lg mx-auto scale-125" phx-submit="search">
           <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">
             Search
           </label>
           <div class="relative">
-            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <div class="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none">
               <svg
-                class="w-4 h-4 text-gray-400"
+                class="w-8 h-8 text-gray-300"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -35,19 +65,19 @@ defmodule AlgoraWeb.COSSGPTOGLive do
               name="query"
               value={@query}
               autocomplete="off"
-              class="block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+              class="block w-full p-4 ps-16 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-white ring-green-400 ring-2 focus:ring-4 focus:ring-green-400 focus:outline-none text-2xl font-medium"
               placeholder="Search..."
               required
             />
             <button
               type="submit"
-              class="text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-purple-600 hover:bg-purple-700 focus:ring-purple-800"
+              class="text-white text-2xl absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg px-4 py-2 bg-green-600 hover:bg-green-700 focus:ring-green-800"
             >
               Search
             </button>
           </div>
         </form>
-        <div class="mt-20">
+        <div class="mt-20 scale-125">
           <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
             Suggestions
           </div>
