@@ -195,7 +195,11 @@ defmodule AlgoraWeb.COSSGPTLive do
           )
       end
 
-    socket |> assign(:page_title, "COSSgpt")
+    socket
+    |> assign(
+      page_title: "COSSgpt",
+      page_image: "#{AlgoraWeb.Endpoint.url()}/images/og/cossgpt.png"
+    )
   end
 
   defp fetch_results(query) do
