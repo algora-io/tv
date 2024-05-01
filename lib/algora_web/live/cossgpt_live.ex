@@ -85,7 +85,7 @@ defmodule AlgoraWeb.COSSGPTLive do
           </button>
         </div>
       </form>
-      <div class="mt-4">
+      <div class="mt-4 sm:mt-8">
         <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
           Suggestions
         </div>
