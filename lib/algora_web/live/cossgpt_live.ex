@@ -7,7 +7,7 @@ defmodule AlgoraWeb.COSSGPTLive do
     ~H"""
     <div class="px-4 py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
       <form class="max-w-lg mx-auto" phx-submit="search">
-        <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">
+        <label class="mb-2 text-sm font-medium sr-only text-white">
           Search
         </label>
         <div class="relative">
@@ -33,15 +33,24 @@ defmodule AlgoraWeb.COSSGPTLive do
             name="query"
             value={@query}
             autocomplete="off"
-            class="block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder="Search..."
+            class="hidden sm:block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            placeholder="Anything about commercial open-source software..."
+            required
+          />
+          <input
+            type="search"
+            name="query"
+            value={@query}
+            autocomplete="off"
+            class="block sm:hidden w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-gray-400 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            placeholder="Anything about COSS..."
             required
           />
           <button
             type="submit"
             class="text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-purple-600 hover:bg-purple-700 focus:ring-purple-800"
           >
-            Search
+            Learn
           </button>
         </div>
       </form>

@@ -39,7 +39,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
           </svg>
         </h1>
         <form class="mt-20 w-full max-w-lg mx-auto scale-125" phx-submit="search">
-          <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">
+          <label for="query" class="mb-2 text-sm font-medium sr-only text-white">
             Search
           </label>
           <div class="relative">
@@ -62,18 +62,19 @@ defmodule AlgoraWeb.COSSGPTOGLive do
             </div>
             <input
               type="search"
+              id="query"
               name="query"
               value={@query}
               autocomplete="off"
               class="block w-full p-4 ps-16 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-white ring-4 ring-green-400 focus:outline-none text-2xl font-medium"
-              placeholder="Search..."
+              placeholder="Anything about commercial open-source software..."
               required
             />
             <button
               type="submit"
               class="text-white text-2xl absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg px-4 py-2 bg-green-600 hover:bg-green-700 focus:ring-green-800"
             >
-              Search
+              Learn
             </button>
           </div>
         </form>
