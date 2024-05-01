@@ -144,9 +144,15 @@ const Hooks = {
         const { player } = detail;
         this.player.options({
           techOrder: [player.type === "video/youtube" ? "youtube" : "html5"],
+          ...(player.currentTime && player.type === "video/youtube"
+            ? { youtube: { customVars: { start: player.currentTime } } }
+            : {}),
         });
         this.player.src({ src: player.src, type: player.type });
         this.player.play();
+        if (player.currentTime && player.type !== "video/youtube") {
+          this.player.currentTime(player.currentTime);
+        }
         this.player.el().parentElement.classList.remove("hidden");
         this.player.el().parentElement.classList.add("flex");
 
@@ -275,11 +281,33 @@ let liveSocket = new LiveSocket("/live", Socket, {
 let routeUpdated = () => {
   // TODO: uncomment
   // Focus.focusMain();
+
+  const player = document.querySelector("#video-player")?.parentElement;
+  if (!player) {
+    return;
+  }
+
+  const pipClasses = [
+    "fixed",
+    "bottom-0",
+    "right-0",
+    "z-[1000]",
+    "w-[100vw]",
+    "sm:w-[30vw]",
+  ];
+
+  if (/^\/[^\/]+\/\d+$/.test(new URL(window.location.href).pathname)) {
+    player.classList.add("lg:pr-[24rem]");
+    player.classList.remove(...pipClasses);
+  } else {
+    player.classList.remove("lg:pr-[24rem]");
+    player.classList.add(...pipClasses);
+  }
 };
 
 // Show progress bar on live navigation and form submits
 topbar.config({
-  barColors: { 0: "rgba(147, 51, 234, 1)" },
+  barColors: { 0: "rgba(79, 70, 229, 1)" },
   shadowColor: "rgba(0, 0, 0, .3)",
 });
 window.addEventListener("phx:page-loading-start", (info) =>

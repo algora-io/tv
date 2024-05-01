@@ -24,6 +24,7 @@ defmodule Algora.Library.Video do
     field :filename, :string
     field :channel_handle, :string, virtual: true
     field :channel_name, :string, virtual: true
+    field :channel_avatar_url, :string, virtual: true
     field :messages_count, :integer, virtual: true, default: 0
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
     field :remote_path, :string
@@ -48,15 +49,26 @@ defmodule Algora.Library.Video do
     put_assoc(changeset, :user, user)
   end
 
+  def put_video_uuid(%Ecto.Changeset{} = changeset) do
+    if changeset.valid? do
+      uuid = Ecto.UUID.generate()
+
+      changeset
+      |> put_change(:uuid, uuid)
+      |> put_change(:url_root, url_root(uuid))
+    else
+      changeset
+    end
+  end
+
   def put_video_meta(%Ecto.Changeset{} = changeset, format, basename \\ "index")
       when format in [:mp4, :hls] do
     if changeset.valid? do
-      uuid = Ecto.UUID.generate()
       filename = "#{basename}#{fileext(format)}"
 
       changeset
+      |> put_video_uuid()
       |> put_change(:filename, filename)
-      |> put_change(:uuid, uuid)
     else
       changeset
     end
@@ -70,7 +82,6 @@ defmodule Algora.Library.Video do
 
       changeset
       |> put_change(:url, url(uuid, filename))
-      |> put_change(:url_root, url_root(uuid))
       |> put_change(:remote_path, "#{uuid}/#{filename}")
     else
       changeset
@@ -81,10 +92,14 @@ defmodule Algora.Library.Video do
   defp fileext(:hls), do: ".m3u8"
 
   defp url_root(uuid) do
-    bucket = Algora.config([:files, :bucket])
+    bucket = Algora.config([:buckets, :media])
     %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
     "#{scheme}#{host}/#{bucket}/#{uuid}"
   end
 
   defp url(uuid, filename), do: "#{url_root(uuid)}/#{filename}"
+
+  def slug(%Video{} = video), do: Slug.slugify("#{video.id}-#{video.title}")
+
+  def id_from_slug(slug), do: slug |> String.split("-") |> Enum.at(0)
 end

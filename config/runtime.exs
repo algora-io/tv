@@ -12,6 +12,12 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
   config :algora, AlgoraWeb.Embed.Endpoint, server: true
 end
 
+config :algora,
+  hf_token: System.get_env("HF_TOKEN")
+
+config :replicate,
+  replicate_api_token: System.get_env("REPLICATE_API_TOKEN")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -80,7 +86,9 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  config :algora, :files, bucket: System.fetch_env!("BUCKET_NAME")
+  config :algora, :buckets,
+    media: System.get_env("BUCKET_MEDIA"),
+    ml: System.get_env("BUCKET_ML")
 
   config :algora, :github,
     client_id: System.fetch_env!("GITHUB_CLIENT_ID"),

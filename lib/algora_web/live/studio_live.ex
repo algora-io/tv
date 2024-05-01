@@ -252,21 +252,31 @@ defmodule AlgoraWeb.StudioLive do
       {:noreply, redirect(socket, external: mp4_video.url)}
     else
       video = Library.get_video!(id)
-      send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
       %{video_id: id}
       |> Workers.MP4Transmuxer.new()
       |> Oban.insert()
 
+      send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
       {:noreply, socket}
     end
+  end
+
+  def handle_event("transcribe_video", %{"id" => id}, socket) do
+    video = Library.get_video!(id)
+
+    %{video_id: id}
+    |> Workers.Transcriber.new()
+    |> Oban.insert()
+
+    send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
+    {:noreply, socket}
   end
 
   def handle_event("upload_videos", _params, socket) do
     _videos =
       consume_uploaded_entries(socket, :video, fn %{path: path}, entry ->
         video = Library.init_mp4!(entry, path, socket.assigns.current_user)
-        send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
 
         # TODO: add to oban queue instead
         # ensure that the worker runs in the same machine where the upload is consumed
@@ -275,6 +285,7 @@ defmodule AlgoraWeb.StudioLive do
         # |> Oban.insert()
         Library.transmux_to_hls(video, fn _ -> nil end)
 
+        send(self(), {Library, %Library.Events.ProcessingQueued{video: video}})
         {:ok, video}
       end)
 

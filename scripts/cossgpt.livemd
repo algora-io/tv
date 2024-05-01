@@ -1,0 +1,295 @@
+# COSSgpt
+
+```elixir
+import Ecto.Query
+import Ecto.Changeset
+
+alias Algora.{Accounts, Library, Repo, Storage, Cache, ML}
+
+IEx.configure(inspect: [charlists: :as_lists])
+
+if Code.ensure_loaded?(ExSync) && function_exported?(ExSync, :register_group_leader, 0) do
+  ExSync.register_group_leader()
+end
+```
+
+## Section
+
+```elixir
+defmodule COSSgpt do
+  @dir "/home/zaf/Desktop/podcast audio"
+
+  alias Algora.Library.Video
+
+  def transcribe_video(id, filename) do
+    video = Library.get_video!(id)
+
+    index = ML.load_index!()
+
+    IO.puts("\n⌛ processing #{video.title}")
+
+    video =
+      case video.uuid do
+        nil ->
+          video |> change() |> Video.put_video_uuid() |> Repo.update!()
+
+        _ ->
+          video
+      end
+
+    slug = Video.slug(video)
+
+    IO.puts("- uploading mp3 to tigris")
+
+    Cache.fetch("#{slug}/upload", fn ->
+      Storage.upload_from_filename("#{@dir}/#{filename}", "#{video.uuid}/index.mp3")
+      :ok
+    end)
+
+    IO.puts("- transcribing audio")
+
+    Cache.fetch("#{slug}/transcription", fn ->
+      transcription = ML.transcribe_video("#{video.url_root}/index.mp3")
+
+      :ok =
+        transcription["chunks"]
+        |> Enum.map(fn %{"text" => text, "timestamp" => [tstart, tend]} ->
+          %Library.Subtitle{
+            body: text,
+            start: :erlang.float(tstart),
+            end: :erlang.float(tend || video.duration),
+            video_id: video.id
+          }
+        end)
+        |> Enum.each(&Repo.insert!/1)
+
+      transcription
+    end)
+
+    IO.puts("- chunking transcript")
+
+    chunks = ML.chunk(video)
+
+    IO.puts("- creating embeddings")
+
+    embeddings =
+      Cache.fetch("#{slug}/embeddings", fn ->
+        ML.create_embeddings(chunks)
+      end)
+
+    IO.puts("- creating segments")
+
+    segments =
+      Cache.fetch("#{slug}/segments", fn ->
+        segments =
+          Enum.zip(chunks, embeddings)
+          |> Enum.map(fn {chunk, embedding} ->
+            %Library.Segment{chunk | embedding: embedding["embedding"]}
+          end)
+          |> Enum.map(&Repo.insert!/1)
+
+        ML.add_embeddings(index, segments)
+
+        segments
+      end)
+
+    segments
+  end
+end
+```
+
+```elixir
+videos = [
+  {6333, "Supertokens Interview Highlights.mp3"},
+  {6339, "Hanko full interview.mp3"},
+  {6407, "OpenBB Full Interview.mp3"},
+  {6422, "Signoz Interview Highlights.mp3"},
+  {6390, "Remotion Interview Highlights.mp3"},
+  {6305, "Nango Interview Highlights.mp3"},
+  {6347, "Linen Interview Highlights.mp3"},
+  {6429, "Medplum Full Interview.mp3"},
+  {6393, "Windmill Interview Highlights.mp3"},
+  {6419, "Elementary Data Highlights.mp3"},
+  {6400, "Sematic_Highlights_final.mp3"},
+  {6300, "Infisical Interview Highlights.mp3"},
+  {6421, "Novu Interview Highlights.mp3"},
+  {6330, "Hydra Full Interview.mp3"},
+  {6309, "shuttle.rs Interview Highlights.mp3"},
+  {6402, "Ivy Interview Highlights.mp3"},
+  {6411, "Nextcloud Interview Highlights.mp3"},
+  {6425, "Okteto Interview Highlights .mp3"},
+  {6405, "Tigris Data Interview Highlights.mp3"},
+  {6415, "Refine Interview Highlights.mp3"},
+  {6413, "Cal.com Interview Highlights.mp3"},
+  {6302, "Hoppscotch Interview Highlights.mp3"},
+  {6334, "MAIN-Documenso.mp3"},
+  {6331, "GiteaFull.mp3"},
+  {6336, "maybefull.mp3"},
+  {6391, "NuxtFull.mp3"},
+  {6327, "OramaFull.mp3"},
+  {6430, "FinalTimeplusFullInterview.mp3"},
+  {6295, "tursofull.mp3"},
+  {6324, "unkeyfull.mp3"},
+  {8540, "Tauri-Full-Final.mp3"},
+  {8541, "TailcallFull-correct.mp3"},
+  {8539, "millionfull.mp3"},
+  {6426, "Scalarfullinterview.mp3"},
+  {6387, "IHP Interview Highlights.mp3"},
+  {8196, "peer-1.mp3"},
+  {8236, "peer-2.mp3"},
+  {8412, "peer-3.mp3"},
+  {8428, "peer-4.mp3"},
+  {8231, "andreas-1.mp3"},
+  {8411, "andreas-2.mp3"},
+  {8426, "andreas-3.mp3"}
+]
+
+for {id, filename} <- videos do
+  COSSgpt.transcribe_video(id, filename)
+end
+```
+
+```elixir
+obsolete_segments = [
+  937,
+  938,
+  939,
+  940,
+  941,
+  942,
+  932,
+  933,
+  934,
+  935,
+  936,
+  1572,
+  1574,
+  1575,
+  1573,
+  1275,
+  1276,
+  1277,
+  1278,
+  1279,
+  1280,
+  1281,
+  1282,
+  1283,
+  1284,
+  1289,
+  1294,
+  1299,
+  1285,
+  1290,
+  1295,
+  1300,
+  1286,
+  1291,
+  1296,
+  1301,
+  1306,
+  1311,
+  1316,
+  1321,
+  1326,
+  1331,
+  1336,
+  1341,
+  1346,
+  1287,
+  1292,
+  1297,
+  1288,
+  1293,
+  1298,
+  1302,
+  1303,
+  1304,
+  1305,
+  1307,
+  1308,
+  1309,
+  1310,
+  1312,
+  1313,
+  1314,
+  1320,
+  1319,
+  1324,
+  1329,
+  1334,
+  1339,
+  1344,
+  1349,
+  1354,
+  1359,
+  1364,
+  1369,
+  1315,
+  1325,
+  1330,
+  1335,
+  1340,
+  1345,
+  1350,
+  1355,
+  1360,
+  1365,
+  1370,
+  1382,
+  1317,
+  1322,
+  1327,
+  1332,
+  1337,
+  1342,
+  1347,
+  1352,
+  1357,
+  1362,
+  1367,
+  1372,
+  1377,
+  1318,
+  1323,
+  1328,
+  1333,
+  1338,
+  1343,
+  1348,
+  1353,
+  1358,
+  1363,
+  1368,
+  1373,
+  1351,
+  1356,
+  1361,
+  1366,
+  1371,
+  1376,
+  1381,
+  1386,
+  1391,
+  1374,
+  1379,
+  1384,
+  1389,
+  1375,
+  1380,
+  1385,
+  1390,
+  1378,
+  1383,
+  1388,
+  1387
+]
+
+index = ML.load_index!()
+
+for id <- obsolete_segments do
+  :ok = HNSWLib.Index.mark_deleted(index, id)
+end
+
+ML.save_index(index)
+```

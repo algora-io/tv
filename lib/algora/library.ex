@@ -7,8 +7,8 @@ defmodule Algora.Library do
   import Ecto.Query, warn: false
   import Ecto.Changeset
   alias Algora.Accounts.User
-  alias Algora.{Repo, Accounts, Storage}
-  alias Algora.Library.{Channel, Video, Events, Subtitle}
+  alias Algora.{Repo, Accounts, Storage, Cache, ML}
+  alias Algora.Library.{Channel, Video, Events, Subtitle, Segment}
 
   @pubsub Algora.PubSub
 
@@ -183,11 +183,32 @@ defmodule Algora.Library do
       join: u in User,
       on: v.user_id == u.id,
       where: u.id == ^user.id,
-      select_merge: %{channel_handle: u.handle, channel_name: u.name},
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      },
       order_by: [desc: v.inserted_at],
       limit: 1
     )
     |> Repo.one()
+  end
+
+  def transcribe_video(%Video{} = video, cb) do
+    dir = Path.join(System.tmp_dir!(), video.uuid)
+    File.mkdir_p!(dir)
+    mp3_local_path = Path.join(dir, "index.mp3")
+
+    cb.(%{stage: :transmuxing, done: 1, total: 1})
+    System.cmd("ffmpeg", ["-i", video.url, "-vn", mp3_local_path])
+
+    Storage.upload_from_filename(mp3_local_path, "#{video.uuid}/index.mp3", cb)
+
+    File.rm!(mp3_local_path)
+
+    Cache.fetch("#{Video.slug(video)}/transcription", fn ->
+      ML.transcribe_video_async("#{video.url_root}/index.mp3")
+    end)
   end
 
   def get_mp4_video(id) do
@@ -195,7 +216,11 @@ defmodule Algora.Library do
       where: v.format == :mp4 and (v.transmuxed_from_id == ^id or v.id == ^id),
       join: u in User,
       on: v.user_id == u.id,
-      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      }
     )
     |> Repo.one()
   end
@@ -394,10 +419,39 @@ defmodule Algora.Library do
           v.visibility == :public and
           is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
-      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      }
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
+  end
+
+  def list_videos_by_ids(ids) do
+    videos =
+      from(v in Video,
+        join: u in User,
+        on: v.user_id == u.id,
+        select_merge: %{
+          channel_handle: u.handle,
+          channel_name: u.name,
+          channel_avatar_url: u.avatar_url
+        },
+        where: v.id in ^ids
+      )
+      |> Repo.all()
+
+    video_by_id = fn id ->
+      videos
+      |> Enum.find(fn s -> s.id == id end)
+    end
+
+    ids
+    |> Enum.reduce([], fn id, acc -> [video_by_id.(id) | acc] end)
+    |> Enum.filter(& &1)
+    |> Enum.reverse()
   end
 
   def list_shorts(limit \\ 100) do
@@ -409,7 +463,11 @@ defmodule Algora.Library do
         not is_nil(v.url) and
           is_nil(v.transmuxed_from_id) and v.visibility == :public and
           not is_nil(v.vertical_thumbnail_url),
-      select_merge: %{channel_handle: u.handle, channel_name: u.name}
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      }
     )
     |> order_by_inserted(:desc)
     |> Repo.all()
@@ -420,7 +478,11 @@ defmodule Algora.Library do
       limit: ^limit,
       join: u in User,
       on: v.user_id == u.id,
-      select_merge: %{channel_handle: u.handle, channel_name: u.name},
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      },
       where:
         not is_nil(v.url) and
           is_nil(v.transmuxed_from_id) and
@@ -435,10 +497,11 @@ defmodule Algora.Library do
       limit: ^limit,
       join: u in assoc(v, :user),
       left_join: m in assoc(v, :messages),
-      group_by: [v.id, u.handle, u.name],
+      group_by: [v.id, u.handle, u.name, u.avatar_url],
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
+        channel_avatar_url: u.avatar_url,
         messages_count: count(m.id)
       },
       where:
@@ -489,7 +552,11 @@ defmodule Algora.Library do
         where: v.id == ^id,
         join: u in User,
         on: v.user_id == u.id,
-        select_merge: %{channel_handle: u.handle, channel_name: u.name}
+        select_merge: %{
+          channel_handle: u.handle,
+          channel_name: u.name,
+          channel_avatar_url: u.avatar_url
+        }
       )
       |> Repo.one!()
 
@@ -512,6 +579,22 @@ defmodule Algora.Library do
   def topic_livestreams(), do: "livestreams"
 
   def topic_studio(), do: "studio"
+
+  def list_segments(%Video{} = video) do
+    from(s in Segment, where: s.video_id == ^video.id, order_by: [asc: s.start])
+    |> Repo.all()
+  end
+
+  def list_segments_by_ids(ids) do
+    segments = from(s in Segment, where: s.id in ^ids) |> Repo.all()
+
+    segment_by_id = fn id -> segments |> Enum.find(fn s -> s.id == id end) end
+
+    ids
+    |> Enum.reduce([], fn id, acc -> [segment_by_id.(id) | acc] end)
+    |> Enum.filter(& &1)
+    |> Enum.reverse()
+  end
 
   def list_subtitles(%Video{} = video) do
     from(s in Subtitle, where: s.video_id == ^video.id, order_by: [asc: s.start])
