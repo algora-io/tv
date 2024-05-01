@@ -121,7 +121,7 @@ defmodule AlgoraWeb.COSSGPTLive do
               <div class="mt-4 relative">
                 <div class="w-full h-full pointer-events-none absolute bg-gradient-to-r from-transparent from-[75%] to-gray-900 rounded-xl">
                 </div>
-                <div class="bg-white/[7.5%] border border-white/[20%] p-4 rounded-xl flex gap-8 w-[calc(100vw-2rem)] lg:w-[22rem] xl:w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
+                <div class="bg-white/[7.5%] border border-white/[20%] p-4 rounded-xl flex gap-8 w-[calc(100vw-2rem)] md:hidden lg:flex lg:w-[22rem] xl:w-[40rem] overflow-x-auto pb-4 -mb-4 scrollbar-thin">
                   <.link
                     :for={segment <- segments}
                     class="space-x-2"
