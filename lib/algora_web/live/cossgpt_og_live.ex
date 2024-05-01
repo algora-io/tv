@@ -18,7 +18,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="h-20 w-20 -mt-12 text-green-300"
+            class="h-20 w-20 text-green-300"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
           </svg>
@@ -33,12 +33,12 @@ defmodule AlgoraWeb.COSSGPTOGLive do
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="h-20 w-20 -mb-12 text-green-400"
+            class="h-20 w-20 text-green-400"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
           </svg>
         </h1>
-        <form class="mt-20 w-full max-w-lg mx-auto scale-125" phx-submit="search">
+        <form class="mt-10 w-full max-w-lg mx-auto scale-125" phx-submit="search">
           <label for="query" class="mb-2 text-sm font-medium sr-only text-white">
             Search
           </label>
