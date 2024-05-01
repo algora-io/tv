@@ -285,7 +285,7 @@ let routeUpdated = () => {
 
 // Show progress bar on live navigation and form submits
 topbar.config({
-  barColors: { 0: "rgba(147, 51, 234, 1)" },
+  barColors: { 0: "rgba(79, 70, 229, 1)" },
   shadowColor: "rgba(0, 0, 0, .3)",
 });
 window.addEventListener("phx:page-loading-start", (info) =>
