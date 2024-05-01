@@ -197,7 +197,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
 
   @impl true
   def handle_event("search", %{"query" => query}, socket) do
-    {:noreply, socket |> push_patch(to: ~p"/cossgpt?#{%{query: query}}")}
+    {:noreply, socket |> push_patch(to: ~p"/og/cossgpt?#{%{query: query}}")}
   end
 
   @impl true
