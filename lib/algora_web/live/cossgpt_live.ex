@@ -6,7 +6,7 @@ defmodule AlgoraWeb.COSSGPTLive do
   def render(assigns) do
     ~H"""
     <div class="px-4 py-4 lg:py-8 text-white min-h-screen max-w-7xl mx-auto overflow-hidden">
-      <h1 class="flex items-center justify-center gap-2 sm:gap-4 text-4xl sm:text-6xl font-bold font-mono text-purple-300 [text-shadow:#000_10px_5px_10px]">
+      <h1 class="flex items-center justify-center gap-2 sm:gap-4 text-4xl sm:text-6xl font-bold font-mono text-purple-400 [text-shadow:#000_10px_5px_10px]">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -17,11 +17,11 @@ defmodule AlgoraWeb.COSSGPTLive do
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="h-8 w-8 -mt-4 sm:h-16 sm:w-16 sm:-mt-8"
+          class="h-8 w-8 -mt-4 sm:h-16 sm:w-16 sm:-mt-8 text-purple-300"
         >
           <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
         </svg>
-        <span class="text-purple-300">COSS</span><span class="text-purple-300">gpt</span>
+        <span class="text-purple-300">COSS</span><span class="text-purple-400">gpt</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -32,7 +32,7 @@ defmodule AlgoraWeb.COSSGPTLive do
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="h-8 w-8 -mb-4 sm:h-16 sm:w-16 sm:-mb-8 text-purple-300"
+          class="h-8 w-8 -mb-4 sm:h-16 sm:w-16 sm:-mb-8 text-purple-400"
         >
           <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
         </svg>
