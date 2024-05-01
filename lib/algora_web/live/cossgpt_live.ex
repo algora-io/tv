@@ -80,7 +80,16 @@ defmodule AlgoraWeb.COSSGPTLive do
           </div>
         </div>
       </div>
-      <div class="flex mt-4 lg:mt-8">
+      <div class="space-y-4 lg:space-y-8 mt-4 lg:mt-8">
+        <div :if={@task} class="flex-1 space-y-4 lg:space-y-8">
+          <div :for={_ <- 1..2} class="gap-8 hidden lg:flex">
+            <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
+            <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
+          </div>
+          <div :for={_ <- 1..3} class="gap-8 lg:hidden flex">
+            <div class="w-full rounded-2xl aspect-video bg-white/20 animate-pulse lg:hidden"></div>
+          </div>
+        </div>
         <div :if={@results} class="flex-1 space-y-8">
           <div
             :for={%{video: video, segments: segments} <- @results}
@@ -135,12 +144,6 @@ defmodule AlgoraWeb.COSSGPTLive do
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div :if={@task} class="flex-1 space-y-8">
-          <div :for={_ <- 1..2} class="flex gap-8">
-            <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
-            <div class="w-1/2 rounded-2xl aspect-video bg-white/20 animate-pulse"></div>
           </div>
         </div>
       </div>
