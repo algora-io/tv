@@ -65,7 +65,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
               name="query"
               value={@query}
               autocomplete="off"
-              class="block w-full p-4 ps-16 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-white ring-green-400 ring-2 focus:ring-4 focus:ring-green-400 focus:outline-none text-2xl font-medium"
+              class="block w-full p-4 ps-16 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-white ring-4 ring-green-400 focus:outline-none text-2xl font-medium"
               placeholder="Search..."
               required
             />
