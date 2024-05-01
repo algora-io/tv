@@ -16,7 +16,7 @@
     @apply border-gray-800;
   }
   body {
-    @apply bg-gray-950 text-white;
+    @apply bg-[radial-gradient(ellipse_at_top_left,_#1d1e3a_0%,_#050217_40%,_#050217_60%,_#1d1e3a_100%)] text-white;
   }
 }
 
