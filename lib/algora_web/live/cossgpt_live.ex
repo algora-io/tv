@@ -249,7 +249,7 @@ defmodule AlgoraWeb.COSSGPTLive do
     socket
     |> assign(
       page_title: "COSSgpt",
-      page_description: "Learn how to build commercial open source software",
+      page_description: "Learn how to build a commercial open source software company",
       page_url: "https://tv.algora.io/cossgpt",
       page_image: "#{AlgoraWeb.Endpoint.url()}/images/og/cossgpt.png"
     )
