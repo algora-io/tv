@@ -45,7 +45,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
           <div class="relative">
             <div class="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none">
               <svg
-                class="w-8 h-8 text-gray-300"
+                class="w-8 h-8 text-green-200"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -66,19 +66,19 @@ defmodule AlgoraWeb.COSSGPTOGLive do
               name="query"
               value={@query}
               autocomplete="off"
-              class="block w-full p-4 ps-16 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-white ring-4 ring-green-400 focus:outline-none text-2xl font-medium"
+              class="block w-full p-4 ps-16 border rounded-lg border-green-400 bg-white/[5%] placeholder-gray-400 text-green-100 ring-4 ring-green-400 focus:outline-none text-2xl font-medium"
               placeholder="Anything about commercial open-source software..."
               required
             />
             <button
               type="submit"
-              class="text-white text-2xl absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg px-4 py-2 bg-green-600 hover:bg-green-700 focus:ring-green-800"
+              class="text-green-950 text-2xl absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-bold rounded-lg px-4 py-2 bg-green-200 hover:bg-green-700 focus:ring-green-800"
             >
               Learn
             </button>
           </div>
         </form>
-        <div class="mt-20 scale-125">
+        <div class="mt-20 scale-[1.37]">
           <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
             Suggestions
           </div>
