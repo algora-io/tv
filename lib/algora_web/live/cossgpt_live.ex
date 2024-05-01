@@ -38,7 +38,7 @@ defmodule AlgoraWeb.COSSGPTLive do
         </svg>
       </h1>
       <form class="mt-4 sm:mt-8 max-w-lg mx-auto" phx-submit="search">
-        <label class="mb-2 text-sm font-medium sr-only text-white">
+        <label for="query" class="mb-2 text-sm font-medium sr-only text-white">
           Search
         </label>
         <div class="relative">
@@ -61,19 +61,11 @@ defmodule AlgoraWeb.COSSGPTLive do
           </div>
           <input
             type="search"
+            id="query"
             name="query"
             value={@query}
             autocomplete="off"
-            class="hidden sm:block w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-purple-300 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            placeholder="Ask anything about commercial open-source software..."
-            required
-          />
-          <input
-            type="search"
-            name="query"
-            value={@query}
-            autocomplete="off"
-            class="block sm:hidden w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-purple-300 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            class="w-full p-4 ps-10 text-sm border rounded-lg border-purple-500 bg-white/[5%] placeholder-purple-300 text-white ring-purple-500 ring-1 focus:ring-2 focus:ring-purple-500 focus:outline-none"
             placeholder="Ask anything about COSS..."
             required
           />
