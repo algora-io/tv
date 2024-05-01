@@ -22,7 +22,24 @@ defmodule Algora.ML do
   end
 
   def load_index!() do
-    case HNSWLib.Index.load_index(:cosine, 768, index_path(), max_elements: 100_000) do
+    tmp_dir = Path.join(System.tmp_dir!(), "algora/hnswlib")
+    tmp_path = Path.join(tmp_dir, "index")
+
+    if File.exists?(tmp_path) do
+      load_index_from_disk!(tmp_path)
+    else
+      File.mkdir_p!(tmp_dir)
+
+      {:ok, _} =
+        ExAws.S3.download_file(Algora.config([:buckets, :ml]), "index", tmp_path)
+        |> ExAws.request()
+
+      load_index_from_disk!(tmp_path)
+    end
+  end
+
+  defp load_index_from_disk!(path) do
+    case HNSWLib.Index.load_index(:cosine, 768, path, max_elements: 100_000) do
       {:ok, index} ->
         index
 
