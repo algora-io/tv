@@ -81,21 +81,22 @@ defmodule AlgoraWeb.COSSGPTLive do
         <div class="uppercase text-center text-gray-300 tracking-tight text-xs font-semibold">
           Suggestions
         </div>
-        <div class="mt-4 flex flex-wrap gap-2 justify-center max-w-4xl mx-auto">
+        <div class="mt-4 flex flex-wrap gap-2 justify-center mx-auto">
           <div
             :for={
               suggestion_group <- [
                 [
+                  "Benefits of going open source",
                   "Business models and pricing",
                   "Choosing a license",
-                  "How to hire engineers",
-                  "Developer marketing"
+                  "How to hire engineers"
                 ],
                 [
                   "How to get your first customers",
                   "B2B startup metrics",
                   "Setting KPIs and goals",
-                  "How to fundraise"
+                  "How to fundraise",
+                  "Developer marketing"
                 ]
               ]
             }

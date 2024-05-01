@@ -86,14 +86,15 @@ defmodule AlgoraWeb.COSSGPTOGLive do
             <button
               :for={
                 suggestion <- [
+                  "Benefits of going open source",
                   "Business models and pricing",
                   "Choosing a license",
                   "How to hire engineers",
-                  "Developer marketing",
                   "How to get your first customers",
                   "B2B startup metrics",
                   "Setting KPIs and goals",
-                  "How to fundraise"
+                  "How to fundraise",
+                  "Developer marketing"
                 ]
               }
               phx-click="search"
