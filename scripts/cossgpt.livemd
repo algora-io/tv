@@ -100,11 +100,9 @@ end
 
 ```elixir
 videos = [
-  {6348, "Demo _ OSS Search _ Orama.mp3"},
   {6333, "Supertokens Interview Highlights.mp3"},
-  {6313, "Hanko full interview.mp3"},
-  {6363, "UnkeyCofounders.mp3"},
-  {6424, "OpenBB Full Interview.mp3"},
+  {6339, "Hanko full interview.mp3"},
+  {6407, "OpenBB Full Interview.mp3"},
   {6422, "Signoz Interview Highlights.mp3"},
   {6390, "Remotion Interview Highlights.mp3"},
   {6305, "Nango Interview Highlights.mp3"},
@@ -112,10 +110,10 @@ videos = [
   {6429, "Medplum Full Interview.mp3"},
   {6393, "Windmill Interview Highlights.mp3"},
   {6419, "Elementary Data Highlights.mp3"},
-  {6400, "Sematic Interview Highlights.mp3"},
+  {6400, "Sematic_Highlights_final.mp3"},
   {6300, "Infisical Interview Highlights.mp3"},
   {6421, "Novu Interview Highlights.mp3"},
-  {6325, "Hydra Full Interview.mp3"},
+  {6330, "Hydra Full Interview.mp3"},
   {6309, "shuttle.rs Interview Highlights.mp3"},
   {6402, "Ivy Interview Highlights.mp3"},
   {6411, "Nextcloud Interview Highlights.mp3"},
