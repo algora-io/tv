@@ -287,7 +287,14 @@ let routeUpdated = () => {
     return;
   }
 
-  const pipClasses = ["fixed", "bottom-0", "right-0", "z-[1000]", "w-[30vw]"];
+  const pipClasses = [
+    "fixed",
+    "bottom-0",
+    "right-0",
+    "z-[1000]",
+    "w-[100vw]",
+    "sm:w-[30vw]",
+  ];
 
   if (/^\/[^\/]+\/\d+$/.test(new URL(window.location.href).pathname)) {
     player.classList.add("lg:pr-[24rem]");
