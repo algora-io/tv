@@ -83,6 +83,7 @@ defmodule AlgoraWeb.Router do
       live "/", HomeLive, :show
       live "/auth/login", SignInLive, :index
       live "/cossgpt", COSSGPTLive, :index
+      live "/og/cossgpt", COSSGPTOGLive, :index
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
     end
