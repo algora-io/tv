@@ -6,8 +6,9 @@ defmodule AlgoraWeb.COSSGPTOGLive do
   def render(assigns) do
     ~H"""
     <div class="px-4 py-8 text-white mx-auto overflow-hidden flex gap-[20rem]">
-      <div class="ml-[10rem] h-[calc(100vh-88px)] flex flex-col items-center justify-center scale-150">
-        <form class="w-full max-w-lg mx-auto" phx-submit="search">
+      <div class="ml-[12rem] h-[calc(100vh-88px)] flex flex-col items-center justify-center scale-150">
+        <h1 class="text-8xl font-bold font-mono text-purple-400">COSSgpt</h1>
+        <form class="mt-20 w-full max-w-lg mx-auto" phx-submit="search">
           <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">
             Search
           </label>
@@ -73,7 +74,7 @@ defmodule AlgoraWeb.COSSGPTOGLive do
           </div>
         </div>
       </div>
-      <div class="flex -ml-[10rem]">
+      <div class="flex -ml-[6rem]">
         <div :if={@results} class="flex-1 space-y-8">
           <div
             :for={%{video: video, segments: segments} <- @results}
