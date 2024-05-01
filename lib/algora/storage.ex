@@ -84,7 +84,7 @@ defmodule Algora.Storage do
   end
 
   def upload(contents, remote_path, opts \\ []) do
-    Algora.config([:files, :bucket])
+    Algora.config([:buckets, :media])
     |> ExAws.S3.put_object(remote_path, contents, opts)
     |> ExAws.request([])
   end
@@ -99,7 +99,7 @@ defmodule Algora.Storage do
       cb.(%{stage: :persisting, done: chunk_size, total: size})
       chunk
     end)
-    |> ExAws.S3.upload(Algora.config([:files, :bucket]), remote_path, opts)
+    |> ExAws.S3.upload(Algora.config([:buckets, :media]), remote_path, opts)
     |> ExAws.request([])
   end
 

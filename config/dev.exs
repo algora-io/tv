@@ -2,7 +2,9 @@ import Config
 
 config :algora, mode: :dev
 
-config :algora, :files, bucket: System.get_env("BUCKET_NAME")
+config :algora, :buckets,
+  media: System.get_env("BUCKET_MEDIA"),
+  ml: System.get_env("BUCKET_ML")
 
 config :algora, :github,
   client_id: System.get_env("GITHUB_CLIENT_ID"),

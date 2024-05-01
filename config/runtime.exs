@@ -86,7 +86,9 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  config :algora, :files, bucket: System.fetch_env!("BUCKET_NAME")
+  config :algora, :buckets,
+    media: System.get_env("BUCKET_MEDIA"),
+    ml: System.get_env("BUCKET_ML")
 
   config :algora, :github,
     client_id: System.fetch_env!("GITHUB_CLIENT_ID"),

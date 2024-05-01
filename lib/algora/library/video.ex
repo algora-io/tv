@@ -92,7 +92,7 @@ defmodule Algora.Library.Video do
   defp fileext(:hls), do: ".m3u8"
 
   defp url_root(uuid) do
-    bucket = Algora.config([:files, :bucket])
+    bucket = Algora.config([:buckets, :media])
     %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
     "#{scheme}#{host}/#{bucket}/#{uuid}"
   end
