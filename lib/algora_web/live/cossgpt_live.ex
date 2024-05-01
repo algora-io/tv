@@ -67,7 +67,7 @@ defmodule AlgoraWeb.COSSGPTLive do
                 ]
               ]
             }
-            class="-ml-2 -mt-2 p-2 z-10 flex md:justify-center whitespace-nowrap md:flex-wrap gap-4 overflow-x-auto md:overflow-x-hidden"
+            class="-ml-2 -mt-2 p-2 z-10 flex md:justify-center whitespace-nowrap md:flex-wrap gap-4 overflow-x-auto md:overflow-x-hidden scrollbar-thin"
           >
             <button
               :for={suggestion <- suggestion_group}
