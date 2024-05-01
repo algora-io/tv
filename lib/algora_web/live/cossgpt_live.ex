@@ -113,7 +113,13 @@ defmodule AlgoraWeb.COSSGPTLive do
               :for={suggestion <- suggestion_group}
               phx-click="search"
               phx-value-query={suggestion}
-              class="bg-white/10 text-gray-200 font-medium text-sm px-3 py-2 ring-1 ring-white/20 shadow-inner inline-flex rounded-lg hover:ring-white/25 hover:bg-white/5 hover:text-white transition-colors"
+              class={[
+                "text-gray-200 font-medium text-sm px-3 py-2 ring-1 hover:ring-2 ring-white/20 shadow-inner inline-flex rounded-lg hover:ring-white/25 hover:bg-white/5 hover:text-white transition-colors",
+                if(suggestion == @query,
+                  do: "bg-white/5 ring-2 ring-white/25 hover:ring-white/25",
+                  else: "bg-white/10 ring-white/20"
+                )
+              ]}
             >
               <%= suggestion %>
             </button>
