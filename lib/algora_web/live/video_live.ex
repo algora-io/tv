@@ -35,7 +35,7 @@ defmodule AlgoraWeb.VideoLive do
         </.button>
       </:actions> --%>
     <aside id="side-panel" class="hidden lg:w-[24rem] lg:flex fixed top-[64px] right-0 w-0 pr-4">
-      <div class="p-4 bg-gray-800/40 w-[23rem] backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
+      <div class="py-4 bg-gray-800/40 w-[23rem] backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
         <div>
           <ul class="pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
             <li :for={{tab, i} <- Enum.with_index(@tabs)}>
@@ -75,13 +75,13 @@ defmodule AlgoraWeb.VideoLive do
                 }
               >
                 <div class={[
-                  "overflow-y-auto text-sm break-words flex-1",
+                  "overflow-y-auto text-sm break-words flex-1 scrollbar-thin",
                   if(@can_edit,
                     do: "h-[calc(100vh-11rem)]",
                     else: "h-[calc(100vh-8.75rem)]"
                   )
                 ]}>
-                  <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"}>
+                  <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"} class="px-4">
                     <span class="font-semibold text-indigo-400">
                       <%= Library.to_hhmmss(subtitle.start) %>
                     </span>
@@ -91,12 +91,14 @@ defmodule AlgoraWeb.VideoLive do
                   </div>
                 </div>
 
-                <button
-                  :if={@can_edit}
-                  class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-                >
-                  Edit
-                </button>
+                <div class="px-4">
+                  <button
+                    :if={@can_edit}
+                    class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                  >
+                    Edit
+                  </button>
+                </div>
               </div>
               <.simple_form
                 :if={@can_edit}
@@ -104,7 +106,7 @@ defmodule AlgoraWeb.VideoLive do
                 for={@form}
                 phx-submit="save"
                 phx-update="ignore"
-                class="hidden h-full"
+                class="hidden h-full px-4"
               >
                 <.input
                   field={@form[:subtitles]}
@@ -135,9 +137,9 @@ defmodule AlgoraWeb.VideoLive do
               <div
                 id="chat-messages"
                 phx-update="ignore"
-                class="text-sm break-words flex-1 overflow-y-auto h-[calc(100vh-11rem)]"
+                class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-11rem)]"
               >
-                <div :for={message <- @messages} id={"message-#{message.id}"}>
+                <div :for={message <- @messages} id={"message-#{message.id}"} class="px-4">
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
                     <%= message.sender_handle %>:
                   </span>
@@ -146,20 +148,22 @@ defmodule AlgoraWeb.VideoLive do
                   </span>
                 </div>
               </div>
-              <input
-                :if={@current_user}
-                id="chat-input"
-                placeholder="Send a message"
-                disabled={@current_user == nil}
-                class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
-              />
-              <a
-                :if={!@current_user}
-                href={Algora.Github.authorize_url()}
-                class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-              >
-                Sign in to chat
-              </a>
+              <div class="px-4">
+                <input
+                  :if={@current_user}
+                  id="chat-input"
+                  placeholder="Send a message"
+                  disabled={@current_user == nil}
+                  class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
+                />
+                <a
+                  :if={!@current_user}
+                  href={Algora.Github.authorize_url()}
+                  class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                >
+                  Sign in to chat
+                </a>
+              </div>
             </div>
           </div>
         </div>
