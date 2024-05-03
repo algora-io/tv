@@ -21,9 +21,9 @@ defmodule AlgoraWeb.ChatLive do
               <div
                 id="chat-messages"
                 phx-update="ignore"
-                class="text-sm break-words flex-1 m-1 scrollbar-thin overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden p-4 rounded ring-1 ring-purple-300"
+                class="text-sm break-words flex-1 m-1 scrollbar-thin overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden py-4 rounded ring-1 ring-purple-300"
               >
-                <div :for={message <- @messages} id={"message-#{message.id}"}>
+                <div :for={message <- @messages} id={"message-#{message.id}"} class="px-4">
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
                     <%= message.sender_handle %>:
                   </span>
@@ -155,6 +155,13 @@ defmodule AlgoraWeb.ChatLive do
      else
        socket
      end}
+  end
+
+  def handle_info(
+        {Library, %Library.Events.MessageDeleted{message: message}},
+        socket
+      ) do
+    {:noreply, socket |> push_event("message_deleted", %{id: message.id})}
   end
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}
