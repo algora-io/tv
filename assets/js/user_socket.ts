@@ -42,6 +42,7 @@ const init = () => {
 
     channel.on("new_msg", (payload) => {
       const messageItem = document.createElement("div");
+      messageItem.className = "px-4";
 
       const senderItem = document.createElement("span");
       senderItem.innerText = `${payload.user.handle}: `;
