@@ -534,7 +534,7 @@ defmodule AlgoraWeb.VideoLive do
       Library.broadcast_message_deleted!(socket.assigns.channel, message)
       {:noreply, socket}
     else
-      {:noreply, socket |> put_flash(:error, "you can't")}
+      {:noreply, socket |> put_flash(:error, "You can't do that")}
     end
   end
 
