@@ -7,18 +7,6 @@ defmodule AlgoraWeb.VideoLive do
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
   def render(assigns) do
-    tabs =
-      [:chat]
-      |> append_if(length(assigns.subtitles) > 0, :transcript)
-
-    assigns =
-      assigns
-      |> assign(
-        # HACK: properly implement
-        can_edit: assigns.current_user && assigns.current_user.handle == "zaf",
-        tabs: tabs
-      )
-
     ~H"""
     <%!-- <:actions>
         <.button
@@ -387,6 +375,8 @@ defmodule AlgoraWeb.VideoLive do
       {data, types}
       |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
+    tabs = [:chat] |> append_if(length(subtitles) > 0, :transcript)
+
     socket =
       socket
       |> assign(
@@ -395,7 +385,11 @@ defmodule AlgoraWeb.VideoLive do
         videos_count: Enum.count(videos),
         video: video,
         subtitles: subtitles,
-        messages: Chat.list_messages(video)
+        messages: Chat.list_messages(video),
+        tabs: tabs,
+        # TODO: reenable once fully implemented
+        # associated segments need to be removed from db & vectorstore
+        can_edit: false
       )
       |> assign_form(changeset)
       |> stream(:videos, videos)
