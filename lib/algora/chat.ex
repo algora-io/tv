@@ -15,8 +15,12 @@ defmodule Algora.Chat do
     from(m in Message,
       join: u in User,
       on: m.user_id == u.id,
-      where: m.video_id == ^video.id,
-      select_merge: %{sender_handle: u.handle}
+      join: v in Video,
+      on: m.video_id == v.id,
+      join: c in User,
+      on: c.id == v.user_id,
+      select_merge: %{sender_handle: u.handle, channel_id: c.id},
+      where: m.video_id == ^video.id
     )
     |> order_by_inserted(:asc)
     |> Repo.all()
@@ -26,7 +30,23 @@ defmodule Algora.Chat do
     from(s in query, order_by: [{^direction, s.inserted_at}])
   end
 
-  def get_message!(id), do: Repo.get!(Message, id)
+  def can_delete?(%User{} = user, %Message{} = message) do
+    user.id == message.channel_id or user.id == message.user_id
+  end
+
+  def get_message!(id) do
+    from(m in Message,
+      join: u in User,
+      on: m.user_id == u.id,
+      join: v in Video,
+      on: m.video_id == v.id,
+      join: c in User,
+      on: c.id == v.user_id,
+      select_merge: %{sender_handle: u.handle, channel_id: c.id},
+      where: m.id == ^id
+    )
+    |> Repo.one!()
+  end
 
   def create_message(attrs \\ %{}) do
     %Message{}
