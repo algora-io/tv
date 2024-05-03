@@ -30,4 +30,8 @@ defmodule Algora.Library.Events do
   defmodule MessageDeleted do
     defstruct message: nil
   end
+
+  defmodule MessageSent do
+    defstruct message: nil
+  end
 end

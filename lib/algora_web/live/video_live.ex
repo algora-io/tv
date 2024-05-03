@@ -274,12 +274,12 @@ defmodule AlgoraWeb.VideoLive do
               <div :if={tab == :chat}>
                 <div
                   id="chat-messages"
-                  phx-update="ignore"
+                  phx-update="stream"
                   class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-11rem)]"
                 >
                   <div
-                    :for={message <- @messages}
-                    id={"message-#{message.id}"}
+                    :for={{id, message} <- @streams.messages}
+                    id={id}
                     class="group hover:bg-white/5 relative px-4"
                   >
                     <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
@@ -381,7 +381,6 @@ defmodule AlgoraWeb.VideoLive do
         videos_count: Enum.count(videos),
         video: video,
         subtitles: subtitles,
-        messages: Chat.list_messages(video),
         tabs: tabs,
         # TODO: reenable once fully implemented
         # associated segments need to be removed from db & vectorstore
@@ -389,6 +388,7 @@ defmodule AlgoraWeb.VideoLive do
       )
       |> assign_form(changeset)
       |> stream(:videos, videos)
+      |> stream(:messages, Chat.list_messages(video))
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
     if connected?(socket), do: send(self(), {:play, {video, params["t"]}})
@@ -480,6 +480,10 @@ defmodule AlgoraWeb.VideoLive do
         socket
       ) do
     {:noreply, socket |> push_event("message_deleted", %{id: message.id})}
+  end
+
+  def handle_info({Library, %Library.Events.MessageSent{message: message}}, socket) do
+    {:noreply, socket |> stream_insert(:messages, message)}
   end
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}

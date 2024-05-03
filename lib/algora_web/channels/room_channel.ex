@@ -1,6 +1,7 @@
 defmodule AlgoraWeb.RoomChannel do
   alias Algora.Chat.Message
   alias Algora.Repo
+  alias Algora.Library
 
   use Phoenix.Channel
 
@@ -13,11 +14,13 @@ defmodule AlgoraWeb.RoomChannel do
     "room:" <> video_id = socket.topic
 
     if user do
+      video = Library.get_video!(String.to_integer(video_id))
+
       message =
         Repo.insert!(%Message{
           body: body,
           user_id: user.id,
-          video_id: String.to_integer(video_id)
+          video_id: video.id
         })
 
       broadcast!(socket, "new_msg", %{
@@ -25,6 +28,8 @@ defmodule AlgoraWeb.RoomChannel do
         id: message.id,
         body: body
       })
+
+      Library.broadcast_message_sent!(video.user_id, message)
     end
 
     {:noreply, socket}
