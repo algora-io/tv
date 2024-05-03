@@ -26,4 +26,8 @@ defmodule Algora.Library.Events do
   defmodule ProcessingFailed do
     defstruct video: nil, attempt: nil, max_attempts: nil
   end
+
+  defmodule MessageDeleted do
+    defstruct message: nil
+  end
 end

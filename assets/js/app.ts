@@ -164,6 +164,9 @@ const Hooks = {
 
       this.handleEvent("play_video", playVideo);
       this.handleEvent("join_chat", Chat.join);
+      this.handleEvent("message_deleted", ({ id }) => {
+        document.querySelector(`#message-${id}`)?.remove();
+      });
     },
   },
   NavBar: {

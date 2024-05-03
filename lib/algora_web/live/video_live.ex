@@ -139,13 +139,27 @@ defmodule AlgoraWeb.VideoLive do
                 phx-update="ignore"
                 class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-11rem)]"
               >
-                <div :for={message <- @messages} id={"message-#{message.id}"} class="px-4">
+                <div
+                  :for={message <- @messages}
+                  id={"message-#{message.id}"}
+                  class="group hover:bg-white/5 relative px-4"
+                >
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
                     <%= message.sender_handle %>:
                   </span>
                   <span class="font-medium text-gray-100">
                     <%= message.body %>
                   </span>
+                  <button
+                    :if={@current_user && Chat.can_delete?(@current_user, message)}
+                    phx-click="delete"
+                    phx-value-id={message.id}
+                  >
+                    <Heroicons.x_mark
+                      solid
+                      class="absolute top-0.5 right-0.5 h-4 w-4 text-red-400 opacity-0 group-hover:opacity-100"
+                    />
+                  </button>
                 </div>
               </div>
               <div class="px-4">
@@ -483,6 +497,13 @@ defmodule AlgoraWeb.VideoLive do
      end}
   end
 
+  def handle_info(
+        {Library, %Library.Events.MessageDeleted{message: message}},
+        socket
+      ) do
+    {:noreply, socket |> push_event("message_deleted", %{id: message.id})}
+  end
+
   def handle_info({Library, _}, socket), do: {:noreply, socket}
 
   defp fmt(num) do
@@ -502,6 +523,19 @@ defmodule AlgoraWeb.VideoLive do
     msg = "Updated #{count} subtitles in #{fmt(round(time / 1000))} ms"
 
     {:noreply, socket |> put_flash(:info, msg)}
+  end
+
+  def handle_event("delete", %{"id" => id}, socket) do
+    %{current_user: current_user} = socket.assigns
+    message = Chat.get_message!(id)
+
+    if current_user && Chat.can_delete?(current_user, message) do
+      {:ok, message} = Chat.delete_message(message)
+      Library.broadcast_message_deleted!(socket.assigns.channel, message)
+      {:noreply, socket}
+    else
+      {:noreply, socket |> put_flash(:error, "You can't do that")}
+    end
   end
 
   defp save("naive", subtitles) do

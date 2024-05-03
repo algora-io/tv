@@ -7,6 +7,7 @@ defmodule Algora.Chat.Message do
   schema "messages" do
     field :body, :string
     field :sender_handle, :string, virtual: true
+    field :channel_id, :integer, virtual: true
     belongs_to :user, Accounts.User
     belongs_to :video, Library.Video
 
