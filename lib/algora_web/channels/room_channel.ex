@@ -13,12 +13,17 @@ defmodule AlgoraWeb.RoomChannel do
     "room:" <> video_id = socket.topic
 
     if user do
-      broadcast!(socket, "new_msg", %{user: %{id: user.id, handle: user.handle}, body: body})
+      message =
+        Repo.insert!(%Message{
+          body: body,
+          user_id: user.id,
+          video_id: String.to_integer(video_id)
+        })
 
-      Repo.insert!(%Message{
-        body: body,
-        user_id: user.id,
-        video_id: String.to_integer(video_id)
+      broadcast!(socket, "new_msg", %{
+        user: %{id: user.id, handle: user.handle},
+        id: message.id,
+        body: body
       })
     end
 
