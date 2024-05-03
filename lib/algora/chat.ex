@@ -6,7 +6,7 @@ defmodule Algora.Chat do
   import Ecto.Query, warn: false
   alias Algora.Library.Video
   alias Algora.Accounts.User
-  alias Algora.Repo
+  alias Algora.{Repo, Accounts}
 
   alias Algora.Chat.Message
 
@@ -31,7 +31,7 @@ defmodule Algora.Chat do
   end
 
   def can_delete?(%User{} = user, %Message{} = message) do
-    user.id == message.channel_id or user.id == message.user_id
+    user.id == message.channel_id or user.id == message.user_id or Accounts.admin?(user)
   end
 
   def get_message!(id) do
