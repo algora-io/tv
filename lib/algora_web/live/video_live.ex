@@ -514,6 +514,8 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   @impl true
+  def handle_event("validate", %{"message" => %{"body" => ""}}, socket), do: {:noreply, socket}
+
   def handle_event("validate", %{"message" => params}, socket) do
     form =
       %Chat.Message{}
@@ -523,6 +525,8 @@ defmodule AlgoraWeb.VideoLive do
 
     {:noreply, assign(socket, chat_form: form)}
   end
+
+  def handle_event("send", %{"message" => %{"body" => ""}}, socket), do: {:noreply, socket}
 
   def handle_event("send", %{"message" => params}, socket) do
     %{current_user: current_user, video: video} = socket.assigns
