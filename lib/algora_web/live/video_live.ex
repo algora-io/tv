@@ -302,13 +302,13 @@ defmodule AlgoraWeb.VideoLive do
                   </div>
                 </div>
                 <div class="px-4">
-                  <.simple_form :if={@current_user} for={@chat_form} phx-submit="send">
-                    <.input
-                      field={@chat_form[:body]}
-                      placeholder="Send a message"
-                      autocomplete="off"
-                      class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
-                    />
+                  <.simple_form
+                    :if={@current_user}
+                    for={@chat_form}
+                    phx-submit="send"
+                    phx-change="validate"
+                  >
+                    <.input field={@chat_form[:body]} placeholder="Send a message" autocomplete="off" />
                   </.simple_form>
                   <a
                     :if={!@current_user}
@@ -512,6 +512,16 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   @impl true
+  def handle_event("validate", %{"message" => params}, socket) do
+    form =
+      %Chat.Message{}
+      |> Chat.change_message(params)
+      |> Map.put(:action, :insert)
+      |> to_form()
+
+    {:noreply, assign(socket, chat_form: form)}
+  end
+
   def handle_event("send", %{"message" => params}, socket) do
     %{current_user: current_user, video: video} = socket.assigns
 
@@ -525,8 +535,6 @@ defmodule AlgoraWeb.VideoLive do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, chat_form: to_form(changeset))}
     end
-
-    {:noreply, socket}
   end
 
   def handle_event("save", %{"data" => %{"subtitles" => subtitles}, "save" => save_type}, socket) do
