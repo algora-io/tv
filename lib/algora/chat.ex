@@ -48,9 +48,11 @@ defmodule Algora.Chat do
     |> Repo.one!()
   end
 
-  def create_message(attrs \\ %{}) do
+  def create_message(%User{} = user, %Video{} = video, attrs \\ %{}) do
     %Message{}
     |> Message.changeset(attrs)
+    |> Message.put_user(user)
+    |> Message.put_video(video)
     |> Repo.insert()
   end
 

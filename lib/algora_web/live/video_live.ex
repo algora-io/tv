@@ -242,13 +242,13 @@ defmodule AlgoraWeb.VideoLive do
                 <.simple_form
                   :if={@can_edit}
                   id="edit-transcript"
-                  for={@form}
+                  for={@transcript_form}
                   phx-submit="save"
                   phx-update="ignore"
                   class="hidden h-full px-4"
                 >
                   <.input
-                    field={@form[:subtitles]}
+                    field={@transcript_form[:subtitles]}
                     type="textarea"
                     label="Edit transcript"
                     class="font-mono h-[calc(100vh-14.75rem)]"
@@ -302,19 +302,14 @@ defmodule AlgoraWeb.VideoLive do
                   </div>
                 </div>
                 <div class="px-4">
-                  <form :if={@current_user} phx-submit="send">
-                    <label for="new_message" class="mb-2 text-sm font-medium sr-only text-white">
-                      Send
-                    </label>
-                    <input
-                      id="new_message"
-                      name="new_message"
+                  <.simple_form :if={@current_user} for={@chat_form} phx-submit="send">
+                    <.input
+                      field={@chat_form[:body]}
                       placeholder="Send a message"
                       autocomplete="off"
                       class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
-                      required
                     />
-                  </form>
+                  </.simple_form>
                   <a
                     :if={!@current_user}
                     href={Algora.Github.authorize_url()}
@@ -375,7 +370,7 @@ defmodule AlgoraWeb.VideoLive do
 
     types = %{subtitles: :string}
 
-    changeset =
+    transcript_changeset =
       {data, types}
       |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
@@ -392,9 +387,10 @@ defmodule AlgoraWeb.VideoLive do
         tabs: tabs,
         # TODO: reenable once fully implemented
         # associated segments need to be removed from db & vectorstore
-        can_edit: false
+        can_edit: false,
+        transcript_form: to_form(transcript_changeset, as: :data),
+        chat_form: to_form(Chat.change_message(%Chat.Message{}))
       )
-      |> assign_form(changeset)
       |> stream(:videos, videos)
       |> stream(:messages, Chat.list_messages(video))
       |> stream(:presences, Presence.list_online_users(channel_handle))
@@ -516,23 +512,18 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   @impl true
-  def handle_event("send", %{"new_message" => body}, socket) do
+  def handle_event("send", %{"message" => params}, socket) do
     %{current_user: current_user, video: video} = socket.assigns
 
-    if current_user do
-      video = Library.get_video!(video.id)
+    case Chat.create_message(current_user, video, params) do
+      {:ok, message} ->
+        # HACK:
+        message = Chat.get_message!(message.id)
+        Library.broadcast_message_sent!(video.user_id, message)
+        {:noreply, assign(socket, chat_form: to_form(Chat.change_message(%Chat.Message{})))}
 
-      message =
-        Algora.Repo.insert!(%Chat.Message{
-          body: body,
-          user_id: current_user.id,
-          video_id: video.id
-        })
-
-      # HACK:
-      message = Chat.get_message!(message.id)
-
-      Library.broadcast_message_sent!(video.user_id, message)
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, chat_form: to_form(changeset))}
     end
 
     {:noreply, socket}
@@ -586,10 +577,6 @@ defmodule AlgoraWeb.VideoLive do
 
   defp append_if(list, cond, extra) do
     if cond, do: list ++ [extra], else: list
-  end
-
-  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :form, to_form(changeset, as: :data))
   end
 
   defp apply_action(socket, :stream, _params) do
