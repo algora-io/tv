@@ -8,181 +8,6 @@ defmodule AlgoraWeb.VideoLive do
 
   def render(assigns) do
     ~H"""
-    <%!-- <:actions>
-        <.button
-          :if={@owns_channel? && not @channel.is_live}
-          id="stream-btn"
-          primary
-          patch={channel_stream_path(@current_user)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="-ml-1 w-6 h-6 inline-block"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 12l0 .01" /><path d="M14.828 9.172a4 4 0 0 1 0 5.656" /><path d="M17.657 6.343a8 8 0 0 1 0 11.314" /><path d="M9.168 14.828a4 4 0 0 1 0 -5.656" /><path d="M6.337 17.657a8 8 0 0 1 0 -11.314" />
-          </svg>
-          <span class="ml-2">
-            Start streaming!
-          </span>
-        </.button>
-      </:actions> --%>
-    <aside id="side-panel" class="hidden lg:w-[24rem] lg:flex fixed top-[64px] right-0 w-0 pr-4">
-      <div class="py-4 bg-gray-800/40 w-[23rem] backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
-        <div>
-          <ul class="pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
-            <li :for={{tab, i} <- Enum.with_index(@tabs)}>
-              <button
-                id={"side-panel-tab-#{tab}"}
-                class={[
-                  "text-xs font-semibold uppercase tracking-wide",
-                  i == 0 && "active-tab text-white pointer-events-none"
-                ]}
-                phx-click={
-                  set_active_tab("#side-panel-tab-#{tab}")
-                  |> set_active_content("#side-panel-content-#{tab}")
-                }
-              >
-                <%= tab %>
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <div
-            :for={{tab, i} <- Enum.with_index(@tabs)}
-            id={"side-panel-content-#{tab}"}
-            class={["side-panel-content", i != 0 && "hidden"]}
-          >
-            <div :if={tab == :transcript}>
-              <div
-                id="show-transcript"
-                phx-click={
-                  if(@can_edit,
-                    do:
-                      JS.hide(to: "#show-transcript")
-                      |> JS.show(to: "#edit-transcript"),
-                    else: nil
-                  )
-                }
-              >
-                <div class={[
-                  "overflow-y-auto text-sm break-words flex-1 scrollbar-thin",
-                  if(@can_edit,
-                    do: "h-[calc(100vh-11rem)]",
-                    else: "h-[calc(100vh-8.75rem)]"
-                  )
-                ]}>
-                  <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"} class="px-4">
-                    <span class="font-semibold text-indigo-400">
-                      <%= Library.to_hhmmss(subtitle.start) %>
-                    </span>
-                    <span class="font-medium text-gray-100">
-                      <%= subtitle.body %>
-                    </span>
-                  </div>
-                </div>
-
-                <div class="px-4">
-                  <button
-                    :if={@can_edit}
-                    class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-                  >
-                    Edit
-                  </button>
-                </div>
-              </div>
-              <.simple_form
-                :if={@can_edit}
-                id="edit-transcript"
-                for={@form}
-                phx-submit="save"
-                phx-update="ignore"
-                class="hidden h-full px-4"
-              >
-                <.input
-                  field={@form[:subtitles]}
-                  type="textarea"
-                  label="Edit transcript"
-                  class="font-mono h-[calc(100vh-14.75rem)]"
-                />
-                <div class="grid grid-cols-2 gap-4">
-                  <button
-                    name="save"
-                    value="naive"
-                    class="w-full flex justify-center z-10 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-                  >
-                    Save naive
-                  </button>
-                  <button
-                    name="save"
-                    value="fast"
-                    class="w-full flex justify-center z-10 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-                  >
-                    Save fast
-                  </button>
-                </div>
-              </.simple_form>
-            </div>
-
-            <div :if={tab == :chat}>
-              <div
-                id="chat-messages"
-                phx-update="ignore"
-                class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-11rem)]"
-              >
-                <div
-                  :for={message <- @messages}
-                  id={"message-#{message.id}"}
-                  class="group hover:bg-white/5 relative px-4"
-                >
-                  <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
-                    <%= message.sender_handle %>:
-                  </span>
-                  <span class="font-medium text-gray-100">
-                    <%= message.body %>
-                  </span>
-                  <button
-                    :if={@current_user && Chat.can_delete?(@current_user, message)}
-                    phx-click="delete"
-                    phx-value-id={message.id}
-                  >
-                    <Heroicons.x_mark
-                      solid
-                      class="absolute top-0.5 right-0.5 h-4 w-4 text-red-400 opacity-0 group-hover:opacity-100"
-                    />
-                  </button>
-                </div>
-              </div>
-              <div class="px-4">
-                <input
-                  :if={@current_user}
-                  id="chat-input"
-                  placeholder="Send a message"
-                  disabled={@current_user == nil}
-                  class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
-                />
-                <a
-                  :if={!@current_user}
-                  href={Algora.Github.authorize_url()}
-                  class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-                >
-                  Sign in to chat
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
     <div class="lg:mr-[24rem]">
       <div class="border-b border-gray-700 px-4 py-4">
         <figure class="relative isolate -mt-4 pt-4 pb-4">
@@ -343,6 +168,159 @@ defmodule AlgoraWeb.VideoLive do
           </div>
         </div>
       </div>
+
+      <aside
+        id="side-panel"
+        class="pt-4 lg:pt-0 px-4 lg:pl-0 lg:w-[24rem] lg:flex lg:fixed top-[64px] right-0 w-0 pr-4"
+      >
+        <div class="py-4 bg-gray-800/40 w-[calc(100vw-2rem)] lg:w-[23rem] backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
+          <div>
+            <ul class="pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
+              <li :for={{tab, i} <- Enum.with_index(@tabs)}>
+                <button
+                  id={"side-panel-tab-#{tab}"}
+                  class={[
+                    "text-xs font-semibold uppercase tracking-wide",
+                    i == 0 && "active-tab text-white pointer-events-none"
+                  ]}
+                  phx-click={
+                    set_active_tab("#side-panel-tab-#{tab}")
+                    |> set_active_content("#side-panel-content-#{tab}")
+                  }
+                >
+                  <%= tab %>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div
+              :for={{tab, i} <- Enum.with_index(@tabs)}
+              id={"side-panel-content-#{tab}"}
+              class={["side-panel-content", i != 0 && "hidden"]}
+            >
+              <div :if={tab == :transcript}>
+                <div
+                  id="show-transcript"
+                  phx-click={
+                    if(@can_edit,
+                      do:
+                        JS.hide(to: "#show-transcript")
+                        |> JS.show(to: "#edit-transcript"),
+                      else: nil
+                    )
+                  }
+                >
+                  <div class={[
+                    "overflow-y-auto text-sm break-words flex-1 scrollbar-thin",
+                    if(@can_edit,
+                      do: "h-[calc(100vh-11rem)]",
+                      else: "h-[calc(100vh-8.75rem)]"
+                    )
+                  ]}>
+                    <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"} class="px-4">
+                      <span class="font-semibold text-indigo-400">
+                        <%= Library.to_hhmmss(subtitle.start) %>
+                      </span>
+                      <span class="font-medium text-gray-100">
+                        <%= subtitle.body %>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="px-4">
+                    <button
+                      :if={@can_edit}
+                      class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+                <.simple_form
+                  :if={@can_edit}
+                  id="edit-transcript"
+                  for={@form}
+                  phx-submit="save"
+                  phx-update="ignore"
+                  class="hidden h-full px-4"
+                >
+                  <.input
+                    field={@form[:subtitles]}
+                    type="textarea"
+                    label="Edit transcript"
+                    class="font-mono h-[calc(100vh-14.75rem)]"
+                  />
+                  <div class="grid grid-cols-2 gap-4">
+                    <button
+                      name="save"
+                      value="naive"
+                      class="w-full flex justify-center z-10 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                    >
+                      Save naive
+                    </button>
+                    <button
+                      name="save"
+                      value="fast"
+                      class="w-full flex justify-center z-10 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                    >
+                      Save fast
+                    </button>
+                  </div>
+                </.simple_form>
+              </div>
+
+              <div :if={tab == :chat}>
+                <div
+                  id="chat-messages"
+                  phx-update="ignore"
+                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-11rem)]"
+                >
+                  <div
+                    :for={message <- @messages}
+                    id={"message-#{message.id}"}
+                    class="group hover:bg-white/5 relative px-4"
+                  >
+                    <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
+                      <%= message.sender_handle %>:
+                    </span>
+                    <span class="font-medium text-gray-100">
+                      <%= message.body %>
+                    </span>
+                    <button
+                      :if={@current_user && Chat.can_delete?(@current_user, message)}
+                      phx-click="delete"
+                      phx-value-id={message.id}
+                    >
+                      <Heroicons.x_mark
+                        solid
+                        class="absolute top-0.5 right-0.5 h-4 w-4 text-red-400 opacity-0 group-hover:opacity-100"
+                      />
+                    </button>
+                  </div>
+                </div>
+                <div class="px-4">
+                  <input
+                    :if={@current_user}
+                    id="chat-input"
+                    placeholder="Send a message"
+                    disabled={@current_user == nil}
+                    class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
+                  />
+                  <a
+                    :if={!@current_user}
+                    href={Algora.Github.authorize_url()}
+                    class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                  >
+                    Sign in to chat
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
 
       <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide px-4 pt-4">
         Library
