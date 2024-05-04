@@ -810,7 +810,8 @@ defmodule AlgoraWeb.CoreComponents do
           "text-gray-50 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-gray-600 phx-no-feedback:focus:border-gray-500 phx-no-feedback:focus:ring-gray-100/5",
           "border-gray-600 focus:border-gray-500 focus:ring-gray-100/5",
-          @errors != [] && "border-red-500 focus:border-red-500 focus:ring-red-500/10"
+          @errors != [] &&
+            "border-red-500 focus:border-red-500 focus:ring-red-500/10 placeholder-red-300"
         ]}
         {@rest}
       />
