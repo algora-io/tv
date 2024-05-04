@@ -185,6 +185,20 @@ const Hooks = {
       this.handleEvent("play_video", playVideo);
     },
   },
+  Chat: {
+    mounted() {
+      this.el.scrollTo(0, this.el.scrollHeight);
+    },
+
+    updated() {
+      const pixelsBelowBottom =
+        this.el.scrollHeight - this.el.clientHeight - this.el.scrollTop;
+
+      if (pixelsBelowBottom < 200) {
+        this.el.scrollTo(0, this.el.scrollHeight);
+      }
+    },
+  },
   NavBar: {
     mounted() {
       const offset = 16;

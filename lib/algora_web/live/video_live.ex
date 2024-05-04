@@ -275,6 +275,7 @@ defmodule AlgoraWeb.VideoLive do
               <div :if={tab == :chat}>
                 <div
                   id="chat-messages"
+                  phx-hook="Chat"
                   phx-update="stream"
                   class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-11rem)]"
                 >
