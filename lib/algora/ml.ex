@@ -39,14 +39,8 @@ defmodule Algora.ML do
   end
 
   defp load_index_from_disk!(path) do
-    case HNSWLib.Index.load_index(:cosine, 768, path, max_elements: 100_000) do
-      {:ok, index} ->
-        index
-
-      {:error, _} ->
-        {:ok, index} = HNSWLib.Index.new(:cosine, 768, 1_000_000)
-        save_index(index)
-        index
+    with {:ok, index} <- HNSWLib.Index.load_index(:cosine, 768, path, max_elements: 100_000) do
+      index
     end
   end
 
