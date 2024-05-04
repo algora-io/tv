@@ -8,32 +8,6 @@ defmodule AlgoraWeb.VideoLive do
 
   def render(assigns) do
     ~H"""
-    <%!-- <:actions>
-        <.button
-          :if={@owns_channel? && not @channel.is_live}
-          id="stream-btn"
-          primary
-          patch={channel_stream_path(@current_user)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="-ml-1 w-6 h-6 inline-block"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            fill="none"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 12l0 .01" /><path d="M14.828 9.172a4 4 0 0 1 0 5.656" /><path d="M17.657 6.343a8 8 0 0 1 0 11.314" /><path d="M9.168 14.828a4 4 0 0 1 0 -5.656" /><path d="M6.337 17.657a8 8 0 0 1 0 -11.314" />
-          </svg>
-          <span class="ml-2">
-            Start streaming!
-          </span>
-        </.button>
-      </:actions> --%>
     <aside id="side-panel" class="hidden lg:w-[24rem] lg:flex fixed top-[64px] right-0 w-0 pr-4">
       <div class="py-4 bg-gray-800/40 w-[23rem] backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
         <div>
