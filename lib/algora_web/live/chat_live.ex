@@ -20,10 +20,11 @@ defmodule AlgoraWeb.ChatLive do
             <div>
               <div
                 id="chat-messages"
-                phx-update="ignore"
+                phx-hook="Chat"
+                phx-update="stream"
                 class="text-sm break-words flex-1 m-1 scrollbar-thin overflow-y-auto inset-0 h-[400px] w-[400px] fixed overflow-hidden py-4 rounded ring-1 ring-purple-300"
               >
-                <div :for={message <- @messages} id={"message-#{message.id}"} class="px-4">
+                <div :for={{id, message} <- @streams.messages} id={id} class="px-4">
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
                     <%= message.sender_handle %>:
                   </span>
@@ -45,16 +46,17 @@ defmodule AlgoraWeb.ChatLive do
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
 
+    video = Library.get_video!(video_id)
+
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
+      Chat.subscribe_to_room(video)
 
       Presence.subscribe(channel_handle)
     end
 
     videos = Library.list_channel_videos(channel, 50)
-
-    video = Library.get_video!(video_id)
 
     subtitles = Library.list_subtitles(%Library.Video{id: video_id})
 
@@ -78,11 +80,11 @@ defmodule AlgoraWeb.ChatLive do
         channel: channel,
         videos_count: Enum.count(videos),
         video: video,
-        subtitles: subtitles,
-        messages: Chat.list_messages(video)
+        subtitles: subtitles
       )
       |> assign_form(changeset)
       |> stream(:videos, videos)
+      |> stream(:messages, Chat.list_messages(video))
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
     if connected?(socket), do: send(self(), {:play, video})
@@ -158,10 +160,14 @@ defmodule AlgoraWeb.ChatLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.MessageDeleted{message: message}},
+        {Chat, %Chat.Events.MessageDeleted{message: message}},
         socket
       ) do
-    {:noreply, socket |> push_event("message_deleted", %{id: message.id})}
+    {:noreply, socket |> stream_delete(:messages, message)}
+  end
+
+  def handle_info({Chat, %Chat.Events.MessageSent{message: message}}, socket) do
+    {:noreply, socket |> stream_insert(:messages, message)}
   end
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}

@@ -91,11 +91,7 @@ defmodule AlgoraWeb.UserAuth do
   def fetch_current_user(conn, _opts) do
     user_id = get_session(conn, :user_id)
     user = user_id && Accounts.get_user(user_id)
-    token = Phoenix.Token.sign(conn, "user socket", user_id || 0)
-
-    conn
-    |> assign(:current_user, user)
-    |> assign(:user_token, token)
+    assign(conn, :current_user, user)
   end
 
   @doc """
