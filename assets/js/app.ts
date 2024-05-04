@@ -290,6 +290,11 @@ let routeUpdated = () => {
     return;
   }
 
+  const { pathname } = new URL(window.location.href);
+  if (pathname.endsWith("/embed")) {
+    return;
+  }
+
   const pipClasses = [
     "fixed",
     "bottom-0",
@@ -299,7 +304,7 @@ let routeUpdated = () => {
     "sm:w-[30vw]",
   ];
 
-  if (/^\/[^\/]+\/\d+$/.test(new URL(window.location.href).pathname)) {
+  if (/^\/[^\/]+\/\d+$/.test(pathname)) {
     player.classList.add("lg:pr-[24rem]");
     player.classList.remove(...pipClasses);
   } else {
