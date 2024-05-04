@@ -6,6 +6,7 @@ defmodule AlgoraWeb.VideoLive do
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="lg:mr-[24rem]">
@@ -301,13 +302,19 @@ defmodule AlgoraWeb.VideoLive do
                   </div>
                 </div>
                 <div class="px-4">
-                  <input
-                    :if={@current_user}
-                    id="chat-input"
-                    placeholder="Send a message"
-                    disabled={@current_user == nil}
-                    class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
-                  />
+                  <form :if={@current_user} phx-submit="send">
+                    <label for="new_message" class="mb-2 text-sm font-medium sr-only text-white">
+                      Send
+                    </label>
+                    <input
+                      id="new_message"
+                      name="new_message"
+                      placeholder="Send a message"
+                      autocomplete="off"
+                      class="mt-2 bg-gray-950 h-[30px] text-white focus:outline-none focus:ring-purple-400 block w-full min-w-0 rounded-md sm:text-sm ring-1 ring-gray-600 px-2"
+                      required
+                    />
+                  </form>
                   <a
                     :if={!@current_user}
                     href={Algora.Github.authorize_url()}
@@ -330,6 +337,7 @@ defmodule AlgoraWeb.VideoLive do
     """
   end
 
+  @impl true
   def mount(
         %{"channel_handle" => channel_handle, "video_id" => video_id} = params,
         _session,
@@ -396,11 +404,13 @@ defmodule AlgoraWeb.VideoLive do
     {:ok, socket}
   end
 
+  @impl true
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
+  @impl true
   def handle_info({:play, {video, t}}, socket) do
     socket =
       socket
@@ -479,7 +489,7 @@ defmodule AlgoraWeb.VideoLive do
         {Library, %Library.Events.MessageDeleted{message: message}},
         socket
       ) do
-    {:noreply, socket |> push_event("message_deleted", %{id: message.id})}
+    {:noreply, socket |> stream_delete(:messages, message)}
   end
 
   def handle_info({Library, %Library.Events.MessageSent{message: message}}, socket) do
@@ -503,6 +513,29 @@ defmodule AlgoraWeb.VideoLive do
       {_, ""} -> "#{h}"
       _ -> "#{h}," <> t
     end
+  end
+
+  @impl true
+  def handle_event("send", %{"new_message" => body}, socket) do
+    %{current_user: current_user, video: video} = socket.assigns
+
+    if current_user do
+      video = Library.get_video!(video.id)
+
+      message =
+        Algora.Repo.insert!(%Chat.Message{
+          body: body,
+          user_id: current_user.id,
+          video_id: video.id
+        })
+
+      # HACK:
+      message = Chat.get_message!(message.id)
+
+      Library.broadcast_message_sent!(video.user_id, message)
+    end
+
+    {:noreply, socket}
   end
 
   def handle_event("save", %{"data" => %{"subtitles" => subtitles}, "save" => save_type}, socket) do

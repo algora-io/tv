@@ -1,7 +1,6 @@
 import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket, type ViewHook } from "phoenix_live_view";
-import Chat from "./user_socket";
 import topbar from "../vendor/topbar";
 import videojs from "../vendor/video";
 import "../vendor/videojs-youtube";
@@ -9,6 +8,27 @@ import "../vendor/videojs-youtube";
 // TODO: add eslint & biome
 // TODO: enable strict mode
 // TODO: eliminate anys
+
+interface PhxEvent extends Event {
+  target: Element;
+  detail: Record<string, any>;
+}
+
+type PhxEventKey = `js:${string}` | `phx:${string}`;
+
+declare global {
+  interface Window {
+    liveSocket: LiveSocket;
+    addEventListener<K extends keyof WindowEventMap | PhxEventKey>(
+      type: K,
+      listener: (
+        this: Window,
+        ev: K extends keyof WindowEventMap ? WindowEventMap[K] : PhxEvent
+      ) => any,
+      options?: boolean | AddEventListenerOptions | undefined
+    ): void;
+  }
+}
 
 let isVisible = (el) =>
   !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length > 0);
@@ -163,10 +183,6 @@ const Hooks = {
       };
 
       this.handleEvent("play_video", playVideo);
-      this.handleEvent("join_chat", Chat.join);
-      this.handleEvent("message_deleted", ({ id }) => {
-        document.querySelector(`#message-${id}`)?.remove();
-      });
     },
   },
   NavBar: {
