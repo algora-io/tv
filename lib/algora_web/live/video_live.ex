@@ -345,9 +345,12 @@ defmodule AlgoraWeb.VideoLive do
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
 
+    video = Library.get_video!(video_id)
+
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
+      Chat.subscribe_to_room(video)
 
       Presence.track_user(channel_handle, %{
         id: if(current_user, do: current_user.handle, else: "")
@@ -357,8 +360,6 @@ defmodule AlgoraWeb.VideoLive do
     end
 
     videos = Library.list_channel_videos(channel, 50)
-
-    video = Library.get_video!(video_id)
 
     subtitles = Library.list_subtitles(%Library.Video{id: video_id})
 
@@ -483,13 +484,13 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.MessageDeleted{message: message}},
+        {Chat, %Chat.Events.MessageDeleted{message: message}},
         socket
       ) do
     {:noreply, socket |> stream_delete(:messages, message)}
   end
 
-  def handle_info({Library, %Library.Events.MessageSent{message: message}}, socket) do
+  def handle_info({Chat, %Chat.Events.MessageSent{message: message}}, socket) do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
@@ -530,7 +531,7 @@ defmodule AlgoraWeb.VideoLive do
       {:ok, message} ->
         # HACK:
         message = Chat.get_message!(message.id)
-        Library.broadcast_message_sent!(video.user_id, message)
+        Chat.broadcast_message_sent!(message)
         {:noreply, assign(socket, chat_form: to_form(Chat.change_message(%Chat.Message{})))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -551,7 +552,7 @@ defmodule AlgoraWeb.VideoLive do
 
     if current_user && Chat.can_delete?(current_user, message) do
       {:ok, message} = Chat.delete_message(message)
-      Library.broadcast_message_deleted!(socket.assigns.channel, message)
+      Chat.broadcast_message_deleted!(message)
       {:noreply, socket}
     else
       {:noreply, socket |> put_flash(:error, "You can't do that")}

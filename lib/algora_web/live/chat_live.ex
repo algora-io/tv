@@ -46,16 +46,17 @@ defmodule AlgoraWeb.ChatLive do
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
 
+    video = Library.get_video!(video_id)
+
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
+      Chat.subscribe_to_room(video)
 
       Presence.subscribe(channel_handle)
     end
 
     videos = Library.list_channel_videos(channel, 50)
-
-    video = Library.get_video!(video_id)
 
     subtitles = Library.list_subtitles(%Library.Video{id: video_id})
 
@@ -159,13 +160,13 @@ defmodule AlgoraWeb.ChatLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.MessageDeleted{message: message}},
+        {Chat, %Chat.Events.MessageDeleted{message: message}},
         socket
       ) do
     {:noreply, socket |> stream_delete(:messages, message)}
   end
 
-  def handle_info({Library, %Library.Events.MessageSent{message: message}}, socket) do
+  def handle_info({Chat, %Chat.Events.MessageSent{message: message}}, socket) do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 

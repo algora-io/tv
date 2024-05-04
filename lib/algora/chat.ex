@@ -8,7 +8,13 @@ defmodule Algora.Chat do
   alias Algora.Accounts.User
   alias Algora.{Repo, Accounts}
 
-  alias Algora.Chat.Message
+  alias Algora.Chat.{Message, Events}
+
+  @pubsub Algora.PubSub
+
+  def subscribe_to_room(%Video{} = video) do
+    Phoenix.PubSub.subscribe(@pubsub, topic(video.id))
+  end
 
   def list_messages(%Video{} = video) do
     # TODO: add limit
@@ -68,5 +74,19 @@ defmodule Algora.Chat do
 
   def change_message(%Message{} = message, attrs \\ %{}) do
     Message.changeset(message, attrs)
+  end
+
+  defp topic(video_id) when is_integer(video_id), do: "room:#{video_id}"
+
+  defp broadcast!(topic, msg) do
+    Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
+  end
+
+  def broadcast_message_deleted!(message) do
+    broadcast!(topic(message.video_id), %Events.MessageDeleted{message: message})
+  end
+
+  def broadcast_message_sent!(message) do
+    broadcast!(topic(message.video_id), %Events.MessageSent{message: message})
   end
 end

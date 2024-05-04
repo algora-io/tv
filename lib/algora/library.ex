@@ -640,15 +640,6 @@ defmodule Algora.Library do
     Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
   end
 
-  def broadcast_message_deleted!(%Channel{} = channel, message) do
-    broadcast!(topic(channel.user_id), %Events.MessageDeleted{message: message})
-  end
-
-  def broadcast_message_sent!(channel_id, message) do
-    # TODO: should use video_id
-    broadcast!(topic(channel_id), %Events.MessageSent{message: message})
-  end
-
   def broadcast_processing_progressed!(stage, video, pct) do
     broadcast!(topic_studio(), %Events.ProcessingProgressed{video: video, stage: stage, pct: pct})
   end
