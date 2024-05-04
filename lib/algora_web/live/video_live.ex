@@ -216,7 +216,7 @@ defmodule AlgoraWeb.VideoLive do
                   <div class={[
                     "overflow-y-auto text-sm break-words flex-1 scrollbar-thin",
                     if(@can_edit,
-                      do: "h-[calc(100vh-11rem)]",
+                      do: "h-[calc(100vh-12rem)]",
                       else: "h-[calc(100vh-8.75rem)]"
                     )
                   ]}>
@@ -277,7 +277,7 @@ defmodule AlgoraWeb.VideoLive do
                   id="chat-messages"
                   phx-hook="Chat"
                   phx-update="stream"
-                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-11rem)]"
+                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-12rem)]"
                 >
                   <div
                     :for={{id, message} <- @streams.messages}
