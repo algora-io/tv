@@ -86,14 +86,13 @@ defmodule AlgoraWeb.COSSGPTLive do
             :for={
               suggestion_group <- [
                 [
-                  "Benefits of going open source",
                   "Business models and pricing",
                   "Choosing a license",
-                  "How to hire engineers"
+                  "How to hire engineers",
+                  "B2B startup metrics"
                 ],
                 [
                   "How to get your first customers",
-                  "B2B startup metrics",
                   "Setting KPIs and goals",
                   "How to fundraise",
                   "Developer marketing"
@@ -201,7 +200,14 @@ defmodule AlgoraWeb.COSSGPTLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
+    socket =
+      if !params["query"] do
+        socket |> push_navigate(to: ~p"/cossgpt?#{%{query: "Benefits of going open source"}}")
+      else
+        socket
+      end
+
     {:ok, socket}
   end
 
