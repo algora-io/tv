@@ -221,9 +221,14 @@ defmodule AlgoraWeb.VideoLive do
                     )
                   ]}>
                     <div :for={subtitle <- @subtitles} id={"subtitle-#{subtitle.id}"} class="px-4">
-                      <span class="font-semibold text-indigo-400">
+                      <.link
+                        class="font-semibold text-indigo-400"
+                        navigate={
+                          ~p"/#{@video.channel_handle}/#{@video.id}?t=#{trunc(subtitle.start)}"
+                        }
+                      >
                         <%= Library.to_hhmmss(subtitle.start) %>
-                      </span>
+                      </.link>
                       <span class="font-medium text-gray-100">
                         <%= subtitle.body %>
                       </span>
