@@ -9,8 +9,8 @@ defmodule AlgoraWeb.VideoLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="lg:mr-[24rem]">
-      <div class="border-b border-gray-700 px-4 py-4">
+    <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
+      <div class="lg:border-b lg:border-gray-700 px-4 py-4">
         <figure class="relative isolate -mt-4 pt-4 pb-4">
           <svg
             viewBox="0 0 162 128"
@@ -25,7 +25,7 @@ defmodule AlgoraWeb.VideoLive do
             </path>
             <use href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" x="86"></use>
           </svg>
-          <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9">
+          <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2 min-h-[64px] sm:min-h-none">
             <p><%= @video.title %></p>
           </blockquote>
         </figure>
@@ -87,7 +87,7 @@ defmodule AlgoraWeb.VideoLive do
               <div :if={!@channel.tech} class="text-sm text-gray-300">@<%= @channel.handle %></div>
             </div>
           </div>
-          <div class="flex gap-6">
+          <div class="hidden lg:flex gap-6">
             <div>
               <div class="text-xs font-medium text-gray-300 sm:text-sm">
                 Watching now
@@ -172,9 +172,9 @@ defmodule AlgoraWeb.VideoLive do
 
       <aside
         id="side-panel"
-        class="pt-4 lg:pt-0 px-4 lg:pl-0 lg:w-[24rem] lg:flex lg:fixed top-[64px] right-0 w-0 pr-4"
+        class="lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 lg:pr-4 z-[1000]"
       >
-        <div class="py-4 bg-gray-800/40 w-[calc(100vw-2rem)] lg:w-[23rem] backdrop-blur-xl rounded-2xl shadow-inner shadow-white/[10%] border border-white/[15%]">
+        <div class="py-4 bg-gray-800/40 w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
           <div>
             <ul class="pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
               <li :for={{tab, i} <- Enum.with_index(@tabs)}>
@@ -277,7 +277,7 @@ defmodule AlgoraWeb.VideoLive do
                   id="chat-messages"
                   phx-hook="Chat"
                   phx-update="stream"
-                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100vh-12rem)]"
+                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto sm:h-[calc(100vh-12rem)] h-[calc(100svh-56.25vw-392px)]"
                 >
                   <div
                     :for={{id, message} <- @streams.messages}
@@ -302,22 +302,47 @@ defmodule AlgoraWeb.VideoLive do
                     </button>
                   </div>
                 </div>
-                <div class="px-4">
+                <div class="px-4 fixed sm:relative bottom-0 w-full">
                   <.simple_form
                     :if={@current_user}
                     for={@chat_form}
                     phx-submit="send"
                     phx-change="validate"
                   >
-                    <.input field={@chat_form[:body]} placeholder="Send a message" autocomplete="off" />
+                    <div class="flex items-center justify-between lg:pt-2 lg:pb-0 py-4 gap-4">
+                      <div class="w-full">
+                        <.input
+                          field={@chat_form[:body]}
+                          placeholder="Send a message"
+                          autocomplete="off"
+                        />
+                      </div>
+                      <button type="submit" class="lg:hidden">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="h-10 w-10 p-2 bg-purple-600 rounded-full"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 14l11 -11" /><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
+                        </svg>
+                      </button>
+                    </div>
                   </.simple_form>
-                  <a
-                    :if={!@current_user}
-                    href={Algora.Github.authorize_url()}
-                    class="mt-2 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-                  >
-                    Sign in to chat
-                  </a>
+                  <div :if={!@current_user} class="lg:pt-2 lg:pb-0 py-4">
+                    <a
+                      href={Algora.Github.authorize_url()}
+                      class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+                    >
+                      Sign in to chat
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -325,10 +350,12 @@ defmodule AlgoraWeb.VideoLive do
         </div>
       </aside>
 
-      <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide px-4 pt-4">
-        Library
-      </h2>
-      <.playlist id="playlist" videos={@streams.videos} />
+      <section class="hidden lg:block">
+        <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide px-4 pt-4">
+          Library
+        </h2>
+        <.playlist id="playlist" videos={@streams.videos} />
+      </section>
     </div>
     """
   end
