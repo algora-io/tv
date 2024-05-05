@@ -123,6 +123,17 @@ defmodule Algora.Storage do
     )
   end
 
+  def update_object!(bucket, object, opts) do
+    bucket = Algora.config([:buckets, bucket])
+
+    with {:ok, %{body: body}} <- ExAws.S3.get_object(bucket, object) |> ExAws.request(),
+         {:ok, res} <- ExAws.S3.put_object(bucket, object, body, opts) |> ExAws.request() do
+      res
+    else
+      err -> err
+    end
+  end
+
   defp broadcast!(topic, msg) do
     Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
   end
