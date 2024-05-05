@@ -25,7 +25,7 @@ defmodule AlgoraWeb.VideoLive do
             </path>
             <use href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" x="86"></use>
           </svg>
-          <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-1 lg:line-clamp-none">
+          <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9">
             <p><%= @video.title %></p>
           </blockquote>
         </figure>
@@ -172,9 +172,9 @@ defmodule AlgoraWeb.VideoLive do
 
       <aside
         id="side-panel"
-        class="lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 w-0 lg:pr-4 z-[1000]"
+        class="lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 lg:pr-4 z-[1000]"
       >
-        <div class="py-4 bg-gray-800/40 w-screen lg:w-[23rem] backdrop-blur-xl lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
+        <div class="py-4 bg-gray-800/40 w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
           <div>
             <ul class="pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
               <li :for={{tab, i} <- Enum.with_index(@tabs)}>
@@ -277,7 +277,7 @@ defmodule AlgoraWeb.VideoLive do
                   id="chat-messages"
                   phx-hook="Chat"
                   phx-update="stream"
-                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto lg:h-[calc(100vh-12rem)] h-[calc(100svh-56.25vw-336px)]"
+                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto sm:h-[calc(100vh-12rem)] h-[calc(100svh-56.25vw-375px)]"
                 >
                   <div
                     :for={{id, message} <- @streams.messages}
@@ -302,14 +302,14 @@ defmodule AlgoraWeb.VideoLive do
                     </button>
                   </div>
                 </div>
-                <div class="px-4">
+                <div class="px-4 fixed sm:relative bottom-0 w-full">
                   <.simple_form
                     :if={@current_user}
                     for={@chat_form}
                     phx-submit="send"
                     phx-change="validate"
                   >
-                    <div class="flex items-center justify-between mt-2 gap-4">
+                    <div class="flex items-center justify-between lg:pt-2 lg:pb-0 py-4 gap-4">
                       <div class="w-full">
                         <.input
                           field={@chat_form[:body]}
