@@ -65,7 +65,7 @@ defmodule Algora.Accounts do
   Registers a user from their GithHub information.
   """
   def register_github_user(primary_email, info, emails, token) do
-    if user = get_user_by_provider(:github, primary_email) do
+    if user = get_user_by_provider_email(:github, primary_email) do
       update_github_token(user, token)
     else
       info
@@ -74,13 +74,23 @@ defmodule Algora.Accounts do
     end
   end
 
-  def get_user_by_provider(provider, email) when provider in [:github] do
+  def get_user_by_provider_email(provider, email) when provider in [:github] do
     query =
       from(u in User,
         join: i in assoc(u, :identities),
         where:
           i.provider == ^to_string(provider) and
             fragment("lower(?)", u.email) == ^String.downcase(email)
+      )
+
+    Repo.one(query)
+  end
+
+  def get_user_by_provider_id(provider, id) when provider in [:github] do
+    query =
+      from(u in User,
+        join: i in assoc(u, :identities),
+        where: i.provider == ^to_string(provider) and i.provider_id == ^id
       )
 
     Repo.one(query)
