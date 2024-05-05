@@ -25,7 +25,7 @@ defmodule AlgoraWeb.VideoLive do
             </path>
             <use href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" x="86"></use>
           </svg>
-          <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9">
+          <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2 min-h-[64px] sm:min-h-none">
             <p><%= @video.title %></p>
           </blockquote>
         </figure>
@@ -277,7 +277,7 @@ defmodule AlgoraWeb.VideoLive do
                   id="chat-messages"
                   phx-hook="Chat"
                   phx-update="stream"
-                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto sm:h-[calc(100vh-12rem)] h-[calc(100svh-56.25vw-375px)]"
+                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto sm:h-[calc(100vh-12rem)] h-[calc(100svh-56.25vw-392px)]"
                 >
                   <div
                     :for={{id, message} <- @streams.messages}
