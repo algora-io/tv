@@ -799,19 +799,20 @@ defmodule AlgoraWeb.CoreComponents do
   def input(assigns) do
     ~H"""
     <div phx-feedback-for={@name}>
-      <.label for={@id}><%= @label %></.label>
+      <.label :if={@label} for={@id} class="mb-2"><%= @label %></.label>
       <input
         type={@type}
         name={@name}
         id={@id || @name}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "bg-gray-950 mt-2 block w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
+          "bg-gray-950 block w-full rounded-lg border-gray-600 py-[7px] px-[11px]",
           "text-gray-50 focus:outline-none focus:ring-4 sm:text-sm sm:leading-6",
           "phx-no-feedback:border-gray-600 phx-no-feedback:focus:border-gray-500 phx-no-feedback:focus:ring-gray-100/5",
           "border-gray-600 focus:border-gray-500 focus:ring-gray-100/5",
           @errors != [] &&
-            "border-red-500 focus:border-red-500 focus:ring-red-500/10 placeholder-red-300"
+            "border-red-500 focus:border-red-500 focus:ring-red-500/10 placeholder-red-300",
+          @class
         ]}
         {@rest}
       />
@@ -825,10 +826,11 @@ defmodule AlgoraWeb.CoreComponents do
   """
   attr :for, :string, default: nil
   slot :inner_block, required: true
+  attr :class, :string, default: nil
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-gray-100">
+    <label for={@for} class={["block text-sm font-semibold leading-6 text-gray-100", @class]}>
       <%= render_slot(@inner_block) %>
     </label>
     """

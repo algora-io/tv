@@ -5,12 +5,12 @@ defmodule AlgoraWeb.PlayerLive do
 
   def render(assigns) do
     ~H"""
-    <div class="px-4">
+    <div class="lg:px-4">
       <div class="w-full hidden lg:pr-[24rem]">
         <video
           id="video-player"
           phx-hook="VideoPlayer"
-          class="video-js vjs-default-skin aspect-video h-full w-full flex-1 rounded-2xl overflow-hidden"
+          class="video-js vjs-default-skin aspect-video h-full w-full flex-1 lg:rounded-2xl overflow-hidden"
           controls
         />
       </div>
