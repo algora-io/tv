@@ -6,11 +6,10 @@ defmodule AlgoraWeb.GithubController do
   def get_thumbnail(conn, %{"user_id" => user_id}) do
     with {:ok, user} <- get_user(user_id),
          {:ok, video} <- get_latest_video(user) do
-      redirect(conn, external: video.thumbnail_url)
+      redirect(conn, external: get_thumbnail_url(video))
     else
       {:error, :video_not_found} -> redirect(conn, to: ~p"/images/og/default.png")
-      # TODO:
-      _ -> redirect(conn, to: "~p/status/404")
+      _ -> put_status(conn, :not_found)
     end
   end
 
@@ -20,8 +19,7 @@ defmodule AlgoraWeb.GithubController do
         redirect(conn, to: ~p"/#{user.handle}")
 
       _ ->
-        # TODO
-        redirect(conn, to: "~p/status/404")
+        put_status(conn, :not_found)
     end
   end
 
@@ -36,6 +34,13 @@ defmodule AlgoraWeb.GithubController do
     case Library.get_latest_video(user) do
       nil -> {:error, :video_not_found}
       user -> {:ok, user}
+    end
+  end
+
+  defp get_thumbnail_url(video) do
+    case video.thumbnail_url do
+      nil -> ~p"/images/og/default.png"
+      url -> url
     end
   end
 end
