@@ -358,24 +358,24 @@ defmodule Algora.Library do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end
 
-  defp create_thumbnail_from_file(%Video{} = video, src_path) do
+  defp create_thumbnail_from_file(%Video{} = video, src_path, opts) do
     dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
 
-    with :ok <- Thumbnex.create_thumbnail(src_path, dst_path) do
+    with :ok <- Thumbnex.create_thumbnail(src_path, dst_path, opts) do
       File.read(dst_path)
     end
   end
 
-  defp create_thumbnail(%Video{} = video, contents) do
+  defp create_thumbnail(%Video{} = video, contents, opts \\ []) do
     src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
 
     with :ok <- File.write(src_path, contents) do
-      create_thumbnail_from_file(video, src_path)
+      create_thumbnail_from_file(video, src_path, opts)
     end
   end
 
-  def store_thumbnail_from_file(%Video{} = video, src_path) do
-    with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path),
+  def store_thumbnail_from_file(%Video{} = video, src_path, opts \\ []) do
+    with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, opts),
          {:ok, _} <-
            Storage.upload(thumbnail, "#{video.uuid}/index.jpeg", content_type: "image/jpeg") do
       video
