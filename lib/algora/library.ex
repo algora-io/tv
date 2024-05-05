@@ -376,7 +376,8 @@ defmodule Algora.Library do
 
   def store_thumbnail_from_file(%Video{} = video, src_path) do
     with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path),
-         {:ok, _} <- Storage.upload(thumbnail, "#{video.uuid}/index.jpeg") do
+         {:ok, _} <-
+           Storage.upload(thumbnail, "#{video.uuid}/index.jpeg", content_type: "image/jpeg") do
       video
       |> change()
       |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
