@@ -9,7 +9,7 @@ defmodule AlgoraWeb.GithubController do
       redirect(conn, external: get_thumbnail_url(video))
     else
       {:error, :video_not_found} -> redirect(conn, to: ~p"/images/og/default.png")
-      _ -> put_status(conn, :not_found)
+      _ -> send_resp(conn, 404, "Not found")
     end
   end
 
@@ -19,7 +19,7 @@ defmodule AlgoraWeb.GithubController do
         redirect(conn, to: ~p"/#{user.handle}")
 
       _ ->
-        put_status(conn, :not_found)
+        send_resp(conn, 404, "Not found")
     end
   end
 
