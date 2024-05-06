@@ -160,18 +160,44 @@ const Hooks = {
         },
       });
 
-      const playVideo = ({ detail }) => {
-        const { player } = detail;
+      const playVideo = (opts: {
+        url: string;
+        title: string;
+        player_type: string;
+        current_time?: number;
+        channel_name: string;
+      }) => {
+        const setMediaSession = () => {
+          if (!("mediaSession" in navigator)) {
+            return;
+          }
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: opts.title,
+            artist: opts.channel_name,
+            album: "Algora TV",
+            artwork: [96, 128, 192, 256, 384, 512].map((px) => ({
+              src: `https://console.algora.io/asset/storage/v1/object/public/images/algora-gradient-${px}px.png`,
+              sizes: `${px}x${px}`,
+              type: "image/png",
+            })),
+          });
+        };
+
         this.player.options({
-          techOrder: [player.type === "video/youtube" ? "youtube" : "html5"],
-          ...(player.currentTime && player.type === "video/youtube"
-            ? { youtube: { customVars: { start: player.currentTime } } }
+          techOrder: [
+            opts.player_type === "video/youtube" ? "youtube" : "html5",
+          ],
+          ...(opts.current_time && opts.player_type === "video/youtube"
+            ? { youtube: { customVars: { start: opts.current_time } } }
             : {}),
         });
-        this.player.src({ src: player.src, type: player.type });
+        this.player.src({ src: opts.url, type: opts.player_type });
         this.player.play();
-        if (player.currentTime && player.type !== "video/youtube") {
-          this.player.currentTime(player.currentTime);
+
+        setMediaSession();
+
+        if (opts.current_time && opts.player_type !== "video/youtube") {
+          this.player.currentTime(opts.current_time);
         }
         this.player.el().parentElement.classList.remove("hidden");
         this.player.el().parentElement.classList.add("flex");

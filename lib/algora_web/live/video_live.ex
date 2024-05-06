@@ -445,13 +445,11 @@ defmodule AlgoraWeb.VideoLive do
     socket =
       socket
       |> push_event("play_video", %{
-        detail: %{
-          player: %{
-            src: video.url,
-            type: Library.player_type(video),
-            currentTime: t
-          }
-        }
+        url: video.url,
+        title: video.title,
+        player_type: Library.player_type(video),
+        channel_name: video.channel_name,
+        current_time: t
       })
       |> push_event("join_chat", %{id: video.id})
 

@@ -19,7 +19,10 @@ defmodule AlgoraWeb.SubtitleLive.Show do
     {:noreply,
      socket
      |> push_event("play_video", %{
-       detail: %{player: %{src: video.url, type: Library.player_type(video)}}
+       url: video.url,
+       title: video.title,
+       player_type: Library.player_type(video),
+       channel_name: video.channel_name
      })}
   end
 
