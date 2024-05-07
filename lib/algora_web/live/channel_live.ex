@@ -314,10 +314,12 @@ defmodule AlgoraWeb.ChannelLive do
   end
 
   defp apply_action(socket, :show, params) do
+    user = Accounts.get_user!(socket.assigns.channel.user_id)
+
     socket
     |> assign(:page_title, socket.assigns.channel.name || params["channel_handle"])
     |> assign(:page_description, socket.assigns.channel.tagline)
-    |> assign(:page_image, "#{AlgoraWeb.Endpoint.url()}/images/og/default.png")
+    |> assign(:page_image, Library.get_thumbnail_url(user))
   end
 
   defp show_stream_modal(socket) do
