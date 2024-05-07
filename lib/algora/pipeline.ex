@@ -70,4 +70,9 @@ defmodule Algora.Pipeline do
 
     {[], state}
   end
+
+  @impl true
+  def handle_call(:get_video_id, _ctx, state) do
+    {[{:reply, state.video.id}], state}
+  end
 end
