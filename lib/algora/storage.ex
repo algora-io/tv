@@ -7,11 +7,12 @@ defmodule Algora.Storage do
   @pubsub Algora.PubSub
 
   @enforce_keys [:video]
-  defstruct @enforce_keys ++ [video_header: <<>>]
+  defstruct @enforce_keys ++ [video_header: <<>>, video_segment: <<>>]
 
   @type t :: %__MODULE__{
           video: Library.Video.t(),
-          video_header: <<>>
+          video_header: <<>>,
+          video_segment: <<>>
         }
 
   @impl true
@@ -71,12 +72,23 @@ defmodule Algora.Storage do
     case Library.store_thumbnail(video, video_header <> contents) do
       {:ok, video} ->
         broadcast_thumbnails_generated!(video)
-        {:ok, %{state | video: video}}
+        {:ok, %{state | video_segment: contents, video: video}}
 
       _ ->
         Membrane.Logger.error("Could not generate thumbnails for video #{video.id}")
-        {:ok, state}
+        {:ok, %{state | video_segment: contents}}
     end
+  end
+
+  defp process_contents(
+         :video,
+         _name,
+         contents,
+         _metadata,
+         %{type: :segment, mode: :binary},
+         state
+       ) do
+    {:ok, %{state | video_segment: contents}}
   end
 
   defp process_contents(_parent_id, _name, _contents, _metadata, _ctx, state) do
