@@ -175,7 +175,7 @@ const Hooks = {
             title: opts.title,
             artist: opts.channel_name,
             album: "Algora TV",
-            artwork: [96, 128, 192, 256, 384, 512].map((px) => ({
+            artwork: [96, 128, 192, 256, 384, 512, 1024].map((px) => ({
               src: `https://console.algora.io/asset/storage/v1/object/public/images/algora-gradient-${px}px.png`,
               sizes: `${px}x${px}`,
               type: "image/png",
