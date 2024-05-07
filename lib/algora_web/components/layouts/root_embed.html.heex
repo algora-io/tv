@@ -6,37 +6,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content={get_csrf_token()} />
 
-    <.live_title suffix={assigns[:page_title] && " | Algora TV"}>
-      <%= assigns[:page_title] || "Algora TV" %>
+    <.live_title suffix={assigns[:page_title] && " | #{Algora.config([:title])}"}>
+      <%= assigns[:page_title] || Algora.config([:title]) %>
     </.live_title>
 
-    <%= if assigns[:channel_handle] && assigns[:channel_name] && assigns[:channel_tagline] do %>
-      <meta name="description" content={assigns[:channel_tagline]} />
-      <meta
-        name="twitter:image:src"
-        content={assigns[:page_image] || "#{AlgoraWeb.Endpoint.url()}/images/og/default.png"}
-      />
-      <meta name="twitter:site" content="@algoraio" />
+    <%= if assigns[:page_title] do %>
+      <meta name="twitter:title" content={"#{assigns[:page_title]} | #{Algora.config([:title])}"} />
+      <meta property="og:title" content={"#{assigns[:page_title]} | #{Algora.config([:title])}"} />
+    <% else %>
+      <meta name="twitter:title" content={Algora.config([:title])} />
+      <meta property="og:title" content={Algora.config([:title])} />
+    <% end %>
+
+    <%= if assigns[:page_description] do %>
+      <meta name="description" content={assigns[:page_description]} />
+      <meta name="twitter:description" content={assigns[:page_description]} />
+      <meta property="og:description" content={assigns[:page_description]} />
+    <% else %>
+      <meta name="description" content={Algora.config([:description])} />
+      <meta name="twitter:description" content={Algora.config([:description])} />
+      <meta property="og:description" content={Algora.config([:description])} />
+    <% end %>
+
+    <%= if assigns[:page_image] do %>
+      <meta name="twitter:image:src" content={assigns[:page_image]} />
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={"#{assigns[:channel_name]} | Algora TV"} />
-      <meta name="twitter:description" content={assigns[:channel_tagline]} />
-      <meta
-        property="og:image"
-        content={assigns[:page_image] || "#{AlgoraWeb.Endpoint.url()}/images/og/default.png"}
-      />
+      <meta property="og:image" content={assigns[:page_image]} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="Algora TV" />
-      <meta property="og:type" content="website" />
-      <meta property="og:title" content={"#{assigns[:channel_name]} | Algora TV"} />
-      <meta property="og:url" content={"#{AlgoraWeb.Endpoint.url()}/#{assigns[:channel_handle]}"} />
-      <meta property="og:description" content={assigns[:channel_tagline]} />
-    <% else %>
-      <meta
-        name="description"
-        content="Algora TV is an interactive livestreaming & video sharing service for developers."
-      />
     <% end %>
+
+    <%= if assigns[:page_url] do %>
+      <meta property="og:url" content={"#{assigns[:page_url]}"} />
+    <% end %>
+
+    <meta name="twitter:site" content="@algoraio" />
+    <meta property="og:site_name" content="Algora TV" />
+    <meta property="og:type" content="website" />
 
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />

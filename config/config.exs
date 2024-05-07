@@ -8,6 +8,9 @@
 import Config
 
 config :algora,
+  title: "Algora TV",
+  description:
+    "Algora TV is an interactive livestreaming & video sharing service for developers.",
   admin_emails: ["zafer@algora.io", "ioannis@algora.io"],
   ecto_repos: [Algora.Repo.Local],
   rtmp_port: 9006
