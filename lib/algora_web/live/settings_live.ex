@@ -18,15 +18,16 @@ defmodule AlgoraWeb.SettingsLive do
         <.input field={@form[:name]} label="Name" />
         <.input label="Email" name="email" value={@current_user.email} disabled />
         <.input field={@form[:channel_tagline]} label="Stream tagline" />
+        <.input
+          label="RTMP URL"
+          name="rtmp_url"
+          value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/live"}
+          disabled
+        />
         <div>
-          <.input
-            label="Stream URL"
-            name="stream_url"
-            value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
-            disabled
-          />
+          <.input label="Stream key" name="stream_key" value={"#{@current_user.stream_key}"} disabled />
           <p class="mt-2 text-sm text-gray-400">
-            <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
+            <%= "Paste into OBS Studio > File > Settings > Stream > Stream Key" %>
           </p>
         </div>
         <:actions>
