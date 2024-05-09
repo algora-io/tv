@@ -42,7 +42,7 @@ kill_timeout = '5s'
 
   [services.concurrency]
     type = 'connections'
-    hard_limit = 2500
+    hard_limit = 100000
     soft_limit = 2000
 
 [[services.tcp_checks]]
@@ -66,8 +66,8 @@ kill_timeout = '5s'
 
   [services.concurrency]
     type = 'connections'
-    hard_limit = 2500
-    soft_limit = 2000
+    hard_limit = 100000
+    soft_limit = 10000
 
 [[services.tcp_checks]]
     interval = '15s'
@@ -84,10 +84,10 @@ kill_timeout = '5s'
 
   [services.concurrency]
     type = 'connections'
-    hard_limit = 2500
-    soft_limit = 2000
+    hard_limit = 100000
+    soft_limit = 10000
 
 [[vm]]
   cpu_kind = 'shared'
   cpus = 2
-  memory_mb = 1024
+  memory_mb = 4096
