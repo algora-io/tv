@@ -69,15 +69,17 @@ defmodule Algora.Storage do
          %{type: :segment, mode: :binary},
          %{video: %{thumbnail_url: nil} = video, video_header: video_header} = state
        ) do
-    case Library.store_thumbnail(video, video_header <> contents) do
-      {:ok, video} ->
-        broadcast_thumbnails_generated!(video)
-        {:ok, %{state | video_segment: contents, video: video}}
+    Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
+      case Library.store_thumbnail(video, video_header <> contents) do
+        {:ok, video} ->
+          broadcast_thumbnails_generated!(video)
 
-      _ ->
-        Membrane.Logger.error("Could not generate thumbnails for video #{video.id}")
-        {:ok, %{state | video_segment: contents}}
-    end
+        _ ->
+          Membrane.Logger.error("Could not generate thumbnails for video #{video.id}")
+      end
+    end)
+
+    {:ok, %{state | video_segment: contents}}
   end
 
   defp process_contents(
