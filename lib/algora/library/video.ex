@@ -18,6 +18,7 @@ defmodule Algora.Library.Video do
     field :is_live, :boolean, default: false
     field :thumbnail_url, :string
     field :vertical_thumbnail_url, :string
+    field :og_image_url, :string
     field :url, :string
     field :url_root, :string
     field :uuid, :string

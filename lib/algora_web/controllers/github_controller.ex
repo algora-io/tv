@@ -6,7 +6,7 @@ defmodule AlgoraWeb.GithubController do
   def get_thumbnail(conn, %{"user_id" => user_id}) do
     case Accounts.get_user_by_provider_id(:github, user_id) do
       nil -> send_resp(conn, 404, "Not found")
-      user -> redirect(conn, external: Library.get_thumbnail_url(user))
+      user -> redirect(conn, external: Library.get_og_image_url(user))
     end
   end
 

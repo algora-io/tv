@@ -319,7 +319,7 @@ defmodule AlgoraWeb.ChannelLive do
     socket
     |> assign(:page_title, socket.assigns.channel.name || params["channel_handle"])
     |> assign(:page_description, socket.assigns.channel.tagline)
-    |> assign(:page_image, Library.get_thumbnail_url(user))
+    |> assign(:page_image, Library.get_og_image_url(user))
   end
 
   defp show_stream_modal(socket) do

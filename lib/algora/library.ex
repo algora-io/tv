@@ -411,6 +411,20 @@ defmodule Algora.Library do
     end
   end
 
+  def get_og_image_url(%Video{} = video) do
+    video.og_image_url || get_thumbnail_url(video)
+  end
+
+  def get_og_image_url(%User{} = user) do
+    case get_latest_video(user) do
+      nil ->
+        get_thumbnail_url(user)
+
+      video ->
+        get_og_image_url(video)
+    end
+  end
+
   def reconcile_livestream(%Video{} = video, stream_key) do
     user = Accounts.get_user_by!(stream_key: stream_key)
 

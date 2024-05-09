@@ -634,7 +634,7 @@ defmodule AlgoraWeb.VideoLive do
     socket
     |> assign(:page_title, socket.assigns.channel.name || params["channel_handle"])
     |> assign(:page_description, socket.assigns.video.title)
-    |> assign(:page_image, Library.get_thumbnail_url(socket.assigns.video))
+    |> assign(:page_image, Library.get_og_image_url(socket.assigns.video))
   end
 
   defp show_stream_modal(socket) do
