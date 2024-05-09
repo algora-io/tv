@@ -7,12 +7,13 @@ defmodule Algora.Storage do
   @pubsub Algora.PubSub
 
   @enforce_keys [:video]
-  defstruct @enforce_keys ++ [video_header: <<>>, video_segment: <<>>]
+  defstruct @enforce_keys ++ [video_header: <<>>, video_segment: <<>>, setup_completed?: false]
 
   @type t :: %__MODULE__{
           video: Library.Video.t(),
           video_header: <<>>,
-          video_segment: <<>>
+          video_segment: <<>>,
+          setup_completed?: boolean()
         }
 
   @impl true
@@ -67,19 +68,19 @@ defmodule Algora.Storage do
          contents,
          _metadata,
          %{type: :segment, mode: :binary},
-         %{video: %{thumbnail_url: nil} = video, video_header: video_header} = state
+         %{setup_completed?: false, video: video, video_header: video_header} = state
        ) do
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
-      case Library.store_thumbnail(video, video_header <> contents) do
-        {:ok, video} ->
-          broadcast_thumbnails_generated!(video)
-
+      with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents),
+           {:ok, video} <- Library.store_og_image(video) do
+        broadcast_thumbnails_generated!(video)
+      else
         _ ->
           Membrane.Logger.error("Could not generate thumbnails for video #{video.id}")
       end
     end)
 
-    {:ok, %{state | video_segment: contents}}
+    {:ok, %{state | setup_completed?: true, video_segment: contents}}
   end
 
   defp process_contents(

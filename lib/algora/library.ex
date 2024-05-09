@@ -396,6 +396,100 @@ defmodule Algora.Library do
     end
   end
 
+  defp create_og(src_path, dst_path, _opts) do
+    base_image = Image.open!(src_path)
+
+    {width, height, _} = Image.shape(base_image)
+
+    overlay_svg = """
+      <svg viewbox="0 0 #{width} #{height}" width="#{width}" height="#{height}"
+        xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter x="0" y="0" width="1.06" height="1" id="solid">
+                <feFlood flood-color="#ef4444" result="bg" />
+                <feMerge>
+                    <feMergeNode in="bg" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+
+            <filter id="rounded-corners" x="-8%" width="122%" y="-37%" height="150%">
+                <feFlood flood-color="#ef4444" />
+                <feGaussianBlur stdDeviation="42" />
+                <feComponentTransfer>
+                    <feFuncA type="table" tableValues="0 0 0 1" />
+                </feComponentTransfer>
+
+                <feComponentTransfer>
+                    <feFuncA type="table" tableValues="0 1 1 1 1 1 1 1" />
+                </feComponentTransfer>
+                <feComposite operator="over" in="SourceGraphic" />
+            </filter>
+        </defs>
+        <g filter="url(#rounded-corners)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 24 24"
+                x="#{trunc(width / 2) - 180}" y="20"
+                fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-access-point">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M12 12l0 .01" />
+                <path d="M14.828 9.172a4 4 0 0 1 0 5.656" />
+                <path d="M17.657 6.343a8 8 0 0 1 0 11.314" />
+                <path d="M9.168 14.828a4 4 0 0 1 0 -5.656" />
+                <path d="M6.337 17.657a8 8 0 0 1 0 -11.314" />
+            </svg>
+            <text font-style="normal" font-weight="bold" xml:space="preserve" font-family="'Bangers'"
+                font-size="122" x="#{trunc(width / 2) + 150}" y="150" dominant-baseline="middle"
+                text-anchor="middle"
+                stroke-width="0" stroke="#000" fill="#fff">LIVE</text>
+        </g>
+    </svg>
+    """
+
+    {overlay, _} = Vix.Vips.Operation.svgload_buffer!(overlay_svg)
+
+    og_image = Image.compose!(base_image, overlay)
+    Image.write!(og_image, dst_path)
+
+    :ok
+  end
+
+  defp create_og_image_from_file(%Video{} = video, src_path, opts) do
+    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-og.png")
+
+    with :ok <- create_og(src_path, dst_path, opts) do
+      File.read(dst_path)
+    end
+  end
+
+  defp create_og_image(%Video{} = video, opts \\ []) do
+    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
+    create_og_image_from_file(video, src_path, opts)
+  end
+
+  def store_og_image_from_file(%Video{} = video, src_path, opts \\ []) do
+    with {:ok, og_image} <- create_og_image_from_file(video, src_path, opts),
+         {:ok, _} <-
+           Storage.upload(og_image, "#{video.uuid}/og.png", content_type: "image/png") do
+      video
+      |> change()
+      |> put_change(:og_image_url, "#{video.url_root}/og.png")
+      |> Repo.update()
+    end
+  end
+
+  def store_og_image(%Video{} = video) do
+    with {:ok, og_image} <- create_og_image(video),
+         {:ok, _} <-
+           Storage.upload(og_image, "#{video.uuid}/og.png", content_type: "image/png") do
+      video
+      |> change()
+      |> put_change(:og_image_url, "#{video.url_root}/og.png")
+      |> Repo.update()
+    end
+  end
+
   def get_thumbnail_url(%Video{} = video) do
     video.thumbnail_url || "#{AlgoraWeb.Endpoint.url()}/images/og/default.png"
   end
