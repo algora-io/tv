@@ -659,7 +659,8 @@ defmodule Algora.Library do
       is_live: user.is_live,
       bounties_count: user.bounties_count,
       orgs_contributed: user.orgs_contributed,
-      tech: user.tech
+      tech: user.tech,
+      solving_challenge: user.solving_challenge
     }
   end
 

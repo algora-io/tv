@@ -174,9 +174,63 @@ defmodule AlgoraWeb.VideoLive do
         id="side-panel"
         class="lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 lg:pr-4 z-[1000]"
       >
-        <div class="py-4 bg-gray-800/40 w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
+        <div class="pb-4 bg-gray-800/40 overflow-hidden w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
+          <div
+            :if={@channel.solving_challenge}
+            class="hidden sm:block bg-gray-950 px-4 py-4 text-center"
+          >
+            <div class="font-medium text-base">
+              <.link
+                href="https://console.algora.io/challenges/tsperf"
+                class="font-semibold text-green-300 hover:underline"
+              >
+                Solving the $15,000 TSPerf Challenge
+              </.link>
+            </div>
+            <div class="pt-1.5 font-medium text-sm">
+              sponsored by
+            </div>
+            <div class="pt-2.5 mx-auto grid max-w-6xl gap-4 text-center grid-cols-3">
+              <a
+                target="_blank"
+                rel="noopener"
+                class="flex h-full flex-1 flex-col items-center text-white no-underline hover:no-underline"
+                href="https://unkey.com"
+              >
+                <img
+                  src="https://console.algora.io/banners/unkey.png"
+                  alt="Unkey"
+                  class="-mt-1 h-8 w-auto saturate-0"
+                />
+              </a>
+              <a
+                target="_blank"
+                rel="noopener"
+                class="flex h-full flex-1 flex-col items-center text-white no-underline hover:no-underline"
+                href="https://scalar.com"
+              >
+                <img
+                  src="https://console.algora.io/banners/scalar.png"
+                  alt="Scalar"
+                  class="h-6 w-auto saturate-0"
+                />
+              </a>
+              <a
+                target="_blank"
+                rel="noopener"
+                class="flex h-full flex-1 flex-col items-center text-white no-underline hover:no-underline"
+                href="https://tigrisdata.com"
+              >
+                <img
+                  src="https://assets-global.website-files.com/657988158c7fb30f4d9ef37b/657990b61fd3a5d674cf2298_tigris-logo.svg"
+                  alt="Tigris"
+                  class="mt-1 h-6 w-auto saturate-0"
+                />
+              </a>
+            </div>
+          </div>
           <div>
-            <ul class="pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
+            <ul class="pt-4 pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
               <li :for={{tab, i} <- Enum.with_index(@tabs)}>
                 <button
                   id={"side-panel-tab-#{tab}"}
@@ -194,7 +248,6 @@ defmodule AlgoraWeb.VideoLive do
               </li>
             </ul>
           </div>
-
           <div>
             <div
               :for={{tab, i} <- Enum.with_index(@tabs)}
@@ -282,7 +335,13 @@ defmodule AlgoraWeb.VideoLive do
                   id="chat-messages"
                   phx-hook="Chat"
                   phx-update="stream"
-                  class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto sm:h-[calc(100vh-12rem)] h-[calc(100svh-56.25vw-392px)]"
+                  class={[
+                    "text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100svh-56.25vw-392px)]",
+                    if(@channel.solving_challenge,
+                      do: "sm:h-[calc(100vh-19.5rem)]",
+                      else: "sm:h-[calc(100vh-12rem)]"
+                    )
+                  ]}
                 >
                   <div
                     :for={{id, message} <- @streams.messages}

@@ -8,5 +8,6 @@ defmodule Algora.Library.Channel do
             is_live: nil,
             bounties_count: nil,
             orgs_contributed: nil,
-            tech: nil
+            tech: nil,
+            solving_challenge: nil
 end
