@@ -175,7 +175,10 @@ defmodule AlgoraWeb.VideoLive do
         class="lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 lg:pr-4 z-[1000]"
       >
         <div class="pb-4 bg-gray-800/40 overflow-hidden w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
-          <div :if={@channel.solving_challenge} class="bg-gray-950 px-4 py-4 text-center">
+          <div
+            :if={@channel.solving_challenge}
+            class="hidden sm:block bg-gray-950 px-4 py-4 text-center"
+          >
             <div class="font-medium text-base">
               <.link
                 href="https://console.algora.io/challenges/tsperf"
