@@ -10,13 +10,13 @@ defmodule AlgoraWeb.VideoLive do
   def render(assigns) do
     ~H"""
     <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
-      <div class="lg:border-b lg:border-gray-700 px-4 py-4">
+      <div class="lg:border-b lg:border-gray-700 py-4">
         <figure class="relative isolate -mt-4 pt-4 pb-4">
           <svg
             viewBox="0 0 162 128"
             fill="none"
             aria-hidden="true"
-            class="absolute left-0 top-0 -z-10 h-12 stroke-white/75"
+            class="absolute left-0 top-0 -z-10 h-12 stroke-white/75 px-4"
           >
             <path
               id="b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb"
@@ -25,12 +25,69 @@ defmodule AlgoraWeb.VideoLive do
             </path>
             <use href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" x="86"></use>
           </svg>
-          <blockquote class="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2 min-h-[64px] sm:min-h-none">
+          <blockquote class={[
+            "text-xl px-4 font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2 min-h-[64px] sm:min-h-none",
+            if(@channel.solving_challenge, do: "hidden sm:block")
+          ]}>
             <p><%= @video.title %></p>
           </blockquote>
+          <div
+            :if={@channel.solving_challenge}
+            class="-mt-4 block sm:hidden bg-gray-950 text-center py-4"
+          >
+            <div class="font-medium text-base">
+              <.link
+                href="https://console.algora.io/challenges/tsperf"
+                class="font-semibold text-green-300 hover:underline"
+              >
+                Solving the $15,000 TSPerf Challenge
+              </.link>
+            </div>
+            <div class="pt-1.5 font-medium text-sm">
+              sponsored by
+            </div>
+            <div class="pt-2.5 mx-auto grid max-w-6xl gap-4 text-center grid-cols-3">
+              <a
+                target="_blank"
+                rel="noopener"
+                class="flex h-full flex-1 flex-col items-center text-white no-underline hover:no-underline"
+                href="https://unkey.com"
+              >
+                <img
+                  src="https://console.algora.io/banners/unkey.png"
+                  alt="Unkey"
+                  class="-mt-1 h-8 w-auto saturate-0"
+                />
+              </a>
+              <a
+                target="_blank"
+                rel="noopener"
+                class="flex h-full flex-1 flex-col items-center text-white no-underline hover:no-underline"
+                href="https://scalar.com"
+              >
+                <img
+                  src="https://console.algora.io/banners/scalar.png"
+                  alt="Scalar"
+                  class="h-6 w-auto saturate-0"
+                />
+              </a>
+              <a
+                target="_blank"
+                rel="noopener"
+                class="flex h-full flex-1 flex-col items-center text-white no-underline hover:no-underline"
+                href="https://tigrisdata.com"
+              >
+                <img
+                  src="https://assets-global.website-files.com/657988158c7fb30f4d9ef37b/657990b61fd3a5d674cf2298_tigris-logo.svg"
+                  alt="Tigris"
+                  class="mt-1 h-6 w-auto saturate-0"
+                />
+              </a>
+            </div>
+          </div>
         </figure>
 
-        <div class="flex flex-col items-start justify-start md:flex-row md:items-center md:justify-between gap-8">
+        <div class="flex flex-col items-start px-4 justify-start md:flex-row md:items-center md:justify-between gap-8">
           <div class="flex items-center gap-4">
             <div class="relative h-20 w-20 shrink-0">
               <img
@@ -336,10 +393,10 @@ defmodule AlgoraWeb.VideoLive do
                   phx-hook="Chat"
                   phx-update="stream"
                   class={[
-                    "text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100svh-56.25vw-392px)]",
+                    "text-sm break-words flex-1 scrollbar-thin overflow-y-auto",
                     if(@channel.solving_challenge,
-                      do: "sm:h-[calc(100vh-19.5rem)]",
-                      else: "sm:h-[calc(100vh-12rem)]"
+                      do: "h-[calc(100svh-56.25vw-432px)] sm:h-[calc(100vh-19.5rem)]",
+                      else: "h-[calc(100svh-56.25vw-392px)] sm:h-[calc(100vh-12rem)]"
                     )
                   ]}
                 >
