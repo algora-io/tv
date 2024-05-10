@@ -6,12 +6,12 @@ defmodule AlgoraWeb.ChatLive do
   alias AlgoraWeb.{LayoutComponent, Presence}
 
   def render(assigns) do
-    assigns = assigns |> assign(tabs: [:chat], solving_challenge?: true)
+    assigns = assigns |> assign(tabs: [:chat])
 
     ~H"""
     <aside id="side-panel" class="w-[400px] rounded ring-1 ring-purple-300 m-1 overflow-hidden">
       <div>
-        <div :if={@solving_challenge?} class="bg-black px-4 py-4 rounded text-center">
+        <div :if={@channel.solving_challenge} class="bg-black px-4 py-4 rounded text-center">
           <div class="font-medium text-base">
             <.link
               href="https://console.algora.io/challenges/tsperf"

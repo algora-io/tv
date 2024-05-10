@@ -16,6 +16,7 @@ defmodule Algora.Accounts.User do
     field :stream_key, :string
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
     field :bounties_count, :integer
+    field :solving_challenge, :boolean, default: false
 
     embeds_many :tech, Tech do
       field :name, :string

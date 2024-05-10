@@ -8,8 +8,6 @@ defmodule AlgoraWeb.VideoLive do
 
   @impl true
   def render(assigns) do
-    assigns = assigns |> assign(solving_challenge?: true)
-
     ~H"""
     <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
       <div class="lg:border-b lg:border-gray-700 px-4 py-4">
@@ -177,7 +175,7 @@ defmodule AlgoraWeb.VideoLive do
         class="lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 lg:pr-4 z-[1000]"
       >
         <div class="pb-4 bg-gray-800/40 overflow-hidden w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
-          <div :if={@solving_challenge?} class="bg-gray-950 px-4 py-4 text-center">
+          <div :if={@channel.solving_challenge} class="bg-gray-950 px-4 py-4 text-center">
             <div class="font-medium text-base">
               <.link
                 href="https://console.algora.io/challenges/tsperf"
@@ -336,7 +334,7 @@ defmodule AlgoraWeb.VideoLive do
                   phx-update="stream"
                   class={[
                     "text-sm break-words flex-1 scrollbar-thin overflow-y-auto h-[calc(100svh-56.25vw-392px)]",
-                    if(@solving_challenge?,
+                    if(@channel.solving_challenge,
                       do: "sm:h-[calc(100vh-19.5rem)]",
                       else: "sm:h-[calc(100vh-12rem)]"
                     )
