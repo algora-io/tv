@@ -4,12 +4,19 @@ defmodule AlgoraWeb.OAuthCallbackController do
 
   alias Algora.Accounts
 
-  def new(conn, %{"provider" => "github", "code" => code, "state" => state}) do
+  def new(conn, %{"provider" => "github", "code" => code, "state" => state} = params) do
     client = github_client(conn)
 
     with {:ok, info} <- client.exchange_access_token(code: code, state: state),
          %{info: info, primary_email: primary, emails: emails, token: token} = info,
          {:ok, user} <- Accounts.register_github_user(primary, info, emails, token) do
+      conn =
+        if params["return_to"] do
+          conn |> put_session(:user_return_to, params["return_to"])
+        else
+          conn
+        end
+
       conn
       |> put_flash(:info, "Welcome, #{user.handle}!")
       |> AlgoraWeb.UserAuth.log_in_user(user)

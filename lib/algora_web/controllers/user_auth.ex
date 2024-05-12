@@ -147,7 +147,5 @@ defmodule AlgoraWeb.UserAuth do
 
   defp maybe_store_return_to(conn), do: conn
 
-  def signed_in_path(conn) do
-    AlgoraWeb.CoreComponents.channel_path(conn.assigns.current_user)
-  end
+  def signed_in_path(conn), do: "/"
 end

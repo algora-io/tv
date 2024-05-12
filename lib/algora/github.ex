@@ -1,8 +1,16 @@
 defmodule Algora.Github do
-  def authorize_url() do
-    state = random_string()
+  def authorize_url(return_to \\ nil) do
+    redirect_query = if return_to, do: URI.encode_query(return_to: return_to)
 
-    "https://github.com/login/oauth/authorize?client_id=#{client_id()}&state=#{state}&scope=user:email"
+    query =
+      URI.encode_query(
+        client_id: client_id(),
+        state: random_string(),
+        scope: "user:email",
+        redirect_uri: "#{AlgoraWeb.Endpoint.url()}/oauth/callbacks/github?#{redirect_query}"
+      )
+
+    "https://github.com/login/oauth/authorize?#{query}"
   end
 
   def exchange_access_token(opts) do
