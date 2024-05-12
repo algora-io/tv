@@ -88,7 +88,7 @@ defmodule AlgoraWeb.VideoLive do
         </figure>
 
         <div class="flex flex-col items-start px-4 justify-start md:flex-row md:items-center md:justify-between gap-8">
-          <div class="flex items-center gap-4">
+          <.link navigate={~p"/#{@channel.handle}"} class="flex items-center gap-4">
             <div class="relative h-20 w-20 shrink-0">
               <img
                 src={@channel.avatar_url}
@@ -143,7 +143,7 @@ defmodule AlgoraWeb.VideoLive do
               </div>
               <div :if={!@channel.tech} class="text-sm text-gray-300">@<%= @channel.handle %></div>
             </div>
-          </div>
+          </.link>
           <div class="hidden lg:flex gap-6">
             <div>
               <div class="text-xs font-medium text-gray-300 sm:text-sm">
