@@ -79,6 +79,11 @@ ENV LC_ALL en_US.UTF-8
 WORKDIR "/app"
 RUN chown nobody /app
 
+# Needed because :image creates an hf cache folder
+# /nonexistent/.cache/bumblebee/huggingface/microsoft--resnet-50
+RUN mkdir /nonexistent
+RUN chown nobody /nonexistent
+
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/prod/rel/algora ./
 
