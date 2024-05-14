@@ -26,6 +26,7 @@ defmodule Algora.Application do
     }
 
     children = [
+      {Registry, keys: :unique, name: AlgoraWebSocketRegistry},
       {Cluster.Supervisor, [topologies, [name: Algora.ClusterSupervisor]]},
       {Task.Supervisor, name: Algora.TaskSupervisor},
       # Start the RPC server

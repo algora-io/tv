@@ -105,6 +105,7 @@ defmodule AlgoraWeb.ChatLive do
       Chat.subscribe_to_room(video)
 
       Presence.subscribe(channel_handle)
+      AlgoraWebSocket.start_link(video_id)
     end
 
     videos = Library.list_channel_videos(channel, 50)
@@ -141,6 +142,10 @@ defmodule AlgoraWeb.ChatLive do
     if connected?(socket), do: send(self(), {:play, video})
 
     {:ok, socket}
+  end
+
+  def handle_info({:websocket_message, message}, socket) do
+    {:noreply, stream_insert(socket, :messages, message)}
   end
 
   def handle_params(params, _url, socket) do
