@@ -481,6 +481,24 @@ defmodule AlgoraWeb.VideoLive do
                   </div>
                 </div>
               </div>
+
+              <div :if={tab == :participants}>
+                <div class={[
+                  "text-sm break-words flex-1 scrollbar-thin overflow-y-auto",
+                  if(@channel.solving_challenge,
+                    do: "h-[calc(100svh-56.25vw-432px)] sm:h-[calc(100vh-19.5rem)]",
+                    else: "h-[calc(100svh-56.25vw-392px)] sm:h-[calc(100vh-12rem)]"
+                  )
+                ]}>
+                  <div class="flex items-center flex-wrap px-4 gap-2">
+                    <img
+                      :for={participant <- @participants}
+                      class="h-12 w-12 rounded-full"
+                      src={participant}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -539,7 +557,38 @@ defmodule AlgoraWeb.VideoLive do
       {data, types}
       |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
-    tabs = [:chat] |> append_if(length(subtitles) > 0, :transcript)
+    tabs = [:chat,:participants] |> append_if(length(subtitles) > 0, :transcript)
+
+    participants = [
+      "https://avatars.githubusercontent.com/u/1107521?v=4",
+      "https://avatars.githubusercontent.com/u/118012453?v=4",
+      "https://avatars.githubusercontent.com/u/1270799?v=4",
+      "https://avatars.githubusercontent.com/u/136125894?v=4",
+      "https://avatars.githubusercontent.com/u/16363147?v=4",
+      "https://avatars.githubusercontent.com/u/16853175?v=4",
+      "https://avatars.githubusercontent.com/u/17045339?v=4",
+      "https://avatars.githubusercontent.com/u/17185737?v=4",
+      "https://avatars.githubusercontent.com/u/18246773?v=4",
+      "https://avatars.githubusercontent.com/u/23436531?v=4",
+      "https://avatars.githubusercontent.com/u/28706372?v=4",
+      "https://avatars.githubusercontent.com/u/29684625?v=4",
+      "https://avatars.githubusercontent.com/u/55134778?v=4",
+      "https://avatars.githubusercontent.com/u/5869818?v=4",
+      "https://avatars.githubusercontent.com/u/8951736?v=4",
+      "https://avatars.githubusercontent.com/u/4782353?v=4",
+      "https://avatars.githubusercontent.com/u/544377?v=4",
+      "https://avatars.githubusercontent.com/u/5887929?v=4",
+      "https://avatars.githubusercontent.com/u/5923523?v=4",
+      "https://avatars.githubusercontent.com/u/61472023?v=4",
+      "https://avatars.githubusercontent.com/u/6389182?v=4",
+      "https://avatars.githubusercontent.com/u/64614638?v=4",
+      "https://avatars.githubusercontent.com/u/8019099?v=4",
+      "https://avatars.githubusercontent.com/u/85362696?v=4",
+      "https://avatars.githubusercontent.com/u/89586268?v=4",
+      "https://avatars.githubusercontent.com/u/90222871?v=4",
+      "https://avatars.githubusercontent.com/u/90852205?v=4",
+      "https://avatars.githubusercontent.com/u/9802686?v=4"
+    ]
 
     socket =
       socket
@@ -549,6 +598,7 @@ defmodule AlgoraWeb.VideoLive do
         videos_count: Enum.count(videos),
         video: video,
         subtitles: subtitles,
+        participants: participants,
         tabs: tabs,
         # TODO: reenable once fully implemented
         # associated segments need to be removed from db & vectorstore
