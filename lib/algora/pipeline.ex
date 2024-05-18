@@ -8,14 +8,10 @@ defmodule Algora.Pipeline do
 
     spec = [
       #
-      child(:tee, Membrane.Tee.Master),
-
-      #
-      child(:src, %Membrane.RTMP.Source{
+      child(:src, %Membrane.RTMP.SourceBin{
         socket: socket,
         validator: %Algora.MessageValidator{video_id: video.id}
-      })
-      |> get_child(:tee),
+      }),
 
       #
       child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
@@ -27,25 +23,32 @@ defmodule Algora.Pipeline do
       }),
 
       #
-      get_child(:tee)
-      |> via_out(:master)
-      |> child(:demuxer, Membrane.FLV.Demuxer),
+      child(:tee_audio, Membrane.Tee.Master),
+      child(:tee_video, Membrane.Tee.Master),
 
       #
-      get_child(:demuxer)
-      |> via_out(Pad.ref(:video, 0))
-      |> child(:video_parser, Membrane.H264.Parser)
-      |> via_in(Pad.ref(:input, :video),
-        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
+      get_child(:src)
+      |> via_out(:audio)
+      |> get_child(:tee_audio),
+
+      #
+      get_child(:src)
+      |> via_out(:video)
+      |> get_child(:tee_video),
+
+      #
+      get_child(:tee_audio)
+      |> via_out(:master)
+      |> via_in(Pad.ref(:input, :audio),
+        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
       )
       |> get_child(:sink),
 
       #
-      get_child(:demuxer)
-      |> via_out(Pad.ref(:audio, 0))
-      |> child(:audio_parser, %Membrane.AAC.Parser{out_encapsulation: :none})
-      |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
+      get_child(:tee_video)
+      |> via_out(:master)
+      |> via_in(Pad.ref(:input, :video),
+        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
       )
       |> get_child(:sink)
     ]
@@ -77,7 +80,7 @@ defmodule Algora.Pipeline do
 
   @impl true
   def handle_info({:socket_control_needed, socket, source} = notification, _ctx, state) do
-    case :gen_tcp.controlling_process(socket, source) do
+    case Membrane.RTMP.SourceBin.pass_control(socket, source) do
       :ok ->
         :ok
 
