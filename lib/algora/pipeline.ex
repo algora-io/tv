@@ -7,16 +7,14 @@ defmodule Algora.Pipeline do
     video = Library.init_livestream!()
 
     spec = [
-      # audio
-      child(:src, %Membrane.RTMP.SourceBin{
+      #
+      child(:src, %Membrane.RTMP.Source{
         socket: socket,
         validator: %Algora.MessageValidator{video_id: video.id}
-      })
-      |> via_out(:audio)
-      |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
-      )
-      |> child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
+      }),
+
+      #
+      child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
         mode: :live,
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
@@ -24,11 +22,25 @@ defmodule Algora.Pipeline do
         storage: %Algora.Storage{video: video}
       }),
 
-      # video
+      #
       get_child(:src)
-      |> via_out(:video)
+      |> child(:demuxer, Membrane.FLV.Demuxer),
+
+      #
+      get_child(:demuxer)
+      |> via_out(Pad.ref(:video, 0))
+      |> child(:video_parser, Membrane.H264.Parser)
       |> via_in(Pad.ref(:input, :video),
         options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
+      )
+      |> get_child(:sink),
+
+      #
+      get_child(:demuxer)
+      |> via_out(Pad.ref(:audio, 0))
+      |> child(:audio_parser, %Membrane.AAC.Parser{out_encapsulation: :none})
+      |> via_in(Pad.ref(:input, :audio),
+        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
       )
       |> get_child(:sink)
     ]
@@ -60,7 +72,7 @@ defmodule Algora.Pipeline do
 
   @impl true
   def handle_info({:socket_control_needed, socket, source} = notification, _ctx, state) do
-    case Membrane.RTMP.SourceBin.pass_control(socket, source) do
+    case :gen_tcp.controlling_process(socket, source) do
       :ok ->
         :ok
 
