@@ -57,6 +57,7 @@ defmodule Algora.MixProject do
       {:membrane_core, "~> 1.0"},
       {:membrane_http_adaptive_stream_plugin, "~> 0.18.0"},
       {:membrane_rtmp_plugin, "~> 0.20.0"},
+      {:membrane_tee_plugin, "~> 0.12.0"},
       {:mint, "~> 1.0"},
       {:oban, "~> 2.16"},
       {:phoenix_ecto, "~> 4.4"},

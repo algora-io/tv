@@ -8,10 +8,14 @@ defmodule Algora.Pipeline do
 
     spec = [
       #
+      child(:tee, Membrane.Tee.Master),
+
+      #
       child(:src, %Membrane.RTMP.Source{
         socket: socket,
         validator: %Algora.MessageValidator{video_id: video.id}
-      }),
+      })
+      |> get_child(:tee),
 
       #
       child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
@@ -23,7 +27,8 @@ defmodule Algora.Pipeline do
       }),
 
       #
-      get_child(:src)
+      get_child(:tee)
+      |> via_out(:master)
       |> child(:demuxer, Membrane.FLV.Demuxer),
 
       #
