@@ -27,3 +27,4 @@ node_modules
 /tmp
 /.local
 /priv/cache
+*.patch

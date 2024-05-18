@@ -39,3 +39,4 @@ npm-debug.log
 /tmp
 /.local
 /priv/cache
+*.patch
