@@ -23,6 +23,11 @@ defmodule Algora.Pipeline do
       }),
 
       #
+      child(:rtmp_sink, %Membrane.RTMP.Sink{
+        rtmp_url: "rtmp://tv.algora.io:9006/12345"
+      }),
+
+      #
       child(:tee_audio, Membrane.Tee.Master),
       child(:tee_video, Membrane.Tee.Master),
 
@@ -39,7 +44,7 @@ defmodule Algora.Pipeline do
       #
       get_child(:tee_audio)
       |> via_out(:master)
-      |> via_in(Pad.ref(:input, :audio),
+      |> via_in(Pad.ref(:input, :audio_sink),
         options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
       )
       |> get_child(:sink),
@@ -47,10 +52,22 @@ defmodule Algora.Pipeline do
       #
       get_child(:tee_video)
       |> via_out(:master)
-      |> via_in(Pad.ref(:input, :video),
+      |> via_in(Pad.ref(:input, :video_sink),
         options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
       )
-      |> get_child(:sink)
+      |> get_child(:sink),
+
+      #
+      get_child(:tee_audio)
+      |> via_out(:copy)
+      |> via_in(Pad.ref(:input, :audio))
+      |> get_child(:rtmp_sink),
+
+      #
+      get_child(:tee_video)
+      |> via_out(:copy)
+      |> via_in(Pad.ref(:input, :video))
+      |> get_child(:rtmp_sink)
     ]
 
     {[spec: spec], %{socket: socket, video: video}}
