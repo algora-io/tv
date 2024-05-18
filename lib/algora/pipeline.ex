@@ -28,18 +28,14 @@ defmodule Algora.Pipeline do
       }),
 
       #
-      child(:tee_audio, Membrane.Tee.Master),
-      child(:tee_video, Membrane.Tee.Master),
-
-      #
       get_child(:src)
       |> via_out(:audio)
-      |> get_child(:tee_audio),
+      |> child(:tee_audio, Membrane.Tee.Master),
 
       #
       get_child(:src)
       |> via_out(:video)
-      |> get_child(:tee_video),
+      |> child(:tee_video, Membrane.Tee.Master),
 
       #
       get_child(:tee_audio)
