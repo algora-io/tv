@@ -56,13 +56,13 @@ defmodule Algora.Pipeline do
       #
       get_child(:tee_audio)
       |> via_out(:copy)
-      |> via_in(Pad.ref(:input, :audio))
+      |> via_in(Pad.ref(:audio, 0))
       |> get_child(:rtmp_sink),
 
       #
       get_child(:tee_video)
       |> via_out(:copy)
-      |> via_in(Pad.ref(:input, :video))
+      |> via_in(Pad.ref(:video, 0))
       |> get_child(:rtmp_sink)
     ]
 
