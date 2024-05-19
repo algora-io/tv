@@ -139,7 +139,7 @@ defmodule AlgoraWeb.SettingsLive do
          |> put_flash(:info, "Destination added successfully!")}
 
       {:error, changeset} ->
-        {:noreply, assign(socket, destination_form: changeset)}
+        {:noreply, assign(socket, destination_form: to_form(changeset))}
     end
   end
 
