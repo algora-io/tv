@@ -1,5 +1,5 @@
 defmodule Algora.MessageValidator do
-  defstruct [:video_id]
+  defstruct [:video_id, :pid]
 end
 
 defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
@@ -12,6 +12,13 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
       )
 
     Algora.Library.toggle_streamer_live(video, true)
+
+    # urls = []
+
+    # for {url, i} <- Enum.with_index(urls) do
+    #   send(impl.pid, {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
+    # end
+
     {:ok, "connect success"}
   end
 

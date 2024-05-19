@@ -10,7 +10,7 @@ defmodule Algora.Pipeline do
       #
       child(:src, %Membrane.RTMP.SourceBin{
         socket: socket,
-        validator: %Algora.MessageValidator{video_id: video.id}
+        validator: %Algora.MessageValidator{video_id: video.id, pid: self()}
       }),
 
       #
@@ -20,11 +20,6 @@ defmodule Algora.Pipeline do
         target_window_duration: :infinity,
         persist?: false,
         storage: %Algora.Storage{video: video}
-      }),
-
-      #
-      child(:rtmp_sink, %Membrane.RTMP.Sink{
-        rtmp_url: "rtmp://tv.algora.io:9006/12345"
       }),
 
       #
@@ -51,19 +46,7 @@ defmodule Algora.Pipeline do
       |> via_in(Pad.ref(:input, :video_sink),
         options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
       )
-      |> get_child(:sink),
-
-      #
-      get_child(:tee_audio)
-      |> via_out(:copy)
-      |> via_in(Pad.ref(:audio, 0))
-      |> get_child(:rtmp_sink),
-
-      #
-      get_child(:tee_video)
-      |> via_out(:copy)
-      |> via_in(Pad.ref(:video, 0))
-      |> get_child(:rtmp_sink)
+      |> get_child(:sink)
     ]
 
     {[spec: spec], %{socket: socket, video: video}}
@@ -102,6 +85,27 @@ defmodule Algora.Pipeline do
     end
 
     {[], state}
+  end
+
+  def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
+    spec = [
+      #
+      child(ref, %Membrane.RTMP.Sink{rtmp_url: url}),
+
+      #
+      get_child(:tee_audio)
+      |> via_out(:copy)
+      |> via_in(Pad.ref(:audio, 0))
+      |> get_child(ref),
+
+      #
+      get_child(:tee_video)
+      |> via_out(:copy)
+      |> via_in(Pad.ref(:video, 0))
+      |> get_child(ref)
+    ]
+
+    {[spec: spec], state}
   end
 
   @impl true
