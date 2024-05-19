@@ -527,6 +527,8 @@ defmodule Algora.Library do
         set: [user_id: user.id, title: user.channel_tagline, visibility: user.visibility]
       )
 
+    video = get_video!(video.id)
+
     case result do
       {1, _} -> {:ok, video}
       _ -> {:error, :invalid}

@@ -13,11 +13,18 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
 
     Algora.Library.toggle_streamer_live(video, true)
 
-    # urls = []
+    destinations = Algora.Accounts.list_active_destinations(video.user_id)
 
-    # for {url, i} <- Enum.with_index(urls) do
-    #   send(impl.pid, {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
-    # end
+    for {destination, i} <- Enum.with_index(destinations) do
+      url =
+        URI.new!(destination.rtmp_url)
+        |> URI.append_path("/" <> destination.stream_key)
+        |> URI.to_string()
+
+      dbg(url)
+
+      send(impl.pid, {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
+    end
 
     {:ok, "connect success"}
   end

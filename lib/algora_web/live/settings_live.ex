@@ -2,6 +2,7 @@ defmodule AlgoraWeb.SettingsLive do
   use AlgoraWeb, :live_view
 
   alias Algora.Accounts
+  alias Algora.Accounts.Destination
 
   def render(assigns) do
     ~H"""
@@ -33,7 +34,39 @@ defmodule AlgoraWeb.SettingsLive do
           <.button>Save</.button>
         </:actions>
       </.simple_form>
+      <!-- New Destinations Section -->
+      <div class="mt-8">
+        <h2 class="text-lg font-semibold leading-8 text-gray-100">Destinations</h2>
+        <ul>
+          <%= for destination <- @destinations do %>
+            <li>
+              <span><%= destination.rtmp_url %></span>
+              <button phx-click="toggle_destination" phx-value-id={destination.id}>
+                <%= if destination.active do %>
+                  Deactivate
+                <% else %>
+                  Activate
+                <% end %>
+              </button>
+            </li>
+          <% end %>
+        </ul>
+        <button phx-click="show_add_destination_modal">Add Destination</button>
+      </div>
     </div>
+    <!-- Add Destination Modal -->
+    <.modal :if={@show_add_destination_modal} id="add-destination-modal" show>
+      <.header>
+        Add Destination
+      </.header>
+      <.simple_form for={@destination_form} phx-submit="add_destination">
+        <.input field={@destination_form[:rtmp_url]} label="RTMP URL" />
+        <.input field={@destination_form[:stream_key]} label="Stream key" />
+        <:actions>
+          <.button>Add Destination</.button>
+        </:actions>
+      </.simple_form>
+    </.modal>
     """
   end
 
@@ -48,11 +81,16 @@ defmodule AlgoraWeb.SettingsLive do
       end
 
     changeset = Accounts.change_settings(current_user, %{})
+    destinations = Accounts.list_destinations(current_user.id)
+    destination_changeset = Accounts.change_destination(%Destination{})
 
     {:ok,
      socket
      |> assign(current_user: current_user)
-     |> assign_form(changeset)}
+     |> assign_form(changeset)
+     |> assign(destinations: destinations)
+     |> assign(destination_form: to_form(destination_changeset))
+     |> assign(show_add_destination_modal: false)}
   end
 
   def handle_event("validate", %{"user" => params}, socket) do
@@ -74,6 +112,34 @@ defmodule AlgoraWeb.SettingsLive do
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
+    end
+  end
+
+  def handle_event("toggle_destination", %{"id" => id}, socket) do
+    destination = Accounts.get_destination!(id)
+    Accounts.update_destination(destination, %{active: !destination.active})
+
+    {:noreply,
+     assign(socket, :destinations, Accounts.list_destinations(socket.assigns.current_user.id))}
+  end
+
+  def handle_event("show_add_destination_modal", _params, socket) do
+    dbg(:show_add_destination_modal)
+
+    {:noreply, assign(socket, show_add_destination_modal: true)}
+  end
+
+  def handle_event("add_destination", %{"destination" => destination_params}, socket) do
+    case Accounts.create_destination(socket.assigns.current_user, destination_params) do
+      {:ok, _destination} ->
+        {:noreply,
+         socket
+         |> assign(:show_add_destination_modal, false)
+         |> assign(:destinations, Accounts.list_destinations(socket.assigns.current_user.id))
+         |> put_flash(:info, "Destination added successfully!")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, destination_form: changeset)}
     end
   end
 

@@ -3,7 +3,7 @@ defmodule Algora.Accounts do
   import Ecto.Changeset
 
   alias Algora.Repo
-  alias Algora.Accounts.{User, Identity}
+  alias Algora.Accounts.{User, Identity, Destination}
 
   def list_users(opts) do
     Repo.all(from u in User, limit: ^Keyword.fetch!(opts, :limit))
@@ -128,5 +128,32 @@ defmodule Algora.Accounts do
       |> Repo.update()
 
     {:ok, user}
+  end
+
+  def list_destinations(user_id) do
+    Repo.all(from d in Destination, where: d.user_id == ^user_id)
+  end
+
+  def list_active_destinations(user_id) do
+    Repo.all(from d in Destination, where: d.user_id == ^user_id and d.active == true)
+  end
+
+  def get_destination!(id), do: Repo.get!(Destination, id)
+
+  def change_destination(%Destination{} = destination, attrs \\ %{}) do
+    destination |> Destination.changeset(attrs)
+  end
+
+  def create_destination(user, attrs \\ %{}) do
+    %Destination{}
+    |> Destination.changeset(attrs)
+    |> put_change(:user_id, user.id)
+    |> Repo.insert()
+  end
+
+  def update_destination(%Destination{} = destination, attrs) do
+    destination
+    |> Destination.changeset(attrs)
+    |> Repo.update()
   end
 end
