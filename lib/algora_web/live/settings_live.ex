@@ -81,7 +81,12 @@ defmodule AlgoraWeb.SettingsLive do
       </.header>
       <.simple_form for={@destination_form} phx-submit="add_destination">
         <.input field={@destination_form[:rtmp_url]} label="RTMP URL" />
-        <.input field={@destination_form[:stream_key]} label="Stream key" autocomplete="off" />
+        <.input
+          field={@destination_form[:stream_key]}
+          label="Stream key"
+          autocomplete="off"
+          type="password"
+        />
         <:actions>
           <.button>Add Destination</.button>
         </:actions>
