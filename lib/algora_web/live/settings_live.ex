@@ -3,6 +3,7 @@ defmodule AlgoraWeb.SettingsLive do
 
   alias Algora.Accounts
   alias Algora.Accounts.Destination
+  alias AlgoraWeb.RTMPDestinationIconComponent
 
   def render(assigns) do
     ~H"""
@@ -47,7 +48,10 @@ defmodule AlgoraWeb.SettingsLive do
           <ul :if={length(@destinations) > 0} class="space-y-2">
             <%= for destination <- @destinations do %>
               <li class="w-full gap-4 py-2 px-3 border border-gray-600 bg-gray-950 rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 flex items-center justify-between">
-                <span class="text-sm truncate"><%= destination.rtmp_url %></span>
+                <div class="flex items-center gap-2">
+                  <RTMPDestinationIconComponent.render class="w-6 h-6" url={destination.rtmp_url} />
+                  <span class="text-sm truncate"><%= destination.rtmp_url %></span>
+                </div>
                 <label class="inline-flex items-center cursor-pointer">
                   <span class="hidden sm:inline mr-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                     <%= if destination.active do %>
