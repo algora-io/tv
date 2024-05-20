@@ -6,8 +6,8 @@ defmodule AlgoraWeb.SettingsLive do
 
   def render(assigns) do
     ~H"""
-    <div class="max-w-3xl mx-auto bg-gray-800/50 rounded-lg p-4">
-      <div class="space-y-6">
+    <div class="max-w-3xl mx-auto p-6 space-y-6">
+      <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
           Settings
           <:subtitle>
@@ -36,7 +36,7 @@ defmodule AlgoraWeb.SettingsLive do
           </:actions>
         </.simple_form>
       </div>
-      <div class="mt-12 space-y-6">
+      <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
           Multistreaming
           <:subtitle>
