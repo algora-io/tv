@@ -82,6 +82,11 @@ defmodule AlgoraWeb.ChatLive do
                   <span class="font-medium text-gray-100">
                     <%= message.body %>
                   </span>
+                  <.live_component
+                    module={AlgoraWeb.ChatMessageTimestampComponent}
+                    id={"timestamp-#{message.id}"}
+                    message={message}
+                  />
                 </div>
               </div>
             </div>
@@ -105,6 +110,7 @@ defmodule AlgoraWeb.ChatLive do
       Chat.subscribe_to_room(video)
 
       Presence.subscribe(channel_handle)
+      schedule_timestamp_tick()
     end
 
     videos = Library.list_channel_videos(channel, 50)
@@ -222,6 +228,16 @@ defmodule AlgoraWeb.ChatLive do
   end
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}
+
+  def handle_info(:tick, socket) do
+    send_update(AlgoraWeb.ChatMessageTimestampComponent, %{})
+    schedule_timestamp_tick()
+    {:noreply, socket}
+  end
+
+  defp schedule_timestamp_tick() do
+    Process.send_after(self(), :tick, :timer.minutes(1))
+  end
 
   defp system_message?(%Chat.Message{} = message) do
     message.sender_handle == "algora"
