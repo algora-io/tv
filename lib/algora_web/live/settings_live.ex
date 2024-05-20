@@ -7,51 +7,71 @@ defmodule AlgoraWeb.SettingsLive do
   def render(assigns) do
     ~H"""
     <div class="max-w-3xl mx-auto bg-gray-800/50 rounded-lg p-4">
-      <.header class="pb-6">
-        Settings
-        <:subtitle>
-          Update your account details
-        </:subtitle>
-      </.header>
+      <div class="space-y-6">
+        <.header>
+          Settings
+          <:subtitle>
+            Update your account details
+          </:subtitle>
+        </.header>
 
-      <.simple_form for={@form} phx-change="validate" phx-submit="save">
-        <.input field={@form[:handle]} label="Handle" />
-        <.input field={@form[:name]} label="Name" />
-        <.input label="Email" name="email" value={@current_user.email} disabled />
-        <.input field={@form[:channel_tagline]} label="Stream tagline" />
-        <div>
-          <.input
-            label="Stream URL"
-            name="stream_url"
-            value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
-            disabled
-          />
-          <p class="mt-2 text-sm text-gray-400">
-            <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
-          </p>
+        <.simple_form for={@form} phx-change="validate" phx-submit="save">
+          <.input field={@form[:handle]} label="Handle" />
+          <.input field={@form[:name]} label="Name" />
+          <.input label="Email" name="email" value={@current_user.email} disabled />
+          <.input field={@form[:channel_tagline]} label="Stream tagline" />
+          <div>
+            <.input
+              label="Stream URL"
+              name="stream_url"
+              value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
+              disabled
+            />
+            <p class="mt-2 text-sm text-gray-400">
+              <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
+            </p>
+          </div>
+          <:actions>
+            <.button>Save</.button>
+          </:actions>
+        </.simple_form>
+      </div>
+      <div class="mt-12 space-y-6">
+        <.header>
+          Multistreaming
+          <:subtitle>
+            Stream to multiple destinations
+          </:subtitle>
+        </.header>
+        <div class="space-y-6">
+          <ul :if={length(@destinations) > 0} class="space-y-2">
+            <%= for destination <- @destinations do %>
+              <li class="w-full py-2 px-3 border border-gray-600 bg-gray-950 rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 flex items-center justify-between">
+                <span><%= destination.rtmp_url %></span>
+                <label class="inline-flex items-center cursor-pointer">
+                  <span class="mr-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    <%= if destination.active do %>
+                      Active
+                    <% else %>
+                      Inactive
+                    <% end %>
+                  </span>
+                  <input
+                    type="checkbox"
+                    value=""
+                    class="sr-only peer"
+                    checked={destination.active}
+                    phx-value-id={destination.id}
+                    phx-click="toggle_destination"
+                  />
+                  <div class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600">
+                  </div>
+                </label>
+              </li>
+            <% end %>
+          </ul>
+          <.button phx-click="show_add_destination_modal">Add Destination</.button>
         </div>
-        <:actions>
-          <.button>Save</.button>
-        </:actions>
-      </.simple_form>
-      <!-- New Destinations Section -->
-      <div class="mt-8">
-        <h2 class="text-lg font-semibold leading-8 text-gray-100">Destinations</h2>
-        <ul>
-          <%= for destination <- @destinations do %>
-            <li>
-              <span><%= destination.rtmp_url %></span>
-              <button phx-click="toggle_destination" phx-value-id={destination.id}>
-                <%= if destination.active do %>
-                  Deactivate
-                <% else %>
-                  Activate
-                <% end %>
-              </button>
-            </li>
-          <% end %>
-        </ul>
-        <button phx-click="show_add_destination_modal">Add Destination</button>
       </div>
     </div>
     <!-- Add Destination Modal -->
