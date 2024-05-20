@@ -131,11 +131,15 @@ defmodule Algora.Accounts do
   end
 
   def list_destinations(user_id) do
-    Repo.all(from d in Destination, where: d.user_id == ^user_id)
+    Repo.all(from d in Destination, where: d.user_id == ^user_id, order_by: [desc: d.id])
   end
 
   def list_active_destinations(user_id) do
-    Repo.all(from d in Destination, where: d.user_id == ^user_id and d.active == true)
+    Repo.all(
+      from d in Destination,
+        where: d.user_id == ^user_id and d.active == true,
+        order_by: [desc: d.id]
+    )
   end
 
   def get_destination!(id), do: Repo.get!(Destination, id)
