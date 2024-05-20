@@ -21,8 +21,6 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
         |> URI.append_path("/" <> destination.stream_key)
         |> URI.to_string()
 
-      dbg(url)
-
       send(impl.pid, {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
     end
 

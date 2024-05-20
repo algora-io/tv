@@ -144,8 +144,6 @@ defmodule AlgoraWeb.SettingsLive do
   end
 
   def handle_event("show_add_destination_modal", _params, socket) do
-    dbg(:show_add_destination_modal)
-
     {:noreply, assign(socket, show_add_destination_modal: true)}
   end
 
