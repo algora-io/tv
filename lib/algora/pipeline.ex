@@ -7,16 +7,14 @@ defmodule Algora.Pipeline do
     video = Library.init_livestream!()
 
     spec = [
-      # audio
+      #
       child(:src, %Membrane.RTMP.SourceBin{
         socket: socket,
-        validator: %Algora.MessageValidator{video_id: video.id}
-      })
-      |> via_out(:audio)
-      |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
-      )
-      |> child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
+        validator: %Algora.MessageValidator{video_id: video.id, pid: self()}
+      }),
+
+      #
+      child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
         mode: :live,
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
@@ -24,10 +22,28 @@ defmodule Algora.Pipeline do
         storage: %Algora.Storage{video: video}
       }),
 
-      # video
+      #
+      get_child(:src)
+      |> via_out(:audio)
+      |> child(:tee_audio, Membrane.Tee.Master),
+
+      #
       get_child(:src)
       |> via_out(:video)
-      |> via_in(Pad.ref(:input, :video),
+      |> child(:tee_video, Membrane.Tee.Master),
+
+      #
+      get_child(:tee_audio)
+      |> via_out(:master)
+      |> via_in(Pad.ref(:input, :audio_sink),
+        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
+      )
+      |> get_child(:sink),
+
+      #
+      get_child(:tee_video)
+      |> via_out(:master)
+      |> via_in(Pad.ref(:input, :video_sink),
         options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
       )
       |> get_child(:sink)
@@ -69,6 +85,27 @@ defmodule Algora.Pipeline do
     end
 
     {[], state}
+  end
+
+  def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
+    spec = [
+      #
+      child(ref, %Membrane.RTMP.Sink{rtmp_url: url}),
+
+      #
+      get_child(:tee_audio)
+      |> via_out(:copy)
+      |> via_in(Pad.ref(:audio, 0))
+      |> get_child(ref),
+
+      #
+      get_child(:tee_video)
+      |> via_out(:copy)
+      |> via_in(Pad.ref(:video, 0))
+      |> get_child(ref)
+    ]
+
+    {[spec: spec], state}
   end
 
   @impl true
