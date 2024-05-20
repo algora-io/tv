@@ -1,6 +1,17 @@
 defmodule AlgoraWeb.RTMPDestinationIconComponent do
   use Phoenix.Component
 
+  @domain_icon_map %{
+    "youtube.com" => :youtube,
+    "youtu.be" => :youtube,
+    "live-video.net" => :twitch,
+    "twitch.tv" => :twitch,
+    "twitch.com" => :twitch,
+    "pscp.tv" => :x,
+    "twitter.com" => :x,
+    "x.com" => :x
+  }
+
   attr :url, :string
   attr :class, :string, default: nil
 
@@ -74,16 +85,9 @@ defmodule AlgoraWeb.RTMPDestinationIconComponent do
   defp get_icon(url) do
     host = URI.parse(url).host
 
-    cond do
-      String.ends_with?(host, "youtube.com") -> :youtube
-      String.ends_with?(host, "youtu.be") -> :youtube
-      String.ends_with?(host, "live-video.net") -> :twitch
-      String.ends_with?(host, "twitch.tv") -> :twitch
-      String.ends_with?(host, "twitch.com") -> :twitch
-      String.ends_with?(host, "pscp.tv") -> :x
-      String.ends_with?(host, "twitter.com") -> :x
-      String.ends_with?(host, "x.com") -> :x
-      true -> :broadcast
-    end
+    @domain_icon_map
+    |> Enum.find_value(:broadcast, fn {domain, icon} ->
+      if String.ends_with?(host, domain), do: icon
+    end)
   end
 end
