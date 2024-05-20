@@ -6,7 +6,7 @@ defmodule AlgoraWeb.SettingsLive do
 
   def render(assigns) do
     ~H"""
-    <div class="max-w-3xl mx-auto p-6 space-y-6">
+    <div class="max-w-3xl mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
       <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
           Settings
@@ -46,10 +46,10 @@ defmodule AlgoraWeb.SettingsLive do
         <div class="space-y-6">
           <ul :if={length(@destinations) > 0} class="space-y-2">
             <%= for destination <- @destinations do %>
-              <li class="w-full py-2 px-3 border border-gray-600 bg-gray-950 rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 flex items-center justify-between">
-                <span class="text-sm"><%= destination.rtmp_url %></span>
+              <li class="w-full gap-4 py-2 px-3 border border-gray-600 bg-gray-950 rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900 flex items-center justify-between">
+                <span class="text-sm truncate"><%= destination.rtmp_url %></span>
                 <label class="inline-flex items-center cursor-pointer">
-                  <span class="mr-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                  <span class="hidden sm:inline mr-3 text-sm font-medium text-gray-900 dark:text-gray-300">
                     <%= if destination.active do %>
                       Active
                     <% else %>
