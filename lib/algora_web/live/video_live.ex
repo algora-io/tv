@@ -411,6 +411,11 @@ defmodule AlgoraWeb.VideoLive do
                     <span class="font-medium text-gray-100">
                       <%= message.body %>
                     </span>
+                    <.live_component
+                      module={AlgoraWeb.ChatMessageTimestampComponent}
+                      id={"timestamp-#{message.id}"}
+                      message={message}
+                    />
                     <button
                       :if={@current_user && Chat.can_delete?(@current_user, message)}
                       phx-click="delete"
@@ -520,6 +525,7 @@ defmodule AlgoraWeb.VideoLive do
       })
 
       Presence.subscribe(channel_handle)
+      schedule_timestamp_tick()
     end
 
     videos = Library.list_channel_videos(channel, 50)
@@ -661,6 +667,16 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   def handle_info({Library, _}, socket), do: {:noreply, socket}
+
+  def handle_info(:tick, socket) do
+    send_update(AlgoraWeb.ChatMessageTimestampComponent, %{})
+    schedule_timestamp_tick()
+    {:noreply, socket}
+  end
+
+  defp schedule_timestamp_tick() do
+    Process.send_after(self(), :tick, :timer.minutes(1))
+  end
 
   defp fmt(num) do
     chars = num |> Integer.to_string() |> String.to_charlist()
