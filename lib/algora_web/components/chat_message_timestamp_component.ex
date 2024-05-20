@@ -3,7 +3,7 @@ defmodule AlgoraWeb.ChatMessageTimestampComponent do
 
   def render(assigns) do
     ~H"""
-    <span class="text-gray-400 text-xs ml-2">
+    <span class="text-gray-400 text-xs ml-1">
       <%= format_timestamp(@message.inserted_at) %>
     </span>
     """
@@ -14,7 +14,7 @@ defmodule AlgoraWeb.ChatMessageTimestampComponent do
     diff_in_seconds = NaiveDateTime.diff(now, timestamp)
 
     cond do
-      diff_in_seconds < 60 -> "#{diff_in_seconds}s ago"
+      diff_in_seconds < 60 -> "Just now"
       diff_in_seconds < 3600 -> "#{div(diff_in_seconds, 60)}m ago"
       diff_in_seconds < 86_400 -> "#{div(diff_in_seconds, 3600)}h ago"
       diff_in_seconds < 604_800 -> "#{div(diff_in_seconds, 86400)}d ago"
