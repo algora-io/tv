@@ -35,7 +35,7 @@ defmodule Algora.Accounts.Destination do
       %URI{scheme: scheme, host: host} when scheme in ["rtmp", "rtmps"] ->
         case :inet.gethostbyname(to_charlist(host)) do
           {:ok, _} -> :ok
-          {:error, _} -> {:error, "must have a valid host"}
+          {:error, _} -> {:error, "must be a valid URL"}
         end
 
       _ ->
