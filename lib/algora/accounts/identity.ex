@@ -48,26 +48,34 @@ defmodule Algora.Accounts.Identity do
   end
 
   @doc """
-  A user changeset for restream registration.
+  A user changeset for restream oauth.
   """
-  def restream_registration_changeset(info, primary_email, emails, token) do
+  def restream_oauth_changeset(info, user_id, token) do
     params = %{
       "provider_token" => token,
       "provider_id" => to_string(info["id"]),
-      "provider_login" => info["login"],
-      "provider_name" => info["name"] || info["login"],
-      "provider_email" => primary_email
+      "provider_login" => info["username"],
+      "provider_name" => info["username"],
+      "provider_email" => info["email"],
+      "user_id" => user_id
     }
 
-    %Identity{provider: @restream, provider_meta: %{"user" => info, "emails" => emails}}
+    %Identity{provider: @restream, provider_meta: %{"user" => info}}
     |> cast(params, [
       :provider_token,
       :provider_email,
       :provider_login,
       :provider_name,
-      :provider_id
+      :provider_id,
+      :user_id
     ])
-    |> validate_required([:provider_token, :provider_email, :provider_name, :provider_id])
+    |> validate_required([
+      :provider_token,
+      :provider_email,
+      :provider_name,
+      :provider_id,
+      :user_id
+    ])
     |> validate_length(:provider_meta, max: 10_000)
   end
 end

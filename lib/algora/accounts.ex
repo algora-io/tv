@@ -74,7 +74,7 @@ defmodule Algora.Accounts do
     end
   end
 
-  def register_restream_user(user_id, token) do
+  def link_restream_account(user_id, info, token) do
     user = get_user!(user_id)
 
     identity =
@@ -87,9 +87,12 @@ defmodule Algora.Accounts do
     if identity do
       update_restream_token(user, token)
     else
-      info
-      |> Identity.restream_registration_changeset(primary_email, emails, token)
-      |> Repo.insert()
+      {:ok, _} =
+        info
+        |> Identity.restream_oauth_changeset(user_id, token)
+        |> Repo.insert()
+
+      {:ok, Repo.preload(user, :identities, force: true)}
     end
   end
 

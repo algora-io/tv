@@ -50,10 +50,11 @@ defmodule AlgoraWeb.OAuthCallbackController do
     user_id = get_session(conn, :user_id)
 
     with {:ok, state} <- verify_session(conn, :restream_state, state),
-         {:ok, tokens} <- client.exchange_access_token(code: code, state: state),
-         {:ok, user} <- Accounts.register_restream_user(user_id, tokens) do
+         {:ok, info} <- client.exchange_access_token(code: code, state: state),
+         %{info: info, token: token} = info,
+         {:ok, user} <- Accounts.link_restream_account(user_id, info, token) do
       conn
-      |> put_flash(:info, "Welcome, #{user.handle}!")
+      |> put_flash(:info, "Restream account has been linked!")
       |> AlgoraWeb.UserAuth.log_in_user(user)
     else
       {:error, %Ecto.Changeset{} = changeset} ->

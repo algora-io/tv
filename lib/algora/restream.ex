@@ -13,7 +13,14 @@ defmodule Algora.Restream do
 
   def exchange_access_token(opts) do
     code = Keyword.fetch!(opts, :code)
+    state = Keyword.fetch!(opts, :state)
 
+    state
+    |> fetch_exchange_response(code)
+    |> fetch_user_info()
+  end
+
+  defp fetch_exchange_response(_state, code) do
     body =
       URI.encode_query(%{
         grant_type: "authorization_code",
@@ -26,9 +33,25 @@ defmodule Algora.Restream do
       {"Authorization", "Basic " <> Base.encode64("#{client_id()}:#{secret()}")}
     ]
 
-    case HTTPoison.post("https://api.restream.io/oauth/token", body, headers) do
+    resp = HTTPoison.post("https://api.restream.io/oauth/token", body, headers)
+
+    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- resp,
+         %{"access_token" => token} <- Jason.decode!(body) do
+      {:ok, token}
+    else
+      {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
+      %{} = resp -> {:error, {:bad_response, resp}}
+    end
+  end
+
+  defp fetch_user_info({:error, _reason} = error), do: error
+
+  defp fetch_user_info({:ok, token}) do
+    headers = [{"Authorization", "Bearer #{token}"}]
+
+    case HTTPoison.get("https://api.restream.io/v2/user/profile", headers) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        {:ok, Jason.decode!(body)}
+        {:ok, %{info: Jason.decode!(body), token: token}}
 
       {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
         {:error, {status_code, body}}
