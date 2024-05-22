@@ -219,7 +219,7 @@ defmodule Algora.Accounts do
   end
 
   def create_entity!(%User{} = user) do
-    entity_attrs = %{
+    create_entity!(%{
       user_id: user.id,
       name: user.name,
       handle: user.handle,
@@ -227,10 +227,12 @@ defmodule Algora.Accounts do
       platform: "algora",
       platform_id: Integer.to_string(user.id),
       platform_meta: %{}
-    }
+    })
+  end
 
+  def create_entity!(attrs) do
     %Entity{}
-    |> Entity.changeset(entity_attrs)
+    |> Entity.changeset(attrs)
     |> Repo.insert!()
   end
 
