@@ -1,28 +1,32 @@
 defmodule Algora.Restream do
-  def restream_authorize_url() do
-    state = random_string()
-    client_id = Application.get_env(:algora, :restream_client_id)
-    redirect_uri = Application.get_env(:algora, :restream_redirect_uri)
+  def authorize_url(return_to \\ nil) do
+    redirect_query = if return_to, do: URI.encode_query(return_to: return_to)
 
-    "https://api.restream.io/login?response_type=code&client_id=#{client_id}&redirect_uri=#{redirect_uri}&state=#{state}"
+    query =
+      URI.encode_query(
+        client_id: client_id(),
+        state: random_string(),
+        response_type: "code",
+        redirect_uri: "#{AlgoraWeb.Endpoint.url()}/oauth/callbacks/restream?#{redirect_query}"
+      )
+
+    "https://api.restream.io/login?#{query}"
   end
 
   def exchange_access_token(opts) do
     code = Keyword.fetch!(opts, :code)
-    state = Keyword.fetch!(opts, :state)
-    client_id = Application.get_env(:algora, :restream_client_id)
-    client_secret = Application.get_env(:algora, :restream_client_secret)
     redirect_uri = Application.get_env(:algora, :restream_redirect_uri)
 
-    body = URI.encode_query(%{
-      grant_type: "authorization_code",
-      redirect_uri: redirect_uri,
-      code: code
-    })
+    body =
+      URI.encode_query(%{
+        grant_type: "authorization_code",
+        redirect_uri: redirect_uri,
+        code: code
+      })
 
     headers = [
       {"Content-Type", "application/x-www-form-urlencoded"},
-      {"Authorization", "Basic " <> Base.encode64("#{client_id}:#{client_secret}")}
+      {"Authorization", "Basic " <> Base.encode64("#{client_id()}:#{secret()}")}
     ]
 
     case HTTPoison.post("https://api.restream.io/oauth/token", body, headers) do
@@ -38,17 +42,15 @@ defmodule Algora.Restream do
   end
 
   def refresh_access_token(refresh_token) do
-    client_id = Application.get_env(:algora, :restream_client_id)
-    client_secret = Application.get_env(:algora, :restream_client_secret)
-
-    body = URI.encode_query(%{
-      grant_type: "refresh_token",
-      refresh_token: refresh_token
-    })
+    body =
+      URI.encode_query(%{
+        grant_type: "refresh_token",
+        refresh_token: refresh_token
+      })
 
     headers = [
       {"Content-Type", "application/x-www-form-urlencoded"},
-      {"Authorization", "Basic " <> Base.encode64("#{client_id}:#{client_secret}")}
+      {"Authorization", "Basic " <> Base.encode64("#{client_id()}:#{secret()}")}
     ]
 
     case HTTPoison.post("https://api.restream.io/oauth/token", body, headers) do
@@ -63,7 +65,18 @@ defmodule Algora.Restream do
     end
   end
 
-  defp random_string do
-    :crypto.strong_rand_bytes(16) |> Base.url_encode64 |> binary_part(0, 16)
+  def random_string do
+    binary = <<
+      System.system_time(:nanosecond)::64,
+      :erlang.phash2({node(), self()})::16,
+      :erlang.unique_integer()::16
+    >>
+
+    binary
+    |> Base.url_encode64()
+    |> String.replace(["/", "+"], "-")
   end
+
+  defp client_id, do: Algora.config([:restream, :client_id])
+  defp secret, do: Algora.config([:restream, :client_secret])
 end
