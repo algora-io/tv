@@ -1,8 +1,7 @@
 defmodule AlgoraWeb.Router do
   use AlgoraWeb, :router
 
-  import AlgoraWeb.UserAuth,
-    only: [redirect_if_user_is_authenticated: 2, fetch_current_user: 2]
+  import AlgoraWeb.UserAuth, only: [fetch_current_user: 2]
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -23,9 +22,7 @@ defmodule AlgoraWeb.Router do
   end
 
   scope "/", AlgoraWeb do
-    # TODO:
-    # pipe_through [:browser, :redirect_if_user_is_authenticated]
-    pipe_through [:browser]
+    pipe_through :browser
 
     get "/oauth/callbacks/:provider", OAuthCallbackController, :new
     get "/oauth/:provider", OAuthController, :new
