@@ -154,8 +154,20 @@ defmodule Algora.Accounts do
       Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
 
     {:ok, tokens} = Restream.refresh_access_token(identity.provider_refresh_token)
-
     update_restream_tokens(user, tokens)
+
+    {:ok, tokens}
+  end
+
+  def get_restream_token(%User{} = user) do
+    query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream")
+
+    with identity when identity != nil <- Repo.one(query),
+         {:ok, %{token: token}} <- refresh_restream_tokens(user) do
+      token
+    else
+      _ -> nil
+    end
   end
 
   def gen_stream_key(%User{} = user) do

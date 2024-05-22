@@ -24,6 +24,12 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
       send(impl.pid, {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
     end
 
+    user = Algora.Accounts.get_user!(video.user_id)
+
+    if token = Algora.Accounts.get_restream_token(user) do
+      AlgoraWebSocket.start_link(Algora.Restream.websocket_url(token))
+    end
+
     {:ok, "connect success"}
   end
 

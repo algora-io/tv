@@ -105,7 +105,6 @@ defmodule AlgoraWeb.ChatLive do
       Chat.subscribe_to_room(video)
 
       Presence.subscribe(channel_handle)
-      AlgoraWebSocket.start_link(video_id)
     end
 
     videos = Library.list_channel_videos(channel, 50)
