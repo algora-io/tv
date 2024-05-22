@@ -1,13 +1,11 @@
 defmodule Algora.Restream do
-  def authorize_url(return_to \\ nil) do
-    redirect_query = if return_to, do: URI.encode_query(return_to: return_to)
-
+  def authorize_url() do
     query =
       URI.encode_query(
         client_id: client_id(),
         state: random_string(),
         response_type: "code",
-        redirect_uri: "#{AlgoraWeb.Endpoint.url()}/oauth/callbacks/restream?#{redirect_query}"
+        redirect_uri: "#{AlgoraWeb.Endpoint.url()}/oauth/callbacks/restream"
       )
 
     "https://api.restream.io/login?#{query}"
