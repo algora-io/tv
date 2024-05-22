@@ -26,7 +26,7 @@ defmodule AlgoraWeb.VideoLive do
             <use href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" x="86"></use>
           </svg>
           <blockquote class={[
-            "text-xl px-4 font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2 min-h-[64px] sm:min-h-none",
+            "text-xl px-4 font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2 min-h-[64px] sm:min-h-0",
             if(@channel.solving_challenge, do: "hidden sm:block")
           ]}>
             <p><%= @video.title %></p>
