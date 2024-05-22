@@ -20,7 +20,16 @@ defmodule AlgoraWeb.RTMPDestinationIconComponent do
 
   def render(assigns) do
     ~H"""
-    <%= case get_icon(@url) do %>
+    <.icon icon={get_icon(@url)} class={@class} />
+    """
+  end
+
+  attr :icon, :atom
+  attr :class, :string, default: nil
+
+  def icon(assigns) do
+    ~H"""
+    <%= case @icon do %>
       <% :twitch -> %>
         <svg
           xmlns="http://www.w3.org/2000/svg"
