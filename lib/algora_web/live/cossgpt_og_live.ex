@@ -268,8 +268,8 @@ defmodule AlgoraWeb.COSSGPTOGLive do
       String.length(s1) >= 3 and
         String.length(s2) >= 3 and
         (String.contains?(s1, s2) or String.contains?(s2, s1)) and
-        !Util.is_common_word(s1) and
-        !Util.is_common_word(s2)
+        !Util.common_word?(s1) and
+        !Util.common_word?(s2)
     end)
   end
 end

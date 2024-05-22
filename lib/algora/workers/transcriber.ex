@@ -23,12 +23,10 @@ defmodule Algora.Workers.Transcriber do
             send(job_pid, {:progress, progress})
           end)
 
-        output =
+        _output =
           await_prediction(prediction.id, fn progress ->
             send(job_pid, {:progress, progress})
           end)
-
-        dbg(output)
 
         send(job_pid, {:complete, video})
       rescue

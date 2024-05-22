@@ -202,10 +202,10 @@ defmodule AlgoraWeb.COSSGPTLive do
   @impl true
   def mount(params, _session, socket) do
     socket =
-      if !params["query"] do
-        socket |> push_navigate(to: ~p"/cossgpt?#{%{query: "Benefits of going open source"}}")
-      else
+      if params["query"] do
         socket
+      else
+        socket |> push_navigate(to: ~p"/cossgpt?#{%{query: "Benefits of going open source"}}")
       end
 
     {:ok, socket}
@@ -299,8 +299,8 @@ defmodule AlgoraWeb.COSSGPTLive do
       String.length(s1) >= 3 and
         String.length(s2) >= 3 and
         (String.contains?(s1, s2) or String.contains?(s2, s1)) and
-        !Util.is_common_word(s1) and
-        !Util.is_common_word(s2)
+        !Util.common_word?(s1) and
+        !Util.common_word?(s2)
     end)
   end
 end

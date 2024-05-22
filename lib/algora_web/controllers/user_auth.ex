@@ -147,5 +147,5 @@ defmodule AlgoraWeb.UserAuth do
 
   defp maybe_store_return_to(conn), do: conn
 
-  def signed_in_path(conn), do: "/"
+  def signed_in_path(_conn), do: "/"
 end

@@ -82,7 +82,7 @@ defmodule Algora.Util do
     "your"
   ]
 
-  def is_common_word(s), do: Enum.member?(@common_words, s)
+  def common_word?(s), do: Enum.member?(@common_words, s)
 
   def random_string do
     binary = <<
