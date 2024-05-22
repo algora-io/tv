@@ -23,9 +23,12 @@ defmodule AlgoraWeb.Router do
   end
 
   scope "/", AlgoraWeb do
-    pipe_through [:browser, :redirect_if_user_is_authenticated]
+    # TODO:
+    # pipe_through [:browser, :redirect_if_user_is_authenticated]
+    pipe_through [:browser]
 
     get "/oauth/callbacks/:provider", OAuthCallbackController, :new
+    get "/oauth/:provider", OAuthController, :new
   end
 
   if Mix.env() in [:dev, :test] do

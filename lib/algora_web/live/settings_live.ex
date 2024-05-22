@@ -88,12 +88,11 @@ defmodule AlgoraWeb.SettingsLive do
           </:subtitle>
         </.header>
         <div class="space-y-6">
-          <a
-            href={Algora.Restream.authorize_url()}
-            class="mt-8 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
-          >
-            Restream
-          </a>
+          <.button>
+            <.link href={"/oauth/restream?#{URI.encode_query(return_to: "/channel/settings")}"}>
+              Restream
+            </.link>
+          </.button>
         </div>
       </div>
     </div>

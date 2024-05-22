@@ -6,6 +6,7 @@ defmodule Algora.Accounts.Identity do
 
   # providers
   @github "github"
+  @restream "restream"
 
   @derive {Inspect, except: [:provider_token, :provider_meta]}
   schema "identities" do
@@ -35,6 +36,30 @@ defmodule Algora.Accounts.Identity do
     }
 
     %Identity{provider: @github, provider_meta: %{"user" => info, "emails" => emails}}
+    |> cast(params, [
+      :provider_token,
+      :provider_email,
+      :provider_login,
+      :provider_name,
+      :provider_id
+    ])
+    |> validate_required([:provider_token, :provider_email, :provider_name, :provider_id])
+    |> validate_length(:provider_meta, max: 10_000)
+  end
+
+  @doc """
+  A user changeset for restream registration.
+  """
+  def restream_registration_changeset(info, primary_email, emails, token) do
+    params = %{
+      "provider_token" => token,
+      "provider_id" => to_string(info["id"]),
+      "provider_login" => info["login"],
+      "provider_name" => info["name"] || info["login"],
+      "provider_email" => primary_email
+    }
+
+    %Identity{provider: @restream, provider_meta: %{"user" => info, "emails" => emails}}
     |> cast(params, [
       :provider_token,
       :provider_email,

@@ -27,7 +27,7 @@ defmodule AlgoraWeb.OAuthCallbackController do
         conn
         |> put_flash(
           :error,
-          "We were unable to fetch the necessary information from your GithHub account"
+          "We were unable to fetch the necessary information from your GitHub account"
         )
         |> redirect(to: "/")
 
@@ -44,11 +44,14 @@ defmodule AlgoraWeb.OAuthCallbackController do
     redirect(conn, to: "/")
   end
 
-  def new(conn, %{"provider" => "restream", "code" => code, "state" => state, "scope" => scope}) do
+  def new(conn, %{"provider" => "restream", "code" => code, "state" => state}) do
     client = restream_client(conn)
 
-    with {:ok, tokens} <- client.exchange_access_token(code: code, state: state),
-         {:ok, user} <- Accounts.register_restream_user(tokens) do
+    user_id = get_session(conn, :user_id)
+
+    with {:ok, state} <- verify_session(conn, :restream_state, state),
+         {:ok, tokens} <- client.exchange_access_token(code: code, state: state),
+         {:ok, user} <- Accounts.register_restream_user(user_id, tokens) do
       conn
       |> put_flash(:info, "Welcome, #{user.handle}!")
       |> AlgoraWeb.UserAuth.log_in_user(user)
@@ -57,7 +60,10 @@ defmodule AlgoraWeb.OAuthCallbackController do
         Logger.debug("failed Restream insert #{inspect(changeset.errors)}")
 
         conn
-        |> put_flash(:error, "We were unable to fetch the necessary information from your Restream account")
+        |> put_flash(
+          :error,
+          "We were unable to fetch the necessary information from your Restream account"
+        )
         |> redirect(to: "/")
 
       {:error, reason} ->
@@ -66,6 +72,14 @@ defmodule AlgoraWeb.OAuthCallbackController do
         conn
         |> put_flash(:error, "We were unable to contact Restream. Please try again later")
         |> redirect(to: "/")
+    end
+  end
+
+  defp verify_session(conn, key, token) do
+    if Plug.Crypto.secure_compare(token, get_session(conn, key)) do
+      {:ok, token}
+    else
+      {:error, "#{key} is invalid"}
     end
   end
 

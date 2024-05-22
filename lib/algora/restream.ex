@@ -1,11 +1,11 @@
 defmodule Algora.Restream do
-  def authorize_url() do
+  def authorize_url(state) do
     query =
       URI.encode_query(
         client_id: client_id(),
-        state: random_string(),
+        state: state,
         response_type: "code",
-        redirect_uri: "#{AlgoraWeb.Endpoint.url()}/oauth/callbacks/restream"
+        redirect_uri: redirect_uri()
       )
 
     "https://api.restream.io/login?#{query}"
@@ -13,12 +13,11 @@ defmodule Algora.Restream do
 
   def exchange_access_token(opts) do
     code = Keyword.fetch!(opts, :code)
-    redirect_uri = Application.get_env(:algora, :restream_redirect_uri)
 
     body =
       URI.encode_query(%{
         grant_type: "authorization_code",
-        redirect_uri: redirect_uri,
+        redirect_uri: redirect_uri(),
         code: code
       })
 
@@ -63,18 +62,7 @@ defmodule Algora.Restream do
     end
   end
 
-  def random_string do
-    binary = <<
-      System.system_time(:nanosecond)::64,
-      :erlang.phash2({node(), self()})::16,
-      :erlang.unique_integer()::16
-    >>
-
-    binary
-    |> Base.url_encode64()
-    |> String.replace(["/", "+"], "-")
-  end
-
   defp client_id, do: Algora.config([:restream, :client_id])
   defp secret, do: Algora.config([:restream, :client_secret])
+  defp redirect_uri, do: "#{AlgoraWeb.Endpoint.url()}/oauth/callbacks/restream"
 end

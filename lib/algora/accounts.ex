@@ -62,7 +62,7 @@ defmodule Algora.Accounts do
   ## User registration
 
   @doc """
-  Registers a user from their GithHub information.
+  Registers a user from their GitHub information.
   """
   def register_github_user(primary_email, info, emails, token) do
     if user = get_user_by_provider_email(:github, primary_email) do
@@ -70,6 +70,25 @@ defmodule Algora.Accounts do
     else
       info
       |> User.github_registration_changeset(primary_email, emails, token)
+      |> Repo.insert()
+    end
+  end
+
+  def register_restream_user(user_id, token) do
+    user = get_user!(user_id)
+
+    identity =
+      from(u in User,
+        join: i in assoc(u, :identities),
+        where: i.provider == ^to_string(:restream) and u.id == ^user_id
+      )
+      |> Repo.one()
+
+    if identity do
+      update_restream_token(user, token)
+    else
+      info
+      |> Identity.restream_registration_changeset(primary_email, emails, token)
       |> Repo.insert()
     end
   end
@@ -103,6 +122,19 @@ defmodule Algora.Accounts do
   defp update_github_token(%User{} = user, new_token) do
     identity =
       Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "github"))
+
+    {:ok, _} =
+      identity
+      |> change()
+      |> put_change(:provider_token, new_token)
+      |> Repo.update()
+
+    {:ok, Repo.preload(user, :identities, force: true)}
+  end
+
+  defp update_restream_token(%User{} = user, new_token) do
+    identity =
+      Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
 
     {:ok, _} =
       identity
