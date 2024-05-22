@@ -80,6 +80,22 @@ defmodule AlgoraWeb.SettingsLive do
           <.button phx-click="show_add_destination_modal">Add Destination</.button>
         </div>
       </div>
+      <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
+        <.header>
+          Integrations
+          <:subtitle>
+            Connect with other apps
+          </:subtitle>
+        </.header>
+        <div class="space-y-6">
+          <a
+            href={Algora.Restream.authorize_url()}
+            class="mt-8 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
+          >
+            Restream
+          </a>
+        </div>
+      </div>
     </div>
     <!-- Add Destination Modal -->
     <.modal :if={@show_add_destination_modal} id="add-destination-modal" show>
