@@ -2,7 +2,7 @@ defmodule Algora.Accounts do
   import Ecto.Query
   import Ecto.Changeset
 
-  alias Algora.Repo
+  alias Algora.{Repo, Restream}
   alias Algora.Accounts.{User, Identity, Destination}
 
   def list_users(opts) do
@@ -147,6 +147,15 @@ defmodule Algora.Accounts do
       |> Repo.update()
 
     {:ok, Repo.preload(user, :identities, force: true)}
+  end
+
+  def refresh_restream_tokens(%User{} = user) do
+    identity =
+      Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
+
+    {:ok, tokens} = Restream.refresh_access_token(identity.provider_refresh_token)
+
+    update_restream_tokens(user, tokens)
   end
 
   def gen_stream_key(%User{} = user) do

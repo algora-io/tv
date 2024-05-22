@@ -73,15 +73,14 @@ defmodule Algora.Restream do
       {"Authorization", "Basic " <> Base.encode64("#{client_id()}:#{secret()}")}
     ]
 
-    case HTTPoison.post("https://api.restream.io/oauth/token", body, headers) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        {:ok, Jason.decode!(body)}
+    resp = HTTPoison.post("https://api.restream.io/oauth/token", body, headers)
 
-      {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
-        {:error, {status_code, body}}
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        {:error, reason}
+    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- resp,
+         %{"access_token" => token, "refresh_token" => refresh_token} <- Jason.decode!(body) do
+      {:ok, %{token: token, refresh_token: refresh_token}}
+    else
+      {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
+      %{} = resp -> {:error, {:bad_response, resp}}
     end
   end
 
