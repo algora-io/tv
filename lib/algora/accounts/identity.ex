@@ -8,10 +8,11 @@ defmodule Algora.Accounts.Identity do
   @github "github"
   @restream "restream"
 
-  @derive {Inspect, except: [:provider_token, :provider_meta]}
+  @derive {Inspect, except: [:provider_token, :provider_refresh_token, :provider_meta]}
   schema "identities" do
     field :provider, :string
     field :provider_token, :string
+    field :provider_refresh_token, :string
     field :provider_email, :string
     field :provider_login, :string
     field :provider_name, :string, virtual: true
@@ -50,9 +51,10 @@ defmodule Algora.Accounts.Identity do
   @doc """
   A user changeset for restream oauth.
   """
-  def restream_oauth_changeset(info, user_id, token) do
+  def restream_oauth_changeset(info, user_id, %{token: token, refresh_token: refresh_token}) do
     params = %{
       "provider_token" => token,
+      "provider_refresh_token" => refresh_token,
       "provider_id" => to_string(info["id"]),
       "provider_login" => info["username"],
       "provider_name" => info["username"],
@@ -63,6 +65,7 @@ defmodule Algora.Accounts.Identity do
     %Identity{provider: @restream, provider_meta: %{"user" => info}}
     |> cast(params, [
       :provider_token,
+      :provider_refresh_token,
       :provider_email,
       :provider_login,
       :provider_name,
@@ -71,6 +74,7 @@ defmodule Algora.Accounts.Identity do
     ])
     |> validate_required([
       :provider_token,
+      :provider_refresh_token,
       :provider_email,
       :provider_name,
       :provider_id,

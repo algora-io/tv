@@ -74,7 +74,7 @@ defmodule Algora.Accounts do
     end
   end
 
-  def link_restream_account(user_id, info, token) do
+  def link_restream_account(user_id, info, tokens) do
     user = get_user!(user_id)
 
     identity =
@@ -85,11 +85,11 @@ defmodule Algora.Accounts do
       |> Repo.one()
 
     if identity do
-      update_restream_token(user, token)
+      update_restream_tokens(user, tokens)
     else
       {:ok, _} =
         info
-        |> Identity.restream_oauth_changeset(user_id, token)
+        |> Identity.restream_oauth_changeset(user_id, tokens)
         |> Repo.insert()
 
       {:ok, Repo.preload(user, :identities, force: true)}
@@ -135,14 +135,15 @@ defmodule Algora.Accounts do
     {:ok, Repo.preload(user, :identities, force: true)}
   end
 
-  defp update_restream_token(%User{} = user, new_token) do
+  defp update_restream_tokens(%User{} = user, %{token: token, refresh_token: refresh_token}) do
     identity =
       Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
 
     {:ok, _} =
       identity
       |> change()
-      |> put_change(:provider_token, new_token)
+      |> put_change(:provider_token, token)
+      |> put_change(:provider_refresh_token, refresh_token)
       |> Repo.update()
 
     {:ok, Repo.preload(user, :identities, force: true)}

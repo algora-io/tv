@@ -36,8 +36,8 @@ defmodule Algora.Restream do
     resp = HTTPoison.post("https://api.restream.io/oauth/token", body, headers)
 
     with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- resp,
-         %{"access_token" => token} <- Jason.decode!(body) do
-      {:ok, token}
+         %{"access_token" => token, "refresh_token" => refresh_token} <- Jason.decode!(body) do
+      {:ok, %{token: token, refresh_token: refresh_token}}
     else
       {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
       %{} = resp -> {:error, {:bad_response, resp}}
@@ -46,12 +46,12 @@ defmodule Algora.Restream do
 
   defp fetch_user_info({:error, _reason} = error), do: error
 
-  defp fetch_user_info({:ok, token}) do
+  defp fetch_user_info({:ok, %{token: token} = tokens}) do
     headers = [{"Authorization", "Bearer #{token}"}]
 
     case HTTPoison.get("https://api.restream.io/v2/user/profile", headers) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        {:ok, %{info: Jason.decode!(body), token: token}}
+        {:ok, %{info: Jason.decode!(body), tokens: tokens}}
 
       {:ok, %HTTPoison.Response{status_code: status_code, body: body}} ->
         {:error, {status_code, body}}
