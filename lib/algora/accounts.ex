@@ -2,7 +2,7 @@ defmodule Algora.Accounts do
   import Ecto.Query
   import Ecto.Changeset
 
-  alias Algora.Repo
+  alias Algora.{Repo, Restream}
   alias Algora.Accounts.{User, Identity, Destination}
 
   def list_users(opts) do
@@ -62,7 +62,7 @@ defmodule Algora.Accounts do
   ## User registration
 
   @doc """
-  Registers a user from their GithHub information.
+  Registers a user from their GitHub information.
   """
   def register_github_user(primary_email, info, emails, token) do
     if user = get_user_by_provider_email(:github, primary_email) do
@@ -71,6 +71,28 @@ defmodule Algora.Accounts do
       info
       |> User.github_registration_changeset(primary_email, emails, token)
       |> Repo.insert()
+    end
+  end
+
+  def link_restream_account(user_id, info, tokens) do
+    user = get_user!(user_id)
+
+    identity =
+      from(u in User,
+        join: i in assoc(u, :identities),
+        where: i.provider == ^to_string(:restream) and u.id == ^user_id
+      )
+      |> Repo.one()
+
+    if identity do
+      update_restream_tokens(user, tokens)
+    else
+      {:ok, _} =
+        info
+        |> Identity.restream_oauth_changeset(user_id, tokens)
+        |> Repo.insert()
+
+      {:ok, Repo.preload(user, :identities, force: true)}
     end
   end
 
@@ -111,6 +133,29 @@ defmodule Algora.Accounts do
       |> Repo.update()
 
     {:ok, Repo.preload(user, :identities, force: true)}
+  end
+
+  defp update_restream_tokens(%User{} = user, %{token: token, refresh_token: refresh_token}) do
+    identity =
+      Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
+
+    {:ok, _} =
+      identity
+      |> change()
+      |> put_change(:provider_token, token)
+      |> put_change(:provider_refresh_token, refresh_token)
+      |> Repo.update()
+
+    {:ok, Repo.preload(user, :identities, force: true)}
+  end
+
+  def refresh_restream_tokens(%User{} = user) do
+    identity =
+      Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
+
+    {:ok, tokens} = Restream.refresh_access_token(identity.provider_refresh_token)
+
+    update_restream_tokens(user, tokens)
   end
 
   def gen_stream_key(%User{} = user) do

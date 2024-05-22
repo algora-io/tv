@@ -80,6 +80,21 @@ defmodule AlgoraWeb.SettingsLive do
           <.button phx-click="show_add_destination_modal">Add Destination</.button>
         </div>
       </div>
+      <div :if={Mix.env() == :dev} class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
+        <.header>
+          Integrations
+          <:subtitle>
+            Connect with other apps
+          </:subtitle>
+        </.header>
+        <div class="space-y-6">
+          <.button>
+            <.link href={"/oauth/login/restream?#{URI.encode_query(return_to: "/channel/settings")}"}>
+              Restream
+            </.link>
+          </.button>
+        </div>
+      </div>
     </div>
     <!-- Add Destination Modal -->
     <.modal :if={@show_add_destination_modal} id="add-destination-modal" show>

@@ -27,7 +27,7 @@ defmodule AlgoraWeb.OAuthCallbackController do
         conn
         |> put_flash(
           :error,
-          "We were unable to fetch the necessary information from your GithHub account"
+          "We were unable to fetch the necessary information from your GitHub account"
         )
         |> redirect(to: "/")
 
@@ -44,11 +44,55 @@ defmodule AlgoraWeb.OAuthCallbackController do
     redirect(conn, to: "/")
   end
 
+  def new(conn, %{"provider" => "restream", "code" => code, "state" => state}) do
+    client = restream_client(conn)
+
+    user_id = get_session(conn, :user_id)
+
+    with {:ok, state} <- verify_session(conn, :restream_state, state),
+         {:ok, info} <- client.exchange_access_token(code: code, state: state),
+         %{info: info, tokens: tokens} = info,
+         {:ok, user} <- Accounts.link_restream_account(user_id, info, tokens) do
+      conn
+      |> put_flash(:info, "Restream account has been linked!")
+      |> AlgoraWeb.UserAuth.log_in_user(user)
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        Logger.debug("failed Restream insert #{inspect(changeset.errors)}")
+
+        conn
+        |> put_flash(
+          :error,
+          "We were unable to fetch the necessary information from your Restream account"
+        )
+        |> redirect(to: "/")
+
+      {:error, reason} ->
+        Logger.debug("failed Restream exchange #{inspect(reason)}")
+
+        conn
+        |> put_flash(:error, "We were unable to contact Restream. Please try again later")
+        |> redirect(to: "/")
+    end
+  end
+
+  defp verify_session(conn, key, token) do
+    if Plug.Crypto.secure_compare(token, get_session(conn, key)) do
+      {:ok, token}
+    else
+      {:error, "#{key} is invalid"}
+    end
+  end
+
   def sign_out(conn, _) do
     AlgoraWeb.UserAuth.log_out_user(conn)
   end
 
   defp github_client(conn) do
     conn.assigns[:github_client] || Algora.Github
+  end
+
+  defp restream_client(conn) do
+    conn.assigns[:restream_client] || Algora.Restream
   end
 end

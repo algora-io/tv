@@ -5,7 +5,7 @@ defmodule Algora.Github do
     query =
       URI.encode_query(
         client_id: client_id(),
-        state: random_string(),
+        state: Algora.Util.random_string(),
         scope: "user:email",
         redirect_uri: "#{AlgoraWeb.Endpoint.url()}/oauth/callbacks/github?#{redirect_query}"
       )
@@ -80,18 +80,6 @@ defmodule Algora.Github do
       {:error, _reason} = err ->
         err
     end
-  end
-
-  def random_string do
-    binary = <<
-      System.system_time(:nanosecond)::64,
-      :erlang.phash2({node(), self()})::16,
-      :erlang.unique_integer()::16
-    >>
-
-    binary
-    |> Base.url_encode64()
-    |> String.replace(["/", "+"], "-")
   end
 
   defp client_id, do: Algora.config([:github, :client_id])
