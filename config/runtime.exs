@@ -94,6 +94,10 @@ if config_env() == :prod do
     client_id: System.fetch_env!("GITHUB_CLIENT_ID"),
     client_secret: System.fetch_env!("GITHUB_CLIENT_SECRET")
 
+  config :algora, :restream,
+    client_id: System.fetch_env!("RESTREAM_CLIENT_ID"),
+    client_secret: System.fetch_env!("RESTREAM_CLIENT_SECRET")
+
   config :algora, :event_sink, url: System.get_env("EVENT_SINK_URL")
 
   config :ex_aws,

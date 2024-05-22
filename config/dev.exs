@@ -10,6 +10,10 @@ config :algora, :github,
   client_id: System.get_env("GITHUB_CLIENT_ID"),
   client_secret: System.get_env("GITHUB_CLIENT_SECRET")
 
+config :algora, :restream,
+  client_id: System.get_env("RESTREAM_CLIENT_ID"),
+  client_secret: System.get_env("RESTREAM_CLIENT_SECRET")
+
 config :algora, :event_sink, url: System.get_env("EVENT_SINK_URL")
 
 config :ex_aws,
