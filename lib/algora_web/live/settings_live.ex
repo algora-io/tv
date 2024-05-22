@@ -80,7 +80,7 @@ defmodule AlgoraWeb.SettingsLive do
           <.button phx-click="show_add_destination_modal">Add Destination</.button>
         </div>
       </div>
-      <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
+      <div :if={Mix.env() == :dev} class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
           Integrations
           <:subtitle>
@@ -89,7 +89,7 @@ defmodule AlgoraWeb.SettingsLive do
         </.header>
         <div class="space-y-6">
           <.button>
-            <.link href={"/oauth/restream?#{URI.encode_query(return_to: "/channel/settings")}"}>
+            <.link href={"/oauth/login/restream?#{URI.encode_query(return_to: "/channel/settings")}"}>
               Restream
             </.link>
           </.button>

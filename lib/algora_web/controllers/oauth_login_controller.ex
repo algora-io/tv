@@ -1,4 +1,4 @@
-defmodule AlgoraWeb.OAuthController do
+defmodule AlgoraWeb.OAuthLoginController do
   use AlgoraWeb, :controller
   require Logger
 

@@ -25,7 +25,7 @@ defmodule AlgoraWeb.Router do
     pipe_through :browser
 
     get "/oauth/callbacks/:provider", OAuthCallbackController, :new
-    get "/oauth/:provider", OAuthController, :new
+    get "/oauth/login/:provider", OAuthLoginController, :new
   end
 
   if Mix.env() in [:dev, :test] do
