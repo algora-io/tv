@@ -5,7 +5,7 @@ defmodule Algora.Chat do
 
   import Ecto.Query, warn: false
   alias Algora.Library.Video
-  alias Algora.Accounts.User
+  alias Algora.Accounts.{User, Entity}
   alias Algora.{Repo, Accounts}
 
   alias Algora.Chat.{Message, Events}
@@ -19,13 +19,18 @@ defmodule Algora.Chat do
   def list_messages(%Video{} = video) do
     # TODO: add limit
     from(m in Message,
-      join: u in User,
+      join: e in Entity,
+      on: m.entity_id == e.id,
+      left_join: u in User,
       on: m.user_id == u.id,
       join: v in Video,
       on: m.video_id == v.id,
       join: c in User,
       on: c.id == v.user_id,
-      select_merge: %{sender_handle: u.handle, channel_id: c.id},
+      select_merge: %{
+        sender_handle: coalesce(u.handle, e.handle),
+        channel_id: c.id
+      },
       where: m.video_id == ^video.id
     )
     |> order_by_inserted(:asc)
@@ -55,8 +60,11 @@ defmodule Algora.Chat do
   end
 
   def create_message(%User{} = user, %Video{} = video, attrs \\ %{}) do
+    entity = Accounts.get_or_create_entity!(user)
+
     %Message{}
     |> Message.changeset(attrs)
+    |> Message.put_entity(entity)
     |> Message.put_user(user)
     |> Message.put_video(video)
     |> Repo.insert()

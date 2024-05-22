@@ -2,7 +2,7 @@ defmodule Algora.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Algora.Accounts.{User, Identity}
+  alias Algora.Accounts.{User, Identity, Entity}
 
   schema "users" do
     field :email, :string
@@ -30,6 +30,7 @@ defmodule Algora.Accounts.User do
     end
 
     has_many :identities, Identity
+    has_one :entity, Entity
 
     timestamps()
   end

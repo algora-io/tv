@@ -3,7 +3,7 @@ defmodule Algora.Accounts do
   import Ecto.Changeset
 
   alias Algora.{Repo, Restream}
-  alias Algora.Accounts.{User, Identity, Destination}
+  alias Algora.Accounts.{User, Identity, Destination, Entity}
 
   def list_users(opts) do
     Repo.all(from u in User, limit: ^Keyword.fetch!(opts, :limit))
@@ -216,5 +216,34 @@ defmodule Algora.Accounts do
     destination
     |> Destination.changeset(attrs)
     |> Repo.update()
+  end
+
+  def create_entity!(%User{} = user) do
+    entity_attrs = %{
+      user_id: user.id,
+      name: user.name,
+      handle: user.handle,
+      avatar_url: user.avatar_url,
+      platform: "algora",
+      platform_id: Integer.to_string(user.id),
+      platform_meta: %{}
+    }
+
+    %Entity{}
+    |> Entity.changeset(entity_attrs)
+    |> Repo.insert!()
+  end
+
+  def get_entity!(id), do: Repo.get!(Entity, id)
+
+  def get_entity(id), do: Repo.get(Entity, id)
+
+  def get_entity_by(fields), do: Repo.get_by(Entity, fields)
+
+  def get_or_create_entity!(%User{} = user) do
+    case get_entity_by(user_id: user.id) do
+      nil -> create_entity!(user)
+      entity -> entity
+    end
   end
 end
