@@ -72,9 +72,13 @@ defmodule AlgoraWebSocket do
     {:ok, state}
   end
 
-  defp get_platform(%{"payload" => %{"connectionIdentifier" => conn_identifier}}) do
-    # HACK:
-    String.split(conn_identifier, "-") |> Enum.at(1)
+  defp get_platform(%{"payload" => %{"connectionIdentifier" => identifier}}) do
+    parts = String.split(identifier, "-")
+
+    case parts do
+      [_prefix, platform, _suffix] -> platform
+      _ -> "unknown"
+    end
   end
 
   defp get_platform(_action), do: "unknown"
