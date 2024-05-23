@@ -30,7 +30,7 @@ defmodule AlgoraWeb.VideoLive do
           </svg>
           <div class={[
             "items-center px-4 justify-between gap-4 min-h-[64px] sm:min-h-0",
-            if(@channel.solving_challenge, do: "hidden sm:flex")
+            if(@channel.solving_challenge, do: "hidden sm:flex", else: "flex")
           ]}>
             <blockquote class={[
               "text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2"
@@ -38,8 +38,7 @@ defmodule AlgoraWeb.VideoLive do
               <p><%= @video.title %></p>
             </blockquote>
             <.button :if={@current_user} phx-click="toggle_subscription">
-              <%!-- TODO: doesn't update until refresh --%>
-              <%= if subscribed?(@current_user, @video) do %>
+              <%= if @subscribed? do %>
                 Unsubscribe
               <% else %>
                 Subscribe
@@ -578,6 +577,7 @@ defmodule AlgoraWeb.VideoLive do
         # TODO: reenable once fully implemented
         # associated segments need to be removed from db & vectorstore
         can_edit: false,
+        subscribed?: subscribed?(current_user, video),
         transcript_form: to_form(transcript_changeset, as: :data),
         chat_form: to_form(Chat.change_message(%Chat.Message{}))
       )
@@ -764,7 +764,7 @@ defmodule AlgoraWeb.VideoLive do
 
   def handle_event("toggle_subscription", _params, socket) do
     toggle_subscription_event(socket.assigns.current_user, socket.assigns.video)
-    {:noreply, socket}
+    {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
   end
 
   defp toggle_subscription_event(user, video) do
@@ -780,6 +780,8 @@ defmodule AlgoraWeb.VideoLive do
     |> Event.changeset(%{})
     |> Repo.insert()
   end
+
+  defp subscribed?(nil, _video), do: false
 
   defp subscribed?(user, video) do
     event =
