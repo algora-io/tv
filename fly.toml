@@ -87,7 +87,3 @@ kill_timeout = '5s'
     hard_limit = 100000
     soft_limit = 10000
 
-[[vm]]
-  cpu_kind = 'shared'
-  cpus = 2
-  memory_mb = 2048
