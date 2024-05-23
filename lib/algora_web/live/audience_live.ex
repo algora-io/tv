@@ -3,7 +3,8 @@ defmodule AlgoraWeb.AudienceLive do
   import Ecto.Query, warn: false
 
   alias Algora.Accounts.{User, Identity}
-  alias Algora.Events.{Event}
+  alias Algora.Events.Event
+  alias Algora.Library.Video
   alias Algora.Repo
 
   def render(assigns) do
@@ -54,6 +55,11 @@ defmodule AlgoraWeb.AudienceLive do
             </div>
           </.link>
         </:col>
+        <:col :let={viewer}>
+          <.link navigate={~p"/#{@current_user.handle}/#{viewer.first_video_id}"} class="text-right">
+            <div class="font-medium text-white"><%= viewer.first_video_title %></div>
+          </.link>
+        </:col>
       </.table>
 
       <div class="sm:flex-auto">
@@ -81,6 +87,14 @@ defmodule AlgoraWeb.AudienceLive do
             </div>
           </.link>
         </:col>
+        <:col :let={subscriber}>
+          <.link
+            navigate={~p"/#{@current_user.handle}/#{subscriber.first_video_id}"}
+            class="text-right"
+          >
+            <div class="font-medium text-white"><%= subscriber.first_video_title %></div>
+          </.link>
+        </:col>
       </.table>
     </div>
     """
@@ -95,18 +109,35 @@ defmodule AlgoraWeb.AudienceLive do
   end
 
   defp fetch_unique_viewers(user) do
-    from(e in Event,
+    subquery_first_watched =
+      from(e in Event,
+        where: e.name == :watched,
+        order_by: [asc: e.inserted_at],
+        select: %{
+          event_id: e.id,
+          user_id: e.user_id,
+          video_id: e.video_id,
+          channel_id: e.channel_id
+        },
+        distinct: e.user_id
+      )
+
+    from(e in subquery(subquery_first_watched),
       left_join: u in User,
       on: e.user_id == u.id,
       left_join: i in Identity,
       on: i.user_id == u.id and i.provider == "github",
-      select_merge: %{
+      left_join: v in Video,
+      on: e.video_id == v.id,
+      select: %{
         user_handle: u.handle,
         user_email: u.email,
         user_avatar_url: u.avatar_url,
-        user_github_handle: i.provider_login
+        user_github_handle: i.provider_login,
+        first_video_id: e.video_id,
+        first_video_title: v.title
       },
-      where: not is_nil(u.id) and e.channel_id == ^user.id and e.name == :watched,
+      where: not is_nil(u.id) and e.channel_id == ^user.id,
       distinct: e.user_id
     )
     |> Repo.all()
@@ -119,7 +150,7 @@ defmodule AlgoraWeb.AudienceLive do
         where: e.channel_id == ^user.id and e.name in [:subscribed, :unsubscribed],
         order_by: [desc: e.inserted_at],
         distinct: e.user_id,
-        select: %{user_id: e.user_id, name: e.name}
+        select: %{user_id: e.user_id, video_id: e.video_id, name: e.name}
       )
 
     # Join user data and filter for :subscribed events
@@ -128,11 +159,15 @@ defmodule AlgoraWeb.AudienceLive do
       on: e.user_id == u.id,
       left_join: i in Identity,
       on: i.user_id == u.id and i.provider == "github",
+      left_join: v in Video,
+      on: e.video_id == v.id,
       select: %{
         user_handle: u.handle,
         user_email: u.email,
         user_avatar_url: u.avatar_url,
-        user_github_handle: i.provider_login
+        user_github_handle: i.provider_login,
+        first_video_id: e.video_id,
+        first_video_title: v.title
       },
       where: e.name == :subscribed
     )
