@@ -20,7 +20,7 @@ defmodule Algora.Restream.Websocket do
   end
 
   def handle_disconnect(_reason, state) do
-    Logger.error("WebSocket disconnected")
+    Logger.error("WebSocket disconnected: #{state.video.id}")
     {:reconnect, state}
   end
 
