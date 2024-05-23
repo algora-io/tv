@@ -2,7 +2,7 @@ defmodule AlgoraWebSocket do
   use WebSockex
   require Logger
 
-  alias Algora.Accounts
+  alias Algora.{Accounts, Chat}
 
   def start_link(%{url: url, video: video}) do
     WebSockex.start_link(url, __MODULE__, %{url: url, video: video})
@@ -25,22 +25,29 @@ defmodule AlgoraWebSocket do
                } = author,
              "bot" => false,
              "contentModifiers" => %{"whisper" => false},
-             "text" => _text
+             "text" => body
            }
          }
        }} ->
-        Accounts.create_entity!(%{
-          name: name,
-          handle: handle,
-          avatar_url: avatar_url,
-          # HACK:
-          platform: String.split(conn_identifier, "-") |> Enum.at(1),
-          platform_id: platform_id,
-          platform_meta: author
-        })
+        entity =
+          Accounts.get_or_create_entity!(%{
+            name: name,
+            handle: handle,
+            avatar_url: avatar_url,
+            # HACK:
+            platform: String.split(conn_identifier, "-") |> Enum.at(1),
+            platform_id: platform_id,
+            platform_meta: author
+          })
 
-      # TODO: persist & broadcast message
-      # TODO: handle missing data?
+        {:ok, message} = Chat.create_message(entity, state.video, %{body: body})
+
+        # HACK:
+        message = Chat.get_message!(message.id)
+
+        Chat.broadcast_message_sent!(message)
+
+      # TODO: missing data?
 
       {:ok, action} ->
         Logger.info("Received message: #{inspect(action)}")

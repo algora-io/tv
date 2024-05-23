@@ -248,4 +248,11 @@ defmodule Algora.Accounts do
       entity -> entity
     end
   end
+
+  def get_or_create_entity!(%{platform: platform, platform_id: platform_id} = attrs) do
+    case get_entity_by(platform: platform, platform_id: platform_id) do
+      nil -> create_entity!(attrs)
+      entity -> entity
+    end
+  end
 end

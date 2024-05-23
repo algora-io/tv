@@ -27,7 +27,7 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
     user = Algora.Accounts.get_user!(video.user_id)
 
     if token = Algora.Accounts.get_restream_token(user) do
-      AlgoraWebSocket.start_link(Algora.Restream.websocket_url(token))
+      AlgoraWebSocket.start_link(%{url: Algora.Restream.websocket_url(token), video: video})
     end
 
     {:ok, "connect success"}
