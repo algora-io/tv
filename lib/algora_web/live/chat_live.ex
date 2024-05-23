@@ -143,10 +143,6 @@ defmodule AlgoraWeb.ChatLive do
     {:ok, socket}
   end
 
-  def handle_info({:websocket_message, message}, socket) do
-    {:noreply, stream_insert(socket, :messages, message)}
-  end
-
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
