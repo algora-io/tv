@@ -124,7 +124,7 @@ defmodule AlgoraWeb.AudienceLive do
   defp fetch_unique_viewers(user) do
     subquery_first_watched =
       from(e in Event,
-        where: e.name == :watched,
+        where: e.name in [:watched, :subscribed],
         order_by: [asc: e.inserted_at],
         distinct: e.user_id
       )
