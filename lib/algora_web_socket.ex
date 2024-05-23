@@ -54,12 +54,15 @@ defmodule AlgoraWebSocket do
         platform_meta: author
       })
 
-    {:ok, message} = Chat.create_message(entity, state.video, %{body: body})
+    case Chat.create_message(entity, state.video, %{body: body}) do
+      {:ok, message} ->
+        # HACK:
+        message = Chat.get_message!(message.id)
+        Chat.broadcast_message_sent!(message)
 
-    # HACK:
-    message = Chat.get_message!(message.id)
-
-    Chat.broadcast_message_sent!(message)
+      _error ->
+        Logger.error("Failed to persist message: #{inspect(action)}")
+    end
 
     {:ok, state}
   end
