@@ -15,7 +15,7 @@ defmodule AlgoraWeb.AudienceLive do
         <p class="text-base font-medium text-gray-200">View & manage your audience</p>
       </.header>
 
-      <dl class="mt-16 grid grid-cols-1 gap-4 overflow-hidden text-center sm:grid-cols-2">
+      <dl class="mt-16 grid grid-cols-1 gap-4 text-center sm:grid-cols-2">
         <div class="flex flex-col bg-white/5 p-8 ring-1 ring-white/15 rounded-lg">
           <dt class="text-sm font-semibold leading-6 text-gray-300">Unique viewers</dt>
           <dd class="order-first text-3xl font-semibold tracking-tight text-white">
@@ -46,14 +46,17 @@ defmodule AlgoraWeb.AudienceLive do
               <img
                 class="h-11 w-11 rounded-full"
                 src={viewer.user_avatar_url}
-                alt={viewer.user_handle}
+                alt={viewer.user_display_name}
               />
             </div>
-            <div class="ml-2 leading-none">
-              <div class="font-medium text-white"><%= viewer.user_handle %></div>
-              <div class="mt-1 text-gray-400"><%= viewer.user_email %></div>
+            <div class="ml-4 leading-none">
+              <div class="font-medium text-white"><%= viewer.user_display_name %></div>
+              <div class="mt-1 text-gray-400">@<%= viewer.user_handle %></div>
             </div>
           </.link>
+        </:col>
+        <:col :let={viewer}>
+          <div class="text-gray-100"><%= viewer.user_email %></div>
         </:col>
         <:col :let={viewer}>
           <.link navigate={~p"/#{@current_user.handle}/#{viewer.first_video_id}"} class="text-right">
@@ -78,14 +81,17 @@ defmodule AlgoraWeb.AudienceLive do
               <img
                 class="h-11 w-11 rounded-full"
                 src={subscriber.user_avatar_url}
-                alt={subscriber.user_handle}
+                alt={subscriber.user_display_name}
               />
             </div>
-            <div class="ml-2 leading-none">
-              <div class="font-medium text-white"><%= subscriber.user_handle %></div>
-              <div class="mt-1 text-gray-400"><%= subscriber.user_email %></div>
+            <div class="ml-4 leading-none">
+              <div class="font-medium text-white"><%= subscriber.user_display_name %></div>
+              <div class="mt-1 text-gray-400">@<%= subscriber.user_handle %></div>
             </div>
           </.link>
+        </:col>
+        <:col :let={subscriber}>
+          <div class="text-gray-100"><%= subscriber.user_email %></div>
         </:col>
         <:col :let={subscriber}>
           <.link
@@ -131,6 +137,7 @@ defmodule AlgoraWeb.AudienceLive do
       on: e.video_id == v.id,
       select: %{
         user_handle: u.handle,
+        user_display_name: coalesce(u.name, u.handle),
         user_email: u.email,
         user_avatar_url: u.avatar_url,
         user_github_handle: i.provider_login,
@@ -163,6 +170,7 @@ defmodule AlgoraWeb.AudienceLive do
       on: e.video_id == v.id,
       select: %{
         user_handle: u.handle,
+        user_display_name: coalesce(u.name, u.handle),
         user_email: u.email,
         user_avatar_url: u.avatar_url,
         user_github_handle: i.provider_login,

@@ -8,6 +8,7 @@ defmodule Algora.Events.Event do
     field :video_id, :integer
     field :channel_id, :integer
     field :user_handle, :string, virtual: true
+    field :user_display_name, :string, virtual: true
     field :user_email, :string, virtual: true
     field :user_avatar_url, :string, virtual: true
     field :user_github_handle, :string, virtual: true
