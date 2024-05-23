@@ -10,8 +10,12 @@ defmodule Algora.Restream.Websocket do
 
   def handle_frame({:text, msg}, state) do
     case Jason.decode(msg) do
-      {:ok, action} ->
-        handle_action(action, state)
+      {:ok, %{"action" => "event", "payload" => payload}} ->
+        handle_payload(payload, state)
+
+      {:ok, message} ->
+        Logger.info("Received message: #{inspect(message)}")
+        {:ok, state}
 
       {:error, _reason} ->
         Logger.error("Failed to parse message: #{msg}")
@@ -24,33 +28,18 @@ defmodule Algora.Restream.Websocket do
     {:reconnect, state}
   end
 
-  defp handle_action(
-         %{
-           "action" => "event",
-           "payload" => %{
-             "eventPayload" => %{
-               "author" =>
-                 %{
-                   "name" => handle,
-                   "displayName" => name,
-                   "avatar" => avatar_url,
-                   "id" => platform_id
-                 } = author,
-               "bot" => false,
-               "contentModifiers" => %{"whisper" => false},
-               "text" => body
-             }
-           }
-         } = action,
-         state
-       ) do
+  defp handle_payload(%{"eventPayload" => %{"contentModifiers" => %{"whisper" => true}}}, state) do
+    {:ok, state}
+  end
+
+  defp handle_payload(%{"eventPayload" => %{"author" => author, "text" => body}} = payload, state) do
     entity =
       Accounts.get_or_create_entity!(%{
-        name: name,
-        handle: handle,
-        avatar_url: avatar_url,
-        platform: get_platform(action),
-        platform_id: platform_id,
+        name: get_name(author),
+        handle: get_handle(author),
+        avatar_url: author["avatar"],
+        platform: get_platform(payload),
+        platform_id: author["id"],
         platform_meta: author
       })
 
@@ -61,18 +50,18 @@ defmodule Algora.Restream.Websocket do
         Chat.broadcast_message_sent!(message)
 
       _error ->
-        Logger.error("Failed to persist message: #{inspect(action)}")
+        Logger.error("Failed to persist payload: #{inspect(payload)}")
     end
 
     {:ok, state}
   end
 
-  defp handle_action(action, state) do
-    Logger.info("Received message: #{inspect(action)}")
+  defp handle_payload(payload, state) do
+    Logger.info("Received payload: #{inspect(payload)}")
     {:ok, state}
   end
 
-  defp get_platform(%{"payload" => %{"connectionIdentifier" => identifier}}) do
+  defp get_platform(%{"connectionIdentifier" => identifier}) do
     parts = String.split(identifier, "-")
 
     case parts do
@@ -86,4 +75,11 @@ defmodule Algora.Restream.Websocket do
   end
 
   defp get_platform(_action), do: "unknown"
+
+  defp get_handle(%{"username" => username}), do: username
+  defp get_handle(%{"displayName" => displayName}), do: Slug.slugify(displayName)
+  defp get_handle(%{"id" => id}), do: id
+
+  defp get_name(%{"displayName" => displayName}), do: displayName
+  defp get_name(author), do: get_handle(author)
 end

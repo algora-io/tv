@@ -235,9 +235,15 @@ defmodule Algora.Accounts do
   end
 
   def create_entity!(attrs) do
-    %Entity{}
-    |> Entity.changeset(attrs)
-    |> Repo.insert!()
+    case %Entity{}
+         |> Entity.changeset(attrs)
+         |> Repo.insert() do
+      {:ok, entity} ->
+        entity
+
+      _ when attrs.id != attrs.handle ->
+        create_entity!(%{attrs | handle: attrs.id})
+    end
   end
 
   def get_entity!(id), do: Repo.get!(Entity, id)
