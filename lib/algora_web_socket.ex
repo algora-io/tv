@@ -28,7 +28,6 @@ defmodule AlgoraWebSocket do
          %{
            "action" => "event",
            "payload" => %{
-             "connectionIdentifier" => conn_identifier,
              "eventPayload" => %{
                "author" =>
                  %{
@@ -42,7 +41,7 @@ defmodule AlgoraWebSocket do
                "text" => body
              }
            }
-         },
+         } = action,
          state
        ) do
     entity =
@@ -50,8 +49,7 @@ defmodule AlgoraWebSocket do
         name: name,
         handle: handle,
         avatar_url: avatar_url,
-        # HACK:
-        platform: String.split(conn_identifier, "-") |> Enum.at(1),
+        platform: get_platform(action),
         platform_id: platform_id,
         platform_meta: author
       })
@@ -70,4 +68,11 @@ defmodule AlgoraWebSocket do
     Logger.info("Received message: #{inspect(action)}")
     {:ok, state}
   end
+
+  defp get_platform(%{"payload" => %{"connectionIdentifier" => conn_identifier}}) do
+    # HACK:
+    String.split(conn_identifier, "-") |> Enum.at(1)
+  end
+
+  defp get_platform(_action), do: "unknown"
 end
