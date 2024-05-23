@@ -113,20 +113,28 @@ defmodule AlgoraWeb.AudienceLive do
   end
 
   defp fetch_unique_subscribers(user) do
-    # TODO: exclude unsubscribers
-    from(e in Event,
-      left_join: u in User,
+    # Get the latest relevant events (:subscribed and :unsubscribed) for each user
+    latest_events_query =
+      from(e in Event,
+        where: e.channel_id == ^user.id and e.name in [:subscribed, :unsubscribed],
+        order_by: [desc: e.inserted_at],
+        distinct: e.user_id,
+        select: %{user_id: e.user_id, name: e.name}
+      )
+
+    # Join user data and filter for :subscribed events
+    from(e in subquery(latest_events_query),
+      join: u in User,
       on: e.user_id == u.id,
       left_join: i in Identity,
       on: i.user_id == u.id and i.provider == "github",
-      select_merge: %{
+      select: %{
         user_handle: u.handle,
         user_email: u.email,
         user_avatar_url: u.avatar_url,
         user_github_handle: i.provider_login
       },
-      where: not is_nil(u.id) and e.channel_id == ^user.id and e.name == :subscribed,
-      distinct: e.user_id
+      where: e.name == :subscribed
     )
     |> Repo.all()
   end
