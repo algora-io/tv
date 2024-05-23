@@ -76,8 +76,12 @@ defmodule AlgoraWebSocket do
     parts = String.split(identifier, "-")
 
     case parts do
-      [_prefix, platform, _suffix] -> platform
-      _ -> "unknown"
+      [_prefix, platform, _suffix] ->
+        platform
+
+      _ ->
+        Logger.error("Failed to extract platform: #{identifier}")
+        "unknown"
     end
   end
 
