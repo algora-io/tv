@@ -38,6 +38,7 @@ defmodule AlgoraWeb.VideoLive do
               <p><%= @video.title %></p>
             </blockquote>
             <.button :if={@current_user} phx-click="toggle_subscription">
+              <%!-- TODO: doesn't update until refresh --%>
               <%= if subscribed?(@current_user, @video) do %>
                 Unsubscribe
               <% else %>
