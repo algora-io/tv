@@ -170,6 +170,10 @@ defmodule Algora.Accounts do
     end
   end
 
+  def get_restream_ws_url(%User{} = user) do
+    if token = get_restream_token(user), do: Restream.websocket_url(token)
+  end
+
   def gen_stream_key(%User{} = user) do
     user =
       Repo.one!(from(u in User, where: u.id == ^user.id))

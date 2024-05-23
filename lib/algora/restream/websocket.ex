@@ -1,4 +1,4 @@
-defmodule AlgoraWebSocket do
+defmodule Algora.Restream.Websocket do
   use WebSockex
   require Logger
 
