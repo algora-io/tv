@@ -1,8 +1,10 @@
 defmodule AlgoraWeb.VideoLive do
   use AlgoraWeb, :live_view
   require Logger
+  import Ecto.Query, warn: false
 
-  alias Algora.{Accounts, Library, Storage, Chat}
+  alias Algora.{Accounts, Library, Storage, Chat, Repo}
+  alias Algora.Events.Event
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
   alias AlgoraWeb.RTMPDestinationIconComponent
@@ -26,12 +28,28 @@ defmodule AlgoraWeb.VideoLive do
             </path>
             <use href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" x="86"></use>
           </svg>
-          <blockquote class={[
-            "text-xl px-4 font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2 min-h-[64px] sm:min-h-0",
-            if(@channel.solving_challenge, do: "hidden sm:block")
+          <div class={[
+            "items-center px-4 justify-between gap-4 min-h-[64px] sm:min-h-0",
+            if(@channel.solving_challenge, do: "hidden sm:flex", else: "flex")
           ]}>
-            <p><%= @video.title %></p>
-          </blockquote>
+            <blockquote class={[
+              "text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9 line-clamp-2"
+            ]}>
+              <p><%= @video.title %></p>
+            </blockquote>
+            <.button :if={@current_user} phx-click="toggle_subscription">
+              <%= if @subscribed? do %>
+                Unsubscribe
+              <% else %>
+                Subscribe
+              <% end %>
+            </.button>
+            <.button :if={!@current_user && @authorize_url}>
+              <.link navigate={@authorize_url}>
+                Subscribe
+              </.link>
+            </.button>
+          </div>
           <div
             :if={@channel.solving_challenge}
             class="-mt-4 block sm:hidden bg-gray-950 text-center py-4"
@@ -559,6 +577,7 @@ defmodule AlgoraWeb.VideoLive do
         # TODO: reenable once fully implemented
         # associated segments need to be removed from db & vectorstore
         can_edit: false,
+        subscribed?: subscribed?(current_user, video),
         transcript_form: to_form(transcript_changeset, as: :data),
         chat_form: to_form(Chat.change_message(%Chat.Message{}))
       )
@@ -594,6 +613,19 @@ defmodule AlgoraWeb.VideoLive do
         current_time: t
       })
       |> push_event("join_chat", %{id: video.id})
+
+    schedule_watch_event()
+
+    {:noreply, socket}
+  end
+
+  def handle_info(:watch_event, socket) do
+    log_watch_event(socket.assigns.current_user, socket.assigns.video)
+
+    # TODO: enable later
+    # if socket.assigns.current_user && socket.assigns.video.is_live do
+    #   schedule_watch_event(:timer.seconds(2))
+    # end
 
     {:noreply, socket}
   end
@@ -730,6 +762,44 @@ defmodule AlgoraWeb.VideoLive do
     end
   end
 
+  def handle_event("toggle_subscription", _params, socket) do
+    toggle_subscription_event(socket.assigns.current_user, socket.assigns.video)
+    {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
+  end
+
+  defp toggle_subscription_event(user, video) do
+    name = if subscribed?(user, video), do: :unsubscribed, else: :subscribed
+
+    %Event{
+      actor_id: "user_#{user.id}",
+      user_id: user.id,
+      video_id: video.id,
+      channel_id: video.user_id,
+      name: name
+    }
+    |> Event.changeset(%{})
+    |> Repo.insert()
+  end
+
+  defp subscribed?(nil, _video), do: false
+
+  defp subscribed?(user, video) do
+    event =
+      from(
+        e in Event,
+        where:
+          e.channel_id == ^video.user_id and
+            e.user_id == ^user.id and
+            (e.name == :subscribed or
+               e.name == :unsubscribed),
+        order_by: [desc: e.inserted_at],
+        limit: 1
+      )
+      |> Repo.one()
+
+    event && event.name == :subscribed
+  end
+
   defp save("naive", subtitles) do
     Library.save_subtitles(subtitles)
   end
@@ -738,7 +808,7 @@ defmodule AlgoraWeb.VideoLive do
     Fly.Postgres.rpc_and_wait(Library, :save_subtitles, [subtitles])
   end
 
-  defp set_active_content(js \\ %JS{}, to) do
+  defp set_active_content(js, to) do
     js
     |> JS.hide(to: ".side-panel-content")
     |> JS.show(to: to)
@@ -792,4 +862,25 @@ defmodule AlgoraWeb.VideoLive do
 
     socket
   end
+
+  defp schedule_watch_event(ms \\ 0) do
+    Process.send_after(self(), :watch_event, ms)
+  end
+
+  defp log_watch_event(user, video) do
+    actor_id = if user, do: "user_#{user.id}", else: "guest_#{hash_actor_id()}"
+
+    %Event{
+      actor_id: actor_id,
+      user_id: user && user.id,
+      video_id: video.id,
+      channel_id: video.user_id,
+      name: :watched
+    }
+    |> Event.changeset(%{})
+    |> Repo.insert()
+  end
+
+  # TODO:
+  defp hash_actor_id, do: ""
 end

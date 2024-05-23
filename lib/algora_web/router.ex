@@ -70,6 +70,7 @@ defmodule AlgoraWeb.Router do
       live "/channel/settings", SettingsLive, :edit
       live "/channel/studio", StudioLive, :show
       live "/channel/studio/upload", StudioLive, :upload
+      live "/channel/audience", AudienceLive, :show
       live "/:channel_handle/stream", ChannelLive, :stream
 
       live "/videos/:video_id/subtitles", SubtitleLive.Index, :index
