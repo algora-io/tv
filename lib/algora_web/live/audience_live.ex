@@ -119,12 +119,6 @@ defmodule AlgoraWeb.AudienceLive do
       from(e in Event,
         where: e.name == :watched,
         order_by: [asc: e.inserted_at],
-        select: %{
-          event_id: e.id,
-          user_id: e.user_id,
-          video_id: e.video_id,
-          channel_id: e.channel_id
-        },
         distinct: e.user_id
       )
 
@@ -135,7 +129,7 @@ defmodule AlgoraWeb.AudienceLive do
       on: i.user_id == u.id and i.provider == "github",
       left_join: v in Video,
       on: e.video_id == v.id,
-      select: %{
+      select_merge: %{
         user_handle: u.handle,
         user_display_name: coalesce(u.name, u.handle),
         user_email: u.email,
@@ -145,7 +139,8 @@ defmodule AlgoraWeb.AudienceLive do
         first_video_title: v.title
       },
       where: not is_nil(u.id) and e.channel_id == ^user.id,
-      distinct: e.user_id
+      distinct: e.user_id,
+      order_by: [desc: e.inserted_at, desc: e.id]
     )
     |> Repo.all()
   end
@@ -156,8 +151,7 @@ defmodule AlgoraWeb.AudienceLive do
       from(e in Event,
         where: e.channel_id == ^user.id and e.name in [:subscribed, :unsubscribed],
         order_by: [desc: e.inserted_at],
-        distinct: e.user_id,
-        select: %{user_id: e.user_id, video_id: e.video_id, name: e.name}
+        distinct: e.user_id
       )
 
     # Join user data and filter for :subscribed events
@@ -168,7 +162,7 @@ defmodule AlgoraWeb.AudienceLive do
       on: i.user_id == u.id and i.provider == "github",
       left_join: v in Video,
       on: e.video_id == v.id,
-      select: %{
+      select_merge: %{
         user_handle: u.handle,
         user_display_name: coalesce(u.name, u.handle),
         user_email: u.email,
@@ -177,7 +171,8 @@ defmodule AlgoraWeb.AudienceLive do
         first_video_id: e.video_id,
         first_video_title: v.title
       },
-      where: e.name == :subscribed
+      where: e.name == :subscribed,
+      order_by: [desc: e.inserted_at, desc: e.id]
     )
     |> Repo.all()
   end
