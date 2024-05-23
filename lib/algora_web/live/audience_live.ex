@@ -59,8 +59,13 @@ defmodule AlgoraWeb.AudienceLive do
           <div class="text-gray-100"><%= viewer.user_email %></div>
         </:col>
         <:col :let={viewer}>
-          <.link navigate={~p"/#{@current_user.handle}/#{viewer.first_video_id}"} class="text-right">
-            <div class="font-medium text-white"><%= viewer.first_video_title %></div>
+          <.link
+            navigate={~p"/#{@current_user.handle}/#{viewer.first_video_id}"}
+            class="truncate ml-auto flex w-[200px]"
+          >
+            <span class="truncate">
+              <%= viewer.first_video_title %>
+            </span>
           </.link>
         </:col>
       </.table>
@@ -96,9 +101,11 @@ defmodule AlgoraWeb.AudienceLive do
         <:col :let={subscriber}>
           <.link
             navigate={~p"/#{@current_user.handle}/#{subscriber.first_video_id}"}
-            class="text-right"
+            class="truncate ml-auto flex w-[200px]"
           >
-            <div class="font-medium text-white"><%= subscriber.first_video_title %></div>
+            <span class="truncate">
+              <%= subscriber.first_video_title %>
+            </span>
           </.link>
         </:col>
       </.table>
