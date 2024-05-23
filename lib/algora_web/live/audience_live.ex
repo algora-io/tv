@@ -17,15 +17,15 @@ defmodule AlgoraWeb.AudienceLive do
 
       <dl class="mt-16 grid grid-cols-1 gap-4 text-center sm:grid-cols-2">
         <div class="flex flex-col bg-white/5 p-8 ring-1 ring-white/15 rounded-lg">
-          <dt class="text-sm font-semibold leading-6 text-gray-300">Unique viewers</dt>
-          <dd class="order-first text-3xl font-semibold tracking-tight text-white">
-            <%= length(@viewers) %>
-          </dd>
-        </div>
-        <div class="flex flex-col bg-white/5 p-8 ring-1 ring-white/15 rounded-lg">
           <dt class="text-sm font-semibold leading-6 text-gray-300">Subscribers</dt>
           <dd class="order-first text-3xl font-semibold tracking-tight text-white">
             <%= length(@subscribers) %>
+          </dd>
+        </div>
+        <div class="flex flex-col bg-white/5 p-8 ring-1 ring-white/15 rounded-lg">
+          <dt class="text-sm font-semibold leading-6 text-gray-300">Unique viewers</dt>
+          <dd class="order-first text-3xl font-semibold tracking-tight text-white">
+            <%= length(@viewers) %>
           </dd>
         </div>
       </dl>
