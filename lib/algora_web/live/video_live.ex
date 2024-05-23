@@ -2,6 +2,8 @@ defmodule AlgoraWeb.VideoLive do
   use AlgoraWeb, :live_view
   require Logger
 
+  alias AlgoraWeb.RTMPDestinationIconComponent
+
   alias Algora.{Accounts, Library, Storage, Chat}
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
@@ -405,6 +407,10 @@ defmodule AlgoraWeb.VideoLive do
                     id={id}
                     class="group hover:bg-white/5 relative px-4"
                   >
+                    <RTMPDestinationIconComponent.icon
+                      class="inline-flex w-5 h-5 shrink-0 mr-0.5"
+                      icon={String.to_atom(message.platform)}
+                    />
                     <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
                       <%= message.sender_handle %>:
                     </span>

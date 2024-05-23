@@ -28,6 +28,7 @@ defmodule Algora.Chat do
       join: c in User,
       on: c.id == v.user_id,
       select_merge: %{
+        platform: e.platform,
         sender_handle: coalesce(u.handle, e.handle),
         channel_id: c.id
       },
@@ -56,6 +57,7 @@ defmodule Algora.Chat do
       join: c in User,
       on: c.id == v.user_id,
       select_merge: %{
+        platform: e.platform,
         sender_handle: coalesce(u.handle, e.handle),
         channel_id: c.id
       },
