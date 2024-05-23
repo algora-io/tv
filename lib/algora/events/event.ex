@@ -7,6 +7,10 @@ defmodule Algora.Events.Event do
     field :user_id, :integer
     field :video_id, :integer
     field :channel_id, :integer
+    field :user_handle, :string, virtual: true
+    field :user_email, :string, virtual: true
+    field :user_avatar_url, :string, virtual: true
+    field :user_github_handle, :string, virtual: true
     field :name, Ecto.Enum, values: [:subscribed, :unsubscribed, :watched]
 
     timestamps()
