@@ -30,47 +30,7 @@ defmodule AlgoraWeb.AudienceLive do
         </div>
       </dl>
 
-      <div class="sm:flex-auto">
-        <h2 class="text-base font-semibold leading-6 text-white">Viewers</h2>
-        <p class="text-sm text-gray-200">
-          List of users who tuned in to your streams
-        </p>
-      </div>
-      <.table id="videos" rows={@viewers} class="-mt-8">
-        <:col :let={viewer}>
-          <.link
-            navigate={"https://github.com/#{viewer.user_github_handle}"}
-            class="flex items-center"
-          >
-            <div class="h-11 w-11 flex-shrink-0">
-              <img
-                class="h-11 w-11 rounded-full"
-                src={viewer.user_avatar_url}
-                alt={viewer.user_display_name}
-              />
-            </div>
-            <div class="ml-4 leading-none">
-              <div class="font-medium text-white"><%= viewer.user_display_name %></div>
-              <div class="mt-1 text-gray-400">@<%= viewer.user_handle %></div>
-            </div>
-          </.link>
-        </:col>
-        <:col :let={viewer}>
-          <div class="text-gray-100"><%= viewer.user_email %></div>
-        </:col>
-        <:col :let={viewer}>
-          <.link
-            navigate={~p"/#{@current_user.handle}/#{viewer.first_video_id}"}
-            class="truncate ml-auto flex w-[200px]"
-          >
-            <span class="truncate">
-              <%= viewer.first_video_title %>
-            </span>
-          </.link>
-        </:col>
-      </.table>
-
-      <div class="sm:flex-auto">
+      <div class="pt-6 sm:flex-auto">
         <h2 class="text-base font-semibold leading-6 text-white">Subscribers</h2>
         <p class="text-sm text-gray-200">
           List of users who subscribed to your content
@@ -105,6 +65,46 @@ defmodule AlgoraWeb.AudienceLive do
           >
             <span class="truncate">
               <%= subscriber.first_video_title %>
+            </span>
+          </.link>
+        </:col>
+      </.table>
+
+      <div class="pt-6 sm:flex-auto">
+        <h2 class="text-base font-semibold leading-6 text-white">Viewers</h2>
+        <p class="text-sm text-gray-200">
+          List of users who tuned in to your streams
+        </p>
+      </div>
+      <.table id="videos" rows={@viewers} class="-mt-8">
+        <:col :let={viewer}>
+          <.link
+            navigate={"https://github.com/#{viewer.user_github_handle}"}
+            class="flex items-center"
+          >
+            <div class="h-11 w-11 flex-shrink-0">
+              <img
+                class="h-11 w-11 rounded-full"
+                src={viewer.user_avatar_url}
+                alt={viewer.user_display_name}
+              />
+            </div>
+            <div class="ml-4 leading-none">
+              <div class="font-medium text-white"><%= viewer.user_display_name %></div>
+              <div class="mt-1 text-gray-400">@<%= viewer.user_handle %></div>
+            </div>
+          </.link>
+        </:col>
+        <:col :let={viewer}>
+          <div class="text-gray-100"><%= viewer.user_email %></div>
+        </:col>
+        <:col :let={viewer}>
+          <.link
+            navigate={~p"/#{@current_user.handle}/#{viewer.first_video_id}"}
+            class="truncate ml-auto flex w-[200px]"
+          >
+            <span class="truncate">
+              <%= viewer.first_video_title %>
             </span>
           </.link>
         </:col>
