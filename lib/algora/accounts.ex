@@ -3,7 +3,7 @@ defmodule Algora.Accounts do
   import Ecto.Changeset
 
   alias Algora.{Repo, Restream}
-  alias Algora.Accounts.{User, Identity, Destination}
+  alias Algora.Accounts.{User, Identity, Destination, Entity}
 
   def list_users(opts) do
     Repo.all(from u in User, limit: ^Keyword.fetch!(opts, :limit))
@@ -154,8 +154,24 @@ defmodule Algora.Accounts do
       Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
 
     {:ok, tokens} = Restream.refresh_access_token(identity.provider_refresh_token)
-
     update_restream_tokens(user, tokens)
+
+    {:ok, tokens}
+  end
+
+  def get_restream_token(%User{} = user) do
+    query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream")
+
+    with identity when identity != nil <- Repo.one(query),
+         {:ok, %{token: token}} <- refresh_restream_tokens(user) do
+      token
+    else
+      _ -> nil
+    end
+  end
+
+  def get_restream_ws_url(%User{} = user) do
+    if token = get_restream_token(user), do: Restream.websocket_url(token)
   end
 
   def gen_stream_key(%User{} = user) do
@@ -204,5 +220,43 @@ defmodule Algora.Accounts do
     destination
     |> Destination.changeset(attrs)
     |> Repo.update()
+  end
+
+  def create_entity!(%User{} = user) do
+    create_entity!(%{
+      user_id: user.id,
+      name: user.name,
+      handle: user.handle,
+      avatar_url: user.avatar_url,
+      platform: "algora",
+      platform_id: Integer.to_string(user.id),
+      platform_meta: %{}
+    })
+  end
+
+  def create_entity!(attrs) do
+    %Entity{}
+    |> Entity.changeset(attrs)
+    |> Repo.insert!()
+  end
+
+  def get_entity!(id), do: Repo.get!(Entity, id)
+
+  def get_entity(id), do: Repo.get(Entity, id)
+
+  def get_entity_by(fields), do: Repo.get_by(Entity, fields)
+
+  def get_or_create_entity!(%User{} = user) do
+    case get_entity_by(user_id: user.id) do
+      nil -> create_entity!(user)
+      entity -> entity
+    end
+  end
+
+  def get_or_create_entity!(%{platform: platform, platform_id: platform_id} = attrs) do
+    case get_entity_by(platform: platform, platform_id: platform_id) do
+      nil -> create_entity!(attrs)
+      entity -> entity
+    end
   end
 end

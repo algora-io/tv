@@ -11,6 +11,8 @@ defmodule Algora.Restream do
     "https://api.restream.io/login?#{query}"
   end
 
+  def websocket_url(token), do: "wss://chat.api.restream.io/ws?accessToken=#{token}"
+
   def exchange_access_token(opts) do
     code = Keyword.fetch!(opts, :code)
     state = Keyword.fetch!(opts, :state)

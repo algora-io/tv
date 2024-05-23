@@ -24,6 +24,16 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
       send(impl.pid, {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
     end
 
+    user = Algora.Accounts.get_user!(video.user_id)
+
+    if url = Algora.Accounts.get_restream_ws_url(user) do
+      Task.Supervisor.start_child(
+        Algora.TaskSupervisor,
+        fn -> Algora.Restream.Websocket.start_link(%{url: url, video: video}) end,
+        restart: :transient
+      )
+    end
+
     {:ok, "connect success"}
   end
 

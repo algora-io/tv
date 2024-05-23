@@ -41,6 +41,21 @@ defmodule AlgoraWeb.SettingsLive do
       </div>
       <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
+          Integrations
+          <:subtitle>
+            Link other apps
+          </:subtitle>
+        </.header>
+        <div class="space-y-6">
+          <.button>
+            <.link href={"/oauth/login/restream?#{URI.encode_query(return_to: "/channel/settings")}"}>
+              Connect with Restream
+            </.link>
+          </.button>
+        </div>
+      </div>
+      <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
+        <.header>
           Multistreaming
           <:subtitle>
             Stream to multiple destinations
@@ -80,21 +95,6 @@ defmodule AlgoraWeb.SettingsLive do
             <% end %>
           </ul>
           <.button phx-click="show_add_destination_modal">Add Destination</.button>
-        </div>
-      </div>
-      <div :if={@env == :dev} class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
-        <.header>
-          Integrations
-          <:subtitle>
-            Connect with other apps
-          </:subtitle>
-        </.header>
-        <div class="space-y-6">
-          <.button>
-            <.link href={"/oauth/login/restream?#{URI.encode_query(return_to: "/channel/settings")}"}>
-              Restream
-            </.link>
-          </.button>
         </div>
       </div>
     </div>

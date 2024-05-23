@@ -4,6 +4,7 @@ defmodule AlgoraWeb.ChatLive do
 
   alias Algora.{Accounts, Library, Storage, Chat}
   alias AlgoraWeb.{LayoutComponent, Presence}
+  alias AlgoraWeb.RTMPDestinationIconComponent
 
   def render(assigns) do
     assigns = assigns |> assign(tabs: [:chat])
@@ -76,6 +77,11 @@ defmodule AlgoraWeb.ChatLive do
                 class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto inset-0 h-[400px] py-4"
               >
                 <div :for={{id, message} <- @streams.messages} id={id} class="px-4">
+                  <RTMPDestinationIconComponent.icon
+                    :if={message.platform != "algora"}
+                    class="inline-flex w-5 h-5 shrink-0 mr-0.5"
+                    icon={String.to_atom(message.platform)}
+                  />
                   <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
                     <%= message.sender_handle %>:
                   </span>
