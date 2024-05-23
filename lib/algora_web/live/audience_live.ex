@@ -124,17 +124,17 @@ defmodule AlgoraWeb.AudienceLive do
   defp fetch_unique_viewers(user) do
     subquery_first_watched =
       from(e in Event,
-        where: e.name in [:watched, :subscribed],
+        where: e.channel_id == ^user.id and e.name in [:watched, :subscribed],
         order_by: [asc: e.inserted_at],
         distinct: e.user_id
       )
 
     from(e in subquery(subquery_first_watched),
-      left_join: u in User,
+      join: u in User,
       on: e.user_id == u.id,
-      left_join: i in Identity,
+      join: i in Identity,
       on: i.user_id == u.id and i.provider == "github",
-      left_join: v in Video,
+      join: v in Video,
       on: e.video_id == v.id,
       select_merge: %{
         user_handle: u.handle,
@@ -145,7 +145,6 @@ defmodule AlgoraWeb.AudienceLive do
         first_video_id: e.video_id,
         first_video_title: v.title
       },
-      where: not is_nil(u.id) and e.channel_id == ^user.id,
       distinct: e.user_id,
       order_by: [desc: e.inserted_at, desc: e.id]
     )
@@ -165,9 +164,9 @@ defmodule AlgoraWeb.AudienceLive do
     from(e in subquery(latest_events_query),
       join: u in User,
       on: e.user_id == u.id,
-      left_join: i in Identity,
+      join: i in Identity,
       on: i.user_id == u.id and i.provider == "github",
-      left_join: v in Video,
+      join: v in Video,
       on: e.video_id == v.id,
       select_merge: %{
         user_handle: u.handle,
