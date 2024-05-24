@@ -56,6 +56,7 @@ defmodule AlgoraWeb.AudienceLive do
         </:col>
         <:col :let={subscriber}>
           <.link
+            :if={subscriber.first_video_id}
             navigate={~p"/#{@current_user.handle}/#{subscriber.first_video_id}"}
             class="truncate ml-auto flex w-[200px]"
           >
@@ -96,6 +97,7 @@ defmodule AlgoraWeb.AudienceLive do
         </:col>
         <:col :let={viewer}>
           <.link
+            :if={viewer.first_video_id}
             navigate={~p"/#{@current_user.handle}/#{viewer.first_video_id}"}
             class="truncate ml-auto flex w-[200px]"
           >

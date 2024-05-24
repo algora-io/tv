@@ -2,6 +2,7 @@ defmodule Algora.Events do
   import Ecto.Query
 
   alias Algora.{Repo}
+  alias Algora.Library.Video
   alias Algora.Events.Event
   alias Algora.Accounts.{User, Identity}
 
@@ -112,7 +113,7 @@ defmodule Algora.Events do
       on: e.user_id == u.id,
       join: i in Identity,
       on: i.user_id == u.id and i.provider == "github",
-      join: v in Video,
+      left_join: v in Video,
       on: e.video_id == v.id,
       select_merge: %{
         user_handle: u.handle,
@@ -144,7 +145,7 @@ defmodule Algora.Events do
       on: e.user_id == u.id,
       join: i in Identity,
       on: i.user_id == u.id and i.provider == "github",
-      join: v in Video,
+      left_join: v in Video,
       on: e.video_id == v.id,
       select_merge: %{
         user_handle: u.handle,
