@@ -78,7 +78,7 @@ defmodule AlgoraWeb.ShowLive.Show do
           <div class="flex items-start justify-between">
             <div>
               <h1 class="text-4xl font-bold"><%= @show.title %></h1>
-              <div class="mt-4 space-y-4">
+              <div :if={@show.description} class="mt-4 space-y-4">
                 <div>
                   <h2 class="text-2xl font-bold">About</h2>
                   <p class="typography whitespace-pre"><%= @show.description %></p>

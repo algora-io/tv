@@ -2,6 +2,8 @@ defmodule Algora.Shows.Show do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Algora.Accounts.User
+
   schema "shows" do
     field :title, :string
     field :description, :string
@@ -9,7 +11,8 @@ defmodule Algora.Shows.Show do
     field :scheduled_for, :naive_datetime
     field :image_url, :string
     field :url, :string
-    field :user_id, :id
+
+    belongs_to :user, User
 
     timestamps()
   end
@@ -17,7 +20,7 @@ defmodule Algora.Shows.Show do
   @doc false
   def changeset(show, attrs) do
     show
-    |> cast(attrs, [:title, :slug, :scheduled_for, :image_url])
-    |> validate_required([:title, :slug, :scheduled_for, :image_url])
+    |> cast(attrs, [:title, :slug, :description, :scheduled_for, :image_url])
+    |> validate_required([:title, :slug])
   end
 end
