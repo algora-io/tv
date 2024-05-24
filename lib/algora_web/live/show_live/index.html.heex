@@ -1,0 +1,44 @@
+<.header>
+  Listing Shows
+  <:actions>
+    <.link patch={~p"/shows/new"}>
+      <.button>New Show</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="shows"
+  rows={@streams.shows}
+  row_click={fn {_id, show} -> JS.navigate(~p"/shows/#{show}") end}
+>
+  <:col :let={{_id, show}} label="Title"><%= show.title %></:col>
+  <:col :let={{_id, show}} label="Slug"><%= show.slug %></:col>
+  <:col :let={{_id, show}} label="Scheduled for"><%= show.scheduled_for %></:col>
+  <:col :let={{_id, show}} label="Image url"><%= show.image_url %></:col>
+  <:action :let={{_id, show}}>
+    <div class="sr-only">
+      <.link navigate={~p"/shows/#{show}"}>Show</.link>
+    </div>
+    <.link patch={~p"/shows/#{show}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, show}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: show.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="show-modal" show on_cancel={JS.patch(~p"/shows")}>
+  <.live_component
+    module={AlgoraWeb.ShowLive.FormComponent}
+    id={@show.id || :new}
+    title={@page_title}
+    action={@live_action}
+    show={@show}
+    patch={~p"/shows"}
+  />
+</.modal>

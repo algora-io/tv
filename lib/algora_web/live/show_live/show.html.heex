@@ -1,0 +1,29 @@
+<.header>
+  Show <%= @show.id %>
+  <:subtitle>This is a show record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/shows/#{@show}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit show</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Title"><%= @show.title %></:item>
+  <:item title="Slug"><%= @show.slug %></:item>
+  <:item title="Scheduled for"><%= @show.scheduled_for %></:item>
+  <:item title="Image url"><%= @show.image_url %></:item>
+</.list>
+
+<.back navigate={~p"/shows"}>Back to shows</.back>
+
+<.modal :if={@live_action == :edit} id="show-modal" show on_cancel={JS.patch(~p"/shows/#{@show}")}>
+  <.live_component
+    module={AlgoraWeb.ShowLive.FormComponent}
+    id={@show.id}
+    title={@page_title}
+    action={@live_action}
+    show={@show}
+    patch={~p"/shows/#{@show}"}
+  />
+</.modal>

@@ -71,7 +71,6 @@ defmodule AlgoraWeb.Router do
       live "/channel/studio", StudioLive, :show
       live "/channel/studio/upload", StudioLive, :upload
       live "/channel/audience", AudienceLive, :show
-      live "/shows/:show_id", ShowLive, :show
       live "/:channel_handle/stream", ChannelLive, :stream
 
       live "/videos/:video_id/subtitles", SubtitleLive.Index, :index
@@ -86,6 +85,14 @@ defmodule AlgoraWeb.Router do
       live "/auth/login", SignInLive, :index
       live "/cossgpt", COSSGPTLive, :index
       live "/og/cossgpt", COSSGPTOGLive, :index
+
+      live "/shows", ShowLive.Index, :index
+      live "/shows/new", ShowLive.Index, :new
+      live "/shows/:slug", ShowLive.Show, :show
+
+      live "/shows/:id/edit", ShowLive.Index, :edit
+      live "/shows/:id/show/edit", ShowLive.Show, :edit
+
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
 
