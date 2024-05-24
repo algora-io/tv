@@ -47,9 +47,31 @@ defmodule AlgoraWeb.SettingsLive do
           </:subtitle>
         </.header>
         <div class="space-y-6">
-          <.button>
+          <.button :if={!@connected_with_restream}>
             <.link href={"/oauth/login/restream?#{URI.encode_query(return_to: "/channel/settings")}"}>
               Connect with Restream
+            </.link>
+          </.button>
+          <.button :if={@connected_with_restream} class="bg-green-600 hover:bg-green-500 text-white">
+            <.link
+              href={"/oauth/login/restream?#{URI.encode_query(return_to: "/channel/settings")}"}
+              class="flex items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-5 w-5 -ml-0.5"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l5 5l10 -10" />
+              </svg>
+              <span class="ml-1">Connected with Restream</span>
             </.link>
           </.button>
         </div>
@@ -132,6 +154,7 @@ defmodule AlgoraWeb.SettingsLive do
     changeset = Accounts.change_settings(current_user, %{})
     destinations = Accounts.list_destinations(current_user.id)
     destination_changeset = Accounts.change_destination(%Destination{})
+    connected_with_restream = Accounts.has_restream_token?(current_user)
 
     {:ok,
      socket
@@ -140,7 +163,8 @@ defmodule AlgoraWeb.SettingsLive do
      |> assign_form(changeset)
      |> assign(destinations: destinations)
      |> assign(destination_form: to_form(destination_changeset))
-     |> assign(show_add_destination_modal: false)}
+     |> assign(show_add_destination_modal: false)
+     |> assign(connected_with_restream: connected_with_restream)}
   end
 
   def handle_event("validate", %{"user" => params}, socket) do

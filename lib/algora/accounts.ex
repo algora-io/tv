@@ -159,6 +159,11 @@ defmodule Algora.Accounts do
     {:ok, tokens}
   end
 
+  def has_restream_token?(%User{} = user) do
+    query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream")
+    Repo.one(query) != nil
+  end
+
   def get_restream_token(%User{} = user) do
     query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream")
 
