@@ -1,6 +1,5 @@
 defmodule AlgoraWeb.ShowLive.Show do
   use AlgoraWeb, :live_view
-  import Ecto.Query, warn: false
 
   alias Algora.{Shows, Library, Events}
   alias Algora.Accounts

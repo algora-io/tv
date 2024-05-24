@@ -767,6 +767,7 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
   end
 
+  # TODO: move into events context
   defp toggle_subscription_event(user, video) do
     name = if subscribed?(user, video), do: :unsubscribed, else: :subscribed
 
@@ -781,6 +782,7 @@ defmodule AlgoraWeb.VideoLive do
     |> Repo.insert()
   end
 
+  # TODO: move into events context
   defp subscribed?(nil, _video), do: false
 
   defp subscribed?(user, video) do

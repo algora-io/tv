@@ -1,11 +1,7 @@
 defmodule AlgoraWeb.AudienceLive do
   use AlgoraWeb, :live_view
-  import Ecto.Query, warn: false
 
-  alias Algora.Accounts.{User, Identity}
-  alias Algora.Events.Event
-  alias Algora.Library.Video
-  alias Algora.Repo
+  alias Algora.Events
 
   def render(assigns) do
     ~H"""
@@ -115,71 +111,12 @@ defmodule AlgoraWeb.AudienceLive do
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    viewers = fetch_unique_viewers(user)
-    subscribers = fetch_unique_subscribers(user)
+    viewers = Events.fetch_unique_viewers(user)
+    subscribers = Events.fetch_unique_subscribers(user)
 
-    {:ok, assign(socket, viewers: viewers, subscribers: subscribers)}
-  end
-
-  defp fetch_unique_viewers(user) do
-    subquery_first_watched =
-      from(e in Event,
-        where: e.channel_id == ^user.id and e.name in [:watched, :subscribed],
-        order_by: [asc: e.inserted_at],
-        distinct: e.user_id
-      )
-
-    from(e in subquery(subquery_first_watched),
-      join: u in User,
-      on: e.user_id == u.id,
-      join: i in Identity,
-      on: i.user_id == u.id and i.provider == "github",
-      join: v in Video,
-      on: e.video_id == v.id,
-      select_merge: %{
-        user_handle: u.handle,
-        user_display_name: coalesce(u.name, u.handle),
-        user_email: u.email,
-        user_avatar_url: u.avatar_url,
-        user_github_handle: i.provider_login,
-        first_video_id: e.video_id,
-        first_video_title: v.title
-      },
-      distinct: e.user_id,
-      order_by: [desc: e.inserted_at, desc: e.id]
-    )
-    |> Repo.all()
-  end
-
-  defp fetch_unique_subscribers(user) do
-    # Get the latest relevant events (:subscribed and :unsubscribed) for each user
-    latest_events_query =
-      from(e in Event,
-        where: e.channel_id == ^user.id and e.name in [:subscribed, :unsubscribed],
-        order_by: [desc: e.inserted_at],
-        distinct: e.user_id
-      )
-
-    # Join user data and filter for :subscribed events
-    from(e in subquery(latest_events_query),
-      join: u in User,
-      on: e.user_id == u.id,
-      join: i in Identity,
-      on: i.user_id == u.id and i.provider == "github",
-      join: v in Video,
-      on: e.video_id == v.id,
-      select_merge: %{
-        user_handle: u.handle,
-        user_display_name: coalesce(u.name, u.handle),
-        user_email: u.email,
-        user_avatar_url: u.avatar_url,
-        user_github_handle: i.provider_login,
-        first_video_id: e.video_id,
-        first_video_title: v.title
-      },
-      where: e.name == :subscribed,
-      order_by: [desc: e.inserted_at, desc: e.id]
-    )
-    |> Repo.all()
+    {:ok,
+     socket
+     |> assign(:viewers, viewers)
+     |> assign(:subscribers, subscribers)}
   end
 end
