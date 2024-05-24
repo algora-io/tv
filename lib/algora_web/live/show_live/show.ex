@@ -2,9 +2,7 @@ defmodule AlgoraWeb.ShowLive.Show do
   use AlgoraWeb, :live_view
   import Ecto.Query, warn: false
 
-  alias Algora.{Shows, Library, Repo}
-  alias Algora.Accounts.{User, Identity}
-  alias Algora.Events.Event
+  alias Algora.{Shows, Library, Events}
   alias Algora.Accounts
   alias AlgoraWeb.LayoutComponent
 
@@ -226,16 +224,14 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     videos = Library.list_channel_videos(channel, 50)
 
-    socket =
-      socket
-      |> assign(:show, show)
-      |> assign(:channel, channel)
-      |> assign(:attendees, fetch_attendees(show))
-      |> assign(:subscribed?, subscribed?(current_user, channel))
-      |> assign(:rsvpd?, rsvpd?(current_user, channel))
-      |> stream(:videos, videos)
-
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:show, show)
+     |> assign(:channel, channel)
+     |> assign(:attendees, Events.fetch_attendees(show))
+     |> assign(:subscribed?, Events.subscribed?(current_user, channel))
+     |> assign(:rsvpd?, Events.rsvpd?(current_user, channel))
+     |> stream(:videos, videos)}
   end
 
   @impl true
@@ -260,110 +256,19 @@ defmodule AlgoraWeb.ShowLive.Show do
 
   @impl true
   def handle_event("toggle_subscription", _params, socket) do
-    toggle_subscription_event(socket.assigns.current_user, socket.assigns.show)
-    {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
+    Events.toggle_subscription_event(socket.assigns.current_user, socket.assigns.show)
+
+    {:noreply,
+     socket
+     |> assign(:subscribed?, !socket.assigns.subscribed?)}
   end
 
   def handle_event("toggle_rsvp", _params, socket) do
-    toggle_rsvp_event(socket.assigns.current_user, socket.assigns.show)
+    Events.toggle_rsvp_event(socket.assigns.current_user, socket.assigns.show)
 
     {:noreply,
      socket
      |> assign(:rsvpd?, !socket.assigns.rsvpd?)
-     |> assign(:attendees, fetch_attendees(socket.assigns.show))}
-  end
-
-  defp toggle_subscription_event(user, show) do
-    name = if subscribed?(user, show), do: :unsubscribed, else: :subscribed
-
-    %Event{
-      actor_id: "user_#{user.id}",
-      user_id: user.id,
-      show_id: show.id,
-      channel_id: show.user_id,
-      name: name
-    }
-    |> Event.changeset(%{})
-    |> Repo.insert()
-  end
-
-  defp toggle_rsvp_event(user, show) do
-    name = if rsvpd?(user, show), do: :unrsvpd, else: :rsvpd
-
-    %Event{
-      actor_id: "user_#{user.id}",
-      user_id: user.id,
-      show_id: show.id,
-      channel_id: show.user_id,
-      name: name
-    }
-    |> Event.changeset(%{})
-    |> Repo.insert()
-  end
-
-  defp subscribed?(nil, _show), do: false
-
-  defp subscribed?(user, show) do
-    event =
-      from(
-        e in Event,
-        where:
-          e.channel_id == ^show.user_id and
-            e.user_id == ^user.id and
-            (e.name == :subscribed or
-               e.name == :unsubscribed),
-        order_by: [desc: e.inserted_at],
-        limit: 1
-      )
-      |> Repo.one()
-
-    event && event.name == :subscribed
-  end
-
-  defp rsvpd?(nil, _show), do: false
-
-  defp rsvpd?(user, show) do
-    event =
-      from(
-        e in Event,
-        where:
-          e.channel_id == ^show.user_id and
-            e.user_id == ^user.id and
-            (e.name == :rsvpd or
-               e.name == :unrsvpd),
-        order_by: [desc: e.inserted_at],
-        limit: 1
-      )
-      |> Repo.one()
-
-    event && event.name == :rsvpd
-  end
-
-  defp fetch_attendees(show) do
-    # Get the latest relevant events (:rsvpd and :unrsvpd) for each user
-    latest_events_query =
-      from(e in Event,
-        where: e.channel_id == ^show.user_id and e.name in [:rsvpd, :unrsvpd],
-        order_by: [desc: e.inserted_at],
-        distinct: e.user_id
-      )
-
-    # Join user data and filter for :rsvpd events
-    from(e in subquery(latest_events_query),
-      join: u in User,
-      on: e.user_id == u.id,
-      join: i in Identity,
-      on: i.user_id == u.id and i.provider == "github",
-      select_merge: %{
-        user_handle: u.handle,
-        user_display_name: coalesce(u.name, u.handle),
-        user_email: u.email,
-        user_avatar_url: u.avatar_url,
-        user_github_handle: i.provider_login
-      },
-      where: e.name == :rsvpd,
-      order_by: [desc: e.inserted_at, desc: e.id]
-    )
-    |> Repo.all()
+     |> assign(:attendees, Events.fetch_attendees(socket.assigns.show))}
   end
 end
