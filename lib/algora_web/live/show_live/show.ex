@@ -11,7 +11,7 @@ defmodule AlgoraWeb.ShowLive.Show do
     <div class="text-white min-h-screen p-8">
       <div class="flex flex-col md:grid md:grid-cols-3 gap-6">
         <div class="md:col-span-1 bg-white/5 ring-1 ring-white/15 rounded-lg p-6 space-y-6">
-          <img src={@show.image_url} class="w-[250px] rounded-lg" />
+          <img src={@show.image_url} class="h-[250px] rounded-lg" />
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
               <span class="font-bold"><%= @channel.name %></span>
