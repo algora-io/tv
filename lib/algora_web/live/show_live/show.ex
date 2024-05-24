@@ -14,6 +14,13 @@ defmodule AlgoraWeb.ShowLive.Show do
           <img src={@show.image_url} class="h-[250px] rounded-lg" />
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
+              <span class="relative ring-4 ring-[#15122c] flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                <img
+                  class="aspect-square h-full w-full"
+                  alt={@channel.name}
+                  src={@channel.avatar_url}
+                />
+              </span>
               <span class="font-bold"><%= @channel.name %></span>
               <.link
                 :if={@channel.twitter_url}
@@ -37,7 +44,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                 </svg>
               </.link>
             </div>
-            <div :if={!@owns_show?}>
+            <div :if={!@owns_show?} class="pt-2">
               <.button :if={@current_user} phx-click="toggle_subscription">
                 <%= if @subscribed? do %>
                   Unsubscribe
@@ -51,7 +58,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                 </.link>
               </.button>
             </div>
-            <div :if={@owns_show?}>
+            <div :if={@owns_show?} class="pt-2">
               <.button>
                 <.link patch={~p"/shows/#{@show.slug}/edit"}>
                   Edit show
@@ -67,7 +74,7 @@ defmodule AlgoraWeb.ShowLive.Show do
               <div class="flex -space-x-1">
                 <span
                   :for={attendee <- @attendees |> Enum.take(@max_attendee_avatars_count)}
-                  class="relative ring-4 ring-gray-950 flex h-10 w-10 shrink-0 overflow-hidden rounded-full"
+                  class="relative ring-4 ring-[#15122c] flex h-10 w-10 shrink-0 overflow-hidden rounded-full"
                 >
                   <img
                     class="aspect-square h-full w-full"
