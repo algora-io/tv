@@ -37,18 +37,27 @@ defmodule AlgoraWeb.ShowLive.Show do
                 </svg>
               </.link>
             </div>
-            <.button :if={@current_user} phx-click="toggle_subscription">
-              <%= if @subscribed? do %>
-                Unsubscribe
-              <% else %>
-                Subscribe
-              <% end %>
-            </.button>
-            <.button :if={!@current_user && @authorize_url}>
-              <.link navigate={@authorize_url}>
-                Subscribe
-              </.link>
-            </.button>
+            <div :if={!@owns_show?}>
+              <.button :if={@current_user} phx-click="toggle_subscription">
+                <%= if @subscribed? do %>
+                  Unsubscribe
+                <% else %>
+                  Subscribe
+                <% end %>
+              </.button>
+              <.button :if={!@current_user && @authorize_url}>
+                <.link navigate={@authorize_url}>
+                  Subscribe
+                </.link>
+              </.button>
+            </div>
+            <div :if={@owns_show?}>
+              <.button>
+                <.link patch={~p"/shows/#{@show.slug}/edit"}>
+                  Edit show
+                </.link>
+              </.button>
+            </div>
           </div>
           <div :if={@attendees_count > 0} class="border-t border-white/15 pt-6 space-y-4">
             <div>
@@ -250,6 +259,7 @@ defmodule AlgoraWeb.ShowLive.Show do
      socket
      |> assign_attendees(show)
      |> assign(:show, show)
+     |> assign(:owns_show?, current_user && show.user_id == current_user.id)
      |> assign(:channel, channel)
      |> assign(:max_attendee_avatars_count, 5)
      |> assign(:max_attendee_names_count, 2)
