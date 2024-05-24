@@ -57,7 +57,7 @@ defmodule AlgoraWeb.ShowLive.Show do
             <div>
               <div class="flex -space-x-1">
                 <span
-                  :for={attendee <- @attendees |> Enum.take(5)}
+                  :for={attendee <- @attendees |> Enum.take(@max_attendee_avatars_count)}
                   class="relative ring-4 ring-gray-950 flex h-10 w-10 shrink-0 overflow-hidden rounded-full"
                 >
                   <img
@@ -69,14 +69,22 @@ defmodule AlgoraWeb.ShowLive.Show do
               </div>
               <div :if={@attendees_count > 0} class="mt-2">
                 <span
-                  :for={{attendee, i} <- Enum.with_index(@attendees) |> Enum.take(2)}
+                  :for={
+                    {attendee, i} <-
+                      Enum.with_index(@attendees) |> Enum.take(@max_attendee_names_count)
+                  }
                   class="font-medium"
                 >
-                  <span :if={i != 0}>, </span><span><%= attendee.user_display_name %></span>
+                  <span :if={i != 0} class="-ml-1">, </span><span><%= attendee.user_display_name %></span>
                 </span>
-                <span :if={@attendees_count > 2} class="font-medium">
-                  and <span :if={@attendees_count == 3}><%= @attendees |> Enum.at(2) %></span>
-                  <span :if={@attendees_count > 3}><%= @attendees_count - 2 %> others</span>
+                <span :if={@attendees_count > @max_attendee_names_count} class="font-medium">
+                  and
+                  <span :if={@attendees_count == @max_attendee_names_count + 1}>
+                    <%= @attendees |> Enum.at(@max_attendee_names_count) %>
+                  </span>
+                  <span :if={@attendees_count != @max_attendee_names_count + 1}>
+                    <%= @attendees_count - @max_attendee_names_count %> others
+                  </span>
                 </span>
               </div>
             </div>
@@ -232,6 +240,8 @@ defmodule AlgoraWeb.ShowLive.Show do
      |> assign(:channel, channel)
      |> assign(:attendees, attendees)
      |> assign(:attendees_count, length(attendees))
+     |> assign(:max_attendee_avatars_count, 5)
+     |> assign(:max_attendee_names_count, 2)
      |> assign(:subscribed?, Events.subscribed?(current_user, channel))
      |> assign(:rsvpd?, Events.rsvpd?(current_user, channel))
      |> stream(:videos, videos)}
