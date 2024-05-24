@@ -496,7 +496,7 @@ defmodule AlgoraWeb.CoreComponents do
                 <button
                   phx-click={hide_modal(@on_cancel, @id)}
                   type="button"
-                  class="-m-3 flex-none p-3 opacity-20 hover:opacity-40"
+                  class="-m-3 flex-none p-3 opacity-20 hover:opacity-40 focus:outline-none focus:opacity-40"
                   aria-label={gettext("close")}
                 >
                   <Heroicons.x_mark solid class="w-5 h-5" />
