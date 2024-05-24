@@ -23,6 +23,10 @@ defmodule Algora.Repo.Migrations.CreateShows do
       add :show_id, references(:shows)
     end
 
+    alter table(:users) do
+      add :twitter_url, :string
+    end
+
     create unique_index(:shows, [:slug])
     create index(:shows, [:user_id])
     create index(:events, [:show_id])

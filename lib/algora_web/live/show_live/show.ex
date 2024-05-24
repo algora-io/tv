@@ -17,12 +17,12 @@ defmodule AlgoraWeb.ShowLive.Show do
           <img src={@show.image_url} class="w-[250px] rounded-lg" />
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
-              <span class="font-bold"><%= @host.display_name %></span>
+              <span class="font-bold"><%= @channel.name %></span>
               <.link
-                :if={@host.twitter_url}
+                :if={@channel.twitter_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                href={@host.twitter_url}
+                href={@channel.twitter_url}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -166,7 +166,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                 </div>
               </div>
               <.link
-                href={@show.url || ~p"/#{@host.handle}/latest"}
+                href={@show.url || ~p"/#{@channel.handle}/latest"}
                 target="_blank"
                 rel="noopener"
                 class="block bg-gray-950/75 p-4 rounded-lg"
@@ -190,7 +190,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                     <div>
                       <div class="text-sm font-semibold">Watch live</div>
                       <div class="text-sm">
-                        <%= @show.url || "tv.algora.io/#{@host.handle}/latest" %>
+                        <%= @show.url || "tv.algora.io/#{@channel.handle}/latest" %>
                       </div>
                     </div>
                   </div>
@@ -226,20 +226,11 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     videos = Library.list_channel_videos(channel, 50)
 
-    host = %{
-      handle: "rfc",
-      display_name: "Andreas Klinger",
-      avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4",
-      twitter_url: "https://x.com/andreasklinger"
-    }
-
-    attendees = fetch_attendees(show)
-
     socket =
       socket
       |> assign(:show, show)
-      |> assign(:host, host)
-      |> assign(:attendees, attendees)
+      |> assign(:channel, channel)
+      |> assign(:attendees, fetch_attendees(show))
       |> assign(:subscribed?, subscribed?(current_user, channel))
       |> assign(:rsvpd?, rsvpd?(current_user, channel))
       |> stream(:videos, videos)
@@ -275,7 +266,11 @@ defmodule AlgoraWeb.ShowLive.Show do
 
   def handle_event("toggle_rsvp", _params, socket) do
     toggle_rsvp_event(socket.assigns.current_user, socket.assigns.show)
-    {:noreply, socket |> assign(rsvpd?: !socket.assigns.rsvpd?)}
+
+    {:noreply,
+     socket
+     |> assign(:rsvpd?, !socket.assigns.rsvpd?)
+     |> assign(:attendees, fetch_attendees(socket.assigns.show))}
   end
 
   defp toggle_subscription_event(user, show) do
