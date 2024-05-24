@@ -1,8 +1,11 @@
 defmodule AlgoraWeb.ShowLive.Show do
   use AlgoraWeb, :live_view
+  import Ecto.Query, warn: false
 
-  alias Algora.Shows
-  alias Algora.Library
+  alias Algora.{Shows, Library, Repo}
+  alias Algora.Accounts.{User, Identity}
+  alias Algora.Events.Event
+  alias Algora.Accounts
   alias AlgoraWeb.LayoutComponent
 
   @impl true
@@ -37,8 +40,17 @@ defmodule AlgoraWeb.ShowLive.Show do
                 </svg>
               </.link>
             </div>
-            <.button>
-              Subscribe
+            <.button :if={@current_user} phx-click="toggle_subscription">
+              <%= if @subscribed? do %>
+                Unsubscribe
+              <% else %>
+                Subscribe
+              <% end %>
+            </.button>
+            <.button :if={!@current_user && @authorize_url}>
+              <.link navigate={@authorize_url}>
+                Subscribe
+              </.link>
             </.button>
           </div>
           <div class="border-t border-[#374151] pt-6 space-y-4">
@@ -53,15 +65,18 @@ defmodule AlgoraWeb.ShowLive.Show do
                 >
                   <img
                     class="aspect-square h-full w-full"
-                    alt={attendee.display_name}
-                    src={attendee.avatar_url}
+                    alt={attendee.user_display_name}
+                    src={attendee.user_avatar_url}
                   />
                 </span>
               </div>
               <div :if={length(@attendees) > 0} class="mt-2">
                 <div>
-                  <span :for={attendee <- @attendees |> Enum.take(2)} class="font-medium">
-                    <%= attendee.display_name %>,
+                  <span
+                    :for={{attendee, i} <- Enum.with_index(@attendees) |> Enum.take(2)}
+                    class="font-medium"
+                  >
+                    <span :if={i != 0}>, </span><%= attendee.user_display_name %>
                   </span>
                 </div>
                 <span :if={length(@attendees) > 2} class="font-medium">
@@ -69,8 +84,34 @@ defmodule AlgoraWeb.ShowLive.Show do
                 </span>
               </div>
             </div>
-            <.button>
+            <.button :if={@current_user && !@rsvpd?} phx-click="toggle_rsvp">
               Attend
+            </.button>
+            <.button
+              :if={@rsvpd?}
+              disabled
+              class="bg-green-600 hover:bg-green-500 text-white flex items-center focus:text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-5 w-5 -ml-0.5"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l5 5l10 -10" />
+              </svg>
+              <span class="ml-1">Attending</span>
+            </.button>
+            <.button :if={!@current_user && @authorize_url}>
+              <.link navigate={@authorize_url}>
+                Attend
+              </.link>
             </.button>
           </div>
         </div>
@@ -179,12 +220,11 @@ defmodule AlgoraWeb.ShowLive.Show do
   def mount(%{"slug" => slug}, _session, socket) do
     %{current_user: current_user} = socket.assigns
 
-    # TODO:
-    channel = current_user |> Library.get_channel!()
+    show = Shows.get_show_by_fields!(slug: slug)
+
+    channel = Accounts.get_user(show.user_id) |> Library.get_channel!()
 
     videos = Library.list_channel_videos(channel, 50)
-
-    show = Shows.get_show_by_fields!(slug: slug)
 
     host = %{
       handle: "rfc",
@@ -193,34 +233,141 @@ defmodule AlgoraWeb.ShowLive.Show do
       twitter_url: "https://x.com/andreasklinger"
     }
 
-    attendees =
-      1..5
-      |> Enum.map(fn _ ->
-        %{
-          display_name: "Andreas Klinger",
-          avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4"
-        }
-      end)
+    attendees = fetch_attendees(show)
 
     socket =
       socket
       |> assign(:show, show)
       |> assign(:host, host)
       |> assign(:attendees, attendees)
+      |> assign(:subscribed?, subscribed?(current_user, channel))
+      |> assign(:rsvpd?, rsvpd?(current_user, channel))
       |> stream(:videos, videos)
 
     {:ok, socket}
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
+  def handle_params(params, url, socket) do
+    %{path: path} = URI.parse(url)
     LayoutComponent.hide_modal()
-    {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+
+    {:noreply,
+     socket
+     |> assign(:authorize_url, Algora.Github.authorize_url(path))
+     |> apply_action(socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :show, _params) do
+  defp apply_action(socket, :show, %{"slug" => slug}) do
+    show = Shows.get_show_by_fields!(slug: slug)
+
     socket
-    |> assign(:page_title, "TODO")
-    |> assign(:page_description, "TODO")
+    |> assign(:page_title, show.title)
+    |> assign(:page_description, show.description)
+  end
+
+  @impl true
+  def handle_event("toggle_subscription", _params, socket) do
+    toggle_subscription_event(socket.assigns.current_user, socket.assigns.show)
+    {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
+  end
+
+  def handle_event("toggle_rsvp", _params, socket) do
+    toggle_rsvp_event(socket.assigns.current_user, socket.assigns.show)
+    {:noreply, socket |> assign(rsvpd?: !socket.assigns.rsvpd?)}
+  end
+
+  defp toggle_subscription_event(user, show) do
+    name = if subscribed?(user, show), do: :unsubscribed, else: :subscribed
+
+    %Event{
+      actor_id: "user_#{user.id}",
+      user_id: user.id,
+      show_id: show.id,
+      channel_id: show.user_id,
+      name: name
+    }
+    |> Event.changeset(%{})
+    |> Repo.insert()
+  end
+
+  defp toggle_rsvp_event(user, show) do
+    name = if rsvpd?(user, show), do: :unrsvpd, else: :rsvpd
+
+    %Event{
+      actor_id: "user_#{user.id}",
+      user_id: user.id,
+      show_id: show.id,
+      channel_id: show.user_id,
+      name: name
+    }
+    |> Event.changeset(%{})
+    |> Repo.insert()
+  end
+
+  defp subscribed?(nil, _show), do: false
+
+  defp subscribed?(user, show) do
+    event =
+      from(
+        e in Event,
+        where:
+          e.channel_id == ^show.user_id and
+            e.user_id == ^user.id and
+            (e.name == :subscribed or
+               e.name == :unsubscribed),
+        order_by: [desc: e.inserted_at],
+        limit: 1
+      )
+      |> Repo.one()
+
+    event && event.name == :subscribed
+  end
+
+  defp rsvpd?(nil, _show), do: false
+
+  defp rsvpd?(user, show) do
+    event =
+      from(
+        e in Event,
+        where:
+          e.channel_id == ^show.user_id and
+            e.user_id == ^user.id and
+            (e.name == :rsvpd or
+               e.name == :unrsvpd),
+        order_by: [desc: e.inserted_at],
+        limit: 1
+      )
+      |> Repo.one()
+
+    event && event.name == :rsvpd
+  end
+
+  defp fetch_attendees(show) do
+    # Get the latest relevant events (:rsvpd and :unrsvpd) for each user
+    latest_events_query =
+      from(e in Event,
+        where: e.channel_id == ^show.user_id and e.name in [:rsvpd, :unrsvpd],
+        order_by: [desc: e.inserted_at],
+        distinct: e.user_id
+      )
+
+    # Join user data and filter for :rsvpd events
+    from(e in subquery(latest_events_query),
+      join: u in User,
+      on: e.user_id == u.id,
+      join: i in Identity,
+      on: i.user_id == u.id and i.provider == "github",
+      select_merge: %{
+        user_handle: u.handle,
+        user_display_name: coalesce(u.name, u.handle),
+        user_email: u.email,
+        user_avatar_url: u.avatar_url,
+        user_github_handle: i.provider_login
+      },
+      where: e.name == :rsvpd,
+      order_by: [desc: e.inserted_at, desc: e.id]
+    )
+    |> Repo.all()
   end
 end

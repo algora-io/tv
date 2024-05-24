@@ -10,6 +10,7 @@ defmodule Algora.Shows.Show do
     field :slug, :string
     field :scheduled_for, :naive_datetime
     field :image_url, :string
+    field :og_image_url, :string
     field :url, :string
 
     belongs_to :user, User
