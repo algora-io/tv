@@ -264,6 +264,7 @@ defmodule AlgoraWeb.ShowLive.Show do
     socket
     |> assign(:page_title, show.title)
     |> assign(:page_description, show.description)
+    |> assign(:page_image, show.og_image_url)
   end
 
   @impl true
