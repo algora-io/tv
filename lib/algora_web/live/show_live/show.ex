@@ -81,19 +81,13 @@ defmodule AlgoraWeb.ShowLive.Show do
               <div class="mt-4 space-y-4">
                 <div>
                   <h2 class="text-2xl font-bold">About</h2>
-                  <p class="text-sm mt-2">Deeeemoooo time :)</p>
-                  <p class="text-sm mt-2">
-                    Founders demo'ing their prototypes and new products
-                  </p>
-                  <p class="text-sm mt-2">
-                    I will give investor POV feedback if useful!
-                  </p>
+                  <p class="typography whitespace-pre"><%= @show.description %></p>
                 </div>
               </div>
             </div>
 
             <div class="space-y-2 w-full max-w-xs">
-              <div class="bg-gray-950/75 p-4 rounded-lg">
+              <div :if={@show.scheduled_for} class="bg-gray-950/75 p-4 rounded-lg">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-2">
                     <svg
@@ -114,8 +108,18 @@ defmodule AlgoraWeb.ShowLive.Show do
                       <path d="M3 10h18"></path>
                     </svg>
                     <div>
-                      <div class="text-sm font-semibold">Friday, Jun 07</div>
-                      <div class="text-sm">12:00 p.m. EST</div>
+                      <div class="text-sm font-semibold">
+                        <%= @show.scheduled_for
+                        |> Timex.to_datetime("Etc/UTC")
+                        |> Timex.Timezone.convert("America/New_York")
+                        |> Timex.format!("{WDfull}, {Mshort} {D}") %>
+                      </div>
+                      <div class="text-sm">
+                        <%= @show.scheduled_for
+                        |> Timex.to_datetime("Etc/UTC")
+                        |> Timex.Timezone.convert("America/New_York")
+                        |> Timex.format!("{h12}:{m} {am}, Eastern Time") %>
+                      </div>
                     </div>
                   </div>
                 </div>
