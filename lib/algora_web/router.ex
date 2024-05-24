@@ -73,7 +73,7 @@ defmodule AlgoraWeb.Router do
       ] do
       live "/admin/shows", ShowLive.Index, :index
       live "/admin/shows/new", ShowLive.Index, :new
-      live "/admin/shows/:id/edit", ShowLive.Index, :edit
+      live "/admin/shows/:slug/edit", ShowLive.Show, :edit
       live "/admin/shows/:id/show/edit", ShowLive.Show, :edit
     end
 
@@ -99,6 +99,7 @@ defmodule AlgoraWeb.Router do
       live "/og/cossgpt", COSSGPTOGLive, :index
 
       live "/shows/:slug", ShowLive.Show, :show
+      live "/shows/:slug/edit", ShowLive.Show, :edit
 
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show

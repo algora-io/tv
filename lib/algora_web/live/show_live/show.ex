@@ -219,6 +219,21 @@ defmodule AlgoraWeb.ShowLive.Show do
         </div>
       </div>
     </div>
+    <.modal
+      :if={@live_action in [:new, :edit]}
+      id="show-modal"
+      show
+      on_cancel={JS.patch(~p"/shows/#{@show.slug}")}
+    >
+      <.live_component
+        module={AlgoraWeb.ShowLive.FormComponent}
+        id={@show.id || :new}
+        title={@page_title}
+        action={@live_action}
+        show={@show}
+        patch={~p"/shows"}
+      />
+    </.modal>
     """
   end
 
@@ -274,6 +289,15 @@ defmodule AlgoraWeb.ShowLive.Show do
   end
 
   defp apply_action(socket, :show, %{"slug" => slug}) do
+    show = Shows.get_show_by_fields!(slug: slug)
+
+    socket
+    |> assign(:page_title, show.title)
+    |> assign(:page_description, show.description)
+    |> assign(:page_image, show.og_image_url)
+  end
+
+  defp apply_action(socket, :edit, %{"slug" => slug}) do
     show = Shows.get_show_by_fields!(slug: slug)
 
     socket

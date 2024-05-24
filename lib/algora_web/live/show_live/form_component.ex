@@ -7,9 +7,8 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.header>
+      <.header class="pb-6">
         <%= @title %>
-        <:subtitle>Use this form to manage show records in your database.</:subtitle>
       </.header>
 
       <.simple_form
@@ -20,11 +19,17 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
         phx-submit="save"
       >
         <.input field={@form[:title]} type="text" label="Title" />
-        <.input field={@form[:slug]} type="text" label="Slug" />
-        <.input field={@form[:scheduled_for]} type="datetime-local" label="Scheduled for" />
-        <.input field={@form[:image_url]} type="text" label="Image url" />
+        <.input field={@form[:description]} type="textarea" label="Description" />
+        <div class="relative">
+          <div class="absolute text-sm start-0 flex items-center ps-3 top-10 mt-px pointer-events-none text-gray-400">
+            tv.algora.io/shows/
+          </div>
+          <.input field={@form[:slug]} type="text" label="URL" class="ps-[8.25rem]" />
+        </div>
+        <.input field={@form[:scheduled_for]} type="datetime-local" label="Date" />
+        <.input field={@form[:image_url]} type="text" label="Image URL" />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Show</.button>
+          <.button phx-disable-with="Saving...">Save</.button>
         </:actions>
       </.simple_form>
     </div>
