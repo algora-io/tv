@@ -232,14 +232,11 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     videos = Library.list_channel_videos(channel, 50)
 
-    attendees = Events.fetch_attendees(show)
-
     {:ok,
      socket
+     |> assign_attendees(show)
      |> assign(:show, show)
      |> assign(:channel, channel)
-     |> assign(:attendees, attendees)
-     |> assign(:attendees_count, length(attendees))
      |> assign(:max_attendee_avatars_count, 5)
      |> assign(:max_attendee_names_count, 2)
      |> assign(:subscribed?, Events.subscribed?(current_user, channel))
@@ -258,15 +255,6 @@ defmodule AlgoraWeb.ShowLive.Show do
      |> apply_action(socket.assigns.live_action, params)}
   end
 
-  defp apply_action(socket, :show, %{"slug" => slug}) do
-    show = Shows.get_show_by_fields!(slug: slug)
-
-    socket
-    |> assign(:page_title, show.title)
-    |> assign(:page_description, show.description)
-    |> assign(:page_image, show.og_image_url)
-  end
-
   @impl true
   def handle_event("toggle_subscription", _params, socket) do
     Events.toggle_subscription_event(socket.assigns.current_user, socket.assigns.show)
@@ -281,7 +269,24 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     {:noreply,
      socket
-     |> assign(:rsvpd?, !socket.assigns.rsvpd?)
-     |> assign(:attendees, Events.fetch_attendees(socket.assigns.show))}
+     |> assign_attendees(socket.assigns.show)
+     |> assign(:rsvpd?, !socket.assigns.rsvpd?)}
+  end
+
+  defp apply_action(socket, :show, %{"slug" => slug}) do
+    show = Shows.get_show_by_fields!(slug: slug)
+
+    socket
+    |> assign(:page_title, show.title)
+    |> assign(:page_description, show.description)
+    |> assign(:page_image, show.og_image_url)
+  end
+
+  defp assign_attendees(socket, show) do
+    attendees = Events.fetch_attendees(show)
+
+    socket
+    |> assign(:attendees, attendees)
+    |> assign(:attendees_count, length(attendees))
   end
 end
