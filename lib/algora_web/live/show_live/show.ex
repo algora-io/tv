@@ -50,7 +50,7 @@ defmodule AlgoraWeb.ShowLive.Show do
               </.link>
             </.button>
           </div>
-          <div class="border-t border-white/15 pt-6 space-y-4">
+          <div :if={@attendees_count > 0} class="border-t border-white/15 pt-6 space-y-4">
             <div>
               <span class="font-medium"><%= @attendees_count %> Attending</span>
             </div>
@@ -67,7 +67,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                   />
                 </span>
               </div>
-              <div :if={@attendees_count > 0} class="mt-2">
+              <div class="mt-2">
                 <span
                   :for={
                     {attendee, i} <-
