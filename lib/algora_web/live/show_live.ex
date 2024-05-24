@@ -15,7 +15,12 @@ defmodule AlgoraWeb.ShowLive do
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
               <span class="font-bold"><%= @show.host.display_name %></span>
-              <.link :if={@show.host.twitter_url} href={@show.host.twitter_url}>
+              <.link
+                :if={@show.host.twitter_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                href={@show.host.twitter_url}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -73,7 +78,7 @@ defmodule AlgoraWeb.ShowLive do
           <div class="flex items-start justify-between">
             <div>
               <h1 class="text-4xl font-bold"><%= @show.title %></h1>
-              <div class="mt-8 space-y-4">
+              <div class="mt-4 space-y-4">
                 <div>
                   <h2 class="text-2xl font-bold">About</h2>
                   <p class="text-sm mt-2">Deeeemoooo time :)</p>
@@ -101,7 +106,7 @@ defmodule AlgoraWeb.ShowLive do
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="h-6 w-6 text-green-400"
+                      class="h-6 w-6 text-green-300"
                     >
                       <path d="M8 2v4"></path>
                       <path d="M16 2v4"></path>
@@ -109,13 +114,18 @@ defmodule AlgoraWeb.ShowLive do
                       <path d="M3 10h18"></path>
                     </svg>
                     <div>
-                      <div class="text-sm font-semibold">Friday, May 17</div>
-                      <div class="text-sm">7:00 p.m. - 8:00 p.m. GMT+3</div>
+                      <div class="text-sm font-semibold">Friday, Jun 07</div>
+                      <div class="text-sm">12:00 p.m. EST</div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="bg-gray-950/75 p-4 rounded-lg">
+              <.link
+                href="https://rfc.to"
+                target="_blank"
+                rel="noopener"
+                class="block bg-gray-950/75 p-4 rounded-lg"
+              >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-2">
                     <svg
@@ -138,7 +148,7 @@ defmodule AlgoraWeb.ShowLive do
                     </div>
                   </div>
                 </div>
-              </div>
+              </.link>
             </div>
           </div>
 
