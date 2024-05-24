@@ -52,7 +52,7 @@ defmodule AlgoraWeb.ShowLive.Show do
           </div>
           <div class="border-t border-white/15 pt-6 space-y-4">
             <div>
-              <span class="font-medium"><%= length(@attendees) %> Attending</span>
+              <span class="font-medium"><%= @attendees_count %> Attending</span>
             </div>
             <div>
               <div class="flex -space-x-1">
@@ -67,49 +67,19 @@ defmodule AlgoraWeb.ShowLive.Show do
                   />
                 </span>
               </div>
-              <div :if={length(@attendees) > 0} class="mt-2">
-                <div>
-                  <span
-                    :for={{attendee, i} <- Enum.with_index(@attendees) |> Enum.take(2)}
-                    class="font-medium"
-                  >
-                    <span :if={i != 0}>, </span><%= attendee.user_display_name %>
-                  </span>
-                </div>
-                <span :if={length(@attendees) > 2} class="font-medium">
-                  and <%= length(@attendees) - 2 %> others
+              <div :if={@attendees_count > 0} class="mt-2">
+                <span
+                  :for={{attendee, i} <- Enum.with_index(@attendees) |> Enum.take(2)}
+                  class="font-medium"
+                >
+                  <span :if={i != 0}>, </span><span><%= attendee.user_display_name %></span>
+                </span>
+                <span :if={@attendees_count > 2} class="font-medium">
+                  and <span :if={@attendees_count == 3}><%= @attendees |> Enum.at(2) %></span>
+                  <span :if={@attendees_count > 3}><%= @attendees_count - 2 %> others</span>
                 </span>
               </div>
             </div>
-            <.button :if={@current_user && !@rsvpd?} phx-click="toggle_rsvp">
-              Attend
-            </.button>
-            <.button
-              :if={@rsvpd?}
-              disabled
-              class="bg-green-600 hover:bg-green-500 text-white flex items-center focus:text-white"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="h-5 w-5 -ml-0.5"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l5 5l10 -10" />
-              </svg>
-              <span class="ml-1">Attending</span>
-            </.button>
-            <.button :if={!@current_user && @authorize_url}>
-              <.link navigate={@authorize_url}>
-                Attend
-              </.link>
-            </.button>
           </div>
         </div>
         <div class="md:col-span-2 bg-white/5 ring-1 ring-white/15 rounded-lg p-6 space-y-6">
@@ -124,10 +94,10 @@ defmodule AlgoraWeb.ShowLive.Show do
               </div>
             </div>
 
-            <div class="space-y-2 w-full max-w-xs">
+            <div class="space-y-2 w-full max-w-sm">
               <div :if={@show.scheduled_for} class="bg-gray-950/75 p-4 rounded-lg">
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-2">
+                  <div class="flex items-center space-x-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -145,7 +115,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                       <rect width="18" height="18" x="3" y="4" rx="2"></rect>
                       <path d="M3 10h18"></path>
                     </svg>
-                    <div>
+                    <div class="shrink-0">
                       <div class="text-sm font-semibold">
                         <%= @show.scheduled_for
                         |> Timex.to_datetime("Etc/UTC")
@@ -160,6 +130,35 @@ defmodule AlgoraWeb.ShowLive.Show do
                       </div>
                     </div>
                   </div>
+                  <.button :if={@current_user && !@rsvpd?} phx-click="toggle_rsvp">
+                    Attend
+                  </.button>
+                  <.button
+                    :if={@rsvpd?}
+                    disabled
+                    class="bg-green-600 hover:bg-green-600 disabled:opacity-100 text-white flex items-center active:text-white"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-5 w-5 -ml-0.5"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l5 5l10 -10" />
+                    </svg>
+                    <span class="ml-1">Attending</span>
+                  </.button>
+                  <.button :if={!@current_user && @authorize_url}>
+                    <.link navigate={@authorize_url}>
+                      Attend
+                    </.link>
+                  </.button>
                 </div>
               </div>
               <.link
@@ -169,7 +168,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                 class="block bg-gray-950/75 p-4 rounded-lg"
               >
                 <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-2">
+                  <div class="flex items-center space-x-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -223,11 +222,14 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     videos = Library.list_channel_videos(channel, 50)
 
+    attendees = Events.fetch_attendees(show)
+
     {:ok,
      socket
      |> assign(:show, show)
      |> assign(:channel, channel)
-     |> assign(:attendees, Events.fetch_attendees(show))
+     |> assign(:attendees, attendees)
+     |> assign(:attendees_count, length(attendees))
      |> assign(:subscribed?, Events.subscribed?(current_user, channel))
      |> assign(:rsvpd?, Events.rsvpd?(current_user, channel))
      |> stream(:videos, videos)}
