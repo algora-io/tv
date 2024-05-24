@@ -197,19 +197,9 @@ defmodule AlgoraWeb.ChannelLive do
       </div>
 
       <h2 class="text-gray-400 text-xs font-medium uppercase tracking-wide px-4 pt-4">
-        Past sessions
+        Library
       </h2>
-      <div class="align-middle inline-block min-w-full">
-        <div id={@id} class="px-4 min-w-full">
-          <div
-            id={"#{@id}-body"}
-            class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-3"
-            phx-update="stream"
-          >
-            <.video_entry :for={{_id, video} <- @streams.videos} video={video} />
-          </div>
-        </div>
-      </div>
+      <.playlist id="playlist" videos={@streams.videos} />
     </div>
     """
   end
