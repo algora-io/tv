@@ -18,18 +18,18 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <div class="flex flex-col md:flex-row gap-6 justify-between">
-          <div class="w-full space-y-6">
+        <div class="flex flex-col md:flex-row gap-8 justify-between">
+          <div class="w-full space-y-8">
             <.input field={@form[:title]} type="text" label="Title" />
-            <.input field={@form[:description]} type="textarea" label="Description" rows={5} />
+            <.input field={@form[:description]} type="textarea" label="Description" rows={3} />
           </div>
           <div class="shrink-0">
             <label for="show_title" class="block text-sm font-semibold leading-6 text-gray-100 mb-2">
               Cover image
             </label>
-            <div id="show_image" phx-drop-target={@uploads.avatar.ref} class="relative">
+            <div id="show_image" phx-drop-target={@uploads.cover_image.ref} class="relative">
               <.live_file_input
-                upload={@uploads.avatar}
+                upload={@uploads.cover_image}
                 class="absolute inset-0 opacity-0 cursor-pointer"
               />
               <img src={@show.image_url} class="w-[200px] rounded-lg" />
@@ -44,7 +44,7 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
         </div>
         <.input field={@form[:scheduled_for]} type="datetime-local" label="Date (UTC)" />
         <%!-- <.input field={@form[:image_url]} type="text" label="Image URL" /> --%>
-        <%= for err <- upload_errors(@uploads.avatar) do %>
+        <%= for err <- upload_errors(@uploads.cover_image) do %>
           <p class="alert alert-danger"><%= error_to_string(err) %></p>
         <% end %>
         <:actions>
@@ -60,8 +60,8 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
     {:ok,
      socket
      |> assign(:uploaded_files, [])
-     |> allow_upload(:avatar,
-       accept: avatar_file_types(),
+     |> allow_upload(:cover_image,
+       accept: accept(),
        max_file_size: max_file_size() * 1_000_000,
        max_entries: 1,
        auto_upload: true,
@@ -94,10 +94,10 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
   end
 
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    {:noreply, cancel_upload(socket, :avatar, ref)}
+    {:noreply, cancel_upload(socket, :cover_image, ref)}
   end
 
-  defp handle_progress(:avatar, entry, socket) do
+  defp handle_progress(:cover_image, entry, socket) do
     if entry.done? do
       show =
         consume_uploaded_entry(socket, entry, fn %{path: path} = _meta ->
@@ -163,11 +163,11 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
   end
 
   defp error_to_string(:not_accepted) do
-    "Uploaded file is not a valid image. Only #{avatar_file_types() |> Enum.intersperse(", ") |> Enum.join()} files are allowed."
+    "Uploaded file is not a valid image. Only #{accept() |> Enum.intersperse(", ") |> Enum.join()} files are allowed."
   end
 
   defp max_file_size, do: 10
-  defp avatar_file_types, do: ~w(.png .jpg .jpeg .gif)
+  defp accept, do: ~w(.png .jpg .jpeg .gif)
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end
