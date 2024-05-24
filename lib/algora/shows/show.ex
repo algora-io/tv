@@ -4,9 +4,11 @@ defmodule Algora.Shows.Show do
 
   schema "shows" do
     field :title, :string
+    field :description, :string
     field :slug, :string
     field :scheduled_for, :naive_datetime
     field :image_url, :string
+    field :url, :string
     field :user_id, :id
 
     timestamps()
