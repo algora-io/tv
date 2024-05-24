@@ -21,14 +21,19 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
         <div class="flex flex-col md:flex-row gap-6 justify-between">
           <div class="w-full space-y-6">
             <.input field={@form[:title]} type="text" label="Title" />
-            <.input field={@form[:description]} type="textarea" label="Description" />
+            <.input field={@form[:description]} type="textarea" label="Description" rows={5} />
           </div>
-          <div phx-drop-target={@uploads.avatar.ref} class="relative shrink-0">
+          <div class="shrink-0">
             <label for="show_title" class="block text-sm font-semibold leading-6 text-gray-100 mb-2">
               Cover image
             </label>
-            <img id="show_image" src={@show.image_url} class="w-[200px] rounded-lg" />
-            <.live_file_input upload={@uploads.avatar} />
+            <div id="show_image" phx-drop-target={@uploads.avatar.ref} class="relative">
+              <.live_file_input
+                upload={@uploads.avatar}
+                class="absolute inset-0 opacity-0 cursor-pointer"
+              />
+              <img src={@show.image_url} class="w-[200px] rounded-lg" />
+            </div>
           </div>
         </div>
         <div class="relative">
