@@ -53,7 +53,7 @@ defmodule AlgoraWeb.ShowLive.Show do
               </.link>
             </.button>
           </div>
-          <div class="border-t border-[#374151] pt-6 space-y-4">
+          <div class="border-t border-white/15 pt-6 space-y-4">
             <div>
               <span class="font-medium"><%= length(@attendees) %> Attending</span>
             </div>
@@ -200,7 +200,7 @@ defmodule AlgoraWeb.ShowLive.Show do
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-          <h2 class="border-t border-[#374151] pt-4 text-2xl font-bold">Past sessions</h2>
+          <h2 class="border-t border-white/15 pt-4 text-2xl font-bold">Past sessions</h2>
           <div id="past-sessions" class="mt-3 flex gap-8 overflow-x-scroll" phx-update="stream">
             <div :for={{_id, video} <- @streams.videos} class="max-w-xs shrink-0 w-full">
               <.link class="cursor-pointer truncate" href={~p"/#{video.channel_handle}/#{video.id}"}>
