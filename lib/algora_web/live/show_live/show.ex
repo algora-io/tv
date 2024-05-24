@@ -287,6 +287,11 @@ defmodule AlgoraWeb.ShowLive.Show do
      |> assign(:rsvpd?, !socket.assigns.rsvpd?)}
   end
 
+  @impl true
+  def handle_info({AlgoraWeb.ShowLive.FormComponent, {:saved, show}}, socket) do
+    {:noreply, socket |> assign(:show, show)}
+  end
+
   defp apply_action(socket, :show, %{"slug" => slug}) do
     show = Shows.get_show_by_fields!(slug: slug)
 

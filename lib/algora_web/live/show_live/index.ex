@@ -14,6 +14,11 @@ defmodule AlgoraWeb.ShowLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
+  @impl true
+  def handle_info({AlgoraWeb.ShowLive.FormComponent, {:saved, show}}, socket) do
+    {:noreply, socket |> assign(:show, show)}
+  end
+
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Show")
