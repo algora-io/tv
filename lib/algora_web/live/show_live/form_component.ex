@@ -63,12 +63,10 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
   defp save_show(socket, :edit, show_params) do
     case Shows.update_show(socket.assigns.show, show_params) do
       {:ok, show} ->
-        notify_parent({:saved, show})
-
         {:noreply,
          socket
          |> put_flash(:info, "Show updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_patch(to: ~p"/shows/#{show.slug}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -78,12 +76,10 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
   defp save_show(socket, :new, show_params) do
     case Shows.create_show(show_params) do
       {:ok, show} ->
-        notify_parent({:saved, show})
-
         {:noreply,
          socket
          |> put_flash(:info, "Show created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> push_patch(to: ~p"/shows/#{show.slug}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -93,6 +89,4 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

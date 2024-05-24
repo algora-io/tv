@@ -27,11 +27,6 @@ defmodule AlgoraWeb.ShowLive.Index do
   end
 
   @impl true
-  def handle_info({AlgoraWeb.ShowLive.FormComponent, {:saved, show}}, socket) do
-    {:noreply, stream_insert(socket, :shows, show)}
-  end
-
-  @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     show = Shows.get_show!(id)
     {:ok, _} = Shows.delete_show(show)

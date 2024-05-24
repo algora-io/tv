@@ -231,7 +231,6 @@ defmodule AlgoraWeb.ShowLive.Show do
         title={@page_title}
         action={@live_action}
         show={@show}
-        patch={~p"/shows"}
       />
     </.modal>
     """
