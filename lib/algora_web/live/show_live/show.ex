@@ -220,9 +220,13 @@ defmodule AlgoraWeb.ShowLive.Show do
               </div>
             </div>
           </div>
-          <div class="bg-white/5 ring-1 ring-white/15 rounded-lg p-6 space-y-6">
+          <div class="bg-white/5 ring-1 ring-white/15 rounded-lg p-6 pb-2 space-y-6">
             <h2 class="pt-4 text-2xl font-bold">Past sessions</h2>
-            <div id="past-sessions" class="mt-3 flex gap-8 overflow-x-scroll" phx-update="stream">
+            <div
+              id="past-sessions"
+              class="flex gap-8 overflow-x-scroll pb-4 scrollbar-thin"
+              phx-update="stream"
+            >
               <div :for={{_id, video} <- @streams.videos} class="max-w-xs shrink-0 w-full">
                 <.link class="cursor-pointer truncate" href={~p"/#{video.channel_handle}/#{video.id}"}>
                   <.video_thumbnail video={video} class="rounded-2xl" />
