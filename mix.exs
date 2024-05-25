@@ -52,6 +52,7 @@ defmodule Algora.MixProject do
       {:gettext, "~> 0.18"},
       {:heroicons, "~> 0.5.0"},
       {:hnswlib, "~> 0.1.0"},
+      {:icalendar, "~> 1.1.0"},
       {:image, "~> 0.37"},
       {:jason, "~> 1.2"},
       {:libcluster, "~> 3.3.1"},

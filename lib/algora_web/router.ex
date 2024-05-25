@@ -102,6 +102,8 @@ defmodule AlgoraWeb.Router do
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
 
+      get "/shows/:slug/event.ics", ShowCalendarController, :export
+
       get "/gh/:user_id/thumbnail", GithubController, :get_thumbnail
       get "/gh/:user_id/channel", GithubController, :get_channel
     end

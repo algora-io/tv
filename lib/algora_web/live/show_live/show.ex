@@ -153,6 +153,13 @@ defmodule AlgoraWeb.ShowLive.Show do
                           |> Timex.Timezone.convert("America/New_York")
                           |> Timex.format!("{h12}:{m} {am}, Eastern Time") %>
                         </div>
+                        <.link
+                          phx-hook="TimezoneDetector"
+                          class="text-sm underline"
+                          href={~p"/shows/#{@show.slug}/event.ics?tz=#{@current_user_tz}"}
+                        >
+                          Add to calendar
+                        </.link>
                       </div>
                     </div>
                     <.button :if={@current_user && !@rsvpd?} phx-click="toggle_rsvp">
@@ -269,6 +276,7 @@ defmodule AlgoraWeb.ShowLive.Show do
     {:ok,
      socket
      |> assign_attendees(show)
+     |> assign(:current_user_tz, "Etc/UTC")
      |> assign(:show, show)
      |> assign(:owns_show?, current_user && show.user_id == current_user.id)
      |> assign(:channel, channel)
@@ -306,6 +314,10 @@ defmodule AlgoraWeb.ShowLive.Show do
      socket
      |> assign_attendees(socket.assigns.show)
      |> assign(:rsvpd?, !socket.assigns.rsvpd?)}
+  end
+
+  def handle_event("get_timezone", %{"tz" => tz}, socket) do
+    {:noreply, socket |> assign(:current_user_tz, tz)}
   end
 
   @impl true

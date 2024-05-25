@@ -225,6 +225,13 @@ const Hooks = {
       }
     },
   },
+  TimezoneDetector: {
+    mounted() {
+      this.pushEvent("get_timezone", {
+        tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      });
+    },
+  },
   NavBar: {
     mounted() {
       const offset = 16;
