@@ -1,7 +1,7 @@
 <.header>
   Listing Shows
   <:actions>
-    <.link patch={~p"/admin/shows/new"}>
+    <.link patch={~p"/shows/new"}>
       <.button>New Show</.button>
     </.link>
   </:actions>
@@ -32,18 +32,13 @@
   </:action>
 </.table>
 
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="show-modal"
-  show
-  on_cancel={JS.patch(~p"/admin/shows")}
->
+<.modal :if={@live_action in [:new, :edit]} id="show-modal" show on_cancel={JS.patch(~p"/shows")}>
   <.live_component
     module={AlgoraWeb.ShowLive.FormComponent}
     id={@show.id || :new}
     title={@page_title}
     action={@live_action}
     show={@show}
-    patch={~p"/admin/shows"}
+    patch={~p"/shows"}
   />
 </.modal>
