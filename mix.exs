@@ -45,7 +45,6 @@ defmodule Algora.MixProject do
       {:ex_marcel, "~> 0.1.0"},
       {:exla, ">= 0.0.0"},
       {:exsync, "~> 0.2", only: :dev},
-      # {:faker, "~> 0.18", only: :dev},
       {:ffmpex, "~> 0.10.0"},
       {:finch, "~> 0.13"},
       {:floki, ">= 0.30.0", only: :test},

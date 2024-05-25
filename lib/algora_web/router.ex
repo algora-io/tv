@@ -71,10 +71,8 @@ defmodule AlgoraWeb.Router do
         {AlgoraWeb.UserAuth, :ensure_admin},
         AlgoraWeb.Nav
       ] do
-      live "/admin/shows", ShowLive.Index, :index
-      live "/admin/shows/new", ShowLive.Index, :new
-      live "/admin/shows/:slug/edit", ShowLive.Show, :edit
-      live "/admin/shows/:id/show/edit", ShowLive.Show, :edit
+      live "/shows", ShowLive.Index, :index
+      live "/shows/new", ShowLive.Index, :new
     end
 
     live_session :authenticated,

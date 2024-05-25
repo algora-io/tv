@@ -33,7 +33,7 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
                 class="absolute inset-0 opacity-0 cursor-pointer"
               />
               <img :if={@show.image_url} src={@show.image_url} class="max-w-[200px] rounded-lg" />
-              <div class="w-[200px] h-[200px] bg-white/10 rounded-lg"></div>
+              <div :if={!@show.image_url} class="w-[200px] h-[200px] bg-white/10 rounded-lg"></div>
             </div>
           </div>
         </div>

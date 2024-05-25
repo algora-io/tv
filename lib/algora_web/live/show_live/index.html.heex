@@ -20,7 +20,7 @@
     <div class="sr-only">
       <.link navigate={~p"/shows/#{show.slug}"}>Show</.link>
     </div>
-    <.link patch={~p"/shows/#{show}/edit"}>Edit</.link>
+    <.link patch={~p"/shows/#{show.slug}/edit"}>Edit</.link>
   </:action>
   <:action :let={{id, show}}>
     <.link
