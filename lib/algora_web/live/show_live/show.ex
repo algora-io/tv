@@ -8,10 +8,13 @@ defmodule AlgoraWeb.ShowLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
+    <img
+      src={@show.image_url}
+      class="w-screen min-w-screen max-h-[200px] sm:max-h-none sm:h-[200px] md:h-[250px] lg:h-[350px] object-cover"
+    />
     <div class="text-white min-h-screen p-8">
       <div class="flex flex-col md:grid md:grid-cols-3 gap-6">
         <div class="md:col-span-1 bg-white/5 ring-1 ring-white/15 rounded-lg p-6 space-y-6">
-          <img src={@show.image_url} class="max-h-[250px] rounded-lg" />
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
               <span class="relative ring-4 ring-[#15122c] flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
