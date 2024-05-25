@@ -42,6 +42,7 @@ defmodule Algora.MixProject do
       {:elixir_make, "~> 0.7.0", runtime: false},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
       {:ex_m3u8, "~> 0.9.0"},
+      {:ex_marcel, "~> 0.1.0"},
       {:exla, ">= 0.0.0"},
       {:exsync, "~> 0.2", only: :dev},
       {:ffmpex, "~> 0.10.0"},

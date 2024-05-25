@@ -5,6 +5,7 @@ defmodule Algora.Library.Video do
 
   alias Algora.Accounts.User
   alias Algora.Library.Video
+  alias Algora.Shows.Show
   alias Algora.Chat.Message
 
   @type t() :: %__MODULE__{}
@@ -32,6 +33,7 @@ defmodule Algora.Library.Video do
     field :local_path, :string
 
     belongs_to :user, User
+    belongs_to :show, Show
     belongs_to :transmuxed_from, Video
 
     has_many :messages, Message

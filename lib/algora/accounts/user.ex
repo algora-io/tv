@@ -11,6 +11,7 @@ defmodule Algora.Accounts.User do
     field :channel_tagline, :string
     field :avatar_url, :string
     field :external_homepage_url, :string
+    field :twitter_url, :string
     field :videos_count, :integer
     field :is_live, :boolean, default: false
     field :stream_key, :string

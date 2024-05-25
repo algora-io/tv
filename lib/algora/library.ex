@@ -658,6 +658,7 @@ defmodule Algora.Library do
       tagline: user.channel_tagline,
       avatar_url: user.avatar_url,
       external_homepage_url: user.external_homepage_url,
+      twitter_url: user.twitter_url,
       is_live: user.is_live,
       bounties_count: user.bounties_count,
       orgs_contributed: user.orgs_contributed,

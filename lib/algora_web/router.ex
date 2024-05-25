@@ -65,6 +65,16 @@ defmodule AlgoraWeb.Router do
 
     delete "/auth/logout", OAuthCallbackController, :sign_out
 
+    live_session :admin,
+      on_mount: [
+        {AlgoraWeb.UserAuth, :ensure_authenticated},
+        {AlgoraWeb.UserAuth, :ensure_admin},
+        AlgoraWeb.Nav
+      ] do
+      live "/shows", ShowLive.Index, :index
+      live "/shows/new", ShowLive.Index, :new
+    end
+
     live_session :authenticated,
       on_mount: [{AlgoraWeb.UserAuth, :ensure_authenticated}, AlgoraWeb.Nav] do
       live "/channel/settings", SettingsLive, :edit
@@ -85,6 +95,10 @@ defmodule AlgoraWeb.Router do
       live "/auth/login", SignInLive, :index
       live "/cossgpt", COSSGPTLive, :index
       live "/og/cossgpt", COSSGPTOGLive, :index
+
+      live "/shows/:slug", ShowLive.Show, :show
+      live "/shows/:slug/edit", ShowLive.Show, :edit
+
       live "/:channel_handle", ChannelLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
 

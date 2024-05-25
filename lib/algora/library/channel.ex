@@ -5,6 +5,7 @@ defmodule Algora.Library.Channel do
             tagline: nil,
             avatar_url: nil,
             external_homepage_url: nil,
+            twitter_url: nil,
             is_live: nil,
             bounties_count: nil,
             orgs_contributed: nil,

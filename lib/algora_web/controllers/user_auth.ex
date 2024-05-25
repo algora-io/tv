@@ -35,6 +35,24 @@ defmodule AlgoraWeb.UserAuth do
     Ecto.NoResultsError -> {:halt, redirect_require_login(socket)}
   end
 
+  def on_mount(:ensure_admin, _params, session, socket) do
+    case session do
+      %{"user_id" => user_id} ->
+        user = Accounts.get_user!(user_id)
+
+        if Accounts.admin?(user) do
+          {:cont, socket}
+        else
+          {:halt, LiveView.redirect(socket, to: ~p"/status/404")}
+        end
+
+      %{} ->
+        {:halt, redirect_require_login(socket)}
+    end
+  rescue
+    Ecto.NoResultsError -> {:halt, redirect_require_login(socket)}
+  end
+
   defp redirect_require_login(socket) do
     socket
     |> LiveView.put_flash(:error, "Please sign in")
