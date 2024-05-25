@@ -332,7 +332,7 @@ defmodule AlgoraWeb.ShowLive.Show do
         socket
         |> redirect(to: ~p"/auth/login")
 
-      current_user.id != show.user_id ->
+      current_user.id != show.user_id && !Accounts.admin?(current_user) ->
         socket
         |> put_flash(:error, "You don't have permission to edit this show")
         |> redirect(to: ~p"/shows/#{show.slug}")
