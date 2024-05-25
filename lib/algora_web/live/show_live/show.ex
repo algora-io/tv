@@ -319,12 +319,26 @@ defmodule AlgoraWeb.ShowLive.Show do
   end
 
   defp apply_action(socket, :edit, %{"slug" => slug}) do
+    %{current_user: current_user} = socket.assigns
+
     show = Shows.get_show_by_fields!(slug: slug)
 
-    socket
-    |> assign(:page_title, show.title)
-    |> assign(:page_description, show.description)
-    |> assign(:page_image, show.og_image_url)
+    cond do
+      current_user == nil ->
+        socket
+        |> redirect(to: ~p"/auth/login")
+
+      current_user.id != show.user_id ->
+        socket
+        |> put_flash(:error, "You don't have permission to edit this show")
+        |> redirect(to: ~p"/shows/#{show.slug}")
+
+      true ->
+        socket
+        |> assign(:page_title, show.title)
+        |> assign(:page_description, show.description)
+        |> assign(:page_image, show.og_image_url)
+    end
   end
 
   defp assign_attendees(socket, show) do
