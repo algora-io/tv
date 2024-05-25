@@ -32,7 +32,8 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
                 upload={@uploads.cover_image}
                 class="absolute inset-0 opacity-0 cursor-pointer"
               />
-              <img src={@show.image_url} class="w-[200px] rounded-lg" />
+              <img :if={@show.image_url} src={@show.image_url} class="max-w-[200px] rounded-lg" />
+              <div class="w-[200px] h-[200px] bg-white/10 rounded-lg"></div>
             </div>
           </div>
         </div>
@@ -40,7 +41,13 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
           <div class="absolute text-sm start-0 flex items-center ps-3 top-10 mt-px pointer-events-none text-gray-400">
             tv.algora.io/shows/
           </div>
-          <.input field={@form[:slug]} type="text" label="URL" class="ps-[8.25rem]" />
+          <.input
+            field={@form[:slug]}
+            type="text"
+            label="URL"
+            placeholder="showname"
+            class="ps-[8.25rem]"
+          />
         </div>
         <.input field={@form[:scheduled_for]} type="datetime-local" label="Date (UTC)" />
         <%!-- <.input field={@form[:image_url]} type="text" label="Image URL" /> --%>
