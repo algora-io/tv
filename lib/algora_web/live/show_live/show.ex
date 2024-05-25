@@ -11,7 +11,7 @@ defmodule AlgoraWeb.ShowLive.Show do
     <div class="text-white min-h-screen p-8">
       <div class="flex flex-col md:grid md:grid-cols-3 gap-6">
         <div class="md:col-span-1 bg-white/5 ring-1 ring-white/15 rounded-lg p-6 space-y-6">
-          <img src={@show.image_url} class="h-[250px] rounded-lg" />
+          <img src={@show.image_url} class="max-h-[250px] rounded-lg" />
           <div class="space-y-2">
             <div class="flex items-center space-x-2">
               <span class="relative ring-4 ring-[#15122c] flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
@@ -119,9 +119,9 @@ defmodule AlgoraWeb.ShowLive.Show do
                 </div>
               </div>
 
-              <div class="space-y-2 w-full max-w-sm">
+              <div class="space-y-2 w-full max-w-xs md:max-w-sm">
                 <div :if={@show.scheduled_for} class="bg-gray-950/75 p-4 rounded-lg">
-                  <div class="flex items-center justify-between">
+                  <div class="flex flex-col md:flex-wrap md:flex-row gap-2 md:items-center md:justify-between">
                     <div class="flex items-center space-x-4">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -133,7 +133,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                         stroke-width="2"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        class="h-6 w-6 text-green-300"
+                        class="h-6 w-6 text-green-300 shrink-0"
                       >
                         <path d="M8 2v4"></path>
                         <path d="M16 2v4"></path>
@@ -193,7 +193,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                   class="block bg-gray-950/75 p-4 rounded-lg"
                 >
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-4 shrink-0">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
