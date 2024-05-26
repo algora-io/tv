@@ -19,6 +19,8 @@ config :algora, AlgoraWeb.Embed.Endpoint,
   url: [host: "tv.algora.io", port: 81],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+config :algora, :docs, url: "https://docs.tv.algora.io"
+
 # Do not print debug messages in production
 config :logger, level: :info
 
