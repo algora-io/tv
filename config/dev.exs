@@ -105,6 +105,8 @@ config :algora, AlgoraWeb.Endpoint,
     ]
   ]
 
+config :algora, :docs, url: "http://localhost:3000"
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -117,3 +119,5 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :reverse_proxy_plug, :http_client, ReverseProxyPlug.HTTPClient.Adapters.HTTPoison

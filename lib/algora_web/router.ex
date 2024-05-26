@@ -21,6 +21,10 @@ defmodule AlgoraWeb.Router do
     plug AlgoraWeb.Plugs.AllowIframe
   end
 
+  pipeline :transform_docs do
+    plug AlgoraWeb.Plugs.TransformDocs
+  end
+
   scope "/", AlgoraWeb do
     pipe_through :browser
 
@@ -58,6 +62,14 @@ defmodule AlgoraWeb.Router do
       root_layout: {AlgoraWeb.Layouts, :root_embed} do
       live "/:channel_handle/:video_id/chat", ChatLive, :show
     end
+  end
+
+  scope "/docs" do
+    pipe_through [:transform_docs]
+
+    forward "/", ReverseProxyPlug,
+      upstream: "#{Application.compile_env(:algora, :docs)[:url]}/docs",
+      response_mode: :buffer
   end
 
   scope "/", AlgoraWeb do
