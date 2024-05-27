@@ -5,8 +5,6 @@ defmodule AlgoraWeb.SettingsLive do
   alias Algora.Accounts.Destination
   alias AlgoraWeb.RTMPDestinationIconComponent
 
-  @env Mix.env()
-
   def render(assigns) do
     ~H"""
     <div class="max-w-3xl mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
@@ -43,7 +41,7 @@ defmodule AlgoraWeb.SettingsLive do
         <.header>
           Integrations
           <:subtitle>
-            Link other apps
+            Manage your connected accounts and services
           </:subtitle>
         </.header>
         <div class="space-y-6">
@@ -158,7 +156,6 @@ defmodule AlgoraWeb.SettingsLive do
 
     {:ok,
      socket
-     |> assign(env: @env)
      |> assign(current_user: current_user)
      |> assign_form(changeset)
      |> assign(destinations: destinations)
