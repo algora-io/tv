@@ -61,6 +61,22 @@ defmodule Algora.Admin do
     pipelines() |> Enum.map(fn pid -> GenServer.call(pid, :get_video_id) end)
   end
 
+  def sockets() do
+    pipelines() |> Enum.map(fn pid -> GenServer.call(pid, :get_socket) end)
+  end
+
+  def info(atom) do
+    GenServer.call(pipeline(), atom)
+  end
+
+  def pipeline() do
+    pipelines() |> Enum.at(0)
+  end
+
+  def socket() do
+    sockets() |> Enum.at(0)
+  end
+
   def download_chunks(video, chunks, dir) do
     Task.async_stream(
       Enum.with_index(chunks),

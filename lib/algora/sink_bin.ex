@@ -267,7 +267,9 @@ defmodule Algora.SinkBin do
   end
 
   @impl true
-  def handle_pad_removed(Pad.ref(:input, ref), ctx, state) do
+  def handle_pad_removed(Pad.ref(:input, ref) = pad_ref, ctx, state) do
+    dbg(pad_ref, label: "handle_pad_removed")
+
     children =
       ([
          {:parser, ref}
@@ -278,6 +280,19 @@ defmodule Algora.SinkBin do
       end)
 
     {[remove_children: children], state}
+  end
+
+  @impl true
+  def handle_child_notification(:discontinued, _element, _ctx, state) do
+    dbg(:discontinued, label: "handle_child_notification")
+
+    {[
+       #  remove_children: [:src, :tee_audio, :tee_video]
+       #  remove_link: {:sink, Pad.ref(:input, :audio)},
+       #  remove_link: {:sink, Pad.ref(:input, :video)}
+       # remove_link: {:tee_video, Pad.ref(:input, :audio)},
+       # remove_link: {:tee_audio, Pad.ref(:input, :video)}
+     ], state}
   end
 
   @impl true

@@ -168,6 +168,8 @@ defmodule Algora.Sink do
         ctx,
         state
       ) do
+    dbg(pad_ref, label: "handle_stream_format")
+
     {header_name, manifest} =
       if Manifest.has_track?(state.manifest, track_id) do
         # Arrival of new stream format for an already existing track indicate that stream parameters have changed.
@@ -222,6 +224,13 @@ defmodule Algora.Sink do
   @impl true
   def handle_pad_added(_pad, _ctx, state), do: {[], state}
 
+  # @impl true
+  # def handle_pad_removed(pad, _ctx, state) do
+  # # Attempted to link the following pads more than once: pad {Membrane.Pad, :input, :video} of child :sink, pad {Membrane.Pad, :input, :audio} of child :sink
+  # dbg(pad, label: "handle_pad_removed")
+  # {[remove_link: pad], state}
+  # end
+
   @impl true
   def handle_buffer(Pad.ref(:input, track_id) = pad, buffer, _ctx, %{storage: storage} = state) do
     {changeset, manifest} = Manifest.add_chunk(state.manifest, track_id, buffer)
@@ -238,20 +247,25 @@ defmodule Algora.Sink do
 
   @impl true
   def handle_end_of_stream(
-        Pad.ref(:input, track_id),
+        Pad.ref(:input, track_id) = pad_ref,
         _ctx,
-        %{manifest: manifest, storage: storage} = state
+        %{manifest: manifest, storage: _storage} = state
       ) do
-    {changeset, manifest} = Manifest.finish(manifest, track_id)
+    dbg(pad_ref, label: "handle_end_of_stream")
 
-    with {:ok, storage} <- Storage.apply_track_changeset(storage, track_id, changeset),
-         {:ok, storage} <- serialize_and_store_manifest(manifest, storage) do
-      storage = Storage.clear_cache(storage)
-      {[], %{state | storage: storage, manifest: manifest}}
-    else
-      {{:error, reason}, _storage} ->
-        raise "Failed to store the finalized manifest for track #{inspect(track_id)} due to #{inspect(reason)}"
-    end
+    Manifest.discontinue_track(manifest, track_id)
+
+    # {changeset, manifest} = Manifest.finish(manifest, track_id)
+    # with {:ok, storage} <- Storage.apply_track_changeset(storage, track_id, changeset),
+    #      {:ok, storage} <- serialize_and_store_manifest(manifest, storage) do
+    #   storage = Storage.clear_cache(storage)
+    #   {[], %{state | storage: storage, manifest: manifest}}
+    # else
+    #   {{:error, reason}, _storage} ->
+    #     raise "Failed to store the finalized manifest for track #{inspect(track_id)} due to #{inspect(reason)}"
+    # end
+
+    {[notify_parent: :discontinued], state}
   end
 
   @impl true

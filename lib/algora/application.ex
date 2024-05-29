@@ -18,10 +18,17 @@ defmodule Algora.Application do
         ip: {0, 0, 0, 0}
       ],
       socket_handler: fn socket ->
-        {:ok, _sup, pid} =
-          Membrane.Pipeline.start_link(Algora.Pipeline, socket: socket)
+        if pid = Membrane.Pipeline.list_pipelines() |> Enum.at(0) do
+          dbg("routing to existing pipeline #{:erlang.pid_to_list(pid)}")
+          send(pid, {:new_conn, socket})
+          {:ok, pid}
+        else
+          {:ok, _sup, pid} =
+            Membrane.Pipeline.start_link(Algora.Pipeline, socket: socket)
 
-        {:ok, pid}
+          dbg("routing to new pipeline #{:erlang.pid_to_list(pid)}")
+          {:ok, pid}
+        end
       end
     }
 
