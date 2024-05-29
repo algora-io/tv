@@ -115,6 +115,29 @@ defmodule AlgoraWeb.Layouts do
         Studio
       </.link>
       <.link
+        navigate="/subscriptions"
+        class={
+            "text-gray-200 hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md #{if @active_tab == :studio, do: "bg-gray-800", else: "hover:bg-gray-900"}"
+          }
+        aria-current={if @active_tab == :studio, do: "true", else: "false"}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="text-gray-400 group-hover:text-gray-300 mr-3 flex-shrink-0 h-6 w-6"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+        </svg>
+        Subscriptions
+      </.link>
+      <.link
         navigate={~p"/channel/settings"}
         class={
             "text-gray-200 hover:text-gray-50 group flex items-center px-2 py-2 text-sm font-medium rounded-md #{if @active_tab == :settings, do: "bg-gray-800", else: "hover:bg-gray-900"}"
@@ -151,6 +174,8 @@ defmodule AlgoraWeb.Layouts do
       <:title><%= @current_user.name %></:title>
       <:subtitle>@<%= @current_user.handle %></:subtitle>
       <:link navigate={channel_path(@current_user)}>Channel</:link>
+      <:link navigate={~p"/channel/studio"}>Studio</:link>
+      <:link navigate={~p"/subscriptions"}>Subscriptions</:link>
       <:link navigate={~p"/channel/settings"}>Settings</:link>
       <:link href={~p"/auth/logout"} method={:delete}>Sign out</:link>
     </.dropdown>
