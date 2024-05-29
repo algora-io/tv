@@ -6,6 +6,17 @@ defmodule Algora.Events do
   alias Algora.Events.Event
   alias Algora.Accounts.{User, Identity}
 
+  def unsubscribe(user, channel_id) do
+    %Event{
+      actor_id: "user_#{user.id}",
+      user_id: user.id,
+      channel_id: channel_id,
+      name: :unsubscribed
+    }
+    |> Event.changeset(%{})
+    |> Repo.insert()
+  end
+
   def toggle_subscription_event(user, show) do
     name = if subscribed?(user, show), do: :unsubscribed, else: :subscribed
 
@@ -155,6 +166,30 @@ defmodule Algora.Events do
         user_github_handle: i.provider_login,
         first_video_id: e.video_id,
         first_video_title: v.title
+      },
+      where: e.name == :subscribed,
+      order_by: [desc: e.inserted_at, desc: e.id]
+    )
+    |> Repo.all()
+  end
+
+  def fetch_subscriptions(user) do
+    # Get the latest relevant events (:subscribed and :unsubscribed) for each user
+    latest_events_query =
+      from(e in Event,
+        where: e.user_id == ^user.id and e.name in [:subscribed, :unsubscribed],
+        order_by: [desc: e.inserted_at],
+        distinct: e.channel_id
+      )
+
+    # Join user data and filter for :subscribed events
+    from(e in subquery(latest_events_query),
+      join: u in User,
+      on: e.channel_id == u.id,
+      select_merge: %{
+        user_handle: u.handle,
+        user_display_name: coalesce(u.name, u.handle),
+        user_avatar_url: u.avatar_url
       },
       where: e.name == :subscribed,
       order_by: [desc: e.inserted_at, desc: e.id]
