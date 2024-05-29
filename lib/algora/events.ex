@@ -186,10 +186,13 @@ defmodule Algora.Events do
     from(e in subquery(latest_events_query),
       join: u in User,
       on: e.channel_id == u.id,
+      join: i in Identity,
+      on: i.user_id == u.id and i.provider == "github",
       select_merge: %{
         user_handle: u.handle,
         user_display_name: coalesce(u.name, u.handle),
-        user_avatar_url: u.avatar_url
+        user_avatar_url: u.avatar_url,
+        user_meta: i.provider_meta
       },
       where: e.name == :subscribed,
       order_by: [desc: e.inserted_at, desc: e.id]
