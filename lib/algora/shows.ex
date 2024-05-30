@@ -5,7 +5,12 @@ defmodule Algora.Shows do
   alias Algora.Shows.Show
   alias Algora.Accounts.User
 
-  def list_shows(limit \\ 100) do
+  def list_shows() do
+    from(s in Show)
+    |> Repo.all()
+  end
+
+  def list_featured_shows(limit \\ 100) do
     from(s in Show,
       join: u in User,
       on: s.user_id == u.id,

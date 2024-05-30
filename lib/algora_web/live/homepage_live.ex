@@ -64,7 +64,10 @@ defmodule AlgoraWeb.HomepageLive do
                           </div>
                         </div>
                       </div>
-                      <div class="bg-gray-900 px-3 py-2 rounded-lg ring-1 ring-green-300 ml-auto flex items-center space-x-2">
+                      <div
+                        :if={show.scheduled_for}
+                        class="bg-gray-900 px-3 py-2 rounded-lg ring-1 ring-green-300 ml-auto flex items-center space-x-2"
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="24"
@@ -99,13 +102,16 @@ defmodule AlgoraWeb.HomepageLive do
                       </div>
                     </div>
 
-                    <div class="mt-[2rem]">
+                    <div
+                      :if={length(Enum.filter(@show_eps, fn v -> v.show_id == show.id end)) > 0}
+                      class="mt-[2rem]"
+                    >
                       <div class="flex justify-between items-center gap-2 px-2">
                         <h3 class="text-lg text-gray-300 font-bold">Past episodes</h3>
                       </div>
                       <div class="p-2 pb-1 flex gap-4 overflow-x-scroll scrollbar-thin">
                         <div
-                          :for={video <- @show_eps |> Enum.filter(fn v -> v.show_id == show.id end)}
+                          :for={video <- Enum.filter(@show_eps, fn v -> v.show_id == show.id end)}
                           class="max-w-xs sm:max-w-sm shrink-0 w-full"
                         >
                           <div class="truncate" href={~p"/#{video.channel_handle}/#{video.id}"}>
@@ -138,11 +144,11 @@ defmodule AlgoraWeb.HomepageLive do
   end
 
   def mount(_params, _session, socket) do
-    shows = Shows.list_shows()
+    shows = Shows.list_featured_shows()
     show_eps = shows |> Enum.map(fn s -> s.id end) |> Library.list_videos_by_show_ids()
 
     show_sections = shows |> Enum.chunk_every(2)
-    video_sections = Library.list_videos(150) |> Enum.chunk_every(6)
+    video_sections = Library.list_videos(150) |> Enum.chunk_every(3)
 
     num_sections = max(min(length(show_sections), length(video_sections)), 0)
 

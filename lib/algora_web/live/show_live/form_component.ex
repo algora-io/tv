@@ -154,7 +154,7 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
         {:noreply,
          socket
          |> put_flash(:info, "Show created successfully")
-         |> push_patch(to: ~p"/shows/#{show.slug}")}
+         |> push_navigate(to: ~p"/shows/#{show.slug}")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign_form(socket, changeset)}
