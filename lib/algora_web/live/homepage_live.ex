@@ -14,13 +14,13 @@ defmodule AlgoraWeb.HomepageLive do
       <div>
         <ul role="list" class="grid grid-cols-1 gap-12 sm:grid-cols-2">
           <li :for={show <- @shows} class="col-span-1">
-            <div class="flex flex-col rounded-2xl overflow-hidden bg-gray-900 ring-1 ring-white/20 text-center shadow-lg relative group">
+            <div class="flex flex-col rounded-2xl overflow-hidden bg-[#15112b] ring-1 ring-white/20 text-center shadow-lg relative group">
               <img
                 class="object-cover absolute inset-0 shrink-0 h-[12rem] w-full bg-gray-950"
                 src={show.image_url}
                 alt=""
               />
-              <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-gray-900" />
+              <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-[#15112b]" />
               <.link navigate={~p"/shows/#{show.slug}"} class="absolute h-[10rem] w-full inset-0 z-10">
               </.link>
               <div class="relative text-left">
