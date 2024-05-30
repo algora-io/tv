@@ -274,7 +274,7 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     channel = Accounts.get_user(show.user_id) |> Library.get_channel!()
 
-    videos = Library.list_channel_videos(channel, 50)
+    videos = Library.list_videos_by_show_ids([show.id])
 
     {:ok,
      socket

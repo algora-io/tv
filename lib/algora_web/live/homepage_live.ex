@@ -7,7 +7,7 @@ defmodule AlgoraWeb.HomepageLive do
     ~H"""
     <div class="mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
       <.header class="pt-8">
-        <h1 class="text-4xl font-semibold">Open source livestreaming for developers</h1>
+        <h1 class="text-4xl font-semibold">Livestreaming for developers</h1>
         <p class="text-xl font-medium text-gray-200 italic">You'll never ship alone!</p>
       </.header>
 
