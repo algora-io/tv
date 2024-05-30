@@ -14,33 +14,38 @@ defmodule AlgoraWeb.HomepageLive do
       <div>
         <ul role="list" class="grid grid-cols-1 gap-12 sm:grid-cols-2">
           <li :for={show <- @shows} class="col-span-1">
-            <.link
-              navigate={~p"/shows/#{show.slug}"}
-              class="flex flex-col rounded-2xl overflow-hidden bg-white/5 ring-1 ring-white/20 text-center shadow-lg relative group"
-            >
+            <div class="flex flex-col rounded-2xl overflow-hidden bg-gray-900 ring-1 ring-white/20 text-center shadow-lg relative group">
               <img
-                class="mx-auto absolute inset-0 flex-shrink-0 object-cover h-[12rem] w-full bg-gray-950"
+                class="object-cover absolute inset-0 shrink-0 h-[12rem] w-full bg-gray-950"
                 src={show.image_url}
                 alt=""
               />
-              <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-80% to-gray-950/80" />
+              <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-gray-900" />
+              <.link navigate={~p"/shows/#{show.slug}"} class="absolute h-[10rem] w-full inset-0 z-10">
+              </.link>
               <div class="relative text-left">
                 <div class="flex flex-1 flex-col">
                   <div class="px-4 mt-[8rem] flex-col sm:flex-row flex sm:items-center gap-4">
-                    <img
-                      class="h-[8rem] w-[8rem] rounded-full ring-4 ring-white shrink-0"
-                      src={show.channel_avatar_url}
-                      alt=""
-                    />
+                    <.link navigate={~p"/shows/#{show.slug}"}>
+                      <img
+                        class="h-[8rem] w-[8rem] rounded-full ring-4 ring-white shrink-0"
+                        src={show.channel_avatar_url}
+                        alt=""
+                      />
+                    </.link>
                     <div>
-                      <h3 class="mt-auto text-3xl font-semibold text-white [text-shadow:#000_10px_5px_10px] line-clamp-2">
-                        <%= show.title %>
-                      </h3>
+                      <.link navigate={~p"/shows/#{show.slug}"}>
+                        <h3 class="mt-auto text-3xl font-semibold text-white [text-shadow:#000_10px_5px_10px] line-clamp-2 hover:underline">
+                          <%= show.title %>
+                        </h3>
+                      </.link>
                       <div class="flex items-center gap-2">
-                        <div class="text-base text-gray-300 font-semibold line-clamp-1">
-                          <%= show.channel_name %>
-                        </div>
-                        <div
+                        <.link navigate={~p"/#{show.channel_handle}"}>
+                          <div class="text-base text-gray-300 font-semibold line-clamp-1 hover:underline">
+                            <%= show.channel_name %>
+                          </div>
+                        </.link>
+                        <.link
                           :if={show.channel_twitter_url}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -60,11 +65,12 @@ defmodule AlgoraWeb.HomepageLive do
                           >
                             <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
                           </svg>
-                        </div>
+                        </.link>
                       </div>
                     </div>
-                    <div
+                    <.link
                       :if={show.scheduled_for}
+                      navigate={~p"/shows/#{show.slug}"}
                       class="shrink-0 sm:hidden xl:flex bg-gray-900 px-3 py-2 rounded-lg ring-1 ring-green-300 mr-auto sm:mr-0 sm:ml-auto flex items-center space-x-2"
                     >
                       <svg
@@ -98,7 +104,7 @@ defmodule AlgoraWeb.HomepageLive do
                           |> Timex.format!("{h12}:{m} {am}, Eastern Time") %>
                         </div>
                       </div>
-                    </div>
+                    </.link>
                   </div>
 
                   <div
@@ -108,20 +114,20 @@ defmodule AlgoraWeb.HomepageLive do
                     <div class="flex justify-between items-center gap-2 px-2">
                       <h3 class="text-sm uppercase text-gray-300 font-semibold">Past episodes</h3>
                     </div>
-                    <div class="p-2 flex gap-4 overflow-x-scroll scrollbar-thin">
+                    <div class="p-2 flex gap-4 overflow-x-scroll scrollbar-thin transition-all">
                       <div
                         :for={video <- Enum.filter(@show_eps, fn v -> v.show_id == show.id end)}
                         class="max-w-[12rem] sm:max-w-[16rem] shrink-0 w-full"
                       >
-                        <div class="truncate" href={~p"/#{video.channel_handle}/#{video.id}"}>
+                        <.link class="truncate" href={~p"/#{video.channel_handle}/#{video.id}"}>
                           <.video_thumbnail video={video} class="rounded-xl" />
-                        </div>
+                        </.link>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </.link>
+            </div>
           </li>
         </ul>
       </div>
