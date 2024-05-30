@@ -3,9 +3,21 @@ defmodule Algora.Shows do
   alias Algora.Repo
 
   alias Algora.Shows.Show
+  alias Algora.Accounts.User
 
-  def list_shows do
-    Repo.all(Show)
+  def list_shows(limit \\ 100) do
+    from(s in Show,
+      join: u in User,
+      on: s.user_id == u.id,
+      limit: ^limit,
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: coalesce(u.name, u.handle),
+        channel_avatar_url: u.avatar_url
+      },
+      order_by: [{:desc, s.updated_at}, {:desc, s.id}]
+    )
+    |> Repo.all()
   end
 
   def get_show!(id), do: Repo.get!(Show, id)
@@ -30,5 +42,9 @@ defmodule Algora.Shows do
 
   def change_show(%Show{} = show, attrs \\ %{}) do
     Show.changeset(show, attrs)
+  end
+
+  def list_videos do
+    Repo.all(Show)
   end
 end
