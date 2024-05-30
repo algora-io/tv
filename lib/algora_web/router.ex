@@ -89,6 +89,8 @@ defmodule AlgoraWeb.Router do
 
     live_session :authenticated,
       on_mount: [{AlgoraWeb.UserAuth, :ensure_authenticated}, AlgoraWeb.Nav] do
+      live "/subscriptions", SubscriptionsLive, :show
+
       live "/channel/settings", SettingsLive, :edit
       live "/channel/studio", StudioLive, :show
       live "/channel/studio/upload", StudioLive, :upload
