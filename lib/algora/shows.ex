@@ -10,13 +10,14 @@ defmodule Algora.Shows do
       join: u in User,
       on: s.user_id == u.id,
       limit: ^limit,
+      where: not is_nil(s.ordering),
       select_merge: %{
         channel_handle: u.handle,
         channel_name: coalesce(u.name, u.handle),
         channel_avatar_url: u.avatar_url,
         channel_twitter_url: u.twitter_url
       },
-      order_by: [{:desc, s.updated_at}, {:desc, s.id}]
+      order_by: [{:desc, s.ordering}, {:desc, s.id}]
     )
     |> Repo.all()
   end

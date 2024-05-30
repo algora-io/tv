@@ -12,6 +12,7 @@ defmodule Algora.Shows.Show do
     field :image_url, :string
     field :og_image_url, :string
     field :url, :string
+    field :ordering, :integer
     field :channel_handle, :string, virtual: true
     field :channel_name, :string, virtual: true
     field :channel_avatar_url, :string, virtual: true
