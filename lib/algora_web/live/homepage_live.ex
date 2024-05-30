@@ -6,13 +6,13 @@ defmodule AlgoraWeb.HomepageLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
-      <.header class="py-8">
+      <.header class="pt-8">
         <h1 class="text-4xl font-semibold">Open source livestreaming for developers</h1>
         <p class="text-xl font-medium text-gray-200 italic">You'll never ship alone!</p>
       </.header>
 
       <div :for={{shows, videos} <- @sections}>
-        <div class="pt-16">
+        <div class="pt-8">
           <ul role="list" class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <li :for={show <- shows} class="col-span-1">
               <.link
@@ -63,14 +63,14 @@ defmodule AlgoraWeb.HomepageLive do
           </ul>
         </div>
 
-        <div class="pt-16">
+        <div class="pt-8">
           <div class="pt-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <.video_entry :for={video <- videos} video={video} />
           </div>
         </div>
       </div>
 
-      <div :if={length(@leftover_videos) > 0} class="pt-16">
+      <div :if={length(@leftover_videos) > 0} class="pt-8">
         <div class="pt-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <.video_entry :for={video <- @leftover_videos} video={video} />
         </div>
