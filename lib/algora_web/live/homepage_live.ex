@@ -126,9 +126,14 @@ defmodule AlgoraWeb.HomepageLive do
         </ul>
       </div>
 
-      <div class="pt-8">
-        <div class="pt-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <.video_entry :for={video <- @videos} video={video} />
+      <div class="pt-12">
+        <h2 class="text-white text-3xl font-semibold">
+          Most recent livestreams
+        </h2>
+        <div>
+          <div class="pt-4 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <.video_entry :for={video <- @videos} video={video} />
+          </div>
         </div>
       </div>
     </div>
