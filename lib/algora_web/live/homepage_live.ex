@@ -14,7 +14,7 @@ defmodule AlgoraWeb.HomepageLive do
       <div>
         <ul role="list" class="grid grid-cols-1 gap-12 sm:grid-cols-2">
           <li :for={show <- @shows} class="col-span-1">
-            <div class="flex flex-col rounded-2xl overflow-hidden bg-[#15112b] ring-1 ring-white/20 text-center shadow-lg relative group">
+            <div class="h-full flex flex-col rounded-2xl overflow-hidden bg-[#15112b] ring-1 ring-white/20 text-center shadow-lg relative group">
               <img
                 class="object-cover absolute inset-0 shrink-0 h-[12rem] w-full bg-gray-950"
                 src={show.image_url}
@@ -23,23 +23,24 @@ defmodule AlgoraWeb.HomepageLive do
               <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-[#15112b]" />
               <.link navigate={~p"/shows/#{show.slug}"} class="absolute h-[10rem] w-full inset-0 z-10">
               </.link>
-              <div class="relative text-left">
-                <div class="flex flex-1 flex-col">
+              <div class="relative text-left h-full">
+                <div class="flex flex-1 flex-col h-full">
                   <div class="px-4 mt-[8rem] flex-col sm:flex-row flex sm:items-center gap-4">
-                    <.link navigate={~p"/shows/#{show.slug}"}>
+                    <.link :if={show.channel_handle != "algora"} navigate={~p"/shows/#{show.slug}"}>
                       <img
                         class="h-[8rem] w-[8rem] rounded-full ring-4 ring-white shrink-0"
                         src={show.channel_avatar_url}
                         alt=""
                       />
                     </.link>
+                    <div :if={show.channel_handle == "algora"} class="h-[8rem] w-0 -ml-4"></div>
                     <div>
                       <.link navigate={~p"/shows/#{show.slug}"}>
                         <h3 class="mt-auto text-3xl font-semibold text-white [text-shadow:#000_10px_5px_10px] line-clamp-2 hover:underline">
                           <%= show.title %>
                         </h3>
                       </.link>
-                      <div class="flex items-center gap-2">
+                      <div :if={show.channel_handle != "algora"} class="flex items-center gap-2">
                         <.link navigate={~p"/#{show.channel_handle}"}>
                           <div class="text-base text-gray-300 font-semibold line-clamp-1 hover:underline">
                             <%= show.channel_name %>
@@ -67,6 +68,7 @@ defmodule AlgoraWeb.HomepageLive do
                           </svg>
                         </.link>
                       </div>
+                      <div :if={show.channel_handle == "algora"} class="h-[24px]"></div>
                     </div>
                     <.link
                       :if={show.scheduled_for}
@@ -109,7 +111,7 @@ defmodule AlgoraWeb.HomepageLive do
 
                   <div
                     :if={length(Enum.filter(@show_eps, fn v -> v.show_id == show.id end)) > 0}
-                    class="mt-[2rem] -mb-2"
+                    class="mt-auto pt-[2rem] -mb-2"
                   >
                     <div class="flex justify-between items-center gap-2 px-2">
                       <h3 class="text-sm uppercase text-gray-300 font-semibold">Past episodes</h3>
