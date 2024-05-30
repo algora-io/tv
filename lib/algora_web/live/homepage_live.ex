@@ -12,7 +12,7 @@ defmodule AlgoraWeb.HomepageLive do
       </.header>
 
       <div>
-        <ul role="list" class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+        <ul role="list" class="grid grid-cols-1 gap-12 sm:grid-cols-2">
           <li :for={show <- @shows} class="col-span-1">
             <.link
               navigate={~p"/shows/#{show.slug}"}
@@ -106,7 +106,7 @@ defmodule AlgoraWeb.HomepageLive do
                     class="mt-[2rem] -mb-2"
                   >
                     <div class="flex justify-between items-center gap-2 px-2">
-                      <h3 class="text-lg text-gray-300 font-bold">Past episodes</h3>
+                      <h3 class="text-sm uppercase text-gray-300 font-semibold">Past episodes</h3>
                     </div>
                     <div class="p-2 flex gap-4 overflow-x-scroll scrollbar-thin">
                       <div
