@@ -27,14 +27,14 @@ defmodule AlgoraWeb.HomepageLive do
                 <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-80% to-gray-950/80" />
                 <div class="relative text-left">
                   <div class="flex flex-1 flex-col">
-                    <div class="px-2 mt-[8rem] flex items-center gap-4">
+                    <div class="px-2 mt-[8rem] flex-col sm:flex-row flex sm:items-center gap-4">
                       <img
                         class="h-[8rem] w-[8rem] rounded-full ring-4 ring-white shrink-0"
                         src={show.channel_avatar_url}
                         alt=""
                       />
                       <div>
-                        <h3 class="mt-auto text-3xl font-semibold text-white [text-shadow:#000_10px_5px_10px]">
+                        <h3 class="mt-auto text-3xl font-semibold text-white [text-shadow:#000_10px_5px_10px] line-clamp-2">
                           <%= show.title %>
                         </h3>
                         <div class="flex items-center gap-2">
@@ -66,7 +66,7 @@ defmodule AlgoraWeb.HomepageLive do
                       </div>
                       <div
                         :if={show.scheduled_for}
-                        class="bg-gray-900 px-3 py-2 rounded-lg ring-1 ring-green-300 ml-auto flex items-center space-x-2"
+                        class="shrink-0 sm:hidden xl:flex bg-gray-900 px-3 py-2 rounded-lg ring-1 ring-green-300 mr-auto sm:mr-0 sm:ml-auto flex items-center space-x-2"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
