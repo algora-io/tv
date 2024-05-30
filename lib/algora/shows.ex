@@ -13,7 +13,8 @@ defmodule Algora.Shows do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: coalesce(u.name, u.handle),
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        channel_twitter_url: u.twitter_url
       },
       order_by: [{:desc, s.updated_at}, {:desc, s.id}]
     )
