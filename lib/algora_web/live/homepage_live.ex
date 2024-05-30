@@ -26,7 +26,7 @@ defmodule AlgoraWeb.HomepageLive do
               <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-80% to-gray-950/80" />
               <div class="relative text-left">
                 <div class="flex flex-1 flex-col">
-                  <div class="px-2 mt-[8rem] flex-col sm:flex-row flex sm:items-center gap-4">
+                  <div class="px-4 mt-[8rem] flex-col sm:flex-row flex sm:items-center gap-4">
                     <img
                       class="h-[8rem] w-[8rem] rounded-full ring-4 ring-white shrink-0"
                       src={show.channel_avatar_url}
@@ -103,15 +103,15 @@ defmodule AlgoraWeb.HomepageLive do
 
                   <div
                     :if={length(Enum.filter(@show_eps, fn v -> v.show_id == show.id end)) > 0}
-                    class="mt-[2rem]"
+                    class="mt-[2rem] -mb-2"
                   >
                     <div class="flex justify-between items-center gap-2 px-2">
                       <h3 class="text-lg text-gray-300 font-bold">Past episodes</h3>
                     </div>
-                    <div class="p-2 pb-1 flex gap-4 overflow-x-scroll scrollbar-thin">
+                    <div class="p-2 flex gap-4 overflow-x-scroll scrollbar-thin">
                       <div
                         :for={video <- Enum.filter(@show_eps, fn v -> v.show_id == show.id end)}
-                        class="max-w-xs sm:max-w-sm shrink-0 w-full"
+                        class="max-w-[12rem] sm:max-w-[16rem] shrink-0 w-full"
                       >
                         <div class="truncate" href={~p"/#{video.channel_handle}/#{video.id}"}>
                           <.video_thumbnail video={video} class="rounded-xl" />
