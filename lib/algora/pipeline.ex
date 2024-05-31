@@ -19,7 +19,8 @@ defmodule Algora.Pipeline do
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        storage: %Algora.Storage{video: video}
+        storage: %Algora.Storage{video: video},
+        mp4_parameters_in_band?: true
       }),
 
       #

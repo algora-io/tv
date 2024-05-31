@@ -11,6 +11,7 @@ defmodule Algora.Sink do
   use Membrane.Sink
 
   require Membrane.{H264, Logger}
+  require Logger
 
   alias Membrane.RTMP.Sink.Native
   alias Membrane.{AAC, Buffer, H264}
@@ -310,6 +311,18 @@ defmodule Algora.Sink do
     dts = buffer.dts || buffer.pts
     pts = buffer.pts || buffer.dts
     {base_dts, state} = Bunch.Map.get_updated!(state, :video_base_dts, &(&1 || dts))
+
+    log = %{
+      dts: dts,
+      pts: pts,
+      native: state.native,
+      base_dts: base_dts,
+      key_frame?: buffer.metadata.h264.key_frame?
+    }
+
+    Logger.info(log)
+    Membrane.Logger.info(log)
+    dbg(log)
 
     case Native.write_video_frame(
            state.native,
