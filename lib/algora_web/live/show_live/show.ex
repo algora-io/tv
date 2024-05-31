@@ -99,7 +99,9 @@ defmodule AlgoraWeb.ShowLive.Show do
                 <span :if={@attendees_count > @max_attendee_names_count} class="font-medium">
                   and
                   <span :if={@attendees_count == @max_attendee_names_count + 1}>
-                    <%= @attendees |> Enum.at(@max_attendee_names_count) %>
+                    <%= @attendees
+                    |> Enum.map(fn attendee -> attendee.user_display_name end)
+                    |> Enum.at(@max_attendee_names_count) %>
                   </span>
                   <span :if={@attendees_count != @max_attendee_names_count + 1}>
                     <%= @attendees_count - @max_attendee_names_count %> others
