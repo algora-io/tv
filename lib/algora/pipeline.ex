@@ -14,7 +14,7 @@ defmodule Algora.Pipeline do
       }),
 
       #
-      child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
+      child(:sink, %Algora.SinkBin{
         mode: :live,
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
@@ -92,7 +92,7 @@ defmodule Algora.Pipeline do
   def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
     spec = [
       #
-      child(ref, %Membrane.RTMP.Sink{rtmp_url: url}),
+      child(ref, %Algora.Sink{rtmp_url: url}),
 
       #
       get_child(:tee_audio)
