@@ -99,7 +99,9 @@ defmodule AlgoraWeb.ShowLive.Show do
                 <span :if={@attendees_count > @max_attendee_names_count} class="font-medium">
                   and
                   <span :if={@attendees_count == @max_attendee_names_count + 1}>
-                    <%= @attendees |> Enum.at(@max_attendee_names_count) %>
+                    <%= @attendees
+                    |> Enum.map(fn attendee -> attendee.user_display_name end)
+                    |> Enum.at(@max_attendee_names_count) %>
                   </span>
                   <span :if={@attendees_count != @max_attendee_names_count + 1}>
                     <%= @attendees_count - @max_attendee_names_count %> others
@@ -274,7 +276,7 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     channel = Accounts.get_user(show.user_id) |> Library.get_channel!()
 
-    videos = Library.list_channel_videos(channel, 50)
+    videos = Library.list_videos_by_show_ids([show.id])
 
     {:ok,
      socket

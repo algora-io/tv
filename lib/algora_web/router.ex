@@ -105,7 +105,7 @@ defmodule AlgoraWeb.Router do
     end
 
     live_session :default, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
-      live "/", HomeLive, :show
+      live "/", HomepageLive, :show
       live "/auth/login", SignInLive, :index
       live "/cossgpt", COSSGPTLive, :index
       live "/og/cossgpt", COSSGPTOGLive, :index
