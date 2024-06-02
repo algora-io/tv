@@ -21,4 +21,8 @@ defmodule Algora.Admin do
   def broadcasts() do
     pipelines() |> Enum.map(fn pid -> GenServer.call(pid, :get_video_id) end)
   end
+
+  def download(video_id) do
+    Library.get_video!(video_id) |> Library.transmux_to_mp4(fn x -> dbg(x) end)
+  end
 end
