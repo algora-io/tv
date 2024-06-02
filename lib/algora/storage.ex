@@ -41,7 +41,14 @@ defmodule Algora.Storage do
   end
 
   defp upload_opts(%{type: :manifest} = _ctx) do
-    [{:cache_control, "no-cache, no-store, private"}]
+    [
+      content_type: "application/x-mpegURL",
+      cache_control: "no-cache, no-store, private"
+    ]
+  end
+
+  defp upload_opts(%{type: :segment} = _ctx) do
+    [content_type: "video/mp4"]
   end
 
   defp upload_opts(_ctx), do: []

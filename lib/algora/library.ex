@@ -95,7 +95,8 @@ defmodule Algora.Library do
     cb.(%{stage: :transmuxing, done: 1, total: 1})
     System.cmd("ffmpeg", ["-i", video.url, "-c", "copy", mp4_local_path])
 
-    Storage.upload_from_filename(mp4_local_path, mp4_remote_path, cb)
+    Storage.upload_from_filename(mp4_local_path, mp4_remote_path, cb, content_type: "video/mp4")
+
     mp4_video = Repo.insert!(mp4_video)
 
     File.rm!(mp4_local_path)
