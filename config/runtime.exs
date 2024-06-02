@@ -110,6 +110,8 @@ if config_env() == :prod do
     host: URI.parse(System.fetch_env!("AWS_ENDPOINT_URL_S3")).host,
     region: System.fetch_env!("AWS_REGION")
 
+  config :ex_aws, :hackney_opts, recv_timeout: 300_000
+
   config :libcluster,
     topologies: [
       fly6pn: [
