@@ -30,8 +30,23 @@ defmodule Algora.Storage do
       ) do
     path = "#{video.uuid}/#{name}"
 
-    with {:ok, _} <- upload(contents, path, upload_opts(ctx)),
+    with {t, {:ok, _}} <- :timer.tc(&upload/3, [contents, path, upload_opts(ctx)]),
          {:ok, state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
+      size = :erlang.byte_size(contents) / 1_000
+      time = t / 1_000
+
+      region = System.get_env("FLY_REGION") || "local"
+
+      case ctx do
+        %{type: :segment} ->
+          Membrane.Logger.info(
+            "Uploaded #{Float.round(size, 1)} kB in #{Float.round(time, 1)} ms (#{Float.round(size / time, 1)} MB/s, #{region})"
+          )
+
+        _ ->
+          nil
+      end
+
       {:ok, state}
     else
       {:error, reason} = err ->
