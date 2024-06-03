@@ -593,6 +593,7 @@ defmodule Algora.Library do
       },
       where: v.show_id in ^ids
     )
+    |> order_by_inserted(:desc)
     |> Repo.all()
   end
 
