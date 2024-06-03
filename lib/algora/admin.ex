@@ -51,8 +51,10 @@ defmodule Algora.Admin do
     {:ok, _} = Accounts.update_settings(user, %{channel_tagline: title})
   end
 
+  def nodes(), do: [Node.self() | Node.list()]
+
   def pipelines() do
-    Node.list() |> Enum.flat_map(&Membrane.Pipeline.list_pipelines/1)
+    nodes() |> Enum.flat_map(&Membrane.Pipeline.list_pipelines/1)
   end
 
   def broadcasts() do
@@ -188,6 +190,46 @@ defmodule Algora.Admin do
 
   defp stream_file(file_path) do
     File.stream!(file_path, [], 2048)
+  end
+
+  def nearest_tigris_region() do
+    %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
+    bucket_url = "#{scheme}#{host}/#{Algora.config([:buckets, :media])}"
+
+    src_region = System.get_env("FLY_REGION") || "local"
+    bytes = :crypto.strong_rand_bytes(1_000)
+
+    {_time, {:ok, _}} = :timer.tc(&Storage.upload/3, [bytes, "0/#{src_region}.bin", []])
+
+    {:ok, %{headers: headers}} = HTTPoison.get("#{bucket_url}/0/#{src_region}.bin")
+
+    headers
+    |> Enum.find(fn {k, _} -> k == "X-Tigris-Regions" end)
+    |> then(fn {_, v} -> v end)
+  end
+
+  def speedtest(size \\ 1_000_000, n \\ 1) do
+    bytes = :crypto.strong_rand_bytes(size)
+    src_region = System.get_env("FLY_REGION") || "local"
+    dst_region = nearest_tigris_region()
+
+    for _ <- 1..n do
+      {time, {:ok, _}} = :timer.tc(&Storage.upload/3, [bytes, "0/#{src_region}.bin", []])
+
+      IO.puts(
+        "Uploaded #{Float.round(size / 1.0e6, 1)} MB in #{Float.round(time / 1.0e6, 2)} s (#{Float.round(size / time, 2)} MB/s, #{src_region} -> #{dst_region})"
+      )
+    end
+
+    :ok
+  end
+
+  def speedtest_par(size \\ 1_000_000, n \\ 1) do
+    :rpc.multicall(nodes(), Algora.Admin, :speedtest, [size, n])
+  end
+
+  def speedtest_seq(size \\ 1_000_000, n \\ 1) do
+    nodes() |> Enum.map(fn node -> :rpc.call(node, Algora.Admin, :speedtest, [size, n]) end)
   end
 
   defp rounded(num), do: Float.round(num, 1)
