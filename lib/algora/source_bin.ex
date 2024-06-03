@@ -102,17 +102,17 @@ defmodule Algora.SourceBin do
         validator: opts.validator,
         use_ssl?: opts.use_ssl?
       })
-      |> via_in(Pad.ref(:input, 1))
+      |> via_in(Pad.ref(:input, 0))
       |> get_child(:mixer)
-      # |> get_child(:demuxer),
+      # |> get_child(:demuxer)
 
       # #
       # get_child(:demuxer)
-      # |> via_out(Pad.ref(:audio, 1))
+      # |> via_out(Pad.ref(:audio, 0))
       # |> get_child(:audio_parser),
       # #
       # get_child(:demuxer)
-      # |> via_out(Pad.ref(:video, 1))
+      # |> via_out(Pad.ref(:video, 0))
       # |> get_child(:video_parser)
     ]
 

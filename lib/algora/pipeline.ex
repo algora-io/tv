@@ -83,6 +83,14 @@ defmodule Algora.Pipeline do
   end
 
   @impl true
+  def handle_child_notification(:discontinued = notification, _element, _ctx, state) do
+    # TODO: relay to source bin
+    # TODO: unlink :mixer pad
+    dbg(notification, label: "handle_child_notification")
+    {[], state}
+  end
+
+  @impl true
   def handle_child_notification(notification, _element, _ctx, state) do
     dbg(notification, label: "handle_child_notification")
     {[], state}
