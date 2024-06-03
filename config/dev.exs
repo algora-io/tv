@@ -33,7 +33,9 @@ config :ex_aws, :s3,
      end),
   region: System.get_env("AWS_REGION")
 
-config :ex_aws, :hackney_opts, recv_timeout: 300_000
+config :ex_aws, :hackney_opts,
+  timeout: 300_000,
+  recv_timeout: 300_000
 
 # Configure your database
 config :algora, Algora.Repo,
