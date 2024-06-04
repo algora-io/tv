@@ -38,7 +38,7 @@ defmodule Algora.Admin do
     }
   end
 
-  def set_thumbnail!(id, path) do
+  def set_thumbnail!(id, path \\ nil) do
     video = Library.get_video!(id)
     {:ok, _} = Library.store_thumbnail_from_file(video, path || "/tmp/#{id}.png")
     {:ok, _} = Library.store_og_image_from_file(video, path || "/tmp/#{id}.png")
@@ -208,7 +208,7 @@ defmodule Algora.Admin do
     |> then(fn {_, v} -> v end)
   end
 
-  def speedtest(size \\ 1_000_000, n \\ 1) do
+  def speedtest(n \\ 1, size \\ 1_000_000) do
     bytes = :crypto.strong_rand_bytes(size)
     src_region = System.get_env("FLY_REGION") || "local"
     dst_region = nearest_tigris_region()
@@ -224,12 +224,12 @@ defmodule Algora.Admin do
     :ok
   end
 
-  def speedtest_par(size \\ 1_000_000, n \\ 1) do
-    :rpc.multicall(nodes(), Algora.Admin, :speedtest, [size, n])
+  def speedtest_par(n \\ 1, size \\ 1_000_000) do
+    :rpc.multicall(nodes(), Algora.Admin, :speedtest, [n, size])
   end
 
-  def speedtest_seq(size \\ 1_000_000, n \\ 1) do
-    nodes() |> Enum.map(fn node -> :rpc.call(node, Algora.Admin, :speedtest, [size, n]) end)
+  def speedtest_seq(n \\ 1, size \\ 1_000_000) do
+    nodes() |> Enum.map(fn node -> :rpc.call(node, Algora.Admin, :speedtest, [n, size]) end)
   end
 
   defp rounded(num), do: Float.round(num, 1)
