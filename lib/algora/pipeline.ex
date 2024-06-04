@@ -15,6 +15,7 @@ defmodule Algora.Pipeline do
 
       #
       child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
+        hls_mode: :muxed_av,
         mode: :live,
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
@@ -36,7 +37,7 @@ defmodule Algora.Pipeline do
       get_child(:tee_audio)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
+        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(4)]
       )
       |> get_child(:sink),
 
@@ -44,7 +45,7 @@ defmodule Algora.Pipeline do
       get_child(:tee_video)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :video),
-        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
+        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(4)]
       )
       |> get_child(:sink)
     ]
