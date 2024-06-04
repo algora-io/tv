@@ -55,6 +55,12 @@ defmodule Algora.Storage do
     end
   end
 
+  defp upload_regions do
+    [System.get_env("FLY_REGION") || "fra", "sjc", "fra"]
+    |> Enum.uniq()
+    |> Enum.join(",")
+  end
+
   defp upload_opts(%{type: :manifest} = _ctx) do
     [
       content_type: "application/x-mpegURL",
@@ -121,9 +127,9 @@ defmodule Algora.Storage do
   end
 
   def upload_to_bucket(contents, remote_path, bucket, opts \\ []) do
-    Algora.config([:buckets, bucket])
-    |> ExAws.S3.put_object(remote_path, contents, opts)
-    |> ExAws.request([])
+    op = Algora.config([:buckets, bucket]) |> ExAws.S3.put_object(remote_path, contents, opts)
+    op = %{op | headers: op.headers |> Map.merge(%{"x-tigris-regions" => upload_regions()})}
+    ExAws.request(op, [])
   end
 
   def upload_from_filename_to_bucket(
