@@ -5,6 +5,8 @@ defmodule Algora.Application do
 
   use Application
 
+  alias Algora.Storage
+
   @impl true
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies) || []
@@ -42,7 +44,19 @@ defmodule Algora.Application do
       {Phoenix.PubSub, name: Algora.PubSub},
       # Start presence
       AlgoraWeb.Presence,
-      {Finch, name: Algora.Finch},
+      {Finch,
+       name: Algora.Finch,
+       pools: %{
+         :default => [
+           size: 50,
+           count: 1
+         ],
+         Storage.endpoint_url() => [
+           size: 50,
+           count: 8,
+           max_idle_time: :timer.seconds(30)
+         ]
+       }},
       # Clustering setup
       {DNSCluster, query: Application.get_env(:algora, :dns_cluster_query) || :ignore},
       # Start the Endpoints (http/https)

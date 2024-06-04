@@ -20,7 +20,8 @@ config :ex_aws,
   # debug_requests: true,
   json_codec: Jason,
   access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
-  secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
+  secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+  http_client: Algora.ExAwsHttpClient
 
 config :ex_aws, :s3,
   scheme: "https://",
@@ -32,10 +33,6 @@ config :ex_aws, :s3,
        _ -> nil
      end),
   region: System.get_env("AWS_REGION")
-
-config :ex_aws, :hackney_opts,
-  timeout: 300_000,
-  recv_timeout: 300_000
 
 # Configure your database
 config :algora, Algora.Repo,

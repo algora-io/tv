@@ -55,6 +55,11 @@ defmodule Algora.Storage do
     end
   end
 
+  def endpoint_url do
+    %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
+    "#{scheme}#{host}"
+  end
+
   def upload_regions do
     [System.get_env("FLY_REGION") || "fra", "sjc", "fra"]
     |> Enum.uniq()

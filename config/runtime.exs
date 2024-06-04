@@ -103,16 +103,13 @@ if config_env() == :prod do
   config :ex_aws,
     json_codec: Jason,
     access_key_id: System.fetch_env!("AWS_ACCESS_KEY_ID"),
-    secret_access_key: System.fetch_env!("AWS_SECRET_ACCESS_KEY")
+    secret_access_key: System.fetch_env!("AWS_SECRET_ACCESS_KEY"),
+    http_client: Algora.ExAwsHttpClient
 
   config :ex_aws, :s3,
     scheme: "https://",
     host: URI.parse(System.fetch_env!("AWS_ENDPOINT_URL_S3")).host,
     region: System.fetch_env!("AWS_REGION")
-
-  config :ex_aws, :hackney_opts,
-    timeout: 300_000,
-    recv_timeout: 300_000
 
   config :libcluster,
     topologies: [
