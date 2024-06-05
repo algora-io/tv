@@ -161,6 +161,7 @@ const Hooks = {
       });
 
       const playVideo = (opts: {
+        id: string;
         url: string;
         title: string;
         player_type: string;
@@ -206,6 +207,8 @@ const Hooks = {
           backdrop.classList.remove("opacity-10");
           backdrop.classList.add("opacity-20");
         }
+
+        this.pushEventTo("#clipper", "video_loaded", { id: opts.id });
       };
 
       this.handleEvent("play_video", playVideo);

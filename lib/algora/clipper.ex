@@ -69,8 +69,6 @@ defmodule Algora.Clipper do
     timestamp = video.inserted_at |> NaiveDateTime.to_string() |> Slug.slugify()
     title = Slug.slugify(video.title)
 
-    IO.puts(
-      "ffmpeg -i \"#{to_absolute(uuid, "index.m3u8")}\" -c copy \"#{timestamp}-#{title}-#{from}-#{to}.mp4\""
-    )
+    "ffmpeg -i \"#{to_absolute(uuid, "index.m3u8")}\" -c copy \"#{timestamp}-#{title}-#{from}-#{to}.mp4\""
   end
 end

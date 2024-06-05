@@ -77,6 +77,7 @@ defmodule AlgoraWeb.EmbedLive do
     socket =
       socket
       |> push_event("play_video", %{
+        id: video.id,
         url: video.url,
         title: video.title,
         player_type: Library.player_type(video),
