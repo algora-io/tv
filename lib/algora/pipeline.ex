@@ -124,6 +124,14 @@ defmodule Algora.Pipeline do
       send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_algora_#{i}")})
     end
 
+    if url = Algora.Accounts.get_restream_ws_url(user) do
+      Task.Supervisor.start_child(
+        Algora.TaskSupervisor,
+        fn -> Algora.Restream.Websocket.start_link(%{url: url, video: state.video}) end,
+        restart: :transient
+      )
+    end
+
     {[], state}
   end
 
