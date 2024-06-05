@@ -111,6 +111,22 @@ defmodule Algora.Pipeline do
     {[spec: spec], state}
   end
 
+  def handle_info(:multicast_algora, _ctx, state) do
+    user = Algora.Accounts.get_user_by!(handle: "algora")
+    destinations = Algora.Accounts.list_active_destinations(user.id)
+
+    for {destination, i} <- Enum.with_index(destinations) do
+      url =
+        URI.new!(destination.rtmp_url)
+        |> URI.append_path("/" <> destination.stream_key)
+        |> URI.to_string()
+
+      send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_algora_#{i}")})
+    end
+
+    {[], state}
+  end
+
   @impl true
   def handle_call(:get_video_id, _ctx, state) do
     {[{:reply, state.video.id}], state}
