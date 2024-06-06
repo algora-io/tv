@@ -91,6 +91,6 @@ defmodule Algora.Clipper do
     url = to_absolute(:clip, uuid, "index.m3u8")
     filename = Slug.slugify("#{video.title}-#{Library.to_hhmmss(from)}-#{Library.to_hhmmss(to)}")
 
-    "ffmpeg -i \"#{url}\" -ss #{ss} -t #{to - from} -c copy \"#{filename}.mp4\""
+    "ffmpeg -i \"#{url}\" -ss #{ss} -t #{to - from} \"#{filename}.mp4\""
   end
 end
