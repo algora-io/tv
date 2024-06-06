@@ -663,9 +663,18 @@ defmodule AlgoraWeb.VideoLive do
 
     {:noreply,
      if video.user_id == channel.user_id do
+       # TODO: add url
+       note =
+         if channel.is_live do
+           "Livestream moved to another URL."
+         else
+           "#{channel.name} just went live!"
+         end
+
        socket
        |> assign(channel: %{channel | is_live: true})
        |> stream_insert(:videos, video, at: 0)
+       |> put_flash(:note, note)
      else
        socket
      end}
@@ -698,7 +707,7 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
-  def handle_info({Library, _}, socket), do: {:noreply, socket}
+  def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp fmt(num) do
     chars = num |> Integer.to_string() |> String.to_charlist()
