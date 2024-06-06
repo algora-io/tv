@@ -2,8 +2,8 @@ defmodule AlgoraWeb.ChatLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Accounts, Library, Storage, Chat}
-  alias AlgoraWeb.{LayoutComponent, Presence}
+  alias Algora.{Accounts, Library, Chat}
+  alias AlgoraWeb.{LayoutComponent}
   alias AlgoraWeb.RTMPDestinationIconComponent
 
   def render(assigns) do
@@ -93,29 +93,20 @@ defmodule AlgoraWeb.ChatLive do
   end
 
   def mount(%{"channel_handle" => channel_handle, "video_id" => video_id}, _session, socket) do
-    channel =
-      Accounts.get_user_by!(handle: channel_handle)
-      |> Library.get_channel!()
-
+    channel = Accounts.get_user_by!(handle: channel_handle) |> Library.get_channel!()
     video = Library.get_video!(video_id)
 
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
       Chat.subscribe_to_room(video)
-
-      Presence.subscribe(channel_handle)
     end
-
-    videos = Library.list_channel_videos(channel, 50)
 
     socket =
       socket
       |> assign(:channel, channel)
       |> assign(:video, video)
-      |> stream(:videos, videos)
       |> stream(:messages, Chat.list_messages(video))
-      |> stream(:presences, Presence.list_online_users(channel_handle))
 
     if connected?(socket), do: send(self(), {:play, video})
 
@@ -132,63 +123,6 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply, socket}
   end
 
-  def handle_info({Presence, {:join, presence}}, socket) do
-    {:noreply, stream_insert(socket, :presences, presence)}
-  end
-
-  def handle_info({Presence, {:leave, presence}}, socket) do
-    if presence.metas == [] do
-      {:noreply, stream_delete(socket, :presences, presence)}
-    else
-      {:noreply, stream_insert(socket, :presences, presence)}
-    end
-  end
-
-  def handle_info(
-        {Storage, %Library.Events.ThumbnailsGenerated{video: video}},
-        socket
-      ) do
-    {:noreply,
-     if video.user_id == socket.assigns.channel.user_id do
-       socket
-       |> stream_insert(:videos, video, at: 0)
-     else
-       socket
-     end}
-  end
-
-  def handle_info(
-        {Library, %Library.Events.LivestreamStarted{video: video}},
-        socket
-      ) do
-    %{channel: channel} = socket.assigns
-
-    {:noreply,
-     if video.user_id == channel.user_id do
-       socket
-       |> assign(:channel, %{channel | is_live: true})
-       |> stream_insert(:videos, video, at: 0)
-     else
-       socket
-     end}
-  end
-
-  def handle_info(
-        {Library, %Library.Events.LivestreamEnded{video: video}},
-        socket
-      ) do
-    %{channel: channel} = socket.assigns
-
-    {:noreply,
-     if video.user_id == channel.user_id do
-       socket
-       |> assign(:channel, %{channel | is_live: false})
-       |> stream_insert(:videos, video)
-     else
-       socket
-     end}
-  end
-
   def handle_info(
         {Chat, %Chat.Events.MessageDeleted{message: message}},
         socket
@@ -200,7 +134,7 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
-  def handle_info({Library, _}, socket), do: {:noreply, socket}
+  def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp system_message?(%Chat.Message{} = message) do
     message.sender_handle == "algora"
