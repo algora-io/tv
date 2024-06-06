@@ -1,11 +1,8 @@
 defmodule AlgoraWeb.PlayerLive do
   use AlgoraWeb, {:live_view, container: {:div, []}}
 
-  alias Algora.Library
-
   on_mount {AlgoraWeb.UserAuth, :current_user}
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div class="lg:px-4">
@@ -21,11 +18,9 @@ defmodule AlgoraWeb.PlayerLive do
     """
   end
 
-  @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket, layout: false, temporary_assigns: [video: nil]}
+    {:ok, socket, layout: false, temporary_assigns: []}
   end
 
-  @impl true
   def handle_info({Library, _}, socket), do: {:noreply, socket}
 end
