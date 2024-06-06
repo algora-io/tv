@@ -3,8 +3,7 @@ defmodule AlgoraWeb.ChatLive do
   require Logger
 
   alias Algora.{Accounts, Library, Chat}
-  alias AlgoraWeb.{LayoutComponent}
-  alias AlgoraWeb.RTMPDestinationIconComponent
+  alias AlgoraWeb.{LayoutComponent, RTMPDestinationIconComponent}
 
   def render(assigns) do
     ~H"""
@@ -108,7 +107,7 @@ defmodule AlgoraWeb.ChatLive do
       |> assign(:video, video)
       |> stream(:messages, Chat.list_messages(video))
 
-    if connected?(socket), do: send(self(), {:play, video})
+    if connected?(socket), do: send(self(), {:join_chat, video})
 
     {:ok, socket}
   end
@@ -118,9 +117,8 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def handle_info({:play, video}, socket) do
-    socket = socket |> push_event("join_chat", %{id: video.id})
-    {:noreply, socket}
+  def handle_info({:join_chat, video}, socket) do
+    {:noreply, socket |> push_event("join_chat", %{id: video.id})}
   end
 
   def handle_info(
@@ -130,7 +128,10 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply, socket |> stream_delete(:messages, message)}
   end
 
-  def handle_info({Chat, %Chat.Events.MessageSent{message: message}}, socket) do
+  def handle_info(
+        {Chat, %Chat.Events.MessageSent{message: message}},
+        socket
+      ) do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
