@@ -7,8 +7,6 @@ defmodule AlgoraWeb.ChatLive do
   alias AlgoraWeb.RTMPDestinationIconComponent
 
   def render(assigns) do
-    assigns = assigns |> assign(tabs: [:chat])
-
     ~H"""
     <aside id="side-panel" class="w-[400px] rounded ring-1 ring-purple-300 m-1 overflow-hidden">
       <div>
@@ -64,11 +62,7 @@ defmodule AlgoraWeb.ChatLive do
           </div>
         </div>
         <div>
-          <div
-            :for={{tab, i} <- Enum.with_index(@tabs)}
-            id={"side-panel-content-#{tab}"}
-            class={["side-panel-content", i != 0 && "hidden"]}
-          >
+          <div id="side-panel-content-chat" class="side-panel-content">
             <div>
               <div
                 id="chat-messages"
@@ -115,31 +109,10 @@ defmodule AlgoraWeb.ChatLive do
 
     videos = Library.list_channel_videos(channel, 50)
 
-    subtitles = Library.list_subtitles(%Library.Video{id: video_id})
-
-    data = %{}
-
-    {:ok, encoded_subtitles} =
-      subtitles
-      |> Enum.map(&%{id: &1.id, start: &1.start, end: &1.end, body: &1.body})
-      |> Jason.encode(pretty: true)
-
-    types = %{subtitles: :string}
-    params = %{subtitles: encoded_subtitles}
-
-    changeset =
-      {data, types}
-      |> Ecto.Changeset.cast(params, Map.keys(types))
-
     socket =
       socket
-      |> assign(
-        channel: channel,
-        videos_count: Enum.count(videos),
-        video: video,
-        subtitles: subtitles
-      )
-      |> assign_form(changeset)
+      |> assign(:channel, channel)
+      |> assign(:video, video)
       |> stream(:videos, videos)
       |> stream(:messages, Chat.list_messages(video))
       |> stream(:presences, Presence.list_online_users(channel_handle))
@@ -193,7 +166,7 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply,
      if video.user_id == channel.user_id do
        socket
-       |> assign(channel: %{channel | is_live: true})
+       |> assign(:channel, %{channel | is_live: true})
        |> stream_insert(:videos, video, at: 0)
      else
        socket
@@ -209,7 +182,7 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply,
      if video.user_id == channel.user_id do
        socket
-       |> assign(channel: %{channel | is_live: false})
+       |> assign(:channel, %{channel | is_live: false})
        |> stream_insert(:videos, video)
      else
        socket
@@ -231,10 +204,6 @@ defmodule AlgoraWeb.ChatLive do
 
   defp system_message?(%Chat.Message{} = message) do
     message.sender_handle == "algora"
-  end
-
-  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :form, to_form(changeset, as: :data))
   end
 
   defp apply_action(socket, :show, params) do
