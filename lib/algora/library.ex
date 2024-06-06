@@ -260,7 +260,7 @@ defmodule Algora.Library do
         false -> %Events.LivestreamEnded{video: video}
       end
 
-    Phoenix.PubSub.broadcast!(@pubsub, topic_livestreams(), {__MODULE__, msg})
+    broadcast!(topic_livestreams(), msg)
 
     sink_url = Algora.config([:event_sink, :url])
 
