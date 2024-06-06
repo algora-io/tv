@@ -91,9 +91,21 @@ defmodule AlgoraWeb.ChatLive do
     """
   end
 
-  def mount(%{"channel_handle" => channel_handle, "video_id" => video_id}, _session, socket) do
-    channel = Accounts.get_user_by!(handle: channel_handle) |> Library.get_channel!()
-    video = Library.get_video!(video_id)
+  def mount(%{"channel_handle" => channel_handle} = params, _session, socket) do
+    user = Accounts.get_user_by!(handle: channel_handle)
+    channel = Library.get_channel!(user)
+
+    video =
+      case params["video_id"] do
+        nil -> Library.get_latest_video(user)
+        id -> Library.get_video!(id)
+      end
+
+    messages =
+      case video do
+        nil -> []
+        video -> Chat.list_messages(video)
+      end
 
     if connected?(socket) do
       Library.subscribe_to_livestreams()
@@ -101,13 +113,11 @@ defmodule AlgoraWeb.ChatLive do
       Chat.subscribe_to_room(video)
     end
 
-    socket =
-      socket
-      |> assign(:channel, channel)
-      |> assign(:video, video)
-      |> stream(:messages, Chat.list_messages(video))
-
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:channel, channel)
+     |> assign(:video, video)
+     |> stream(:messages, messages)}
   end
 
   def handle_params(params, _url, socket) do
