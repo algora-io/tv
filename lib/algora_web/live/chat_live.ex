@@ -139,6 +139,19 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
+  def handle_info(
+        {Library, %Library.Events.LivestreamStarted{video: video}},
+        socket
+      ) do
+    if video.user_id != socket.assigns.channel.id do
+      {:noreply, socket}
+    else
+      Chat.unsubscribe_to_room(socket.assigns.video)
+      Chat.subscribe_to_room(video)
+      {:noreply, socket |> assign(:video, video)}
+    end
+  end
+
   def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp system_message?(%Chat.Message{} = message) do
