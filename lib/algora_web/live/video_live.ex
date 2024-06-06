@@ -613,7 +613,6 @@ defmodule AlgoraWeb.VideoLive do
         channel_name: video.channel_name,
         current_time: t
       })
-      |> push_event("join_chat", %{id: video.id})
 
     schedule_watch_event()
 

@@ -107,18 +107,12 @@ defmodule AlgoraWeb.ChatLive do
       |> assign(:video, video)
       |> stream(:messages, Chat.list_messages(video))
 
-    if connected?(socket), do: send(self(), {:join_chat, video})
-
     {:ok, socket}
   end
 
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
-  end
-
-  def handle_info({:join_chat, video}, socket) do
-    {:noreply, socket |> push_event("join_chat", %{id: video.id})}
   end
 
   def handle_info(

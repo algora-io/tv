@@ -83,7 +83,6 @@ defmodule AlgoraWeb.EmbedLive do
         player_type: Library.player_type(video),
         channel_name: video.channel_name
       })
-      |> push_event("join_chat", %{id: video.id})
 
     {:noreply, socket}
   end
