@@ -663,12 +663,23 @@ defmodule AlgoraWeb.VideoLive do
 
     {:noreply,
      if video.user_id == channel.user_id do
-       # TODO: add url
        note =
          if channel.is_live do
-           "Livestream moved to another URL."
+           %{
+             body: "Livestream moved to another URL!",
+             action: %{
+               href: ~p"/#{channel.handle}/#{video.id}",
+               body: "Click here to continue watching"
+             }
+           }
          else
-           "#{channel.name} just went live!"
+           %{
+             body: "#{channel.name} just went live!",
+             action: %{
+               href: ~p"/#{channel.handle}/#{video.id}",
+               body: "Click here to start watching"
+             }
+           }
          end
 
        socket

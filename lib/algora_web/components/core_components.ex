@@ -576,12 +576,25 @@ defmodule AlgoraWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <p class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
-        <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
-        <Heroicons.information_circle :if={@kind == :note} solid class="w-6 h-6" />
-        <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
-        <%= msg %>
-      </p>
+      <%= case msg do %>
+        <% %{body: body, action: %{ href: href, body: action_body }} -> %>
+          <div class="flex gap-1.5 text-[0.8125rem] font-semibold leading-6">
+            <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
+            <Heroicons.information_circle :if={@kind == :note} solid class="w-6 h-6" />
+            <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
+            <div>
+              <div><%= body %></div>
+              <.link navigate={href} class="underline"><%= action_body %></.link>
+            </div>
+          </div>
+        <% body -> %>
+          <p class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
+            <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
+            <Heroicons.information_circle :if={@kind == :note} solid class="w-6 h-6" />
+            <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
+            <%= body %>
+          </p>
+      <% end %>
       <button
         :if={@close}
         type="button"

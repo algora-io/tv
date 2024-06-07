@@ -143,7 +143,7 @@ defmodule AlgoraWeb.ChatLive do
         {Library, %Library.Events.LivestreamStarted{video: video}},
         socket
       ) do
-    if video.user_id != socket.assigns.channel.id do
+    if video.user_id != socket.assigns.channel.user_id do
       {:noreply, socket}
     else
       Chat.unsubscribe_to_room(socket.assigns.video)
