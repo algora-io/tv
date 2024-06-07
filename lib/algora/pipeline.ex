@@ -8,7 +8,7 @@ defmodule Algora.Pipeline do
 
     spec = [
       #
-      child(:src, %Membrane.RTMP.SourceBin{
+      child(:src, %Algora.SourceBin{
         socket: socket,
         validator: %Algora.MessageValidator{video_id: video.id, pid: self()}
       }),
