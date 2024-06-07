@@ -110,7 +110,7 @@ defmodule AlgoraWeb.ChatLive do
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
-      Chat.subscribe_to_room(video)
+      if video, do: Chat.subscribe_to_room(video)
     end
 
     {:ok,
@@ -159,9 +159,19 @@ defmodule AlgoraWeb.ChatLive do
   end
 
   defp apply_action(socket, :show, params) do
-    socket
-    |> assign(:page_title, socket.assigns.channel.name || params["channel_handle"])
-    |> assign(:page_description, socket.assigns.video.title)
-    |> assign(:page_image, Library.get_og_image_url(socket.assigns.video))
+    channel_name = socket.assigns.channel.name || params["channel_handle"]
+
+    case socket.assigns.video do
+      nil ->
+        socket
+        |> assign(:page_title, channel_name)
+        |> assign(:page_description, "Watch #{channel_name} on Algora TV")
+
+      video ->
+        socket
+        |> assign(:page_title, channel_name)
+        |> assign(:page_description, video.title)
+        |> assign(:page_image, Library.get_og_image_url(video))
+    end
   end
 end
