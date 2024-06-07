@@ -2,13 +2,10 @@ defmodule AlgoraWeb.ChatLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Accounts, Library, Storage, Chat}
-  alias AlgoraWeb.{LayoutComponent, Presence}
-  alias AlgoraWeb.RTMPDestinationIconComponent
+  alias Algora.{Accounts, Library, Chat}
+  alias AlgoraWeb.{LayoutComponent, RTMPDestinationIconComponent}
 
   def render(assigns) do
-    assigns = assigns |> assign(tabs: [:chat])
-
     ~H"""
     <aside id="side-panel" class="w-[400px] rounded ring-1 ring-purple-300 m-1 overflow-hidden">
       <div>
@@ -64,11 +61,7 @@ defmodule AlgoraWeb.ChatLive do
           </div>
         </div>
         <div>
-          <div
-            :for={{tab, i} <- Enum.with_index(@tabs)}
-            id={"side-panel-content-#{tab}"}
-            class={["side-panel-content", i != 0 && "hidden"]}
-          >
+          <div id="side-panel-content-chat" class="side-panel-content">
             <div>
               <div
                 id="chat-messages"
@@ -98,122 +91,38 @@ defmodule AlgoraWeb.ChatLive do
     """
   end
 
-  def mount(%{"channel_handle" => channel_handle, "video_id" => video_id}, _session, socket) do
-    channel =
-      Accounts.get_user_by!(handle: channel_handle)
-      |> Library.get_channel!()
+  def mount(%{"channel_handle" => channel_handle} = params, _session, socket) do
+    user = Accounts.get_user_by!(handle: channel_handle)
+    channel = Library.get_channel!(user)
 
-    video = Library.get_video!(video_id)
+    video =
+      case params["video_id"] do
+        nil -> Library.get_latest_video(user)
+        id -> Library.get_video!(id)
+      end
+
+    messages =
+      case video do
+        nil -> []
+        video -> Chat.list_messages(video)
+      end
 
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
-      Chat.subscribe_to_room(video)
-
-      Presence.subscribe(channel_handle)
+      if video, do: Chat.subscribe_to_room(video)
     end
 
-    videos = Library.list_channel_videos(channel, 50)
-
-    subtitles = Library.list_subtitles(%Library.Video{id: video_id})
-
-    data = %{}
-
-    {:ok, encoded_subtitles} =
-      subtitles
-      |> Enum.map(&%{id: &1.id, start: &1.start, end: &1.end, body: &1.body})
-      |> Jason.encode(pretty: true)
-
-    types = %{subtitles: :string}
-    params = %{subtitles: encoded_subtitles}
-
-    changeset =
-      {data, types}
-      |> Ecto.Changeset.cast(params, Map.keys(types))
-
-    socket =
-      socket
-      |> assign(
-        channel: channel,
-        videos_count: Enum.count(videos),
-        video: video,
-        subtitles: subtitles
-      )
-      |> assign_form(changeset)
-      |> stream(:videos, videos)
-      |> stream(:messages, Chat.list_messages(video))
-      |> stream(:presences, Presence.list_online_users(channel_handle))
-
-    if connected?(socket), do: send(self(), {:play, video})
-
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:channel, channel)
+     |> assign(:video, video)
+     |> stream(:messages, messages)}
   end
 
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
-  end
-
-  def handle_info({:play, video}, socket) do
-    socket = socket |> push_event("join_chat", %{id: video.id})
-    {:noreply, socket}
-  end
-
-  def handle_info({Presence, {:join, presence}}, socket) do
-    {:noreply, stream_insert(socket, :presences, presence)}
-  end
-
-  def handle_info({Presence, {:leave, presence}}, socket) do
-    if presence.metas == [] do
-      {:noreply, stream_delete(socket, :presences, presence)}
-    else
-      {:noreply, stream_insert(socket, :presences, presence)}
-    end
-  end
-
-  def handle_info(
-        {Storage, %Library.Events.ThumbnailsGenerated{video: video}},
-        socket
-      ) do
-    {:noreply,
-     if video.user_id == socket.assigns.channel.user_id do
-       socket
-       |> stream_insert(:videos, video, at: 0)
-     else
-       socket
-     end}
-  end
-
-  def handle_info(
-        {Library, %Library.Events.LivestreamStarted{video: video}},
-        socket
-      ) do
-    %{channel: channel} = socket.assigns
-
-    {:noreply,
-     if video.user_id == channel.user_id do
-       socket
-       |> assign(channel: %{channel | is_live: true})
-       |> stream_insert(:videos, video, at: 0)
-     else
-       socket
-     end}
-  end
-
-  def handle_info(
-        {Library, %Library.Events.LivestreamEnded{video: video}},
-        socket
-      ) do
-    %{channel: channel} = socket.assigns
-
-    {:noreply,
-     if video.user_id == channel.user_id do
-       socket
-       |> assign(channel: %{channel | is_live: false})
-       |> stream_insert(:videos, video)
-     else
-       socket
-     end}
   end
 
   def handle_info(
@@ -223,24 +132,46 @@ defmodule AlgoraWeb.ChatLive do
     {:noreply, socket |> stream_delete(:messages, message)}
   end
 
-  def handle_info({Chat, %Chat.Events.MessageSent{message: message}}, socket) do
+  def handle_info(
+        {Chat, %Chat.Events.MessageSent{message: message}},
+        socket
+      ) do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
-  def handle_info({Library, _}, socket), do: {:noreply, socket}
+  def handle_info(
+        {Library, %Library.Events.LivestreamStarted{video: video}},
+        socket
+      ) do
+    if video.user_id != socket.assigns.channel.user_id do
+      {:noreply, socket}
+    else
+      Chat.unsubscribe_to_room(socket.assigns.video)
+      Chat.subscribe_to_room(video)
+      {:noreply, socket |> assign(:video, video)}
+    end
+  end
+
+  def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp system_message?(%Chat.Message{} = message) do
     message.sender_handle == "algora"
   end
 
-  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :form, to_form(changeset, as: :data))
-  end
-
   defp apply_action(socket, :show, params) do
-    socket
-    |> assign(:page_title, socket.assigns.channel.name || params["channel_handle"])
-    |> assign(:page_description, socket.assigns.video.title)
-    |> assign(:page_image, Library.get_og_image_url(socket.assigns.video))
+    channel_name = socket.assigns.channel.name || params["channel_handle"]
+
+    case socket.assigns.video do
+      nil ->
+        socket
+        |> assign(:page_title, channel_name)
+        |> assign(:page_description, "Watch #{channel_name} on Algora TV")
+
+      video ->
+        socket
+        |> assign(:page_title, channel_name)
+        |> assign(:page_description, video.title)
+        |> assign(:page_image, Library.get_og_image_url(video))
+    end
   end
 end

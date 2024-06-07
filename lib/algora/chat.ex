@@ -12,6 +12,10 @@ defmodule Algora.Chat do
 
   @pubsub Algora.PubSub
 
+  def unsubscribe_to_room(%Video{} = video) do
+    Phoenix.PubSub.unsubscribe(@pubsub, topic(video.id))
+  end
+
   def subscribe_to_room(%Video{} = video) do
     Phoenix.PubSub.subscribe(@pubsub, topic(video.id))
   end

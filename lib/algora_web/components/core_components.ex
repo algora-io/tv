@@ -553,7 +553,7 @@ defmodule AlgoraWeb.CoreComponents do
   """
   attr :id, :string, default: "flash", doc: "the optional id of flash container"
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
-  attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+  attr :kind, :atom, values: [:info, :note, :error], doc: "used for styling and flash lookup"
   attr :autoshow, :boolean, default: true, doc: "whether to auto show the flash on mount"
   attr :close, :boolean, default: true, doc: "whether the flash can be closed"
   attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
@@ -571,15 +571,30 @@ defmodule AlgoraWeb.CoreComponents do
       class={[
         "fixed hidden top-2 right-2 w-80 sm:w-96 z-50 rounded-lg p-3 shadow-md shadow-gray-50/5 ring-1",
         @kind == :info && "bg-green-900 text-green-100 ring-green-900 fill-green-900",
+        @kind == :note && "bg-purple-900 text-purple-100 ring-purple-900 fill-purple-900",
         @kind == :error && "bg-red-900 p-3 text-red-50 shadow-md ring-red-900 fill-red-50"
       ]}
       {@rest}
     >
-      <p class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
-        <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
-        <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
-        <%= msg %>
-      </p>
+      <%= case msg do %>
+        <% %{body: body, action: %{ href: href, body: action_body }} -> %>
+          <div class="flex gap-1.5 text-[0.8125rem] font-semibold leading-6">
+            <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
+            <Heroicons.information_circle :if={@kind == :note} solid class="w-6 h-6" />
+            <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
+            <div>
+              <div><%= body %></div>
+              <.link navigate={href} class="underline"><%= action_body %></.link>
+            </div>
+          </div>
+        <% body -> %>
+          <p class="flex items-center gap-1.5 text-[0.8125rem] font-semibold leading-6">
+            <Heroicons.check_circle :if={@kind == :info} solid class="w-6 h-6" />
+            <Heroicons.information_circle :if={@kind == :note} solid class="w-6 h-6" />
+            <Heroicons.exclamation_circle :if={@kind == :error} solid class="w-6 h-6" />
+            <%= body %>
+          </p>
+      <% end %>
       <button
         :if={@close}
         type="button"
@@ -604,6 +619,7 @@ defmodule AlgoraWeb.CoreComponents do
   def flash_group(assigns) do
     ~H"""
     <.flash kind={:info} title="Success!" flash={@flash} />
+    <.flash kind={:note} title="Note" flash={@flash} />
     <.flash kind={:error} title="Error!" flash={@flash} />
     <.flash
       id="disconnected"

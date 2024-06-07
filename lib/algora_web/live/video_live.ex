@@ -613,7 +613,6 @@ defmodule AlgoraWeb.VideoLive do
         channel_name: video.channel_name,
         current_time: t
       })
-      |> push_event("join_chat", %{id: video.id})
 
     schedule_watch_event()
 
@@ -664,9 +663,29 @@ defmodule AlgoraWeb.VideoLive do
 
     {:noreply,
      if video.user_id == channel.user_id do
+       note =
+         if channel.is_live do
+           %{
+             body: "Livestream moved to another URL!",
+             action: %{
+               href: ~p"/#{channel.handle}/#{video.id}",
+               body: "Click here to continue watching"
+             }
+           }
+         else
+           %{
+             body: "#{channel.name} just went live!",
+             action: %{
+               href: ~p"/#{channel.handle}/#{video.id}",
+               body: "Click here to start watching"
+             }
+           }
+         end
+
        socket
        |> assign(channel: %{channel | is_live: true})
        |> stream_insert(:videos, video, at: 0)
+       |> put_flash(:note, note)
      else
        socket
      end}
@@ -699,7 +718,7 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
-  def handle_info({Library, _}, socket), do: {:noreply, socket}
+  def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp fmt(num) do
     chars = num |> Integer.to_string() |> String.to_charlist()

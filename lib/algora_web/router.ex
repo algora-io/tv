@@ -53,13 +53,13 @@ defmodule AlgoraWeb.Router do
     pipe_through [:browser, :embed]
 
     get "/:channel_handle/latest", VideoPopoutController, :get
-    get "/:channel_handle/chat", ChatPopoutController, :get
     get "/:channel_handle/embed", EmbedPopoutController, :get
     get "/:channel_handle/:video_id/embed", EmbedPopoutController, :get_by_id
 
     live_session :chat,
       layout: {AlgoraWeb.Layouts, :live_chat},
       root_layout: {AlgoraWeb.Layouts, :root_embed} do
+      live "/:channel_handle/chat", ChatLive, :show
       live "/:channel_handle/:video_id/chat", ChatLive, :show
     end
   end
