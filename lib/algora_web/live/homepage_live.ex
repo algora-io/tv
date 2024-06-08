@@ -6,6 +6,28 @@ defmodule AlgoraWeb.HomepageLive do
   @impl true
   def render(assigns) do
     ~H"""
+    <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
+      <aside
+        id="side-panel"
+        class="my-auto lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 lg:pr-4 z-[1000]"
+      >
+        <div class="p-4 bg-gray-800/40 overflow-hidden w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
+          <div class="flex items-center gap-4">
+            <img
+              class="w-20 h-20 shrink-0 flex items-center justify-center rounded-full bg-purple-300"
+              src={@video.channel_avatar_url}
+              alt={@video.channel_handle}
+            />
+            <div>
+              <div class="text-3xl font-semibold"><%= @video.channel_name %></div>
+              <div class="font-medium text-gray-300">@<%= @video.channel_handle %></div>
+            </div>
+          </div>
+          <div class="pt-4 font-medium text-gray-100"><%= @video.title %></div>
+        </div>
+      </aside>
+    </div>
+
     <div class="mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
       <.header class="pt-8">
         <h1 class="text-4xl font-semibold">Livestreaming for developers</h1>
@@ -26,7 +48,7 @@ defmodule AlgoraWeb.HomepageLive do
               class="pr-3 flex-1 flex items-center justify-between border-t border-r border-b border-gray-700 bg-gray-900 rounded-r-md truncate"
             >
               <img
-                class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-l-md bg-purple-300"
+                class="w-12 h-12 shrink-0 flex items-center justify-center rounded-l-md bg-purple-300"
                 src={livestream.channel_avatar_url}
                 alt={livestream.channel_handle}
               />
