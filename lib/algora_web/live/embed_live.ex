@@ -3,7 +3,7 @@ defmodule AlgoraWeb.EmbedLive do
   require Logger
 
   alias Algora.{Accounts, Library, Storage, Chat}
-  alias AlgoraWeb.{LayoutComponent, Presence}
+  alias AlgoraWeb.{LayoutComponent, Presence, PlayerLive}
 
   def render(assigns) do
     ~H"""
@@ -63,7 +63,7 @@ defmodule AlgoraWeb.EmbedLive do
       |> stream(:videos, videos)
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    if connected?(socket), do: send(self(), {:play, video})
+    if connected?(socket), do: PlayerLive.subscribe()
 
     {:ok, socket}
   end
@@ -73,17 +73,8 @@ defmodule AlgoraWeb.EmbedLive do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def handle_info({:play, video}, socket) do
-    socket =
-      socket
-      |> push_event("play_video", %{
-        id: video.id,
-        url: video.url,
-        title: video.title,
-        player_type: Library.player_type(video),
-        channel_name: video.channel_name
-      })
-
+  def handle_info({PlayerLive, :ready}, socket) do
+    PlayerLive.broadcast!({:play, %{video: socket.assigns.video, params: socket.assigns.params}})
     {:noreply, socket}
   end
 

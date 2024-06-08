@@ -3,12 +3,13 @@ defmodule AlgoraWeb.SubtitleLive.Index do
 
   alias Algora.Library
   alias Algora.Library.Subtitle
+  alias AlgoraWeb.PlayerLive
 
   @impl true
   def mount(%{"video_id" => video_id}, _session, socket) do
     video = Library.get_video!(video_id)
 
-    if connected?(socket), do: send(self(), :play_video)
+    if connected?(socket), do: PlayerLive.subscribe()
 
     {:ok,
      socket
@@ -40,18 +41,9 @@ defmodule AlgoraWeb.SubtitleLive.Index do
   end
 
   @impl true
-  def handle_info(:play_video, socket) do
-    video = socket.assigns.video
-
-    {:noreply,
-     socket
-     |> push_event("play_video", %{
-       id: video.id,
-       url: video.url,
-       title: video.title,
-       player_type: Library.player_type(video),
-       channel_name: video.channel_name
-     })}
+  def handle_info({PlayerLive, :ready}, socket) do
+    PlayerLive.broadcast!({:play, %{video: socket.assigns.video, params: socket.assigns.params}})
+    {:noreply, socket}
   end
 
   @impl true

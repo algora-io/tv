@@ -150,7 +150,9 @@ const Hooks = {
     mounted() {
       const backdrop = document.querySelector("#video-backdrop");
 
-      this.player = videojs("video-player", {
+      this.playerId = this.el.id;
+
+      this.player = videojs(this.el, {
         autoplay: "any",
         liveui: true,
         html5: {
@@ -161,6 +163,7 @@ const Hooks = {
       });
 
       const playVideo = (opts: {
+        player_id?: string;
         id: string;
         url: string;
         title: string;
@@ -168,6 +171,10 @@ const Hooks = {
         current_time?: number;
         channel_name: string;
       }) => {
+        if (this.playerId !== opts.player_id) {
+          return;
+        }
+
         const setMediaSession = () => {
           if (!("mediaSession" in navigator)) {
             return;
@@ -193,7 +200,7 @@ const Hooks = {
             : {}),
         });
         this.player.src({ src: opts.url, type: opts.player_type });
-        this.player.play();
+        // this.player.play();
 
         setMediaSession();
 

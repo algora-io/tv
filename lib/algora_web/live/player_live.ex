@@ -1,26 +1,51 @@
 defmodule AlgoraWeb.PlayerLive do
   use AlgoraWeb, {:live_view, container: {:div, []}}
 
+  alias AlgoraWeb.{PlayerComponent}
+
   on_mount {AlgoraWeb.UserAuth, :current_user}
 
+  @pubsub "sticky-player"
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="lg:px-4">
       <div class="w-full hidden lg:pr-[24rem]">
-        <video
-          id="video-player"
-          phx-hook="VideoPlayer"
-          class="video-js vjs-default-skin aspect-video h-full w-full flex-1 lg:rounded-2xl overflow-hidden"
-          controls
-        />
+        <.live_component module={PlayerComponent} id="video-player" current_user={@current_user} />
       </div>
     </div>
     """
   end
 
+  @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      subscribe()
+      broadcast!({__MODULE__, :ready})
+    end
+
     {:ok, socket, layout: false, temporary_assigns: []}
   end
 
-  def handle_info({Library, _}, socket), do: {:noreply, socket}
+  @impl true
+  def handle_info({:play, %{video: video}} = _args, socket) do
+    send_update(PlayerComponent, %{
+      id: "video-player",
+      video: video,
+      current_user: socket.assigns.current_user
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_info(_args, socket), do: {:noreply, socket}
+
+  def subscribe() do
+    Phoenix.PubSub.subscribe(Algora.PubSub, @pubsub)
+  end
+
+  def broadcast!(msg) do
+    Phoenix.PubSub.broadcast!(Algora.PubSub, @pubsub, msg)
+  end
 end

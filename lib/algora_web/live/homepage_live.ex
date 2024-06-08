@@ -1,40 +1,39 @@
 defmodule AlgoraWeb.HomepageLive do
   use AlgoraWeb, :live_view
 
-  alias Algora.{Library, Shows, Events}
+  alias Algora.{Library, Shows}
+  alias AlgoraWeb.PlayerComponent
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
-      <aside
-        id="side-panel"
-        class="my-auto lg:w-[24rem] lg:flex lg:fixed lg:top-[64px] lg:right-0 lg:pr-4 z-[1000]"
-      >
-        <div class="p-4 bg-gray-800/40 overflow-hidden w-screen lg:w-[23rem] lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
-          <div class="flex items-center gap-4">
-            <img
-              class="w-20 h-20 shrink-0 flex items-center justify-center rounded-full bg-purple-300"
-              src={@video.channel_avatar_url}
-              alt={@video.channel_handle}
-            />
-            <div>
-              <div class="text-3xl font-semibold"><%= @video.channel_name %></div>
-              <div class="font-medium text-gray-300">@<%= @video.channel_handle %></div>
-            </div>
-          </div>
-          <div class="pt-4 font-medium text-gray-100"><%= @video.title %></div>
-        </div>
-      </aside>
-    </div>
-
     <div class="mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
       <.header class="pt-8">
         <h1 class="text-4xl font-semibold">Livestreaming for developers</h1>
         <p class="text-xl font-medium text-gray-200 italic">You'll never ship alone!</p>
       </.header>
 
-      <div :if={length(@livestreams) > 0}>
+      <div class="flex items-center justify-center gap-4">
+        <div class="w-full max-w-3xl">
+          <.live_component module={PlayerComponent} id="home-player" />
+        </div>
+        <div class="p-6 bg-gray-800/40 overflow-hidden lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
+          <div class="flex items-center gap-4">
+            <img
+              class="w-20 h-20 shrink-0 flex items-center justify-center rounded-full bg-purple-300"
+              src={@livestream.channel_avatar_url}
+              alt={@livestream.channel_handle}
+            />
+            <div>
+              <div class="text-3xl font-semibold"><%= @livestream.channel_name %></div>
+              <div class="font-medium text-gray-300">@<%= @livestream.channel_handle %></div>
+            </div>
+          </div>
+          <div class="pt-4 font-medium text-gray-100"><%= @livestream.title %></div>
+        </div>
+      </div>
+
+      <%!-- <div :if={length(@livestreams) > 0}>
         <h2 class="text-white text-3xl font-semibold">
           Live now
         </h2>
@@ -61,7 +60,7 @@ defmodule AlgoraWeb.HomepageLive do
             </.link>
           </li>
         </ul>
-      </div>
+      </div> --%>
 
       <div class="pt-12">
         <h2 class="text-white text-3xl font-semibold">
@@ -213,7 +212,14 @@ defmodule AlgoraWeb.HomepageLive do
     livestreams = Library.list_livestreams(10)
 
     livestream = Enum.at(livestreams, 0)
-    if connected?(socket) && livestream, do: send(self(), {:play, livestream})
+
+    if connected?(socket) && livestream do
+      send_update(PlayerComponent, %{
+        id: "home-player",
+        video: livestream,
+        current_user: socket.assigns.current_user
+      })
+    end
 
     {:ok,
      socket
@@ -221,42 +227,12 @@ defmodule AlgoraWeb.HomepageLive do
      |> assign(:videos, videos)
      |> assign(:shows, shows)
      |> assign(:livestreams, livestreams)
-     |> assign(:video, livestream)}
+     |> assign(:livestream, livestream)}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
-  end
-
-  @impl true
-  def handle_info({:play, video}, socket) do
-    schedule_watch_event()
-
-    {:noreply,
-     socket
-     |> push_event("play_video", %{
-       id: video.id,
-       url: video.url,
-       title: video.title,
-       player_type: Library.player_type(video),
-       channel_name: video.channel_name
-     })}
-  end
-
-  def handle_info(:watch_event, socket) do
-    Events.log_watched(socket.assigns.current_user, socket.assigns.video)
-
-    # TODO: enable later
-    # if socket.assigns.current_user && socket.assigns.video.is_live do
-    #   schedule_watch_event(:timer.seconds(2))
-    # end
-
-    {:noreply, socket}
-  end
-
-  defp schedule_watch_event(ms \\ 0) do
-    Process.send_after(self(), :watch_event, ms)
   end
 
   defp apply_action(socket, :show, _params) do

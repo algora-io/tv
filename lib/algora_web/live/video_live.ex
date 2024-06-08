@@ -3,9 +3,9 @@ defmodule AlgoraWeb.VideoLive do
   require Logger
   import Ecto.Query, warn: false
 
-  alias Algora.{Accounts, Library, Storage, Chat, Repo, Events}
+  alias Algora.{Accounts, Library, Storage, Chat, Repo}
   alias Algora.Events.Event
-  alias AlgoraWeb.{LayoutComponent, Presence, RTMPDestinationIconComponent}
+  alias AlgoraWeb.{PlayerLive, LayoutComponent, Presence, RTMPDestinationIconComponent}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
   @impl true
@@ -567,6 +567,7 @@ defmodule AlgoraWeb.VideoLive do
     socket =
       socket
       |> assign(
+        params: params,
         channel: channel,
         owns_channel?: current_user && Library.owns_channel?(current_user, channel),
         videos_count: Enum.count(videos),
@@ -584,7 +585,7 @@ defmodule AlgoraWeb.VideoLive do
       |> stream(:messages, Chat.list_messages(video))
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    if connected?(socket), do: send(self(), {:play, {video, params["t"]}})
+    if connected?(socket), do: PlayerLive.subscribe()
 
     {:ok, socket}
   end
@@ -601,29 +602,8 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   @impl true
-  def handle_info({:play, {video, t}}, socket) do
-    schedule_watch_event()
-
-    {:noreply,
-     socket
-     |> push_event("play_video", %{
-       id: video.id,
-       url: video.url,
-       title: video.title,
-       player_type: Library.player_type(video),
-       channel_name: video.channel_name,
-       current_time: t
-     })}
-  end
-
-  def handle_info(:watch_event, socket) do
-    Events.log_watched(socket.assigns.current_user, socket.assigns.video)
-
-    # TODO: enable later
-    # if socket.assigns.current_user && socket.assigns.video.is_live do
-    #   schedule_watch_event(:timer.seconds(2))
-    # end
-
+  def handle_info({PlayerLive, :ready}, socket) do
+    PlayerLive.broadcast!({:play, %{video: socket.assigns.video, params: socket.assigns.params}})
     {:noreply, socket}
   end
 
@@ -715,7 +695,7 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
-  def handle_info(_arg, socket), do: {:noreply, socket}
+  # def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp fmt(num) do
     chars = num |> Integer.to_string() |> String.to_charlist()
@@ -880,9 +860,5 @@ defmodule AlgoraWeb.VideoLive do
     })
 
     socket
-  end
-
-  defp schedule_watch_event(ms \\ 0) do
-    Process.send_after(self(), :watch_event, ms)
   end
 end
