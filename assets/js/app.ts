@@ -151,7 +151,7 @@ const Hooks = {
       const backdrop = document.querySelector("#video-backdrop");
 
       this.player = videojs("video-player", {
-        autoplay: true,
+        autoplay: "any",
         liveui: true,
         html5: {
           vhs: {
