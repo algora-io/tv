@@ -3,11 +3,10 @@ defmodule AlgoraWeb.VideoLive do
   require Logger
   import Ecto.Query, warn: false
 
-  alias Algora.{Accounts, Library, Storage, Chat, Repo}
+  alias Algora.{Accounts, Library, Storage, Chat, Repo, Events}
   alias Algora.Events.Event
-  alias AlgoraWeb.{LayoutComponent, Presence}
+  alias AlgoraWeb.{LayoutComponent, Presence, RTMPDestinationIconComponent}
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
-  alias AlgoraWeb.RTMPDestinationIconComponent
 
   @impl true
   def render(assigns) do
@@ -603,24 +602,22 @@ defmodule AlgoraWeb.VideoLive do
 
   @impl true
   def handle_info({:play, {video, t}}, socket) do
-    socket =
-      socket
-      |> push_event("play_video", %{
-        id: video.id,
-        url: video.url,
-        title: video.title,
-        player_type: Library.player_type(video),
-        channel_name: video.channel_name,
-        current_time: t
-      })
-
     schedule_watch_event()
 
-    {:noreply, socket}
+    {:noreply,
+     socket
+     |> push_event("play_video", %{
+       id: video.id,
+       url: video.url,
+       title: video.title,
+       player_type: Library.player_type(video),
+       channel_name: video.channel_name,
+       current_time: t
+     })}
   end
 
   def handle_info(:watch_event, socket) do
-    log_watch_event(socket.assigns.current_user, socket.assigns.video)
+    Events.log_watched(socket.assigns.current_user, socket.assigns.video)
 
     # TODO: enable later
     # if socket.assigns.current_user && socket.assigns.video.is_live do
@@ -888,21 +885,4 @@ defmodule AlgoraWeb.VideoLive do
   defp schedule_watch_event(ms \\ 0) do
     Process.send_after(self(), :watch_event, ms)
   end
-
-  defp log_watch_event(user, video) do
-    actor_id = if user, do: "user_#{user.id}", else: "guest_#{hash_actor_id()}"
-
-    %Event{
-      actor_id: actor_id,
-      user_id: user && user.id,
-      video_id: video.id,
-      channel_id: video.user_id,
-      name: :watched
-    }
-    |> Event.changeset(%{})
-    |> Repo.insert()
-  end
-
-  # TODO:
-  defp hash_actor_id, do: ""
 end

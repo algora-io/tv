@@ -1,8 +1,9 @@
 defmodule AlgoraWeb.HomepageLive do
   use AlgoraWeb, :live_view
 
-  alias Algora.{Library, Shows}
+  alias Algora.{Library, Shows, Events}
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
@@ -11,8 +12,40 @@ defmodule AlgoraWeb.HomepageLive do
         <p class="text-xl font-medium text-gray-200 italic">You'll never ship alone!</p>
       </.header>
 
-      <div>
-        <ul role="list" class="grid grid-cols-1 gap-12 sm:grid-cols-2">
+      <div :if={length(@livestreams) > 0}>
+        <h2 class="text-white text-3xl font-semibold">
+          Live now
+        </h2>
+        <ul class="mt-4 grid grid-cols-3" role="group">
+          <li
+            :for={livestream <- @livestreams}
+            class="relative flex shadow-sm rounded-md overflow-hidden"
+          >
+            <.link
+              navigate={"/#{livestream.channel_handle}/#{livestream.id}"}
+              class="pr-3 flex-1 flex items-center justify-between border-t border-r border-b border-gray-700 bg-gray-900 rounded-r-md truncate"
+            >
+              <img
+                class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-l-md bg-purple-300"
+                src={livestream.channel_avatar_url}
+                alt={livestream.channel_handle}
+              />
+              <div class="flex-1 flex items-center justify-between text-gray-50 text-sm font-medium hover:text-gray-300 pl-3">
+                <div class="flex-1 py-1 text-sm truncate">
+                  <%= livestream.channel_handle %>
+                </div>
+              </div>
+              <span class="w-2.5 h-2.5 bg-red-500 rounded-full" aria-hidden="true" />
+            </.link>
+          </li>
+        </ul>
+      </div>
+
+      <div class="pt-12">
+        <h2 class="text-white text-3xl font-semibold">
+          Shows
+        </h2>
+        <ul role="list" class="pt-4 grid grid-cols-1 gap-12 sm:grid-cols-2">
           <li :for={show <- @shows} class="col-span-1">
             <div class="h-full flex flex-col rounded-2xl overflow-hidden bg-[#15112b] ring-1 ring-white/20 text-center shadow-lg relative group">
               <img
@@ -26,7 +59,11 @@ defmodule AlgoraWeb.HomepageLive do
               <div class="relative text-left h-full">
                 <div class="flex flex-1 flex-col h-full">
                   <div class="px-4 mt-[8rem] flex-col sm:flex-row flex sm:items-center gap-4">
-                    <.link :if={show.channel_handle != "algora"} navigate={~p"/shows/#{show.slug}"}>
+                    <.link
+                      :if={show.channel_handle != "algora"}
+                      navigate={~p"/shows/#{show.slug}"}
+                      class="shrink-0"
+                    >
                       <img
                         class="h-[8rem] w-[8rem] rounded-full ring-4 ring-white shrink-0"
                         src={show.channel_avatar_url}
@@ -138,30 +175,66 @@ defmodule AlgoraWeb.HomepageLive do
         <h2 class="text-white text-3xl font-semibold">
           Most recent livestreams
         </h2>
-        <div>
-          <div class="pt-4 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <.video_entry :for={video <- @videos} video={video} />
-          </div>
+        <div class="pt-4 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <.video_entry :for={video <- @videos} video={video} />
         </div>
       </div>
     </div>
     """
   end
 
+  @impl true
   def mount(_params, _session, socket) do
     shows = Shows.list_featured_shows()
     show_eps = shows |> Enum.map(fn s -> s.id end) |> Library.list_videos_by_show_ids()
     videos = Library.list_videos(150)
+    livestreams = Library.list_livestreams(10)
+
+    livestream = Enum.at(livestreams, 0)
+    if connected?(socket) && livestream, do: send(self(), {:play, livestream})
 
     {:ok,
      socket
      |> assign(:show_eps, show_eps)
      |> assign(:videos, videos)
-     |> assign(:shows, shows)}
+     |> assign(:shows, shows)
+     |> assign(:livestreams, livestreams)
+     |> assign(:video, livestream)}
   end
 
+  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_info({:play, video}, socket) do
+    schedule_watch_event()
+
+    {:noreply,
+     socket
+     |> push_event("play_video", %{
+       id: video.id,
+       url: video.url,
+       title: video.title,
+       player_type: Library.player_type(video),
+       channel_name: video.channel_name
+     })}
+  end
+
+  def handle_info(:watch_event, socket) do
+    Events.log_watched(socket.assigns.current_user, socket.assigns.video)
+
+    # TODO: enable later
+    # if socket.assigns.current_user && socket.assigns.video.is_live do
+    #   schedule_watch_event(:timer.seconds(2))
+    # end
+
+    {:noreply, socket}
+  end
+
+  defp schedule_watch_event(ms \\ 0) do
+    Process.send_after(self(), :watch_event, ms)
   end
 
   defp apply_action(socket, :show, _params) do

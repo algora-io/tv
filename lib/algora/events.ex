@@ -199,4 +199,21 @@ defmodule Algora.Events do
     )
     |> Repo.all()
   end
+
+  def log_watched(user, video) do
+    actor_id = if user, do: "user_#{user.id}", else: "guest_#{hash_actor_id()}"
+
+    %Event{
+      actor_id: actor_id,
+      user_id: user && user.id,
+      video_id: video.id,
+      channel_id: video.user_id,
+      name: :watched
+    }
+    |> Event.changeset(%{})
+    |> Repo.insert()
+  end
+
+  # TODO:
+  defp hash_actor_id, do: ""
 end

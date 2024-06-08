@@ -8,7 +8,7 @@ defmodule AlgoraWeb.Nav do
   def on_mount(:default, _params, _session, socket) do
     {:cont,
      socket
-     |> assign(active_users: Library.list_active_channels(limit: 20))
+     |> assign(:active_users, Library.list_active_channels(limit: 20))
      |> assign(:region, System.get_env("FLY_REGION") || "iad")
      |> attach_hook(:active_tab, :handle_params, &handle_active_tab_params/3)}
   end
