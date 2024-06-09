@@ -17,7 +17,10 @@ defmodule AlgoraWeb.HomepageLive do
         <div class="w-full max-w-3xl">
           <.live_component module={PlayerComponent} id="home-player" />
         </div>
-        <div class="max-w-sm p-6 bg-gray-800/40 overflow-hidden lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
+        <.link
+          href={"/#{@livestream.channel_handle}/#{@livestream.id}"}
+          class="max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
+        >
           <div class="flex items-center gap-4">
             <div class="relative h-20 w-20 shrink-0">
               <img
@@ -35,7 +38,7 @@ defmodule AlgoraWeb.HomepageLive do
             </div>
           </div>
           <div class="pt-4 font-medium text-gray-100"><%= @livestream.title %></div>
-        </div>
+        </.link>
       </div>
 
       <%!-- <div :if={length(@livestreams) > 0}>

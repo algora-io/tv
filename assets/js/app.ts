@@ -208,15 +208,14 @@ const Hooks = {
           this.player.currentTime(opts.current_time);
         }
 
-        this.player.el().parentElement.classList.remove("hidden");
-        this.player.el().parentElement.classList.add("flex");
-
         if (backdrop) {
           backdrop.classList.remove("opacity-10");
           backdrop.classList.add("opacity-20");
         }
 
-        this.pushEventTo("#clipper", "video_loaded", { id: opts.id });
+        if (this.playerId === "video-player") {
+          this.pushEventTo("#clipper", "video_loaded", { id: opts.id });
+        }
       };
 
       this.handleEvent("play_video", playVideo);
