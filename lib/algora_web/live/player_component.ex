@@ -46,7 +46,8 @@ defmodule AlgoraWeb.PlayerComponent do
             url: video.url,
             title: video.title,
             player_type: Library.player_type(video),
-            channel_name: video.channel_name
+            channel_name: video.channel_name,
+            current_time: assigns[:current_time]
           })
       end
 

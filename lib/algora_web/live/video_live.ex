@@ -553,7 +553,8 @@ defmodule AlgoraWeb.VideoLive do
       send_update(PlayerComponent, %{
         id: "video-player",
         video: video,
-        current_user: current_user
+        current_user: current_user,
+        current_time: params["t"]
       })
     end
 
@@ -579,7 +580,6 @@ defmodule AlgoraWeb.VideoLive do
     socket =
       socket
       |> assign(
-        params: params,
         channel: channel,
         owns_channel?: current_user && Library.owns_channel?(current_user, channel),
         videos_count: Enum.count(videos),
