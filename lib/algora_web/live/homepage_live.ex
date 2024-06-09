@@ -190,12 +190,16 @@ defmodule AlgoraWeb.HomepageLive do
     videos = Library.list_videos(150)
     livestream = Library.list_livestreams(1) |> Enum.at(0)
 
-    if connected?(socket) && livestream do
-      send_update(PlayerComponent, %{
-        id: "home-player",
-        video: livestream,
-        current_user: socket.assigns.current_user
-      })
+    if connected?(socket) do
+      Library.subscribe_to_livestreams()
+
+      if livestream do
+        send_update(PlayerComponent, %{
+          id: "home-player",
+          video: livestream,
+          current_user: socket.assigns.current_user
+        })
+      end
     end
 
     {:ok,
@@ -209,6 +213,24 @@ defmodule AlgoraWeb.HomepageLive do
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  @impl true
+  def handle_info(
+        {Library, %Library.Events.LivestreamStarted{video: video}},
+        socket
+      ) do
+    send_update(PlayerComponent, %{
+      id: "home-player",
+      video: video,
+      current_user: socket.assigns.current_user
+    })
+
+    {:noreply, socket |> assign(:livestream, video)}
+  end
+
+  def handle_info(_arg, socket) do
+    {:noreply, socket}
   end
 
   defp apply_action(socket, :show, _params) do
