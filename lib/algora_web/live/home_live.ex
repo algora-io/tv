@@ -13,13 +13,13 @@ defmodule AlgoraWeb.HomeLive do
         <p class="text-xl font-medium text-gray-200 italic">You'll never ship alone!</p>
       </.header>
 
-      <div :if={@livestream} class="flex items-center justify-center gap-4">
+      <div :if={@livestream} class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <div class="w-full max-w-3xl">
           <.live_component module={PlayerComponent} id="home-player" />
         </div>
         <.link
           href={"/#{@livestream.channel_handle}/#{@livestream.id}"}
-          class="max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
+          class="w-full max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden rounded-lg lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
         >
           <div class="flex items-center gap-4">
             <div class="relative h-20 w-20 shrink-0">

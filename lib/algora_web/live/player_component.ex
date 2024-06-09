@@ -10,7 +10,7 @@ defmodule AlgoraWeb.PlayerComponent do
     <video
       id={@id}
       phx-hook="VideoPlayer"
-      class="video-js vjs-default-skin aspect-video h-full w-full flex-1 lg:rounded-2xl overflow-hidden"
+      class="video-js vjs-default-skin aspect-video h-full w-full flex-1 rounded-lg lg:rounded-2xl overflow-hidden"
       controls
     />
     """
