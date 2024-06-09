@@ -13,7 +13,7 @@ defmodule AlgoraWeb.HomepageLive do
         <p class="text-xl font-medium text-gray-200 italic">You'll never ship alone!</p>
       </.header>
 
-      <div class="flex items-center justify-center gap-4">
+      <div :if={@livestream} class="flex items-center justify-center gap-4">
         <div class="w-full max-w-3xl">
           <.live_component module={PlayerComponent} id="home-player" />
         </div>
@@ -40,35 +40,6 @@ defmodule AlgoraWeb.HomepageLive do
           <div class="pt-4 font-medium text-gray-100"><%= @livestream.title %></div>
         </.link>
       </div>
-
-      <%!-- <div :if={length(@livestreams) > 0}>
-        <h2 class="text-white text-3xl font-semibold">
-          Live now
-        </h2>
-        <ul class="mt-4 grid grid-cols-3" role="group">
-          <li
-            :for={livestream <- @livestreams}
-            class="relative flex shadow-sm rounded-md overflow-hidden"
-          >
-            <.link
-              navigate={"/#{livestream.channel_handle}/#{livestream.id}"}
-              class="pr-3 flex-1 flex items-center justify-between border-t border-r border-b border-gray-700 bg-gray-900 rounded-r-md truncate"
-            >
-              <img
-                class="w-12 h-12 shrink-0 flex items-center justify-center rounded-l-md bg-purple-300"
-                src={livestream.channel_avatar_url}
-                alt={livestream.channel_handle}
-              />
-              <div class="flex-1 flex items-center justify-between text-gray-50 text-sm font-medium hover:text-gray-300 pl-3">
-                <div class="flex-1 py-1 text-sm truncate">
-                  <%= livestream.channel_handle %>
-                </div>
-              </div>
-              <span class="w-2.5 h-2.5 bg-red-500 rounded-full" aria-hidden="true" />
-            </.link>
-          </li>
-        </ul>
-      </div> --%>
 
       <div class="pt-12">
         <h2 class="text-white text-3xl font-semibold">
