@@ -5,14 +5,12 @@ defmodule AlgoraWeb.PlayerLive do
 
   on_mount {AlgoraWeb.UserAuth, :current_user}
 
-  @pubsub "sticky-player"
-
   @impl true
   def render(assigns) do
     ~H"""
     <div class="lg:px-4">
       <div class="w-full hidden lg:pr-[24rem]">
-        <.live_component module={PlayerComponent} id="video-player" current_user={@current_user} />
+        <.live_component module={PlayerComponent} id="sticky-player" current_user={@current_user} />
       </div>
     </div>
     """
@@ -20,18 +18,13 @@ defmodule AlgoraWeb.PlayerLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket) do
-      subscribe()
-      broadcast!({__MODULE__, :ready})
-    end
-
     {:ok, socket, layout: false, temporary_assigns: []}
   end
 
   @impl true
   def handle_info({:play, %{video: video}} = _args, socket) do
     send_update(PlayerComponent, %{
-      id: "video-player",
+      id: "sticky-player",
       video: video,
       current_user: socket.assigns.current_user
     })
@@ -40,12 +33,4 @@ defmodule AlgoraWeb.PlayerLive do
   end
 
   def handle_info(_args, socket), do: {:noreply, socket}
-
-  def subscribe() do
-    Phoenix.PubSub.subscribe(Algora.PubSub, @pubsub)
-  end
-
-  def broadcast!(msg) do
-    Phoenix.PubSub.broadcast!(Algora.PubSub, @pubsub, msg)
-  end
 end

@@ -3,17 +3,12 @@ defmodule AlgoraWeb.EmbedLive do
   require Logger
 
   alias Algora.{Accounts, Library, Storage, Chat}
-  alias AlgoraWeb.{LayoutComponent, Presence, PlayerLive}
+  alias AlgoraWeb.{LayoutComponent, Presence, PlayerComponent}
 
   def render(assigns) do
     ~H"""
-    <div class="w-full">
-      <video
-        id="video-player"
-        phx-hook="VideoPlayer"
-        class="video-js vjs-default-skin vjs-fluid flex-1 overflow-hidden"
-        controls
-      />
+    <div class="w-full" id="embed-player-container" phx-update="ignore">
+      <.live_component module={PlayerComponent} id="embed-player" />
     </div>
     """
   end
@@ -23,16 +18,22 @@ defmodule AlgoraWeb.EmbedLive do
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
 
+    videos = Library.list_channel_videos(channel, 50)
+
+    video = Library.get_video!(video_id)
+
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
 
       Presence.subscribe(channel_handle)
+
+      send_update(PlayerComponent, %{
+        id: "embed-player",
+        video: video,
+        current_user: nil
+      })
     end
-
-    videos = Library.list_channel_videos(channel, 50)
-
-    video = Library.get_video!(video_id)
 
     subtitles = Library.list_subtitles(%Library.Video{id: video_id})
 
@@ -63,19 +64,12 @@ defmodule AlgoraWeb.EmbedLive do
       |> stream(:videos, videos)
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    if connected?(socket), do: PlayerLive.subscribe()
-
     {:ok, socket}
   end
 
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
-  end
-
-  def handle_info({PlayerLive, :ready}, socket) do
-    PlayerLive.broadcast!({:play, %{video: socket.assigns.video, params: socket.assigns.params}})
-    {:noreply, socket}
   end
 
   def handle_info({Presence, {:join, presence}}, socket) do

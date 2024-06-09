@@ -5,13 +5,23 @@ defmodule AlgoraWeb.VideoLive do
 
   alias Algora.{Accounts, Library, Storage, Chat, Repo}
   alias Algora.Events.Event
-  alias AlgoraWeb.{PlayerLive, LayoutComponent, Presence, RTMPDestinationIconComponent}
+
+  alias AlgoraWeb.{
+    LayoutComponent,
+    Presence,
+    RTMPDestinationIconComponent,
+    PlayerComponent
+  }
+
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
 
   @impl true
   def render(assigns) do
     ~H"""
     <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
+      <div class="px-4" id="video-player-container" phx-update="ignore">
+        <.live_component module={PlayerComponent} id="video-player" />
+      </div>
       <div class="lg:border-b lg:border-gray-700 py-4">
         <figure class="relative isolate -mt-4 pt-4 pb-4">
           <svg
@@ -543,6 +553,12 @@ defmodule AlgoraWeb.VideoLive do
       })
 
       Presence.subscribe(channel_handle)
+
+      send_update(PlayerComponent, %{
+        id: "video-player",
+        video: video,
+        current_user: current_user
+      })
     end
 
     videos = Library.list_channel_videos(channel, 50)
@@ -585,8 +601,6 @@ defmodule AlgoraWeb.VideoLive do
       |> stream(:messages, Chat.list_messages(video))
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    if connected?(socket), do: PlayerLive.subscribe()
-
     {:ok, socket}
   end
 
@@ -602,11 +616,6 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   @impl true
-  def handle_info({PlayerLive, :ready}, socket) do
-    PlayerLive.broadcast!({:play, %{video: socket.assigns.video, params: socket.assigns.params}})
-    {:noreply, socket}
-  end
-
   def handle_info({Presence, {:join, presence}}, socket) do
     {:noreply, stream_insert(socket, :presences, presence)}
   end

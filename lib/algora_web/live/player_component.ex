@@ -22,6 +22,8 @@ defmodule AlgoraWeb.PlayerComponent do
     #   schedule_watch_event(:timer.seconds(2))
     # end
 
+    # TODO: track presence
+
     socket =
       case assigns[:video] do
         nil ->
