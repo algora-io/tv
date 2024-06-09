@@ -700,7 +700,7 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> stream_insert(:messages, message)}
   end
 
-  # def handle_info(_arg, socket), do: {:noreply, socket}
+  def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp fmt(num) do
     chars = num |> Integer.to_string() |> String.to_charlist()
