@@ -2,6 +2,7 @@ defmodule AlgoraWeb.PlayerComponent do
   use AlgoraWeb, :live_component
 
   alias Algora.{Library, Events}
+  alias AlgoraWeb.Presence
 
   @impl true
   def render(assigns) do
@@ -18,7 +19,7 @@ defmodule AlgoraWeb.PlayerComponent do
   @impl true
   def update(assigns, socket) do
     # TODO: log at regular intervals
-    # if socket.assigns.current_user && socket.assigns.video.is_live do
+    # if socket.current_user && socket.assigns.video.is_live do
     #   schedule_watch_event(:timer.seconds(2))
     # end
 
@@ -30,7 +31,13 @@ defmodule AlgoraWeb.PlayerComponent do
           socket
 
         video ->
-          Events.log_watched(assigns.current_user, video)
+          %{current_user: current_user} = assigns
+
+          Events.log_watched(current_user, video)
+
+          Presence.track_user(video.channel_handle, %{
+            id: if(current_user, do: current_user.handle, else: "")
+          })
 
           socket
           |> push_event("play_video", %{

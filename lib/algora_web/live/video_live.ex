@@ -548,10 +548,6 @@ defmodule AlgoraWeb.VideoLive do
       Library.subscribe_to_channel(channel)
       Chat.subscribe_to_room(video)
 
-      Presence.track_user(channel_handle, %{
-        id: if(current_user, do: current_user.handle, else: "")
-      })
-
       Presence.subscribe(channel_handle)
 
       send_update(PlayerComponent, %{
