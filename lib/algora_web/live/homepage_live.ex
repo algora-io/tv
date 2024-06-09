@@ -188,9 +188,7 @@ defmodule AlgoraWeb.HomepageLive do
     shows = Shows.list_featured_shows()
     show_eps = shows |> Enum.map(fn s -> s.id end) |> Library.list_videos_by_show_ids()
     videos = Library.list_videos(150)
-    livestreams = Library.list_livestreams(10)
-
-    livestream = Enum.at(livestreams, 0)
+    livestream = Library.list_livestreams(1) |> Enum.at(0)
 
     if connected?(socket) && livestream do
       send_update(PlayerComponent, %{
@@ -205,7 +203,6 @@ defmodule AlgoraWeb.HomepageLive do
      |> assign(:show_eps, show_eps)
      |> assign(:videos, videos)
      |> assign(:shows, shows)
-     |> assign(:livestreams, livestreams)
      |> assign(:livestream, livestream)}
   end
 
