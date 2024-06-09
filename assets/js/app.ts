@@ -163,7 +163,7 @@ const Hooks = {
       });
 
       const playVideo = (opts: {
-        player_id?: string;
+        player_id: string;
         id: string;
         url: string;
         title: string;

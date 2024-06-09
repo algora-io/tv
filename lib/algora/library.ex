@@ -557,22 +557,6 @@ defmodule Algora.Library do
     |> Repo.all()
   end
 
-  def list_livestreams(limit \\ 100) do
-    from(v in Video,
-      join: u in User,
-      on: v.user_id == u.id,
-      limit: ^limit,
-      where: not is_nil(v.url) and v.visibility == :public and v.is_live == true,
-      select_merge: %{
-        channel_handle: u.handle,
-        channel_name: u.name,
-        channel_avatar_url: u.avatar_url
-      }
-    )
-    |> order_by_inserted(:desc)
-    |> Repo.all()
-  end
-
   def list_videos_by_ids(ids) do
     videos =
       from(v in Video,
