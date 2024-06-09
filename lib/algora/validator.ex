@@ -11,8 +11,6 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
         message.app
       )
 
-    Algora.Library.toggle_streamer_live(video, true)
-
     destinations = Algora.Accounts.list_active_destinations(video.user_id)
 
     for {destination, i} <- Enum.with_index(destinations) do

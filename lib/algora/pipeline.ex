@@ -72,6 +72,11 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
+  def handle_child_notification({:track_playable, :video}, _element, _ctx, state) do
+    Algora.Library.toggle_streamer_live(state.video, true)
+    {[], state}
+  end
+
   @impl true
   def handle_child_notification(_notification, _element, _ctx, state) do
     {[], state}
