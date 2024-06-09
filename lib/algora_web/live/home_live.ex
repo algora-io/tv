@@ -1,4 +1,4 @@
-defmodule AlgoraWeb.HomepageLive do
+defmodule AlgoraWeb.HomeLive do
   use AlgoraWeb, :live_view
 
   alias Algora.{Library, Shows}
