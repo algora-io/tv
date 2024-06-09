@@ -17,13 +17,18 @@ defmodule AlgoraWeb.HomepageLive do
         <div class="w-full max-w-3xl">
           <.live_component module={PlayerComponent} id="home-player" />
         </div>
-        <div class="p-6 bg-gray-800/40 overflow-hidden lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
+        <div class="max-w-sm p-6 bg-gray-800/40 overflow-hidden lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%]">
           <div class="flex items-center gap-4">
-            <img
-              class="w-20 h-20 shrink-0 flex items-center justify-center rounded-full bg-purple-300"
-              src={@livestream.channel_avatar_url}
-              alt={@livestream.channel_handle}
-            />
+            <div class="relative h-20 w-20 shrink-0">
+              <img
+                src={@livestream.channel_avatar_url}
+                alt={@livestream.channel_handle}
+                class="w-full h-full p-1 ring-4 rounded-full ring-red-500"
+              />
+              <div class="absolute bottom-0 translate-y-1/2 ring-[3px] ring-gray-800 left-1/2 -translate-x-1/2 rounded px-1 font-medium mx-auto bg-red-500 text-xs">
+                LIVE
+              </div>
+            </div>
             <div>
               <div class="text-3xl font-semibold"><%= @livestream.channel_name %></div>
               <div class="font-medium text-gray-300">@<%= @livestream.channel_handle %></div>
