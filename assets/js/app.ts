@@ -150,8 +150,10 @@ const Hooks = {
     mounted() {
       const backdrop = document.querySelector("#video-backdrop");
 
-      this.player = videojs("video-player", {
-        autoplay: true,
+      this.playerId = this.el.id;
+
+      this.player = videojs(this.el, {
+        autoplay: "any",
         liveui: true,
         html5: {
           vhs: {
@@ -161,6 +163,7 @@ const Hooks = {
       });
 
       const playVideo = (opts: {
+        player_id: string;
         id: string;
         url: string;
         title: string;
@@ -168,6 +171,10 @@ const Hooks = {
         current_time?: number;
         channel_name: string;
       }) => {
+        if (this.playerId !== opts.player_id) {
+          return;
+        }
+
         const setMediaSession = () => {
           if (!("mediaSession" in navigator)) {
             return;
@@ -193,22 +200,21 @@ const Hooks = {
             : {}),
         });
         this.player.src({ src: opts.url, type: opts.player_type });
-        this.player.play();
 
         setMediaSession();
 
         if (opts.current_time && opts.player_type !== "video/youtube") {
           this.player.currentTime(opts.current_time);
         }
-        this.player.el().parentElement.classList.remove("hidden");
-        this.player.el().parentElement.classList.add("flex");
 
         if (backdrop) {
           backdrop.classList.remove("opacity-10");
           backdrop.classList.add("opacity-20");
         }
 
-        this.pushEventTo("#clipper", "video_loaded", { id: opts.id });
+        if (this.playerId === "video-player") {
+          this.pushEventTo("#clipper", "video_loaded", { id: opts.id });
+        }
       };
 
       this.handleEvent("play_video", playVideo);
@@ -350,33 +356,6 @@ let liveSocket = new LiveSocket("/live", Socket, {
 let routeUpdated = () => {
   // TODO: uncomment
   // Focus.focusMain();
-
-  const player = document.querySelector("#video-player")?.parentElement;
-  if (!player) {
-    return;
-  }
-
-  const { pathname } = new URL(window.location.href);
-  if (pathname.endsWith("/embed")) {
-    return;
-  }
-
-  const pipClasses = [
-    "fixed",
-    "bottom-0",
-    "right-0",
-    "z-[1000]",
-    "w-[100vw]",
-    "sm:w-[30vw]",
-  ];
-
-  if (/^\/[^\/]+\/\d+$/.test(pathname)) {
-    player.classList.add("lg:pr-[24rem]");
-    player.classList.remove(...pipClasses);
-  } else {
-    player.classList.remove("lg:pr-[24rem]");
-    player.classList.add(...pipClasses);
-  }
 };
 
 // Show progress bar on live navigation and form submits

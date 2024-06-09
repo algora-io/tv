@@ -5,14 +5,23 @@ defmodule AlgoraWeb.VideoLive do
 
   alias Algora.{Accounts, Library, Storage, Chat, Repo}
   alias Algora.Events.Event
-  alias AlgoraWeb.{LayoutComponent, Presence}
+
+  alias AlgoraWeb.{
+    LayoutComponent,
+    Presence,
+    RTMPDestinationIconComponent,
+    PlayerComponent
+  }
+
   alias AlgoraWeb.ChannelLive.{StreamFormComponent}
-  alias AlgoraWeb.RTMPDestinationIconComponent
 
   @impl true
   def render(assigns) do
     ~H"""
     <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
+      <div class="px-4" id="video-player-container" phx-update="ignore">
+        <.live_component module={PlayerComponent} id="video-player" />
+      </div>
       <div class="lg:border-b lg:border-gray-700 py-4">
         <figure class="relative isolate -mt-4 pt-4 pb-4">
           <svg
@@ -539,11 +548,14 @@ defmodule AlgoraWeb.VideoLive do
       Library.subscribe_to_channel(channel)
       Chat.subscribe_to_room(video)
 
-      Presence.track_user(channel_handle, %{
-        id: if(current_user, do: current_user.handle, else: "")
-      })
-
       Presence.subscribe(channel_handle)
+
+      send_update(PlayerComponent, %{
+        id: "video-player",
+        video: video,
+        current_user: current_user,
+        current_time: params["t"]
+      })
     end
 
     videos = Library.list_channel_videos(channel, 50)
@@ -585,8 +597,6 @@ defmodule AlgoraWeb.VideoLive do
       |> stream(:messages, Chat.list_messages(video))
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
-    if connected?(socket), do: send(self(), {:play, {video, params["t"]}})
-
     {:ok, socket}
   end
 
@@ -602,34 +612,6 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   @impl true
-  def handle_info({:play, {video, t}}, socket) do
-    socket =
-      socket
-      |> push_event("play_video", %{
-        id: video.id,
-        url: video.url,
-        title: video.title,
-        player_type: Library.player_type(video),
-        channel_name: video.channel_name,
-        current_time: t
-      })
-
-    schedule_watch_event()
-
-    {:noreply, socket}
-  end
-
-  def handle_info(:watch_event, socket) do
-    log_watch_event(socket.assigns.current_user, socket.assigns.video)
-
-    # TODO: enable later
-    # if socket.assigns.current_user && socket.assigns.video.is_live do
-    #   schedule_watch_event(:timer.seconds(2))
-    # end
-
-    {:noreply, socket}
-  end
-
   def handle_info({Presence, {:join, presence}}, socket) do
     {:noreply, stream_insert(socket, :presences, presence)}
   end
@@ -884,25 +866,4 @@ defmodule AlgoraWeb.VideoLive do
 
     socket
   end
-
-  defp schedule_watch_event(ms \\ 0) do
-    Process.send_after(self(), :watch_event, ms)
-  end
-
-  defp log_watch_event(user, video) do
-    actor_id = if user, do: "user_#{user.id}", else: "guest_#{hash_actor_id()}"
-
-    %Event{
-      actor_id: actor_id,
-      user_id: user && user.id,
-      video_id: video.id,
-      channel_id: video.user_id,
-      name: :watched
-    }
-    |> Event.changeset(%{})
-    |> Repo.insert()
-  end
-
-  # TODO:
-  defp hash_actor_id, do: ""
 end
