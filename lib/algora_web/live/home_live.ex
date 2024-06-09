@@ -218,7 +218,7 @@ defmodule AlgoraWeb.HomeLive do
   @impl true
   def handle_info(
         {Library, %Library.Events.LivestreamStarted{video: video}},
-        socket
+        %{assigns: %{livestream: nil}} = socket
       ) do
     send_update(PlayerComponent, %{
       id: "home-player",
