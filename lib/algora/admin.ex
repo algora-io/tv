@@ -61,6 +61,12 @@ defmodule Algora.Admin do
     pipelines() |> Enum.map(fn pid -> GenServer.call(pid, :get_video_id) end)
   end
 
+  def multicast!(video_id) do
+    pipelines()
+    |> Enum.find(fn pid -> GenServer.call(pid, :get_video_id) == video_id end)
+    |> send(:multicast_algora)
+  end
+
   def download_chunks(video, chunks, dir) do
     Task.async_stream(
       Enum.with_index(chunks),
