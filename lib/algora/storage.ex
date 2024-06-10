@@ -21,6 +21,25 @@ defmodule Algora.Storage do
 
   @impl true
   def store(
+        _parent_id,
+        _name,
+        contents,
+        %{partial_name: partial_name},
+        %{type: :partial_segment} = ctx,
+        %{video: video} = state
+      ) do
+    path = "#{video.uuid}/#{partial_name}"
+
+    with {:ok, _} <- upload(contents, path, upload_opts(ctx)) do
+      {:ok, state}
+    else
+      {:error, reason} = err ->
+        Membrane.Logger.error("Failed to upload #{path}: #{reason}")
+        {err, state}
+    end
+  end
+
+  def store(
         parent_id,
         name,
         contents,

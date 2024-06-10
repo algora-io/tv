@@ -37,7 +37,11 @@ defmodule Algora.Pipeline do
       get_child(:tee_audio)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
+        options: [
+          encoding: :AAC,
+          segment_duration: Membrane.Time.seconds(2),
+          partial_segment_duration: Membrane.Time.milliseconds(400)
+        ]
       )
       |> get_child(:sink),
 
@@ -45,7 +49,11 @@ defmodule Algora.Pipeline do
       get_child(:tee_video)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :video),
-        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
+        options: [
+          encoding: :H264,
+          segment_duration: Membrane.Time.seconds(2),
+          partial_segment_duration: Membrane.Time.milliseconds(400)
+        ]
       )
       |> get_child(:sink)
     ]
