@@ -6,10 +6,11 @@ defmodule Algora.Storage do
 
   @pubsub Algora.PubSub
 
-  @enforce_keys [:video]
+  @enforce_keys [:video, :pid]
   defstruct @enforce_keys ++ [video_header: <<>>, video_segment: <<>>, setup_completed?: false]
 
   @type t :: %__MODULE__{
+          pid: pid(),
           video: Library.Video.t(),
           video_header: <<>>,
           video_segment: <<>>,
@@ -24,10 +25,12 @@ defmodule Algora.Storage do
         _parent_id,
         _name,
         contents,
-        %{partial_name: partial_name},
+        %{partial_name: partial_name, sequence_number: sequence_number},
         %{type: :partial_segment} = ctx,
         %{video: video} = state
       ) do
+    send(state.pid, {:hls_part, sequence_number})
+
     path = "#{video.uuid}/#{partial_name}"
 
     with {:ok, _} <- upload(contents, path, upload_opts(ctx)) do
@@ -118,10 +121,12 @@ defmodule Algora.Storage do
          :video,
          _name,
          contents,
-         _metadata,
+         %{sequence_number: sequence_number},
          %{type: :segment, mode: :binary},
          %{setup_completed?: false, video: video, video_header: video_header} = state
        ) do
+    send(state.pid, {:hls_msn, sequence_number})
+
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
       with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents),
            {:ok, video} <- Library.store_og_image(video) do
@@ -139,10 +144,12 @@ defmodule Algora.Storage do
          :video,
          _name,
          contents,
-         _metadata,
+         %{sequence_number: sequence_number},
          %{type: :segment, mode: :binary},
          state
        ) do
+    send(state.pid, {:hls_msn, sequence_number})
+
     {:ok, %{state | video_segment: contents}}
   end
 

@@ -25,7 +25,7 @@ defmodule Algora.Pipeline do
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        storage: %Algora.Storage{video: video}
+        storage: %Algora.Storage{video: video, pid: self()}
       }),
 
       #
@@ -63,7 +63,7 @@ defmodule Algora.Pipeline do
       |> get_child(:sink)
     ]
 
-    {[spec: spec], %{socket: socket, video: video}}
+    {[spec: spec], %{socket: socket, video: video, hls_msn: -1, hls_part: -1}}
   end
 
   @impl true
@@ -153,8 +153,28 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
+  def handle_info({:hls_msn, hls_msn}, _ctx, state) do
+    state = %{state | hls_msn: hls_msn}
+    dbg(Map.take(state, [:hls_msn, :hls_part]))
+    {[], state}
+  end
+
+  def handle_info({:hls_part, hls_part}, _ctx, state) do
+    state = %{state | hls_part: hls_part}
+    dbg(Map.take(state, [:hls_msn, :hls_part]))
+    {[], state}
+  end
+
   @impl true
   def handle_call(:get_video_id, _ctx, state) do
     {[{:reply, state.video.id}], state}
+  end
+
+  def handle_call(:get_video_uuid, _ctx, state) do
+    {[{:reply, state.video.uuid}], state}
+  end
+
+  def handle_call(:get_hls_params, _ctx, state) do
+    {[{:reply, %{hls_msn: state.hls_msn, hls_part: state.hls_part}}], state}
   end
 end

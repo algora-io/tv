@@ -9,8 +9,6 @@ defmodule Algora.ExAwsHttpClient do
       opts -> Logger.debug(inspect({:http_opts, opts}))
     end
 
-    dbg(url)
-
     with {:ok, resp} <- Finch.build(method, url, headers, body) |> Finch.request(Algora.Finch) do
       {:ok, %{status_code: resp.status, body: resp.body, headers: resp.headers}}
     else
