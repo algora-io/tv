@@ -1,6 +1,11 @@
 defmodule Algora.Pipeline do
+  alias Membrane.Time
   alias Algora.Library
+
   use Membrane.Pipeline
+
+  @segment_duration Time.seconds(6)
+  @partial_segment_duration Time.milliseconds(1_100)
 
   @impl true
   def handle_init(_context, socket: socket) do
@@ -39,8 +44,8 @@ defmodule Algora.Pipeline do
       |> via_in(Pad.ref(:input, :audio),
         options: [
           encoding: :AAC,
-          segment_duration: Membrane.Time.seconds(2),
-          partial_segment_duration: Membrane.Time.milliseconds(400)
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
         ]
       )
       |> get_child(:sink),
@@ -51,8 +56,8 @@ defmodule Algora.Pipeline do
       |> via_in(Pad.ref(:input, :video),
         options: [
           encoding: :H264,
-          segment_duration: Membrane.Time.seconds(2),
-          partial_segment_duration: Membrane.Time.milliseconds(400)
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
         ]
       )
       |> get_child(:sink)

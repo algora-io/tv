@@ -72,6 +72,12 @@ defmodule AlgoraWeb.Router do
       response_mode: :buffer
   end
 
+  scope "/hls" do
+    forward "/", AlgoraWeb.Plugs.HLSProxy,
+      upstream: "https://fly.storage.tigris.dev",
+      response_mode: :stream
+  end
+
   scope "/", AlgoraWeb do
     pipe_through :browser
 
