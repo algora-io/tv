@@ -63,7 +63,7 @@ defmodule Algora.Pipeline do
       |> get_child(:sink)
     ]
 
-    {[spec: spec], %{socket: socket, video: video, hls_msn: -1, hls_part: -1}}
+    {[spec: spec], %{socket: socket, video: video, hls_msn: 0, hls_part: -1}}
   end
 
   @impl true
@@ -154,7 +154,7 @@ defmodule Algora.Pipeline do
   end
 
   def handle_info({:hls_msn, hls_msn}, _ctx, state) do
-    state = %{state | hls_msn: hls_msn}
+    state = %{state | hls_msn: hls_msn + 1}
     dbg(Map.take(state, [:hls_msn, :hls_part]))
     {[], state}
   end

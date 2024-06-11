@@ -88,6 +88,13 @@ defmodule Algora.Storage do
     |> Enum.join(",")
   end
 
+  defp upload_opts(%{type: :delta_manifest} = _ctx) do
+    [
+      content_type: "application/x-mpegURL",
+      cache_control: "no-cache, no-store, private"
+    ]
+  end
+
   defp upload_opts(%{type: :manifest} = _ctx) do
     [
       content_type: "application/x-mpegURL",
