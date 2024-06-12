@@ -6,7 +6,7 @@ defmodule Algora.Pipeline do
 
   @segment_duration Time.seconds(6)
   # @partial_segment_duration Time.milliseconds(1_100)
-  @partial_segment_duration Time.milliseconds(400)
+  @partial_segment_duration Time.seconds(1)
 
   @impl true
   def handle_init(_context, socket: socket) do

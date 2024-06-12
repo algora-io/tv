@@ -25,10 +25,10 @@ defmodule AlgoraWeb.Plugs.HLSProxy do
   defp handle_manifest_req(
          conn,
          opts,
-         %{"_HLS_msn" => msn, "_HLS_part" => part, "filename" => filename} = params
+         %{"_HLS_msn" => hls_msn, "_HLS_part" => hls_part} = params
        ) do
-    msn = String.to_integer(msn)
-    part = String.to_integer(part)
+    hls_msn = String.to_integer(hls_msn)
+    hls_part = String.to_integer(hls_part)
 
     [_bucket, uuid, _file] = conn.path_info
 
@@ -36,17 +36,17 @@ defmodule AlgoraWeb.Plugs.HLSProxy do
       Admin.pipelines()
       |> Enum.find(fn pid -> GenServer.call(pid, :get_video_uuid) == uuid end)
 
-    dbg({:pending, params})
+    dbg({:pending, {hls_msn, hls_part}})
 
     if pid do
       Task.async(fn ->
         wait_until(fn ->
-          %{hls_msn: hls_msn, hls_part: hls_part} = GenServer.call(pid, :get_hls_params)
-          dbg({{hls_msn, hls_part}, {msn, part}})
+          %{segment_sn: segment_sn, partial_sn: partial_sn} =
+            GenServer.call(pid, :get_sequence_numbers)
 
-          # ready = hls_msn > msn or (hls_msn == msn and hls_part >= part)
-          ready = {hls_msn, hls_part} >= {msn, part}
-          dbg(ready)
+          ready = {segment_sn, partial_sn} >= {hls_msn, hls_part}
+
+          if ready, do: dbg({:ready, {segment_sn, partial_sn}})
 
           ready
         end)
@@ -56,15 +56,10 @@ defmodule AlgoraWeb.Plugs.HLSProxy do
       dbg({:failure, params})
     end
 
-    dbg({:success, params})
-
-    # params
-    # |> Map.delete("_HLS_msn")
-    # |> Map.delete("_HLS_part")
-    # |> then(&handle_manifest_req(conn, opts, &1))
-
-    [bucket, uuid, _file] = conn.path_info
-    Plug.forward(conn, [bucket, uuid, filename], ReverseProxyPlug, opts)
+    params
+    |> Map.delete("_HLS_msn")
+    |> Map.delete("_HLS_part")
+    |> then(&handle_manifest_req(conn, opts, &1))
   end
 
   defp handle_manifest_req(conn, opts, %{"filename" => filename}) do
