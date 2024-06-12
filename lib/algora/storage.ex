@@ -7,14 +7,23 @@ defmodule Algora.Storage do
   @pubsub Algora.PubSub
 
   @enforce_keys [:video, :pid]
-  defstruct @enforce_keys ++ [video_header: <<>>, video_segment: <<>>, setup_completed?: false]
+  defstruct @enforce_keys ++
+              [
+                video_header: <<>>,
+                video_segment: <<>>,
+                setup_completed?: false,
+                segment_sn: 0,
+                partial_sn: 0
+              ]
 
   @type t :: %__MODULE__{
           pid: pid(),
           video: Library.Video.t(),
           video_header: <<>>,
           video_segment: <<>>,
-          setup_completed?: boolean()
+          setup_completed?: boolean(),
+          segment_sn: 0,
+          partial_sn: 0
         }
 
   @impl true
@@ -27,11 +36,20 @@ defmodule Algora.Storage do
         contents,
         %{partial_name: partial_name, sequence_number: sequence_number},
         %{type: :partial_segment} = ctx,
-        %{video: video} = state
+        %{video: video, partial_sn: partial_sn, segment_sn: segment_sn} = state
       ) do
-    send(state.pid, {:hls_part, sequence_number})
-
     path = "#{video.uuid}/#{partial_name}"
+
+    state =
+      if sequence_number < partial_sn do
+        %{state | segment_sn: segment_sn + 1, partial_sn: sequence_number}
+      else
+        %{state | partial_sn: sequence_number}
+      end
+
+    dbg({:stored, {state.segment_sn, state.partial_sn}})
+
+    # send(state.pid, Map.take(state, [:segment_sn, :partial_sn]))
 
     with {:ok, _} <- upload(contents, path, upload_opts(ctx)) do
       {:ok, state}
@@ -67,6 +85,24 @@ defmodule Algora.Storage do
 
         _ ->
           nil
+      end
+
+      str =
+        case ctx do
+          %{type: :manifest} ->
+            contents |> String.split("\n") |> Enum.take(-3) |> Enum.join("\n")
+
+          %{type: :delta_manifest} ->
+            contents |> String.split("\n") |> Enum.take(-3) |> Enum.join("\n")
+
+          _ ->
+            nil
+        end
+
+      if str && name != "index.m3u8" do
+        send(state.pid, Map.take(state, [:segment_sn, :partial_sn]))
+        IO.puts(name)
+        IO.puts(str)
       end
 
       {:ok, state}
@@ -128,11 +164,11 @@ defmodule Algora.Storage do
          :video,
          _name,
          contents,
-         %{sequence_number: sequence_number},
+         %{sequence_number: _sequence_number},
          %{type: :segment, mode: :binary},
          %{setup_completed?: false, video: video, video_header: video_header} = state
        ) do
-    send(state.pid, {:hls_msn, sequence_number})
+    # send(state.pid, {:segment_sn, sequence_number})
 
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
       with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents),
@@ -151,11 +187,11 @@ defmodule Algora.Storage do
          :video,
          _name,
          contents,
-         %{sequence_number: sequence_number},
+         %{sequence_number: _sequence_number},
          %{type: :segment, mode: :binary},
          state
        ) do
-    send(state.pid, {:hls_msn, sequence_number})
+    # send(state.pid, {:segment_sn, sequence_number})
 
     {:ok, %{state | video_segment: contents}}
   end

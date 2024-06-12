@@ -5,7 +5,8 @@ defmodule Algora.Pipeline do
   use Membrane.Pipeline
 
   @segment_duration Time.seconds(6)
-  @partial_segment_duration Time.milliseconds(1_100)
+  # @partial_segment_duration Time.milliseconds(1_100)
+  @partial_segment_duration Time.milliseconds(400)
 
   @impl true
   def handle_init(_context, socket: socket) do
@@ -63,7 +64,7 @@ defmodule Algora.Pipeline do
       |> get_child(:sink)
     ]
 
-    {[spec: spec], %{socket: socket, video: video, hls_msn: 0, hls_part: -1}}
+    {[spec: spec], %{socket: socket, video: video, segment_sn: 0, partial_sn: 0}}
   end
 
   @impl true
@@ -153,15 +154,22 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_info({:hls_msn, hls_msn}, _ctx, state) do
-    state = %{state | hls_msn: hls_msn + 1}
-    dbg(Map.take(state, [:hls_msn, :hls_part]))
-    {[], state}
-  end
+  # def handle_info({:segment_sn, segment_sn}, _ctx, state) do
+  #   state = %{state | segment_sn: segment_sn + 1, partial_sn: -1}
+  #   dbg(Map.take(state, [:segment_sn, :partial_sn]))
+  #   {[], state}
+  # end
 
-  def handle_info({:hls_part, hls_part}, _ctx, state) do
-    state = %{state | hls_part: hls_part}
-    dbg(Map.take(state, [:hls_msn, :hls_part]))
+  def handle_info(
+        %{
+          segment_sn: segment_sn,
+          partial_sn: partial_sn
+        },
+        _ctx,
+        state
+      ) do
+    state = %{state | partial_sn: partial_sn, segment_sn: segment_sn}
+    dbg({:notified, {segment_sn, partial_sn}})
     {[], state}
   end
 
@@ -174,7 +182,7 @@ defmodule Algora.Pipeline do
     {[{:reply, state.video.uuid}], state}
   end
 
-  def handle_call(:get_hls_params, _ctx, state) do
-    {[{:reply, %{hls_msn: state.hls_msn, hls_part: state.hls_part}}], state}
+  def handle_call(:get_sequence_numbers, _ctx, state) do
+    {[{:reply, %{segment_sn: state.segment_sn, partial_sn: state.partial_sn}}], state}
   end
 end
