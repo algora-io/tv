@@ -6,25 +6,30 @@ defmodule AlgoraWeb.Plugs.HLSProxy do
   def call(conn, opts) do
     [_bucket, _uuid, filename] = conn.path_info
 
-    case filename do
-      # _ <> ".m3u8" ->
-      #   handle_partial_req(conn, opts, %{conn.params | filename: filename})
-
-      _ ->
-        Plug.forward(conn, conn.path_info, ReverseProxyPlug, opts)
+    if String.ends_with?(filename, ".m3u8") do
+      conn.params
+      |> Map.put("filename", filename)
+      |> then(&handle_manifest_req(conn, opts, &1))
+    else
+      Plug.forward(conn, conn.path_info, ReverseProxyPlug, opts)
     end
   end
 
-  defp handle_hls_req(
-         conn,
-         %{
-           "_HLS_skip" => _skip
-         } = params
-       ) do
-    handle_hls_req(conn, params)
+  defp handle_manifest_req(conn, opts, %{"_HLS_skip" => _skip} = params) do
+    params
+    |> Map.update!("filename", &String.replace_suffix(&1, ".m3u8", "_delta.m3u8"))
+    |> Map.delete("_HLS_skip")
+    |> then(&handle_manifest_req(conn, opts, &1))
   end
 
-  defp handle_partial_req(conn, opts, %{"_HLS_msn" => msn, "_HLS_part" => part} = params) do
+  defp handle_manifest_req(
+         conn,
+         opts,
+         %{"_HLS_msn" => msn, "_HLS_part" => part, "filename" => filename} = params
+       ) do
+    msn = String.to_integer(msn)
+    part = String.to_integer(part)
+
     [_bucket, uuid, _file] = conn.path_info
 
     pid =
@@ -37,7 +42,13 @@ defmodule AlgoraWeb.Plugs.HLSProxy do
       Task.async(fn ->
         wait_until(fn ->
           %{hls_msn: hls_msn, hls_part: hls_part} = GenServer.call(pid, :get_hls_params)
-          hls_msn > msn or (hls_msn == msn and hls_part >= part)
+          dbg({{hls_msn, hls_part}, {msn, part}})
+
+          # ready = hls_msn > msn or (hls_msn == msn and hls_part >= part)
+          ready = {hls_msn, hls_part} >= {msn, part}
+          dbg(ready)
+
+          ready
         end)
       end)
       |> Task.await(:infinity)
@@ -47,7 +58,18 @@ defmodule AlgoraWeb.Plugs.HLSProxy do
 
     dbg({:success, params})
 
-    Plug.forward(conn, conn.path_info, ReverseProxyPlug, opts)
+    # params
+    # |> Map.delete("_HLS_msn")
+    # |> Map.delete("_HLS_part")
+    # |> then(&handle_manifest_req(conn, opts, &1))
+
+    [bucket, uuid, _file] = conn.path_info
+    Plug.forward(conn, [bucket, uuid, filename], ReverseProxyPlug, opts)
+  end
+
+  defp handle_manifest_req(conn, opts, %{"filename" => filename}) do
+    [bucket, uuid, _file] = conn.path_info
+    Plug.forward(conn, [bucket, uuid, filename], ReverseProxyPlug, opts)
   end
 
   defp wait_until(cb) do
