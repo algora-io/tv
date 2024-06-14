@@ -5,6 +5,8 @@ end
 defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
   @impl true
   def validate_connect(impl, message) do
+    dbg({:validate_connect, {impl, message}})
+
     {:ok, video} =
       Algora.Library.reconcile_livestream(
         %Algora.Library.Video{id: impl.video_id},
@@ -22,6 +24,8 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
       send(impl.pid, {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
     end
 
+    # send(impl.pid, {:forward_rtmp, nil, String.to_atom("rtmp_sink_algora")})
+
     user = Algora.Accounts.get_user!(video.user_id)
 
     if url = Algora.Accounts.get_restream_ws_url(user) do
@@ -36,17 +40,20 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
   end
 
   @impl true
-  def validate_release_stream(_impl, _message) do
+  def validate_release_stream(impl, message) do
+    dbg({:validate_release_stream, {impl, message}})
     {:ok, "release stream success"}
   end
 
   @impl true
-  def validate_publish(_impl, _message) do
+  def validate_publish(impl, message) do
+    dbg({:validate_publish, {impl, message}})
     {:ok, "validate publish success"}
   end
 
   @impl true
-  def validate_set_data_frame(_impl, _message) do
+  def validate_set_data_frame(impl, message) do
+    dbg({:validate_set_data_frame, {impl, message}})
     {:ok, "set data frame success"}
   end
 end

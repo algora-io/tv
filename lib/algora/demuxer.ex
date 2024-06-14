@@ -117,6 +117,7 @@ defmodule Algora.Demuxer do
     case Parser.parse_body(body) do
       {:ok, packets, rest} ->
         {actions, state} = get_actions(packets, state)
+        # dbg(actions)
         {actions, %{state | partial: rest}}
 
       {:error, :not_enough_data} ->

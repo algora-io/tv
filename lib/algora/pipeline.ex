@@ -8,7 +8,7 @@ defmodule Algora.Pipeline do
 
     spec = [
       #
-      child(:src, %Algora.SourceBin{
+      child(:src, %Membrane.RTMP.SourceBin{
         socket: socket,
         validator: %Algora.MessageValidator{video_id: video.id, pid: self()}
       }),
@@ -26,12 +26,12 @@ defmodule Algora.Pipeline do
       #
       get_child(:src)
       |> via_out(:audio)
-      |> child(:tee_audio, Membrane.Tee.Master),
+      |> child(:tee_audio, Algora.Tee),
 
       #
       get_child(:src)
       |> via_out(:video)
-      |> child(:tee_video, Membrane.Tee.Master),
+      |> child(:tee_video, Algora.Tee),
 
       #
       get_child(:tee_audio)
@@ -50,7 +50,7 @@ defmodule Algora.Pipeline do
       |> get_child(:sink)
     ]
 
-    {[spec: spec], %{socket: socket, video: video}}
+    {[spec: spec], %{socket: socket, video: video, native: nil}}
   end
 
   @impl true
@@ -98,46 +98,63 @@ defmodule Algora.Pipeline do
   def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
     spec = [
       #
-      child(ref, %Membrane.RTMP.Sink{rtmp_url: url}),
+      child(ref, %Algora.Sink{
+        rtmp_url: url,
+        pid: self(),
+        native: state.native
+      }),
 
       #
       get_child(:tee_audio)
       |> via_out(:copy)
-      |> via_in(Pad.ref(:audio, 0))
+      |> via_in(Pad.ref(:audio, 0), toilet_capacity: 10_000)
+      # |> via_in(Pad.ref(:audio, 0))
       |> get_child(ref),
 
       #
       get_child(:tee_video)
       |> via_out(:copy)
-      |> via_in(Pad.ref(:video, 0))
+      |> via_in(Pad.ref(:video, 0), toilet_capacity: 10_000)
+      # |> via_in(Pad.ref(:video, 0))
       |> get_child(ref)
     ]
 
     {[spec: spec], state}
   end
 
+  def handle_info({:init, native}, _ctx, state) do
+    {[], %{state | native: native}}
+  end
+
   def handle_info(:multicast_algora, _ctx, state) do
-    user = Algora.Accounts.get_user_by!(handle: "algora")
-    destinations = Algora.Accounts.list_active_destinations(user.id)
+    send(
+      self(),
+      {:forward_rtmp, "rtmp://localhost:9006/3wactacTCNZIiUHa2EGSDnxvzBZHcFrh5IQ-czPZFXo",
+       String.to_atom("rtmp_sink_algora_0")}
+    )
 
-    for {destination, i} <- Enum.with_index(destinations) do
-      url =
-        URI.new!(destination.rtmp_url)
-        |> URI.append_path("/" <> destination.stream_key)
-        |> URI.to_string()
+    # user = Algora.Accounts.get_user_by!(handle: "algora")
+    # destinations = Algora.Accounts.list_active_destinations(user.id)
 
-      send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_algora_#{i}")})
-    end
+    # for {destination, i} <- Enum.with_index(destinations) do
+    #   url =
+    #     URI.new!(destination.rtmp_url)
+    #     |> URI.append_path("/" <> destination.stream_key)
+    #     |> URI.to_string()
+    #
+    # send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_algora_#{i}")})
+    # end
 
-    if url = Algora.Accounts.get_restream_ws_url(user) do
-      Task.Supervisor.start_child(
-        Algora.TaskSupervisor,
-        fn -> Algora.Restream.Websocket.start_link(%{url: url, video: state.video}) end,
-        restart: :transient
-      )
-    end
+    # if url = Algora.Accounts.get_restream_ws_url(user) do
+    #   Task.Supervisor.start_child(
+    #     Algora.TaskSupervisor,
+    #     fn -> Algora.Restream.Websocket.start_link(%{url: url, video: state.video}) end,
+    #     restart: :transient
+    #   )
+    # end
 
     {[], state}
+    # {[stream_format: {pad, %AAC{config: {:audio_specific_config, packet.payload}}}], state}
   end
 
   @impl true
