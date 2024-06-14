@@ -18,7 +18,7 @@ defmodule AlgoraWeb.VideoLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="lg:mr-[24rem] h-[calc(100svh-56.25vw-64px)] lg:h-auto">
+    <div class="lg:mr-[24rem]">
       <div class="px-4" id="video-player-container" phx-update="ignore">
         <.live_component module={PlayerComponent} id="video-player" />
       </div>
@@ -423,8 +423,8 @@ defmodule AlgoraWeb.VideoLive do
                   class={[
                     "text-sm break-words flex-1 scrollbar-thin overflow-y-auto",
                     if(@channel.solving_challenge,
-                      do: "h-[calc(100svh-56.25vw-432px)] sm:h-[calc(100vh-19.5rem)]",
-                      else: "h-[calc(100svh-56.25vw-392px)] sm:h-[calc(100vh-12rem)]"
+                      do: "h-[calc(100svh-56.25vw-415px)] sm:h-[calc(100vh-19.5rem)]",
+                      else: "h-[calc(100svh-56.25vw-375px)] sm:h-[calc(100vh-12rem)]"
                     )
                   ]}
                 >
