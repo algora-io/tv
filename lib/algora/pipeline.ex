@@ -103,13 +103,13 @@ defmodule Algora.Pipeline do
       #
       get_child(:tee_audio)
       |> via_out(:copy)
-      |> via_in(Pad.ref(:audio, 0))
+      |> via_in(Pad.ref(:audio, 0), toilet_capacity: 10_000)
       |> get_child(ref),
 
       #
       get_child(:tee_video)
       |> via_out(:copy)
-      |> via_in(Pad.ref(:video, 0))
+      |> via_in(Pad.ref(:video, 0), toilet_capacity: 10_000)
       |> get_child(ref)
     ]
 
