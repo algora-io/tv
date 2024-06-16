@@ -72,7 +72,10 @@ defmodule Algora.SourceBin do
       child(:audio_parser, %Membrane.AAC.Parser{
         out_encapsulation: :none
       }),
-      child(:video_parser, Membrane.H264.Parser),
+      child(:video_parser, %Membrane.H264.Parser{
+        output_stream_structure: :avc1,
+        repeat_parameter_sets: true
+      }),
       #
       get_child(:demuxer)
       |> via_out(Pad.ref(:audio, 0))
