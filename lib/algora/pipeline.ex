@@ -120,13 +120,13 @@ defmodule Algora.Pipeline do
     user = Algora.Accounts.get_user_by!(handle: "algora")
     destinations = Algora.Accounts.list_active_destinations(user.id)
 
-    for {destination, i} <- Enum.with_index(destinations) do
+    for destination <- destinations do
       url =
         URI.new!(destination.rtmp_url)
         |> URI.append_path("/" <> destination.stream_key)
         |> URI.to_string()
 
-      send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_algora_#{i}")})
+      send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_#{destination.id}")})
     end
 
     if url = Algora.Accounts.get_restream_ws_url(user) do
