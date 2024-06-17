@@ -63,6 +63,7 @@ defmodule Algora.MixProject do
       {:membrane_tee_plugin, "~> 0.12.0"},
       {:mint, "~> 1.0"},
       {:oban, "~> 2.16"},
+      {:open_api_spex, "~> 3.16"},
       {:phoenix_ecto, "~> 4.4"},
       {:phoenix_html_helpers, "~> 1.0"},
       {:phoenix_html, "~> 4.0", override: true},

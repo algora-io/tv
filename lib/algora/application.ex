@@ -49,6 +49,7 @@ defmodule Algora.Application do
       # Start the Endpoints (http/https)
       AlgoraWeb.Endpoint,
       AlgoraWeb.Embed.Endpoint,
+      {Registry, keys: :unique, name: Algora.RequestHandlerRegistry},
       # Start the RTMP server
       %{
         id: Membrane.RTMP.Source.TcpServer,
@@ -59,6 +60,9 @@ defmodule Algora.Application do
       # Start a worker by calling: Algora.Worker.start_link(arg)
       # {Algora.Worker, arg}
     ]
+
+    :ets.new(:rooms_to_tables, [:public, :set, :named_table])
+    :ets.new(:rooms_to_folder_paths, [:public, :set, :named_table])
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

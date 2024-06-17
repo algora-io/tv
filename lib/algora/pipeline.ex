@@ -1,10 +1,25 @@
 defmodule Algora.Pipeline do
-  alias Algora.Library
   use Membrane.Pipeline
+
+  alias Membrane.Time
+
+  alias Algora.Library
+  alias Algora.HLS.{EtsHelper, RequestHandler}
+
+  @segment_duration Time.seconds(6)
+  @partial_segment_duration Time.milliseconds(200)
 
   @impl true
   def handle_init(_context, socket: socket) do
     video = Library.init_livestream!()
+    room_id = video.uuid
+
+    dir = Path.join("/tmp", room_id)
+    File.mkdir_p!(dir)
+
+    EtsHelper.add_hls_folder_path(room_id, dir)
+    RequestHandler.start(room_id)
+    # spawn_hls_manager(options)
 
     spec = [
       #
@@ -20,7 +35,8 @@ defmodule Algora.Pipeline do
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        storage: %Algora.Storage{video: video}
+        # storage: %Algora.Storage{video: video}
+        storage: %Algora.HLS.LLStorage{directory: dir, room_id: video.uuid}
       }),
 
       #
@@ -37,7 +53,11 @@ defmodule Algora.Pipeline do
       get_child(:tee_audio)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
+        options: [
+          encoding: :AAC,
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
+        ]
       )
       |> get_child(:sink),
 
@@ -45,7 +65,11 @@ defmodule Algora.Pipeline do
       get_child(:tee_video)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :video),
-        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
+        options: [
+          encoding: :H264,
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
+        ]
       )
       |> get_child(:sink)
     ]
