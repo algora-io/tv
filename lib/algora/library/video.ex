@@ -8,6 +8,8 @@ defmodule Algora.Library.Video do
   alias Algora.Shows.Show
   alias Algora.Chat.Message
 
+  @type uuid :: String.t()
+
   @type t() :: %__MODULE__{}
 
   schema "videos" do

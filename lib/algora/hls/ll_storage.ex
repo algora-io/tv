@@ -4,9 +4,9 @@ defmodule Algora.HLS.LLStorage do
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
   alias Algora.HLS.{EtsHelper, RequestHandler}
-  alias Algora.Room
+  alias Algora.Library.Video
 
-  @enforce_keys [:directory, :room_id]
+  @enforce_keys [:directory, :video_uuid]
   defstruct @enforce_keys ++
               [partial_sn: 0, segment_sn: 0, partials_in_ets: [], table: nil]
 
@@ -17,7 +17,7 @@ defmodule Algora.HLS.LLStorage do
 
   @type t :: %__MODULE__{
           directory: Path.t(),
-          room_id: Room.id(),
+          video_uuid: Video.uuid(),
           table: :ets.table() | nil,
           partial_sn: sequence_number(),
           segment_sn: sequence_number(),
@@ -28,12 +28,12 @@ defmodule Algora.HLS.LLStorage do
   @delta_manifest_suffix "_delta.m3u8"
 
   @impl true
-  def init(%__MODULE__{directory: directory, room_id: room_id}) do
-    with {:ok, table} <- EtsHelper.add_room(room_id) do
-      %__MODULE__{room_id: room_id, table: table, directory: directory}
+  def init(%__MODULE__{directory: directory, video_uuid: video_uuid}) do
+    with {:ok, table} <- EtsHelper.add_video(video_uuid) do
+      %__MODULE__{video_uuid: video_uuid, table: table, directory: directory}
     else
       {:error, :already_exists} ->
-        raise("Can't create ets table - another table already exists for room #{room_id}")
+        raise("Can't create ets table - another table already exists for video #{video_uuid}")
     end
   end
 
@@ -144,17 +144,17 @@ defmodule Algora.HLS.LLStorage do
   end
 
   defp send_update(filename, %{
-         room_id: room_id,
+         video_uuid: video_uuid,
          table: table,
          segment_sn: segment_sn,
          partial_sn: partial_sn
        }) do
     if String.ends_with?(filename, @delta_manifest_suffix) do
       EtsHelper.update_delta_recent_partial(table, {segment_sn, partial_sn})
-      RequestHandler.update_delta_recent_partial(room_id, {segment_sn, partial_sn})
+      RequestHandler.update_delta_recent_partial(video_uuid, {segment_sn, partial_sn})
     else
       EtsHelper.update_recent_partial(table, {segment_sn, partial_sn})
-      RequestHandler.update_recent_partial(room_id, {segment_sn, partial_sn})
+      RequestHandler.update_recent_partial(video_uuid, {segment_sn, partial_sn})
     end
   end
 

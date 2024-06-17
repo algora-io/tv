@@ -18,7 +18,7 @@ defmodule AlgoraWeb.HLSContentController do
     operation_id: "getHlsContent",
     summary: "Retrieve HLS Content",
     parameters: [
-      room_id: [in: :path, description: "Room id", type: :string],
+      video_uuid: [in: :path, description: "Video UUID", type: :string],
       filename: [in: :path, description: "Name of the file", type: :string],
       range: [in: :header, description: "Byte range of partial segment", type: :string],
       _HLS_msn: [in: :query, description: "Segment sequence number", type: Params.HlsMsn],
@@ -29,7 +29,7 @@ defmodule AlgoraWeb.HLSContentController do
       ],
       _HLS_skip: [in: :query, description: "Is delta manifest requested", type: Params.HlsSkip]
     ],
-    required: [:room_id, :filename],
+    required: [:video_uuid, :filename],
     responses: [
       ok: ApiSpec.data("File was found", Response),
       not_found: ApiSpec.error("File not found"),
@@ -54,7 +54,7 @@ defmodule AlgoraWeb.HLSContentController do
   def index(
         conn,
         %{
-          "room_id" => room_id,
+          "video_uuid" => video_uuid,
           "filename" => filename,
           "_HLS_msn" => segment,
           "_HLS_part" => part
@@ -64,9 +64,9 @@ defmodule AlgoraWeb.HLSContentController do
 
     result =
       if String.ends_with?(filename, "_delta.m3u8") do
-        RequestHandler.handle_delta_manifest_request(room_id, partial)
+        RequestHandler.handle_delta_manifest_request(video_uuid, partial)
       else
-        RequestHandler.handle_manifest_request(room_id, partial)
+        RequestHandler.handle_manifest_request(video_uuid, partial)
       end
 
     case result do
@@ -81,12 +81,12 @@ defmodule AlgoraWeb.HLSContentController do
     end
   end
 
-  def index(conn, %{"room_id" => room_id, "filename" => filename}) do
+  def index(conn, %{"video_uuid" => video_uuid, "filename" => filename}) do
     result =
       if String.ends_with?(filename, "_part.m4s") do
-        RequestHandler.handle_partial_request(room_id, filename)
+        RequestHandler.handle_partial_request(video_uuid, filename)
       else
-        RequestHandler.handle_file_request(room_id, filename)
+        RequestHandler.handle_file_request(video_uuid, filename)
       end
 
     case result do

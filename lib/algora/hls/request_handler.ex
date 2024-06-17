@@ -6,9 +6,9 @@ defmodule Algora.HLS.RequestHandler do
 
   alias Algora.Utils.PathValidation
   alias Algora.HLS.EtsHelper
-  alias Algora.Room
+  alias Algora.Library.Video
 
-  @enforce_keys [:room_id, :room_pid]
+  @enforce_keys [:video_uuid, :video_pid]
   defstruct @enforce_keys ++
               [
                 preload_hints: [],
@@ -22,8 +22,8 @@ defmodule Algora.HLS.RequestHandler do
   @type status :: %{waiting_pids: %{partial() => [pid()]}, last_partial: partial() | nil}
 
   @type t :: %__MODULE__{
-          room_id: Room.id(),
-          room_pid: pid(),
+          video_uuid: Video.uuid(),
+          video_pid: pid(),
           manifest: status(),
           delta_manifest: status(),
           preload_hints: [pid()]
@@ -46,12 +46,12 @@ defmodule Algora.HLS.RequestHandler do
   @doc """
   Handles requests: playlists (regular hls), master playlist, headers, regular segments
   """
-  @spec handle_file_request(Room.id(), String.t()) :: {:ok, binary()} | {:error, atom()}
-  def handle_file_request(room_id, filename) do
-    with {:ok, room_path} <- EtsHelper.get_hls_folder_path(room_id) do
-      file_path = room_path |> Path.join(filename) |> Path.expand()
+  @spec handle_file_request(Video.uuid(), String.t()) :: {:ok, binary()} | {:error, atom()}
+  def handle_file_request(video_uuid, filename) do
+    with {:ok, video_path} <- EtsHelper.get_hls_folder_path(video_uuid) do
+      file_path = video_path |> Path.join(filename) |> Path.expand()
 
-      if PathValidation.inside_directory?(file_path, Path.expand(room_path)),
+      if PathValidation.inside_directory?(file_path, Path.expand(video_path)),
         do: File.read(file_path),
         else: {:error, :invalid_path}
     end
@@ -60,16 +60,16 @@ defmodule Algora.HLS.RequestHandler do
   @doc """
   Handles ll-hls partial requests
   """
-  @spec handle_partial_request(Room.id(), String.t()) ::
+  @spec handle_partial_request(Video.uuid(), String.t()) ::
           {:ok, binary()} | {:error, atom()}
-  def handle_partial_request(room_id, filename) do
-    with {:ok, partial} <- EtsHelper.get_partial(room_id, filename) do
+  def handle_partial_request(video_uuid, filename) do
+    with {:ok, partial} <- EtsHelper.get_partial(video_uuid, filename) do
       {:ok, partial}
     else
       {:error, :file_not_found} ->
-        case preload_hint?(room_id, filename) do
+        case preload_hint?(video_uuid, filename) do
           {:ok, true} ->
-            wait_for_partial_ready(room_id, filename)
+            wait_for_partial_ready(video_uuid, filename)
 
           _other ->
             {:error, :file_not_found}
@@ -83,30 +83,30 @@ defmodule Algora.HLS.RequestHandler do
   @doc """
   Handles manifest requests with specific partial requested (ll-hls)
   """
-  @spec handle_manifest_request(Room.id(), partial()) ::
+  @spec handle_manifest_request(Video.uuid(), partial()) ::
           {:ok, String.t()} | {:error, atom()}
-  def handle_manifest_request(room_id, partial) do
-    with {:ok, last_partial} <- EtsHelper.get_recent_partial(room_id) do
+  def handle_manifest_request(video_uuid, partial) do
+    with {:ok, last_partial} <- EtsHelper.get_recent_partial(video_uuid) do
       unless partial_ready?(partial, last_partial) do
-        wait_for_manifest_ready(room_id, partial, :manifest)
+        wait_for_manifest_ready(video_uuid, partial, :manifest)
       end
 
-      EtsHelper.get_manifest(room_id)
+      EtsHelper.get_manifest(video_uuid)
     end
   end
 
   @doc """
   Handles delta manifest requests with specific partial requested (ll-hls)
   """
-  @spec handle_delta_manifest_request(Room.id(), partial()) ::
+  @spec handle_delta_manifest_request(Video.uuid(), partial()) ::
           {:ok, String.t()} | {:error, atom()}
-  def handle_delta_manifest_request(room_id, partial) do
-    with {:ok, last_partial} <- EtsHelper.get_delta_recent_partial(room_id) do
+  def handle_delta_manifest_request(video_uuid, partial) do
+    with {:ok, last_partial} <- EtsHelper.get_delta_recent_partial(video_uuid) do
       unless partial_ready?(partial, last_partial) do
-        wait_for_manifest_ready(room_id, partial, :delta_manifest)
+        wait_for_manifest_ready(video_uuid, partial, :delta_manifest)
       end
 
-      EtsHelper.get_delta_manifest(room_id)
+      EtsHelper.get_delta_manifest(video_uuid)
     end
   end
 
@@ -114,35 +114,37 @@ defmodule Algora.HLS.RequestHandler do
   ### STORAGE API
   ###
 
-  @spec update_recent_partial(Room.id(), partial()) :: :ok
-  def update_recent_partial(room_id, partial) do
-    GenServer.cast(registry_id(room_id), {:update_recent_partial, partial, :manifest})
+  @spec update_recent_partial(Video.uuid(), partial()) :: :ok
+  def update_recent_partial(video_uuid, partial) do
+    GenServer.cast(registry_id(video_uuid), {:update_recent_partial, partial, :manifest})
   end
 
-  @spec update_delta_recent_partial(Room.id(), partial()) :: :ok
-  def update_delta_recent_partial(room_id, partial) do
-    GenServer.cast(registry_id(room_id), {:update_recent_partial, partial, :delta_manifest})
+  @spec update_delta_recent_partial(Video.uuid(), partial()) :: :ok
+  def update_delta_recent_partial(video_uuid, partial) do
+    GenServer.cast(registry_id(video_uuid), {:update_recent_partial, partial, :delta_manifest})
   end
 
   ###
   ### MANAGMENT API
   ###
 
-  def start(room_id) do
-    # Request handler monitors the room process.
-    # This ensures that it will be killed if room crashes.
+  def start(video_uuid) do
+    # Request handler monitors the video process.
+    # This ensures that it will be killed if video crashes.
     # In case of different use of this module it has to be refactored
-    GenServer.start(__MODULE__, %{room_id: room_id, room_pid: self()}, name: registry_id(room_id))
+    GenServer.start(__MODULE__, %{video_uuid: video_uuid, video_pid: self()},
+      name: registry_id(video_uuid)
+    )
   end
 
-  def stop(room_id) do
-    GenServer.cast(registry_id(room_id), :shutdown)
+  def stop(video_uuid) do
+    GenServer.cast(registry_id(video_uuid), :shutdown)
   end
 
   @impl true
-  def init(%{room_id: room_id, room_pid: room_pid}) do
-    Process.monitor(room_pid)
-    {:ok, %__MODULE__{room_id: room_id, room_pid: room_pid}}
+  def init(%{video_uuid: video_uuid, video_pid: video_pid}) do
+    Process.monitor(video_pid)
+    {:ok, %__MODULE__{video_uuid: video_uuid, video_pid: video_pid}}
   end
 
   @impl true
@@ -172,8 +174,8 @@ defmodule Algora.HLS.RequestHandler do
   end
 
   @impl true
-  def handle_cast({:preload_hint, room_id, filename, from}, state) do
-    with {:ok, _partial} <- EtsHelper.get_partial(room_id, filename) do
+  def handle_cast({:preload_hint, video_uuid, filename, from}, state) do
+    with {:ok, _partial} <- EtsHelper.get_partial(video_uuid, filename) do
       send(from, :preload_hint_ready)
       {:noreply, state}
     else
@@ -188,12 +190,12 @@ defmodule Algora.HLS.RequestHandler do
   end
 
   @impl true
-  def terminate(_reason, %{room_id: room_id}) do
-    EtsHelper.remove_room(room_id)
+  def terminate(_reason, %{video_uuid: video_uuid}) do
+    EtsHelper.remove_video(video_uuid)
   end
 
   @impl true
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, %{room_pid: pid} = state) do
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, %{video_pid: pid} = state) do
     {:stop, :normal, state}
   end
 
@@ -201,8 +203,8 @@ defmodule Algora.HLS.RequestHandler do
   ### PRIVATE FUNCTIONS
   ###
 
-  defp wait_for_manifest_ready(room_id, partial, manifest) do
-    GenServer.cast(registry_id(room_id), {:partial_ready?, partial, self(), manifest})
+  defp wait_for_manifest_ready(video_uuid, partial, manifest) do
+    GenServer.cast(registry_id(video_uuid), {:partial_ready?, partial, self(), manifest})
 
     receive do
       :manifest_ready ->
@@ -210,12 +212,12 @@ defmodule Algora.HLS.RequestHandler do
     end
   end
 
-  defp wait_for_partial_ready(room_id, filename) do
-    GenServer.cast(registry_id(room_id), {:preload_hint, room_id, filename, self()})
+  defp wait_for_partial_ready(video_uuid, filename) do
+    GenServer.cast(registry_id(video_uuid), {:preload_hint, video_uuid, filename, self()})
 
     receive do
       :preload_hint_ready ->
-        EtsHelper.get_partial(room_id, filename)
+        EtsHelper.get_partial(video_uuid, filename)
     end
   end
 
@@ -253,10 +255,10 @@ defmodule Algora.HLS.RequestHandler do
     end
   end
 
-  defp preload_hint?(room_id, filename) do
+  defp preload_hint?(video_uuid, filename) do
     partial_sn = get_partial_sn(filename)
 
-    with {:ok, recent_partial_sn} <- EtsHelper.get_recent_partial(room_id) do
+    with {:ok, recent_partial_sn} <- EtsHelper.get_recent_partial(video_uuid) do
       {:ok, check_if_preload_hint(partial_sn, recent_partial_sn)}
     end
   end
@@ -285,7 +287,7 @@ defmodule Algora.HLS.RequestHandler do
     |> List.to_tuple()
   end
 
-  defp registry_id(room_id), do: {:via, Registry, {Algora.RequestHandlerRegistry, room_id}}
+  defp registry_id(video_uuid), do: {:via, Registry, {Algora.RequestHandlerRegistry, video_uuid}}
 
   defp send_partial_ready(waiting_pids) do
     Enum.each(waiting_pids, fn pid -> send(pid, :manifest_ready) end)

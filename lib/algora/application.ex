@@ -61,8 +61,8 @@ defmodule Algora.Application do
       # {Algora.Worker, arg}
     ]
 
-    :ets.new(:rooms_to_tables, [:public, :set, :named_table])
-    :ets.new(:rooms_to_folder_paths, [:public, :set, :named_table])
+    :ets.new(:videos_to_tables, [:public, :set, :named_table])
+    :ets.new(:videos_to_folder_paths, [:public, :set, :named_table])
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

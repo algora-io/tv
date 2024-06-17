@@ -1,9 +1,9 @@
 defmodule Algora.HLS.EtsHelper do
   @moduledoc false
 
-  alias Algora.Room
+  alias Algora.Library.Video
 
-  @rooms_to_tables :rooms_to_tables
+  @videos_to_tables :videos_to_tables
 
   @recent_partial_key :recent_partial
   @manifest_key :manifest
@@ -11,17 +11,17 @@ defmodule Algora.HLS.EtsHelper do
   @delta_recent_partial_key :delta_recent_partial
   @delta_manifest_key :delta_manifest
 
-  @hls_folder_path :rooms_to_folder_paths
+  @hls_folder_path :videos_to_folder_paths
 
   @type partial :: {non_neg_integer(), non_neg_integer()}
 
   ###
-  ### ROOM MANAGMENT
+  ### VIDEO MANAGMENT
   ###
 
-  @spec add_room(Room.id()) :: {:ok, reference()} | {:error, :already_exists}
-  def add_room(room_id) do
-    if room_exists?(room_id) do
+  @spec add_video(Video.uuid()) :: {:ok, reference()} | {:error, :already_exists}
+  def add_video(video_uuid) do
+    if video_exists?(video_uuid) do
       {:error, :already_exists}
     else
       # Ets is public because ll-storage can't delete table.
@@ -32,21 +32,21 @@ defmodule Algora.HLS.EtsHelper do
       # When used on a larger scale it should be carefully tested
       table = :ets.new(:hls_storage, [:public, read_concurrency: true])
 
-      :ets.insert(@rooms_to_tables, {room_id, table})
+      :ets.insert(@videos_to_tables, {video_uuid, table})
       {:ok, table}
     end
   end
 
-  @spec remove_room(Room.id()) :: :ok | {:error, String.t()}
-  def remove_room(room_id) do
-    case :ets.lookup(@rooms_to_tables, room_id) do
-      [{^room_id, _table}] ->
+  @spec remove_video(Video.uuid()) :: :ok | {:error, String.t()}
+  def remove_video(video_uuid) do
+    case :ets.lookup(@videos_to_tables, video_uuid) do
+      [{^video_uuid, _table}] ->
         # The table will be automatically removed when the HLS component process dies.
-        :ets.delete(@rooms_to_tables, room_id)
+        :ets.delete(@videos_to_tables, video_uuid)
         :ok
 
       _empty ->
-        {:error, "Room: #{room_id} doesn't exist"}
+        {:error, "Video: #{video_uuid} doesn't exist"}
     end
   end
 
@@ -84,59 +84,59 @@ defmodule Algora.HLS.EtsHelper do
     :ets.delete(table, filename)
   end
 
-  @spec add_hls_folder_path(Room.id(), String.t()) :: true
-  def add_hls_folder_path(room_id, path) do
-    :ets.insert(@hls_folder_path, {room_id, path})
+  @spec add_hls_folder_path(Video.uuid(), String.t()) :: true
+  def add_hls_folder_path(video_uuid, path) do
+    :ets.insert(@hls_folder_path, {video_uuid, path})
   end
 
-  @spec delete_hls_folder_path(Room.id()) :: true
-  def delete_hls_folder_path(room_id) do
-    :ets.delete(@hls_folder_path, room_id)
+  @spec delete_hls_folder_path(Video.uuid()) :: true
+  def delete_hls_folder_path(video_uuid) do
+    :ets.delete(@hls_folder_path, video_uuid)
   end
 
   ###
   ### ETS GETTERS
   ###
 
-  @spec get_partial(Room.id(), String.t()) ::
+  @spec get_partial(Video.uuid(), String.t()) ::
           {:ok, binary()} | {:error, atom()}
-  def get_partial(room_id, filename) do
-    get_from_ets(room_id, filename)
+  def get_partial(video_uuid, filename) do
+    get_from_ets(video_uuid, filename)
   end
 
-  @spec get_recent_partial(Room.id()) ::
+  @spec get_recent_partial(Video.uuid()) ::
           {:ok, {non_neg_integer(), non_neg_integer()}} | {:error, atom()}
-  def get_recent_partial(room_id) do
-    get_from_ets(room_id, @recent_partial_key)
+  def get_recent_partial(video_uuid) do
+    get_from_ets(video_uuid, @recent_partial_key)
   end
 
-  @spec get_delta_recent_partial(Room.id()) ::
+  @spec get_delta_recent_partial(Video.uuid()) ::
           {:ok, {non_neg_integer(), non_neg_integer()}} | {:error, atom()}
-  def get_delta_recent_partial(room_id) do
-    get_from_ets(room_id, @delta_recent_partial_key)
+  def get_delta_recent_partial(video_uuid) do
+    get_from_ets(video_uuid, @delta_recent_partial_key)
   end
 
-  @spec get_manifest(Room.id()) :: {:ok, String.t()} | {:error, atom()}
-  def get_manifest(room_id) do
-    get_from_ets(room_id, @manifest_key)
+  @spec get_manifest(Video.uuid()) :: {:ok, String.t()} | {:error, atom()}
+  def get_manifest(video_uuid) do
+    get_from_ets(video_uuid, @manifest_key)
   end
 
-  @spec get_delta_manifest(Room.id()) :: {:ok, String.t()} | {:error, atom()}
-  def get_delta_manifest(room_id) do
-    get_from_ets(room_id, @delta_manifest_key)
+  @spec get_delta_manifest(Video.uuid()) :: {:ok, String.t()} | {:error, atom()}
+  def get_delta_manifest(video_uuid) do
+    get_from_ets(video_uuid, @delta_manifest_key)
   end
 
-  @spec get_hls_folder_path(Room.id()) :: {:ok, String.t()} | {:error, :room_not_found}
-  def get_hls_folder_path(room_id) do
-    get_path(room_id)
+  @spec get_hls_folder_path(Video.uuid()) :: {:ok, String.t()} | {:error, :video_not_found}
+  def get_hls_folder_path(video_uuid) do
+    get_path(video_uuid)
   end
 
   ###
   ### PRIVATE FUNCTIONS
   ###
 
-  defp get_from_ets(room_id, key) do
-    with {:ok, table} <- get_table(room_id) do
+  defp get_from_ets(video_uuid, key) do
+    with {:ok, table} <- get_table(video_uuid) do
       lookup_ets(table, key)
     end
   end
@@ -145,12 +145,12 @@ defmodule Algora.HLS.EtsHelper do
     lookup_helper(table, key, :file_not_found)
   end
 
-  defp get_table(room_id) do
-    lookup_helper(@rooms_to_tables, room_id, :room_not_found)
+  defp get_table(video_uuid) do
+    lookup_helper(@videos_to_tables, video_uuid, :video_not_found)
   end
 
-  defp get_path(room_id) do
-    lookup_helper(@hls_folder_path, room_id, :room_not_found)
+  defp get_path(video_uuid) do
+    lookup_helper(@hls_folder_path, video_uuid, :video_not_found)
   end
 
   defp lookup_helper(table, key, error) do
@@ -160,7 +160,7 @@ defmodule Algora.HLS.EtsHelper do
     end
   end
 
-  defp room_exists?(room_id) do
-    :ets.lookup(@rooms_to_tables, room_id) != []
+  defp video_exists?(video_uuid) do
+    :ets.lookup(@videos_to_tables, video_uuid) != []
   end
 end

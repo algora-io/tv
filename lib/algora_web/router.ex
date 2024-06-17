@@ -33,7 +33,7 @@ defmodule AlgoraWeb.Router do
   end
 
   scope "/", AlgoraWeb do
-    get "/hls/:room_id/:filename", HLSContentController, :index
+    get "/hls/:video_uuid/:filename", HLSContentController, :index
   end
 
   if Mix.env() in [:dev, :test] do

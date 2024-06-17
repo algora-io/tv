@@ -12,13 +12,12 @@ defmodule Algora.Pipeline do
   @impl true
   def handle_init(_context, socket: socket) do
     video = Library.init_livestream!()
-    room_id = video.uuid
 
-    dir = Path.join("/tmp", room_id)
+    dir = Path.join("/tmp", video.uuid)
     File.mkdir_p!(dir)
 
-    EtsHelper.add_hls_folder_path(room_id, dir)
-    RequestHandler.start(room_id)
+    EtsHelper.add_hls_folder_path(video.uuid, dir)
+    RequestHandler.start(video.uuid)
     # spawn_hls_manager(options)
 
     spec = [
@@ -36,7 +35,7 @@ defmodule Algora.Pipeline do
         target_window_duration: :infinity,
         persist?: false,
         # storage: %Algora.Storage{video: video}
-        storage: %Algora.HLS.LLStorage{directory: dir, room_id: video.uuid}
+        storage: %Algora.HLS.LLStorage{directory: dir, video_uuid: video.uuid}
       }),
 
       #
