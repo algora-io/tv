@@ -1,16 +1,26 @@
 defmodule Algora.Pipeline do
   alias Membrane.Time
+
   alias Algora.Library
+  alias Algora.HLS.{EtsHelper, RequestHandler}
 
   use Membrane.Pipeline
 
   @segment_duration Time.seconds(6)
   # @partial_segment_duration Time.milliseconds(1_100)
-  @partial_segment_duration Time.seconds(1)
+  @partial_segment_duration Time.milliseconds(200)
 
   @impl true
   def handle_init(_context, socket: socket) do
     video = Library.init_livestream!()
+    room_id = video.uuid
+
+    dir = Path.join("/tmp", room_id)
+    File.mkdir_p!(dir)
+
+    EtsHelper.add_hls_folder_path(room_id, dir)
+    RequestHandler.start(room_id)
+    # spawn_hls_manager(options)
 
     spec = [
       #
@@ -26,7 +36,8 @@ defmodule Algora.Pipeline do
         manifest_module: Membrane.HTTPAdaptiveStream.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        storage: %Algora.Storage{video: video, pid: self()}
+        storage: %Algora.HLS.LLStorage{directory: dir, room_id: video.uuid}
+        # storage: %Algora.Storage{video: video, pid: self()}
       }),
 
       #

@@ -32,6 +32,10 @@ defmodule AlgoraWeb.Router do
     get "/oauth/login/:provider", OAuthLoginController, :new
   end
 
+  scope "/", AlgoraWeb do
+    get "/hls/:room_id/:filename", HLSContentController, :index
+  end
+
   if Mix.env() in [:dev, :test] do
     import Phoenix.LiveDashboard.Router
 
@@ -72,11 +76,11 @@ defmodule AlgoraWeb.Router do
       response_mode: :buffer
   end
 
-  scope "/hls" do
-    forward "/", AlgoraWeb.Plugs.HLSProxy,
-      upstream: "https://fly.storage.tigris.dev",
-      response_mode: :stream
-  end
+  # scope "/hls" do
+  #   forward "/", AlgoraWeb.Plugs.HLSProxy,
+  #     upstream: "https://fly.storage.tigris.dev",
+  #     response_mode: :stream
+  # end
 
   scope "/", AlgoraWeb do
     pipe_through :browser

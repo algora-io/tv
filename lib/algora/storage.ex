@@ -90,6 +90,7 @@ defmodule Algora.Storage do
       str =
         case ctx do
           %{type: :manifest} ->
+            dbg({:manifest, name})
             contents |> String.split("\n") |> Enum.take(-3) |> Enum.join("\n")
 
           %{type: :delta_manifest} ->
