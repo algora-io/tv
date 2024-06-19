@@ -55,16 +55,17 @@ defmodule Algora.HLS.LLStorage do
   def store(parent_id, name, content, metadata, context, state) do
     case context do
       %{mode: :binary, type: :segment} ->
-        store_regular(parent_id, name, content, metadata, context, state)
+        store_content(parent_id, name, content, metadata, context, state)
 
       %{mode: :binary, type: :partial_segment} ->
-        store_partial_segment(name, content, metadata, state)
+        cache_partial_segment(name, content, metadata, state)
 
       %{mode: :binary, type: :header} ->
-        store_regular(parent_id, name, content, metadata, context, state)
+        store_content(parent_id, name, content, metadata, context, state)
 
       %{mode: :text, type: :manifest} ->
-        store_manifest(name, content, state)
+        cache_manifest(name, content, state)
+        store_content(parent_id, name, content, metadata, context, state)
     end
   end
 
@@ -78,7 +79,7 @@ defmodule Algora.HLS.LLStorage do
     {result, state}
   end
 
-  defp store_partial_segment(
+  defp cache_partial_segment(
          segment_name,
          content,
          %{sequence_number: sequence_number, partial_name: partial_name},
@@ -94,7 +95,7 @@ defmodule Algora.HLS.LLStorage do
     {result, state}
   end
 
-  defp store_manifest(
+  defp cache_manifest(
          filename,
          content,
          %__MODULE__{directory: directory} = state
@@ -201,7 +202,7 @@ defmodule Algora.HLS.LLStorage do
 
   ## ---------------------------------------
 
-  def store_regular(
+  def store_content(
         parent_id,
         name,
         contents,
