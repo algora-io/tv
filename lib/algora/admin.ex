@@ -142,8 +142,7 @@ defmodule Algora.Admin do
         "/data"
 
       _ ->
-        "/home/zaf/Downloads"
-        # _ -> System.tmp_dir!()
+        System.tmp_dir!()
     end
   end
 

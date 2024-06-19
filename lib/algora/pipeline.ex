@@ -13,7 +13,7 @@ defmodule Algora.Pipeline do
   def handle_init(_context, socket: socket) do
     video = Library.init_livestream!()
 
-    dir = Path.join("/tmp", video.uuid)
+    dir = Path.join(Admin.tmp_dir(), video.uuid)
     File.mkdir_p!(dir)
 
     EtsHelper.add_hls_folder_path(video.uuid, dir)
