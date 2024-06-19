@@ -49,6 +49,7 @@ defmodule Algora.Application do
       # Start the Endpoints (http/https)
       AlgoraWeb.Endpoint,
       AlgoraWeb.Embed.Endpoint,
+      # Start the LL-HLS controller registry
       {Registry, keys: :unique, name: Algora.LLControllerRegistry},
       # Start the RTMP server
       %{
