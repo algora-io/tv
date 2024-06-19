@@ -2,7 +2,7 @@ defmodule AlgoraWeb.ChannelLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Accounts, Library, LLStorage}
+  alias Algora.{Accounts, Library, Storage}
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.StreamFormComponent
 
@@ -255,7 +255,7 @@ defmodule AlgoraWeb.ChannelLive do
   end
 
   def handle_info(
-        {LLStorage, %Library.Events.ThumbnailsGenerated{video: video}},
+        {Storage, %Library.Events.ThumbnailsGenerated{video: video}},
         socket
       ) do
     {:noreply,

@@ -20,8 +20,6 @@ defmodule Algora.Pipeline do
 
     :rpc.multicall(Admin.nodes(), LLController, :start, [video.uuid])
 
-    # spawn_hls_manager(options)
-
     spec = [
       #
       child(:src, %Algora.SourceBin{
@@ -37,8 +35,7 @@ defmodule Algora.Pipeline do
         manifest_module: Algora.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        # storage: %Algora.Storage{video: video}
-        storage: %Algora.HLS.LLStorage{directory: dir, video_uuid: video.uuid}
+        storage: %Algora.HLS.Storage{directory: dir, video_uuid: video.uuid}
       }),
 
       #

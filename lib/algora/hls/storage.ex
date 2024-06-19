@@ -1,4 +1,4 @@
-defmodule Algora.HLS.LLStorage do
+defmodule Algora.HLS.Storage do
   @moduledoc false
 
   @behaviour Membrane.HTTPAdaptiveStream.Storage

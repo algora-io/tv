@@ -3,7 +3,7 @@ defmodule AlgoraWeb.VideoLive do
   require Logger
   import Ecto.Query, warn: false
 
-  alias Algora.{Accounts, Library, LLStorage, Chat, Repo}
+  alias Algora.{Accounts, Library, Storage, Chat, Repo}
   alias Algora.Events.Event
 
   alias AlgoraWeb.{
@@ -625,7 +625,7 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   def handle_info(
-        {LLStorage, %Library.Events.ThumbnailsGenerated{video: video}},
+        {Storage, %Library.Events.ThumbnailsGenerated{video: video}},
         socket
       ) do
     {:noreply,
