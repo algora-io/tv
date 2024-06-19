@@ -1,11 +1,12 @@
 defmodule Algora.HLS do
   @moduledoc false
 
-  @behaviour Membrane.HTTPAdaptiveStream.Manifest
+  @behaviour Algora.Manifest
 
   use Numbers, overload_operators: true
 
-  alias Membrane.HTTPAdaptiveStream.{BandwidthCalculator, Manifest}
+  alias Algora.Manifest
+  alias Membrane.HTTPAdaptiveStream.BandwidthCalculator
   alias Membrane.HTTPAdaptiveStream.Manifest.{Segment, Track}
   alias Membrane.Time
 
@@ -66,7 +67,7 @@ defmodule Algora.HLS do
     end
 
     master_manifest = master_playlist_from_tracks(tracks_by_content, manifest)
-    manifest_per_track = playlists_per_track(tracks_by_content)
+    manifest_per_track = playlists_per_track(manifest, tracks_by_content)
 
     %{
       master_manifest: master_manifest,
@@ -88,48 +89,51 @@ defmodule Algora.HLS do
     {master_manifest_name, master_playlist}
   end
 
-  defp playlists_per_track(tracks) do
+  defp playlists_per_track(%Manifest{} = manifest, tracks) do
     case tracks do
       %{muxed: tracks} ->
-        serialize_tracks(tracks)
+        serialize_tracks(manifest, tracks)
 
       %{audio: audios, video: videos} ->
-        serialized_videos = serialize_tracks(videos)
-        serialized_audios = serialize_tracks(audios)
+        serialized_videos = serialize_tracks(manifest, videos)
+        serialized_audios = serialize_tracks(manifest, audios)
         Map.merge(serialized_videos, serialized_audios)
 
       %{audio: audios} ->
-        serialize_tracks(audios)
+        serialize_tracks(manifest, audios)
 
       %{video: videos} ->
-        serialize_tracks(videos)
+        serialize_tracks(manifest, videos)
     end
   end
 
-  defp serialize_tracks(tracks) do
+  defp serialize_tracks(%Manifest{} = manifest, tracks) do
     tracks
     |> Enum.filter(&(&1.segments != @empty_segments))
-    |> Enum.reduce(%{}, &add_serialized_track(&2, &1))
+    |> Enum.reduce(%{}, &add_serialized_track(manifest, &2, &1))
   end
 
-  defp add_serialized_track(tracks_map, track) do
+  defp add_serialized_track(%Manifest{} = manifest, tracks_map, track) do
     target_duration = calculate_target_duration(track)
     playlist_path = build_media_playlist_path(track)
 
     case maybe_calculate_delta_params(track, target_duration) do
       {:create_delta, delta_ctx} ->
         serialized_track =
-          {playlist_path, serialize_track(track, target_duration, %{delta_ctx | skip_count: 0})}
+          {playlist_path,
+           serialize_track(manifest, track, target_duration, %{delta_ctx | skip_count: 0})}
 
         delta_path = build_media_playlist_path(track, delta?: true)
-        serialized_delta_track = {delta_path, serialize_track(track, target_duration, delta_ctx)}
+
+        serialized_delta_track =
+          {delta_path, serialize_track(manifest, track, target_duration, delta_ctx)}
 
         tracks_map
         |> Map.put(track.id, serialized_track)
         |> Map.put(:"#{track.id}_delta", serialized_delta_track)
 
       :dont_create_delta ->
-        serialized_track = {playlist_path, serialize_track(track, target_duration)}
+        serialized_track = {playlist_path, serialize_track(manifest, track, target_duration)}
         Map.put(tracks_map, track.id, serialized_track)
     end
   end
@@ -275,6 +279,7 @@ defmodule Algora.HLS do
   end
 
   defp serialize_track(
+         %Manifest{} = manifest,
          %Track{} = track,
          target_duration,
          delta_ctx \\ %{skip_count: 0, skip_duration: 0}
@@ -290,13 +295,13 @@ defmodule Algora.HLS do
       """
       #EXT-X-MEDIA-SEQUENCE:#{track.current_seq_num}
       #EXT-X-DISCONTINUITY-SEQUENCE:#{track.current_discontinuity_seq_num}
-      #EXT-X-MAP:URI="#{track.header_name}"
-      #{serialize_segments(track.segments, supports_ll_hls?: supports_ll_hls?, segments_to_skip_count: delta_ctx.skip_count)}
+      #EXT-X-MAP:URI="#{storage_base_url()}/#{manifest.video_uuid}/#{track.header_name}"
+      #{serialize_segments(manifest, track.segments, supports_ll_hls?: supports_ll_hls?, segments_to_skip_count: delta_ctx.skip_count)}
       #{if track.finished?, do: "#EXT-X-ENDLIST", else: serialize_preload_hint_tag(supports_ll_hls?, track)}
       """
   end
 
-  defp serialize_segments(segments,
+  defp serialize_segments(%Manifest{} = manifest, segments,
          supports_ll_hls?: supports_ll_hls?,
          segments_to_skip_count: segments_to_skip_count
        )
@@ -306,46 +311,50 @@ defmodule Algora.HLS do
     """
 
     serialized_segments =
-      segments
-      |> Enum.drop(segments_to_skip_count)
-      |> serialize_segments(supports_ll_hls?: supports_ll_hls?, segments_to_skip_count: 0)
+       serialize_segments(manifest, Enum.drop(segments, segments_to_skip_count),
+        supports_ll_hls?: supports_ll_hls?,
+        segments_to_skip_count: 0
+      )
 
     prefix <> serialized_segments
   end
 
-  defp serialize_segments(segments, supports_ll_hls?: supports_ll_hls?, segments_to_skip_count: 0) do
+  defp serialize_segments(%Manifest{} = manifest, segments,
+         supports_ll_hls?: supports_ll_hls?,
+         segments_to_skip_count: 0
+       ) do
     segments
     |> Enum.split(-@keep_latest_n_segment_parts)
     |> then(fn {regular_segments, ll_segments} ->
-      regular = Enum.flat_map(regular_segments, &do_serialize_segment(&1, false))
-      ll = Enum.flat_map(ll_segments, &do_serialize_segment(&1, supports_ll_hls?))
+      regular = Enum.flat_map(regular_segments, &do_serialize_segment(manifest, &1, false))
+      ll = Enum.flat_map(ll_segments, &do_serialize_segment(manifest, &1, supports_ll_hls?))
 
       regular ++ ll
     end)
     |> Enum.join("\n")
   end
 
-  defp do_serialize_segment(%Segment{} = segment, supports_ll_hls?) do
+  defp do_serialize_segment(%Manifest{} = manifest, %Segment{} = segment, supports_ll_hls?) do
     [
       # serialize partial segments just for the last 4 live segments, otherwise just keep the regular segments
       if(supports_ll_hls?,
         do: serialize_partial_segments(segment),
         else: []
       ),
-      serialize_regular_segment(segment)
+      serialize_regular_segment(manifest, segment)
     ]
     |> List.flatten()
   end
 
-  defp serialize_regular_segment(%Segment{type: :partial}), do: []
+  defp serialize_regular_segment(%Manifest{} = _manifest, %Segment{type: :partial}), do: []
 
-  defp serialize_regular_segment(segment) do
+  defp serialize_regular_segment(%Manifest{} = manifest, segment) do
     time = Ratio.to_float(segment.duration / Time.second())
 
     Enum.flat_map(segment.attributes, &SegmentAttribute.serialize/1) ++
       [
         "#EXTINF:#{time},",
-        segment.name
+        "#{storage_base_url()}/#{manifest.video_uuid}/#{segment.name}"
       ]
   end
 
@@ -393,4 +402,9 @@ defmodule Algora.HLS do
     do: ",CAN-SKIP-UNTIL=#{duration}"
 
   defp can_skip_until(_duration), do: ""
+
+  defp storage_base_url do
+    %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
+    "#{scheme}#{host}/#{Algora.config([:buckets, :media])}"
+  end
 end

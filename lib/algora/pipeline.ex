@@ -28,7 +28,8 @@ defmodule Algora.Pipeline do
       }),
 
       #
-      child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
+      child(:sink, %Algora.SinkBin{
+        video_uuid: video.uuid,
         hls_mode: :muxed_av,
         mode: :live,
         manifest_module: Algora.HLS,
