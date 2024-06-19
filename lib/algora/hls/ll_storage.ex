@@ -4,7 +4,7 @@ defmodule Algora.HLS.LLStorage do
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
   require Membrane.Logger
-  alias Algora.HLS.{EtsHelper, RequestHandler, LLController}
+  alias Algora.HLS.{EtsHelper, LLController}
   alias Algora.Library
 
   @pubsub Algora.PubSub
@@ -157,9 +157,7 @@ defmodule Algora.HLS.LLStorage do
     %{state | partials_in_ets: partials_in_ets}
   end
 
-  defp broadcast!(video_uuid, msg) do
-    LLController.topic(video_uuid) |> LLController.broadcast!(msg)
-  end
+  defp broadcast!(video_uuid, msg), do: LLController.broadcast!(video_uuid, msg)
 
   defp partial_update_fun(filename) do
     if String.ends_with?(filename, @delta_manifest_suffix) do
@@ -177,7 +175,7 @@ defmodule Algora.HLS.LLStorage do
        }) do
     fun = partial_update_fun(filename)
     broadcast!(video_uuid, [EtsHelper, fun, [table, {segment_sn, partial_sn}]])
-    broadcast!(video_uuid, [RequestHandler, fun, [video_uuid, {segment_sn, partial_sn}]])
+    broadcast!(video_uuid, [LLController, fun, [video_uuid, {segment_sn, partial_sn}]])
   end
 
   defp update_sequence_numbers(

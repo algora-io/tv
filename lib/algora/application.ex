@@ -49,7 +49,7 @@ defmodule Algora.Application do
       # Start the Endpoints (http/https)
       AlgoraWeb.Endpoint,
       AlgoraWeb.Embed.Endpoint,
-      {Registry, keys: :unique, name: Algora.RequestHandlerRegistry},
+      {Registry, keys: :unique, name: Algora.LLControllerRegistry},
       # Start the RTMP server
       %{
         id: Membrane.RTMP.Source.TcpServer,

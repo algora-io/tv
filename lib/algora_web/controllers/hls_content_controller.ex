@@ -4,7 +4,7 @@ defmodule AlgoraWeb.HLSContentController do
 
   require Logger
 
-  alias Algora.HLS.RequestHandler
+  alias Algora.HLS.LLController
   alias AlgoraWeb.ApiSpec
   alias AlgoraWeb.ApiSpec.HLS.{Params, Response}
 
@@ -64,9 +64,9 @@ defmodule AlgoraWeb.HLSContentController do
 
     result =
       if String.ends_with?(filename, "_delta.m3u8") do
-        RequestHandler.handle_delta_manifest_request(video_uuid, partial)
+        LLController.handle_delta_manifest_request(video_uuid, partial)
       else
-        RequestHandler.handle_manifest_request(video_uuid, partial)
+        LLController.handle_manifest_request(video_uuid, partial)
       end
 
     case result do
@@ -84,9 +84,9 @@ defmodule AlgoraWeb.HLSContentController do
   def index(conn, %{"video_uuid" => video_uuid, "filename" => filename}) do
     result =
       if String.ends_with?(filename, "_part.m4s") do
-        RequestHandler.handle_partial_request(video_uuid, filename)
+        LLController.handle_partial_request(video_uuid, filename)
       else
-        RequestHandler.handle_file_request(video_uuid, filename)
+        LLController.handle_file_request(video_uuid, filename)
       end
 
     case result do
