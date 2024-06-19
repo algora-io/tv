@@ -31,7 +31,7 @@ defmodule Algora.Pipeline do
       child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
         hls_mode: :muxed_av,
         mode: :live,
-        manifest_module: Membrane.HTTPAdaptiveStream.HLS,
+        manifest_module: Algora.HLS,
         target_window_duration: :infinity,
         persist?: false,
         # storage: %Algora.Storage{video: video}
