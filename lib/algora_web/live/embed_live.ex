@@ -2,7 +2,7 @@ defmodule AlgoraWeb.EmbedLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Accounts, Library, Storage, Chat}
+  alias Algora.{Accounts, Library, LLStorage, Chat}
   alias AlgoraWeb.{LayoutComponent, Presence, PlayerComponent}
 
   def render(assigns) do
@@ -85,7 +85,7 @@ defmodule AlgoraWeb.EmbedLive do
   end
 
   def handle_info(
-        {Storage, %Library.Events.ThumbnailsGenerated{video: video}},
+        {LLStorage, %Library.Events.ThumbnailsGenerated{video: video}},
         socket
       ) do
     {:noreply,
