@@ -4,7 +4,7 @@ defmodule Algora.HLS.LLStorage do
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
   require Membrane.Logger
-  alias Algora.HLS.{EtsHelper, RequestHandler}
+  alias Algora.HLS.{EtsHelper, RequestHandler, LLController}
   alias Algora.Library
 
   @pubsub Algora.PubSub
@@ -109,12 +109,15 @@ defmodule Algora.HLS.LLStorage do
     {result, state}
   end
 
-  defp add_manifest_to_ets(filename, manifest, %{table: table}) do
-    if String.ends_with?(filename, @delta_manifest_suffix) do
-      EtsHelper.update_delta_manifest(table, manifest)
-    else
-      EtsHelper.update_manifest(table, manifest)
-    end
+  defp add_manifest_to_ets(filename, manifest, %{table: table, video_uuid: video_uuid}) do
+    fun =
+      if String.ends_with?(filename, @delta_manifest_suffix) do
+        :update_delta_manifest
+      else
+        :update_manifest
+      end
+
+    broadcast!(video_uuid, [EtsHelper, fun, [table, manifest]])
   end
 
   defp add_partial_to_ets(
@@ -122,19 +125,25 @@ defmodule Algora.HLS.LLStorage do
            table: table,
            partials_in_ets: partials_in_ets,
            segment_sn: segment_sn,
-           partial_sn: partial_sn
+           partial_sn: partial_sn,
+           video_uuid: video_uuid
          } = state,
          partial_name,
          content
        ) do
-    EtsHelper.add_partial(table, content, partial_name)
+    broadcast!(video_uuid, [EtsHelper, :add_partial, [table, content, partial_name]])
 
     partial = {segment_sn, partial_sn}
     %{state | partials_in_ets: [{partial, partial_name} | partials_in_ets]}
   end
 
   defp remove_partials_from_ets(
-         %{partials_in_ets: partials_in_ets, segment_sn: curr_segment_sn, table: table} = state
+         %{
+           partials_in_ets: partials_in_ets,
+           segment_sn: curr_segment_sn,
+           table: table,
+           video_uuid: video_uuid
+         } = state
        ) do
     {partials_in_ets, partial_to_be_removed} =
       Enum.split_with(partials_in_ets, fn {{segment_sn, _partial_sn}, _partial_name} ->
@@ -142,10 +151,22 @@ defmodule Algora.HLS.LLStorage do
       end)
 
     Enum.each(partial_to_be_removed, fn {_sn, partial_name} ->
-      EtsHelper.delete_partial(table, partial_name)
+      broadcast!(video_uuid, [EtsHelper, :delete_partial, [table, partial_name]])
     end)
 
     %{state | partials_in_ets: partials_in_ets}
+  end
+
+  defp broadcast!(video_uuid, msg) do
+    LLController.topic(video_uuid) |> LLController.broadcast!(msg)
+  end
+
+  defp partial_update_fun(filename) do
+    if String.ends_with?(filename, @delta_manifest_suffix) do
+      :update_delta_recent_partial
+    else
+      :update_recent_partial
+    end
   end
 
   defp send_update(filename, %{
@@ -154,13 +175,9 @@ defmodule Algora.HLS.LLStorage do
          segment_sn: segment_sn,
          partial_sn: partial_sn
        }) do
-    if String.ends_with?(filename, @delta_manifest_suffix) do
-      EtsHelper.update_delta_recent_partial(table, {segment_sn, partial_sn})
-      RequestHandler.update_delta_recent_partial(video_uuid, {segment_sn, partial_sn})
-    else
-      EtsHelper.update_recent_partial(table, {segment_sn, partial_sn})
-      RequestHandler.update_recent_partial(video_uuid, {segment_sn, partial_sn})
-    end
+    fun = partial_update_fun(filename)
+    broadcast!(video_uuid, [EtsHelper, fun, [table, {segment_sn, partial_sn}]])
+    broadcast!(video_uuid, [RequestHandler, fun, [video_uuid, {segment_sn, partial_sn}]])
   end
 
   defp update_sequence_numbers(
@@ -343,11 +360,11 @@ defmodule Algora.HLS.LLStorage do
     end
   end
 
-  defp broadcast!(topic, msg) do
-    Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
-  end
-
   defp broadcast_thumbnails_generated!(video) do
-    broadcast!(Library.topic_livestreams(), %Library.Events.ThumbnailsGenerated{video: video})
+    Phoenix.PubSub.broadcast!(
+      @pubsub,
+      Library.topic_livestreams(),
+      {__MODULE__, %Library.Events.ThumbnailsGenerated{video: video}}
+    )
   end
 end
