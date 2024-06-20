@@ -203,7 +203,7 @@ defmodule Algora.HLS.LLController do
   end
 
   @impl true
-  def handle_info({module, function, args}, state) do
+  def handle_info([module, function, args], state) do
     res = apply(module, function, args)
     dbg(res)
     {:noreply, state}
@@ -319,7 +319,7 @@ defmodule Algora.HLS.LLController do
     end
   end
 
-  def broadcast!(video_uuid, {_module, _function, _args} = msg) do
+  def broadcast!(video_uuid, [_module, _function, _args] = msg) do
     Phoenix.PubSub.broadcast!(@pubsub, topic(video_uuid), msg)
   end
 
