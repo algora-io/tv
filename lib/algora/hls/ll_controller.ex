@@ -7,8 +7,7 @@ defmodule Algora.HLS.LLController do
   alias Algora.Utils.PathValidation
   alias Algora.HLS.EtsHelper
   alias Algora.Library.Video
-
-  @pubsub Algora.PubSub
+  alias Algora.Admin
 
   @enforce_keys [:video_uuid, :video_pid]
   defstruct @enforce_keys ++
@@ -146,7 +145,6 @@ defmodule Algora.HLS.LLController do
   @impl true
   def init(%{video_uuid: video_uuid, video_pid: video_pid}) do
     Process.monitor(video_pid)
-    Phoenix.PubSub.subscribe(@pubsub, topic(video_uuid))
     {:ok, %__MODULE__{video_uuid: video_uuid, video_pid: video_pid}}
   end
 
@@ -188,6 +186,12 @@ defmodule Algora.HLS.LLController do
   end
 
   @impl true
+  def handle_cast({:apply, [module, function, args]}, state) do
+    apply(module, function, args)
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_cast(:shutdown, state) do
     {:stop, :normal, state}
   end
@@ -200,13 +204,6 @@ defmodule Algora.HLS.LLController do
   @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, %{video_pid: pid} = state) do
     {:stop, :normal, state}
-  end
-
-  @impl true
-  def handle_info([module, function, args], state) do
-    res = apply(module, function, args)
-    dbg(res)
-    {:noreply, state}
   end
 
   ###
@@ -297,7 +294,7 @@ defmodule Algora.HLS.LLController do
     |> List.to_tuple()
   end
 
-  defp registry_id(video_uuid), do: {:via, Registry, {Algora.LLControllerRegistry, video_uuid}}
+  def registry_id(video_uuid), do: {:via, Registry, {Algora.LLControllerRegistry, video_uuid}}
 
   defp send_partial_ready(waiting_pids) do
     Enum.each(waiting_pids, fn pid -> send(pid, :manifest_ready) end)
@@ -320,8 +317,12 @@ defmodule Algora.HLS.LLController do
   end
 
   def broadcast!(video_uuid, [_module, _function, _args] = msg) do
-    Phoenix.PubSub.broadcast!(@pubsub, topic(video_uuid), msg)
+    for node <- Admin.nodes() do
+      :rpc.cast(node, Algora.HLS.LLController, :apply, [video_uuid, msg])
+    end
   end
 
-  defp topic(video_uuid), do: "stream:#{video_uuid}"
+  def apply(video_uuid, msg) do
+    GenServer.cast(registry_id(video_uuid), {:apply, msg})
+  end
 end
