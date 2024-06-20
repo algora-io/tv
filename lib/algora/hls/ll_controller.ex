@@ -7,7 +7,6 @@ defmodule Algora.HLS.LLController do
   alias Algora.Utils.PathValidation
   alias Algora.HLS.EtsHelper
   alias Algora.Library.Video
-  alias Algora.Admin
 
   @enforce_keys [:video_uuid, :video_pid]
   defstruct @enforce_keys ++
@@ -314,15 +313,5 @@ defmodule Algora.HLS.LLController do
       last_segment_sn < segment_sn -> false
       true -> last_partial_sn >= partial_sn
     end
-  end
-
-  def broadcast!(video_uuid, [_module, _function, _args] = msg) do
-    for node <- Admin.nodes() do
-      :rpc.cast(node, Algora.HLS.LLController, :apply, [video_uuid, msg])
-    end
-  end
-
-  def apply(video_uuid, msg) do
-    GenServer.cast(registry_id(video_uuid), {:apply, msg})
   end
 end
