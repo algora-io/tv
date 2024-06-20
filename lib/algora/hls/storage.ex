@@ -201,29 +201,30 @@ defmodule Algora.HLS.Storage do
       ) do
     path = "#{state.video_uuid}/#{name}"
 
-    with {t, {:ok, _}} <- :timer.tc(&upload/3, [contents, path, upload_opts(ctx)]),
-         {:ok, state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
-      size = :erlang.byte_size(contents) / 1_000
-      time = t / 1_000
+    Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
+      with {t, {:ok, _}} <- :timer.tc(&upload/3, [contents, path, upload_opts(ctx)]),
+           {:ok, _state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
+        size = :erlang.byte_size(contents) / 1_000
+        time = t / 1_000
 
-      region = System.get_env("FLY_REGION") || "local"
+        region = System.get_env("FLY_REGION") || "local"
 
-      case ctx do
-        %{type: :segment} ->
-          Membrane.Logger.info(
-            "Uploaded #{Float.round(size, 1)} kB in #{Float.round(time, 1)} ms (#{Float.round(size / time, 1)} MB/s, #{region})"
-          )
+        case ctx do
+          %{type: :segment} ->
+            Membrane.Logger.info(
+              "Uploaded #{Float.round(size, 1)} kB in #{Float.round(time, 1)} ms (#{Float.round(size / time, 1)} MB/s, #{region})"
+            )
 
-        _ ->
-          nil
+          _ ->
+            nil
+        end
+      else
+        err ->
+          Membrane.Logger.error("Failed to upload #{path}: #{err}")
       end
+    end)
 
-      {:ok, state}
-    else
-      {:error, reason} = err ->
-        Membrane.Logger.error("Failed to upload #{path}: #{reason}")
-        {err, state}
-    end
+    {:ok, state}
   end
 
   def endpoint_url do
