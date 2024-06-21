@@ -18,7 +18,8 @@ defmodule Algora.Pipeline do
 
     EtsHelper.add_hls_folder_path(video.uuid, dir)
 
-    :rpc.multicall(Admin.nodes(), LLController, :start, [video.uuid])
+    :rpc.multicall(LLController, :start, [video.uuid])
+    # for node <- Admin.nodes(), do: Node.spawn(node, LLController, :start, [video.uuid])
 
     spec = [
       #
