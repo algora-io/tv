@@ -61,6 +61,8 @@ defmodule Algora.SourceBin do
 
   @impl true
   def handle_init(_ctx, %__MODULE__{} = opts) do
+    transcode? = Algora.Env.get(:transcode?)
+
     structure = [
       child(:src, %RTMP.Source{
         socket: opts.socket,
@@ -73,7 +75,7 @@ defmodule Algora.SourceBin do
         out_encapsulation: :none
       }),
       child(:video_parser, %Membrane.H264.Parser{
-        output_stream_structure: :avc1,
+        output_stream_structure: if(transcode?, do: :annexb, else: :avc1),
         repeat_parameter_sets: true
       }),
       #
@@ -85,6 +87,19 @@ defmodule Algora.SourceBin do
       get_child(:demuxer)
       |> via_out(Pad.ref(:video, 0))
       |> get_child(:video_parser)
+      |> then(fn parser ->
+        if transcode? do
+          parser
+          |> child(:decoder, Membrane.H264.FFmpeg.Decoder)
+          |> child(:encoder, %Membrane.H264.FFmpeg.Encoder{
+            preset: :ultrafast,
+            crf: 30,
+            tune: :zerolatency
+          })
+        else
+          parser
+        end
+      end)
       |> bin_output(:video)
     ]
 

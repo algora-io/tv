@@ -26,6 +26,7 @@ defmodule Algora.Application do
     }
 
     children = [
+      Algora.Env,
       {Cluster.Supervisor, [topologies, [name: Algora.ClusterSupervisor]]},
       {Task.Supervisor, name: Algora.TaskSupervisor},
       # Start the RPC server
