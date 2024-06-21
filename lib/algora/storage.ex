@@ -4,7 +4,7 @@ defmodule Algora.Storage do
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
   require Membrane.Logger
-  alias Algora.HLS.{EtsHelper, LLController}
+  alias Algora.HLS.LLController
   alias Algora.Library
 
   @pubsub Algora.PubSub
@@ -15,7 +15,6 @@ defmodule Algora.Storage do
                 partial_sn: 0,
                 segment_sn: 0,
                 partials_in_ets: [],
-                table: nil,
                 video_header: <<>>,
                 video_segment: <<>>,
                 setup_completed?: false
@@ -29,7 +28,6 @@ defmodule Algora.Storage do
   @type t :: %__MODULE__{
           directory: Path.t(),
           video_uuid: Library.Video.uuid(),
-          table: :ets.table() | nil,
           partial_sn: sequence_number(),
           segment_sn: sequence_number(),
           partials_in_ets: [partial_in_ets()],
@@ -42,13 +40,8 @@ defmodule Algora.Storage do
   @delta_manifest_suffix "_delta.m3u8"
 
   @impl true
-  def init(%__MODULE__{directory: directory, video_uuid: video_uuid}) do
-    with {:ok, table} <- EtsHelper.add_video(video_uuid) do
-      %__MODULE__{video_uuid: video_uuid, table: table, directory: directory}
-    else
-      {:error, :already_exists} ->
-        raise("Can't create ets table - another table already exists for video #{video_uuid}")
-    end
+  def init(state) do
+    state
   end
 
   @impl true
@@ -110,20 +103,19 @@ defmodule Algora.Storage do
     {result, state}
   end
 
-  defp add_manifest_to_ets(filename, manifest, %{table: table, video_uuid: video_uuid}) do
-    fun =
-      if String.ends_with?(filename, @delta_manifest_suffix) do
-        :update_delta_manifest
-      else
-        :update_manifest
-      end
-
-    broadcast!(video_uuid, [EtsHelper, fun, [table, manifest]])
+  defp add_manifest_to_ets(filename, manifest, %{video_uuid: video_uuid}) do
+    broadcast!(video_uuid, [
+      LLController,
+      if(String.ends_with?(filename, @delta_manifest_suffix),
+        do: :update_delta_manifest,
+        else: :update_manifest
+      ),
+      [video_uuid, manifest]
+    ])
   end
 
   defp add_partial_to_ets(
          %{
-           table: table,
            partials_in_ets: partials_in_ets,
            segment_sn: segment_sn,
            partial_sn: partial_sn,
@@ -132,7 +124,7 @@ defmodule Algora.Storage do
          partial_name,
          content
        ) do
-    broadcast!(video_uuid, [EtsHelper, :add_partial, [table, content, partial_name]])
+    broadcast!(video_uuid, [LLController, :add_partial, [video_uuid, content, partial_name]])
 
     partial = {segment_sn, partial_sn}
     %{state | partials_in_ets: [{partial, partial_name} | partials_in_ets]}
@@ -142,7 +134,6 @@ defmodule Algora.Storage do
          %{
            partials_in_ets: partials_in_ets,
            segment_sn: curr_segment_sn,
-           table: table,
            video_uuid: video_uuid
          } = state
        ) do
@@ -152,7 +143,7 @@ defmodule Algora.Storage do
       end)
 
     Enum.each(partial_to_be_removed, fn {_sn, partial_name} ->
-      broadcast!(video_uuid, [EtsHelper, :delete_partial, [table, partial_name]])
+      broadcast!(video_uuid, [LLController, :delete_partial, [video_uuid, partial_name]])
     end)
 
     %{state | partials_in_ets: partials_in_ets}
@@ -160,23 +151,20 @@ defmodule Algora.Storage do
 
   defp broadcast!(video_uuid, msg), do: LLController.broadcast!(video_uuid, msg)
 
-  defp partial_update_fun(filename) do
-    if String.ends_with?(filename, @delta_manifest_suffix) do
-      :update_delta_recent_partial
-    else
-      :update_recent_partial
-    end
-  end
-
   defp send_update(filename, %{
          video_uuid: video_uuid,
-         table: table,
          segment_sn: segment_sn,
          partial_sn: partial_sn
        }) do
-    fun = partial_update_fun(filename)
-    broadcast!(video_uuid, [EtsHelper, fun, [table, {segment_sn, partial_sn}]])
-    broadcast!(video_uuid, [LLController, fun, [video_uuid, {segment_sn, partial_sn}]])
+    manifest =
+      if(String.ends_with?(filename, @delta_manifest_suffix),
+        do: :delta_manifest,
+        else: :manifest
+      )
+
+    partial = {segment_sn, partial_sn}
+
+    broadcast!(video_uuid, [LLController, :update_recent_partial, [video_uuid, partial, manifest]])
   end
 
   defp update_sequence_numbers(
