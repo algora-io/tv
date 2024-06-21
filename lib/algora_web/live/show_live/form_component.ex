@@ -111,7 +111,7 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
           remote_path = "shows/#{socket.assigns.show.id}/cover/#{System.os_time(:second)}"
 
           {:ok, _} =
-            Algora.HLS.Storage.upload_from_filename(path, remote_path, fn _ -> nil end,
+            Algora.Storage.upload_from_filename(path, remote_path, fn _ -> nil end,
               content_type: "image/jpeg"
             )
 

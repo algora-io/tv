@@ -36,7 +36,7 @@ defmodule Algora.Pipeline do
         manifest_module: Algora.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        storage: %Algora.HLS.Storage{directory: dir, video_uuid: video.uuid}
+        storage: %Algora.Storage{directory: dir, video_uuid: video.uuid}
       }),
 
       #
