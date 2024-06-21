@@ -10,6 +10,8 @@ defmodule Algora.Admin do
     video: "g3cFdmlkZW8.m3u8"
   }
 
+  def whoami(), do: {System.get_env("FLY_REGION"), Node.self()}
+
   defp get(url) do
     Finch.build(:get, url) |> Finch.request(Algora.Finch)
   end
