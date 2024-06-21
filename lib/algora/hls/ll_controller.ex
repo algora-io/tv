@@ -144,7 +144,8 @@ defmodule Algora.HLS.LLController do
 
   @impl true
   def init(%{video_uuid: video_uuid, video_pid: video_pid}) do
-    Process.monitor(video_pid)
+    # TODO:
+    # Process.monitor(video_pid)
     {:ok, %__MODULE__{video_uuid: video_uuid, video_pid: video_pid}}
   end
 
@@ -201,10 +202,11 @@ defmodule Algora.HLS.LLController do
     EtsHelper.remove_video(video_uuid)
   end
 
-  @impl true
-  def handle_info({:DOWN, _ref, :process, pid, _reason}, %{video_pid: pid} = state) do
-    {:stop, :normal, state}
-  end
+  # TODO:
+  # @impl true
+  # def handle_info({:DOWN, _ref, :process, pid, _reason}, %{video_pid: pid} = state) do
+  #   {:stop, :normal, state}
+  # end
 
   ###
   ### PRIVATE FUNCTIONS
