@@ -22,9 +22,11 @@ node_modules
 .env*.local
 .env.dev
 .env.prod
+.env.staging
 
 # Local files
 /tmp
 /.local
 /priv/cache
 *.patch
+/.fly
