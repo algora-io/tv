@@ -15,7 +15,7 @@ defmodule Algora.Pipeline do
 
     dir = Path.join(Admin.tmp_dir(), video.uuid)
 
-    :rpc.multicall(LLController, :start, [video.uuid])
+    :rpc.multicall(LLController, :start, [video.uuid, dir])
 
     spec = [
       #
