@@ -34,7 +34,7 @@ defmodule Algora.Library do
       visibility: :unlisted
     }
     |> change()
-    |> Video.put_video_url(:hls)
+    |> Video.put_video_url(:livestream, :hls)
     |> Repo.insert!()
   end
 
@@ -56,7 +56,7 @@ defmodule Algora.Library do
         channel_name: user.name
       }
       |> change()
-      |> Video.put_video_meta(:mp4, basename)
+      |> Video.put_video_meta(:vod, :mp4, basename)
 
     dir = Path.join("/data", video.changes.uuid)
     File.mkdir_p!(dir)
@@ -84,7 +84,7 @@ defmodule Algora.Library do
         thumbnail_url: video.thumbnail_url
       }
       |> change()
-      |> Video.put_video_url(:mp4, mp4_basename)
+      |> Video.put_video_url(:vod, :mp4, mp4_basename)
 
     %{uuid: mp4_uuid, filename: mp4_filename, remote_path: mp4_remote_path} = mp4_video.changes
 
@@ -122,7 +122,7 @@ defmodule Algora.Library do
         user_id: video.user_id
       }
       |> change()
-      |> Video.put_video_url(:hls)
+      |> Video.put_video_url(:vod, :hls)
 
     %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
 
@@ -248,7 +248,12 @@ defmodule Algora.Library do
     video =
       with false <- is_live,
            {:ok, duration} <- get_duration(video),
-           {:ok, video} <- video |> change() |> put_change(:duration, duration) |> Repo.update() do
+           {:ok, video} <-
+             video
+             |> change()
+             |> put_change(:duration, duration)
+             |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
+             |> Repo.update() do
         video
       else
         _ -> video

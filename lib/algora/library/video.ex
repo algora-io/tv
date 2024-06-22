@@ -9,6 +9,8 @@ defmodule Algora.Library.Video do
   alias Algora.Chat.Message
 
   @type uuid :: String.t()
+  @type type :: :vod | :livestream
+  @type format :: :mp4 | :hls | :youtube
 
   @type t() :: %__MODULE__{}
 
@@ -54,53 +56,63 @@ defmodule Algora.Library.Video do
     put_assoc(changeset, :user, user)
   end
 
-  def put_video_uuid(%Ecto.Changeset{} = changeset) do
+  @spec put_video_uuid(Ecto.Changeset.t(), type()) :: Ecto.Changeset.t()
+  def put_video_uuid(%Ecto.Changeset{} = changeset, type) do
     if changeset.valid? do
       uuid = Ecto.UUID.generate()
 
       changeset
       |> put_change(:uuid, uuid)
-      |> put_change(:url_root, url_root(uuid))
+      |> put_change(:url_root, url_root(type, uuid))
     else
       changeset
     end
   end
 
-  def put_video_meta(%Ecto.Changeset{} = changeset, format, basename \\ "index")
-      when format in [:mp4, :hls] do
+  @spec put_video_meta(Ecto.Changeset.t(), type(), format(), String.t()) :: Ecto.Changeset.t()
+  def put_video_meta(%Ecto.Changeset{} = changeset, type, format, basename \\ "index") do
     if changeset.valid? do
       filename = "#{basename}#{fileext(format)}"
 
       changeset
-      |> put_video_uuid()
+      |> put_video_uuid(type)
       |> put_change(:filename, filename)
     else
       changeset
     end
   end
 
-  def put_video_url(%Ecto.Changeset{} = changeset, format, basename \\ "index")
-      when format in [:mp4, :hls] do
+  @spec put_video_url(Ecto.Changeset.t(), type(), format(), String.t()) :: Ecto.Changeset.t()
+  def put_video_url(%Ecto.Changeset{} = changeset, type, format, basename \\ "index") do
     if changeset.valid? do
-      changeset = changeset |> put_video_meta(format, basename)
+      changeset = changeset |> put_video_meta(type, format, basename)
       %{uuid: uuid, filename: filename} = changeset.changes
 
       changeset
-      |> put_change(:url, url(uuid, filename))
+      |> put_change(:url, url(type, uuid, filename))
       |> put_change(:remote_path, "#{uuid}/#{filename}")
     else
       changeset
     end
   end
 
+  @spec fileext(format()) :: String.t()
   defp fileext(:mp4), do: ".mp4"
   defp fileext(:hls), do: ".m3u8"
 
-  defp url_root(uuid) do
+  @spec url_root(type(), uuid()) :: String.t()
+  defp url_root(:livestream, uuid) do
     "#{AlgoraWeb.Endpoint.url()}/hls/#{uuid}"
   end
 
-  defp url(uuid, filename), do: "#{url_root(uuid)}/#{filename}"
+  defp url_root(:vod, uuid) do
+    bucket = Algora.config([:buckets, :media])
+    %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
+    "#{scheme}#{host}/#{bucket}/#{uuid}"
+  end
+
+  @spec url(type(), uuid(), String.t()) :: String.t()
+  def url(type, uuid, filename), do: "#{url_root(type, uuid)}/#{filename}"
 
   def slug(%Video{} = video), do: Slug.slugify("#{video.id}-#{video.title}")
 
