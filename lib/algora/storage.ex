@@ -250,7 +250,7 @@ defmodule Algora.Storage do
          %{type: :header, mode: :binary},
          state
        ) do
-    {:ok, %{state | video_header: contents}}
+    %{state | video_header: contents}
   end
 
   defp process_contents(
@@ -271,7 +271,7 @@ defmodule Algora.Storage do
       end
     end)
 
-    {:ok, %{state | setup_completed?: true, video_segment: contents}}
+    %{state | setup_completed?: true, video_segment: contents}
   end
 
   defp process_contents(
@@ -282,11 +282,11 @@ defmodule Algora.Storage do
          %{type: :segment, mode: :binary},
          state
        ) do
-    {:ok, %{state | video_segment: contents}}
+    %{state | video_segment: contents}
   end
 
   defp process_contents(_parent_id, _name, _contents, _metadata, _ctx, state) do
-    {:ok, state}
+    state
   end
 
   def upload_to_bucket(contents, remote_path, bucket, opts \\ []) do
