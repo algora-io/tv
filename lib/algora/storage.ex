@@ -191,10 +191,10 @@ defmodule Algora.Storage do
         state
       ) do
     path = "#{state.video_uuid}/#{name}"
+    state = process_contents(parent_id, name, contents, metadata, ctx, state)
 
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
-      with {t, {:ok, _}} <- :timer.tc(&upload/3, [contents, path, upload_opts(ctx)]),
-           {:ok, _state} <- process_contents(parent_id, name, contents, metadata, ctx, state) do
+      with {t, {:ok, _}} <- :timer.tc(&upload/3, [contents, path, upload_opts(ctx)]) do
         size = :erlang.byte_size(contents) / 1_000
         time = t / 1_000
 
