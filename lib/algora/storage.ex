@@ -9,7 +9,7 @@ defmodule Algora.Storage do
 
   @pubsub Algora.PubSub
 
-  @enforce_keys [:directory, :video_uuid]
+  @enforce_keys [:directory, :video]
   defstruct @enforce_keys ++
               [
                 partial_sn: 0,
@@ -27,7 +27,7 @@ defmodule Algora.Storage do
 
   @type t :: %__MODULE__{
           directory: Path.t(),
-          video_uuid: Library.Video.uuid(),
+          video: Library.Video.t(),
           partial_sn: sequence_number(),
           segment_sn: sequence_number(),
           partials_in_ets: [partial_in_ets()],
@@ -89,9 +89,9 @@ defmodule Algora.Storage do
   defp cache_manifest(
          filename,
          content,
-         %__MODULE__{video_uuid: video_uuid} = state
+         %__MODULE__{video: video} = state
        ) do
-    broadcast!(video_uuid, [LLController, :write_to_file, [video_uuid, filename, content]])
+    broadcast!(video.uuid, [LLController, :write_to_file, [video.uuid, filename, content]])
 
     unless filename == "index.m3u8" do
       add_manifest_to_ets(filename, content, state)
@@ -101,14 +101,14 @@ defmodule Algora.Storage do
     {:ok, state}
   end
 
-  defp add_manifest_to_ets(filename, manifest, %{video_uuid: video_uuid}) do
-    broadcast!(video_uuid, [
+  defp add_manifest_to_ets(filename, manifest, %{video: video}) do
+    broadcast!(video.uuid, [
       LLController,
       if(String.ends_with?(filename, @delta_manifest_suffix),
         do: :update_delta_manifest,
         else: :update_manifest
       ),
-      [video_uuid, manifest]
+      [video.uuid, manifest]
     ])
   end
 
@@ -117,12 +117,12 @@ defmodule Algora.Storage do
            partials_in_ets: partials_in_ets,
            segment_sn: segment_sn,
            partial_sn: partial_sn,
-           video_uuid: video_uuid
+           video: video
          } = state,
          partial_name,
          content
        ) do
-    broadcast!(video_uuid, [LLController, :add_partial, [video_uuid, content, partial_name]])
+    broadcast!(video.uuid, [LLController, :add_partial, [video.uuid, content, partial_name]])
 
     partial = {segment_sn, partial_sn}
     %{state | partials_in_ets: [{partial, partial_name} | partials_in_ets]}
@@ -132,7 +132,7 @@ defmodule Algora.Storage do
          %{
            partials_in_ets: partials_in_ets,
            segment_sn: curr_segment_sn,
-           video_uuid: video_uuid
+           video: video
          } = state
        ) do
     {partials_in_ets, partial_to_be_removed} =
@@ -141,7 +141,7 @@ defmodule Algora.Storage do
       end)
 
     Enum.each(partial_to_be_removed, fn {_sn, partial_name} ->
-      broadcast!(video_uuid, [LLController, :delete_partial, [video_uuid, partial_name]])
+      broadcast!(video.uuid, [LLController, :delete_partial, [video.uuid, partial_name]])
     end)
 
     %{state | partials_in_ets: partials_in_ets}
@@ -150,7 +150,7 @@ defmodule Algora.Storage do
   defp broadcast!(video_uuid, msg), do: LLController.broadcast!(video_uuid, msg)
 
   defp send_update(filename, %{
-         video_uuid: video_uuid,
+         video: video,
          segment_sn: segment_sn,
          partial_sn: partial_sn
        }) do
@@ -162,7 +162,7 @@ defmodule Algora.Storage do
 
     partial = {segment_sn, partial_sn}
 
-    broadcast!(video_uuid, [LLController, :update_recent_partial, [video_uuid, partial, manifest]])
+    broadcast!(video.uuid, [LLController, :update_recent_partial, [video.uuid, partial, manifest]])
   end
 
   defp update_sequence_numbers(
@@ -190,7 +190,7 @@ defmodule Algora.Storage do
         ctx,
         state
       ) do
-    path = "#{state.video_uuid}/#{name}"
+    path = "#{state.video.uuid}/#{name}"
     state = process_contents(parent_id, name, contents, metadata, ctx, state)
 
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->

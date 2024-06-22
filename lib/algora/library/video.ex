@@ -5,6 +5,7 @@ defmodule Algora.Library.Video do
 
   alias Algora.Accounts.User
   alias Algora.Library.Video
+  alias Algora.Storage
   alias Algora.Shows.Show
   alias Algora.Chat.Message
 
@@ -101,18 +102,17 @@ defmodule Algora.Library.Video do
   defp fileext(:hls), do: ".m3u8"
 
   @spec url_root(type(), uuid()) :: String.t()
-  defp url_root(:livestream, uuid) do
-    "#{AlgoraWeb.Endpoint.url()}/hls/#{uuid}"
-  end
+  defp url_root(:livestream, uuid), do: "#{AlgoraWeb.Endpoint.url()}/hls/#{uuid}"
 
-  defp url_root(:vod, uuid) do
-    bucket = Algora.config([:buckets, :media])
-    %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
-    "#{scheme}#{host}/#{bucket}/#{uuid}"
-  end
+  defp url_root(:vod, uuid),
+    do: "#{Storage.endpoint_url()}/#{Algora.config([:buckets, :media])}/#{uuid}"
 
   @spec url(type(), uuid(), String.t()) :: String.t()
   def url(type, uuid, filename), do: "#{url_root(type, uuid)}/#{filename}"
+
+  @spec thumbnail_url(Video.t(), String.t()) :: String.t()
+  def thumbnail_url(video, filename \\ "index.jpeg"),
+    do: "#{Storage.endpoint_url()}/#{Algora.config([:buckets, :media])}/#{video.uuid}/#{filename}"
 
   def slug(%Video{} = video), do: Slug.slugify("#{video.id}-#{video.title}")
 
