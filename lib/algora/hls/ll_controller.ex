@@ -9,7 +9,7 @@ defmodule Algora.HLS.LLController do
   alias Algora.Library.Video
   alias Algora.Admin
 
-  @enforce_keys [:video_uuid, :video_pid]
+  @enforce_keys [:video_uuid, :directory, :video_pid]
   defstruct @enforce_keys ++
               [
                 table: nil,
@@ -25,6 +25,7 @@ defmodule Algora.HLS.LLController do
 
   @type t :: %__MODULE__{
           video_uuid: Video.uuid(),
+          directory: Path.t(),
           video_pid: pid(),
           table: :ets.table() | nil,
           manifest: status(),
@@ -146,11 +147,13 @@ defmodule Algora.HLS.LLController do
   ### MANAGEMENT API
   ###
 
-  def start(video_uuid) do
+  def start(video_uuid, directory) do
     # Request handler monitors the video process.
     # This ensures that it will be killed if video crashes.
     # In case of different use of this module it has to be refactored
-    GenServer.start(__MODULE__, %{video_uuid: video_uuid, video_pid: self()},
+    GenServer.start(
+      __MODULE__,
+      %{video_uuid: video_uuid, directory: directory, video_pid: self()},
       name: registry_id(video_uuid)
     )
   end
@@ -160,12 +163,21 @@ defmodule Algora.HLS.LLController do
   end
 
   @impl true
-  def init(%{video_uuid: video_uuid, video_pid: video_pid}) do
+  def init(%{video_uuid: video_uuid, directory: directory, video_pid: video_pid}) do
     # TODO:
     # Process.monitor(video_pid)
 
+    File.mkdir_p!(directory)
+    EtsHelper.add_hls_folder_path(video_uuid, directory)
+
     with {:ok, table} <- EtsHelper.add_video(video_uuid) do
-      {:ok, %__MODULE__{video_uuid: video_uuid, video_pid: video_pid, table: table}}
+      {:ok,
+       %__MODULE__{
+         video_uuid: video_uuid,
+         directory: directory,
+         video_pid: video_pid,
+         table: table
+       }}
     else
       {:error, :already_exists} ->
         raise("Can't create ets table - another table already exists for video #{video_uuid}")

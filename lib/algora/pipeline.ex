@@ -4,7 +4,7 @@ defmodule Algora.Pipeline do
   alias Membrane.Time
 
   alias Algora.{Admin, Library}
-  alias Algora.HLS.{EtsHelper, LLController}
+  alias Algora.HLS.LLController
 
   @segment_duration Time.seconds(6)
   @partial_segment_duration Time.milliseconds(200)
@@ -14,12 +14,8 @@ defmodule Algora.Pipeline do
     video = Library.init_livestream!()
 
     dir = Path.join(Admin.tmp_dir(), video.uuid)
-    File.mkdir_p!(dir)
-
-    EtsHelper.add_hls_folder_path(video.uuid, dir)
 
     :rpc.multicall(LLController, :start, [video.uuid])
-    # for node <- Admin.nodes(), do: Node.spawn(node, LLController, :start, [video.uuid])
 
     spec = [
       #
