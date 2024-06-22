@@ -132,11 +132,6 @@ defmodule Algora.HLS.LLController do
     GenServer.cast(registry_id(video_uuid), {:update_recent_partial, last_partial, manifest})
   end
 
-  @spec update_delta_recent_partial(Video.uuid(), partial()) :: :ok
-  def update_delta_recent_partial(video_uuid, partial) do
-    GenServer.cast(registry_id(video_uuid), {:update_delta_recent_partial, partial})
-  end
-
   @spec add_partial(Video.uuid(), binary(), String.t()) :: :ok
   def add_partial(video_uuid, partial, filename) do
     GenServer.cast(registry_id(video_uuid), {:add_partial, partial, filename})
@@ -216,7 +211,10 @@ defmodule Algora.HLS.LLController do
         {:update_recent_partial, last_partial, manifest},
         %{preload_hints: preload_hints, table: table} = state
       ) do
-    EtsHelper.update_recent_partial(table, last_partial)
+    case manifest do
+      :manifest -> EtsHelper.update_recent_partial(table, last_partial)
+      :delta_manifest -> EtsHelper.update_delta_recent_partial(table, last_partial)
+    end
 
     status = Map.fetch!(state, manifest)
 
@@ -225,12 +223,6 @@ defmodule Algora.HLS.LLController do
       |> Map.put(manifest, update_and_notify_manifest_ready(status, last_partial))
       |> Map.put(:preload_hints, update_and_notify_preload_hint_ready(preload_hints))
 
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:update_delta_recent_partial, partial}, %{table: table} = state) do
-    EtsHelper.update_delta_recent_partial(table, partial)
     {:noreply, state}
   end
 
