@@ -73,19 +73,17 @@ defmodule Algora.Storage do
   end
 
   defp cache_partial_segment(
-         segment_name,
+         _segment_name,
          content,
          %{sequence_number: sequence_number, partial_name: partial_name},
-         %__MODULE__{directory: directory} = state
+         state
        ) do
-    result = write_to_file(directory, segment_name, content, [:binary, :append])
-
     state =
       state
       |> update_sequence_numbers(sequence_number)
       |> add_partial_to_ets(partial_name, content)
 
-    {result, state}
+    {:ok, state}
   end
 
   defp cache_manifest(
@@ -180,12 +178,6 @@ defmodule Algora.Storage do
     else
       %{state | partial_sn: new_partial_sn}
     end
-  end
-
-  defp write_to_file(directory, filename, content, write_options \\ []) do
-    directory
-    |> Path.join(filename)
-    |> File.write(content, write_options)
   end
 
   ## ---------------------------------------
