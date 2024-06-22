@@ -51,7 +51,7 @@ defmodule Algora.Storage do
         store_content(parent_id, name, content, metadata, context, state)
 
       %{mode: :binary, type: :partial_segment} ->
-        cache_partial_segment(name, content, metadata, state)
+        cache_partial_segment(parent_id, name, content, metadata, context, state)
 
       %{mode: :binary, type: :header} ->
         store_content(parent_id, name, content, metadata, context, state)
@@ -73,15 +73,17 @@ defmodule Algora.Storage do
   end
 
   defp cache_partial_segment(
-         _segment_name,
-         content,
-         %{sequence_number: sequence_number, partial_name: partial_name},
+         parent_id,
+         name,
+         contents,
+         %{sequence_number: sequence_number, partial_name: partial_name} = metadata,
+         ctx,
          state
        ) do
     state =
-      state
+      process_contents(parent_id, name, contents, metadata, ctx, state)
       |> update_sequence_numbers(sequence_number)
-      |> add_partial_to_ets(partial_name, content)
+      |> add_partial_to_ets(partial_name, contents)
 
     {:ok, state}
   end
@@ -257,8 +259,8 @@ defmodule Algora.Storage do
          :video,
          _name,
          contents,
-         _metadata,
-         %{type: :segment, mode: :binary},
+         %{independent?: true},
+         %{type: :partial_segment, mode: :binary},
          %{setup_completed?: false, video: video, video_header: video_header} = state
        ) do
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
