@@ -91,16 +91,16 @@ defmodule Algora.Storage do
   defp cache_manifest(
          filename,
          content,
-         %__MODULE__{directory: directory} = state
+         %__MODULE__{video_uuid: video_uuid} = state
        ) do
-    result = write_to_file(directory, filename, content)
+    broadcast!(video_uuid, [LLController, :write_to_file, [video_uuid, filename, content]])
 
     unless filename == "index.m3u8" do
       add_manifest_to_ets(filename, content, state)
       send_update(filename, state)
     end
 
-    {result, state}
+    {:ok, state}
   end
 
   defp add_manifest_to_ets(filename, manifest, %{video_uuid: video_uuid}) do

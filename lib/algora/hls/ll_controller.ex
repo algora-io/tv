@@ -143,6 +143,10 @@ defmodule Algora.HLS.LLController do
     GenServer.cast(registry_id(video_uuid), {:delete_partial, filename})
   end
 
+  def write_to_file(video_uuid, filename, content) do
+    GenServer.cast(registry_id(video_uuid), {:write_to_file, filename, content})
+  end
+
   ###
   ### MANAGEMENT API
   ###
@@ -247,6 +251,14 @@ defmodule Algora.HLS.LLController do
   @impl true
   def handle_cast({:delete_partial, filename}, %{table: table} = state) do
     EtsHelper.delete_partial(table, filename)
+    {:noreply, state}
+  end
+
+  def handle_cast({:write_to_file, filename, content}, %{directory: directory} = state) do
+    directory
+    |> Path.join(filename)
+    |> File.write(content)
+
     {:noreply, state}
   end
 
