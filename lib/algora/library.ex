@@ -13,6 +13,7 @@ defmodule Algora.Library do
   @pubsub Algora.PubSub
 
   @thumbnail_filename "index.jpeg"
+  @og_image_filename "og.png"
 
   def subscribe_to_studio() do
     Phoenix.PubSub.subscribe(@pubsub, topic_studio())
@@ -385,7 +386,9 @@ defmodule Algora.Library do
   def store_thumbnail_from_file(%Video{} = video, src_path, opts \\ []) do
     with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, opts),
          {:ok, _} <-
-           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}", content_type: "image/jpeg") do
+           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}",
+             content_type: "image/jpeg"
+           ) do
       video
       |> change()
       |> put_change(:thumbnail_url, Video.thumbnail_url(video, @thumbnail_filename))
@@ -396,7 +399,9 @@ defmodule Algora.Library do
   def store_thumbnail(%Video{} = video, contents) do
     with {:ok, thumbnail} <- create_thumbnail(video, contents),
          {:ok, _} <-
-           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}", content_type: "image/jpeg") do
+           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}",
+             content_type: "image/jpeg"
+           ) do
       video
       |> change()
       |> put_change(:thumbnail_url, Video.thumbnail_url(video, @thumbnail_filename))
@@ -464,7 +469,7 @@ defmodule Algora.Library do
   end
 
   defp create_og_image_from_file(%Video{} = video, src_path, opts) do
-    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-og.png")
+    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-#{@og_image_filename}")
 
     with :ok <- create_og(src_path, dst_path, opts) do
       File.read(dst_path)
@@ -479,10 +484,12 @@ defmodule Algora.Library do
   def store_og_image_from_file(%Video{} = video, src_path, opts \\ []) do
     with {:ok, og_image} <- create_og_image_from_file(video, src_path, opts),
          {:ok, _} <-
-           Storage.upload(og_image, "#{video.uuid}/og.png", content_type: "image/png") do
+           Storage.upload(og_image, "#{video.uuid}/#{@og_image_filename}",
+             content_type: "image/png"
+           ) do
       video
       |> change()
-      |> put_change(:og_image_url, "#{video.url_root}/og.png")
+      |> put_change(:og_image_url, Video.thumbnail_url(video, @og_image_filename))
       |> Repo.update()
     end
   end
@@ -490,10 +497,12 @@ defmodule Algora.Library do
   def store_og_image(%Video{} = video) do
     with {:ok, og_image} <- create_og_image(video),
          {:ok, _} <-
-           Storage.upload(og_image, "#{video.uuid}/og.png", content_type: "image/png") do
+           Storage.upload(og_image, "#{video.uuid}/#{@og_image_filename}",
+             content_type: "image/png"
+           ) do
       video
       |> change()
-      |> put_change(:og_image_url, "#{video.url_root}/og.png")
+      |> put_change(:og_image_url, Video.thumbnail_url(video, @og_image_filename))
       |> Repo.update()
     end
   end
