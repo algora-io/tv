@@ -2,6 +2,8 @@ defmodule AlgoraWeb.ChatLive do
   use AlgoraWeb, :live_view
   require Logger
 
+  import AlgoraWeb.Components.Avatar
+
   alias Algora.{Accounts, Library, Chat}
   alias AlgoraWeb.{LayoutComponent, RTMPDestinationIconComponent}
 
@@ -67,20 +69,33 @@ defmodule AlgoraWeb.ChatLive do
                 id="chat-messages"
                 phx-hook="Chat"
                 phx-update="stream"
-                class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto inset-0 h-[400px] py-4"
+                class="text-sm break-words flex-1 scrollbar-thin overflow-y-auto inset-0 h-[400px] py-4 space-y-2.5"
               >
-                <div :for={{id, message} <- @streams.messages} id={id} class="px-4">
-                  <RTMPDestinationIconComponent.icon
-                    :if={message.platform != "algora"}
-                    class="inline-flex w-5 h-5 shrink-0 mr-0.5"
-                    icon={String.to_atom(message.platform)}
-                  />
-                  <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
-                    <%= message.sender_handle %>:
-                  </span>
-                  <span class="font-medium text-gray-100">
-                    <%= message.body %>
-                  </span>
+                <div
+                  :for={{id, message} <- @streams.messages}
+                  id={id}
+                  class="px-4 flex items-start gap-2"
+                >
+                  <div class="relative h-6 w-6 shrink-0">
+                    <.user_avatar
+                      src={message.sender_avatar_url}
+                      alt={message.sender_handle}
+                      class="rounded-full h-6 w-6 [&_.fallback]:bg-gray-700 [&_.fallback]:text-xs"
+                    />
+                    <RTMPDestinationIconComponent.icon
+                      :if={message.platform != "algora"}
+                      class="absolute -right-1 -bottom-1 flex w-4 h-4 shrink-0 bg-[#110f2c]"
+                      icon={String.to_atom(message.platform)}
+                    />
+                  </div>
+                  <div>
+                    <span class={"font-semibold #{if(system_message?(message), do: "text-indigo-400", else: "text-emerald-400")}"}>
+                      <%= message.sender_name %>
+                    </span>
+                    <span class="font-medium text-gray-100">
+                      <%= message.body %>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

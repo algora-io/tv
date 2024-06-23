@@ -34,6 +34,8 @@ defmodule Algora.Chat do
       select_merge: %{
         platform: e.platform,
         sender_handle: coalesce(u.handle, e.handle),
+        sender_name: coalesce(coalesce(u.name, e.name), e.handle),
+        sender_avatar_url: coalesce(u.avatar_url, e.avatar_url),
         channel_id: c.id
       },
       where: m.video_id == ^video.id
@@ -63,6 +65,8 @@ defmodule Algora.Chat do
       select_merge: %{
         platform: e.platform,
         sender_handle: coalesce(u.handle, e.handle),
+        sender_name: coalesce(coalesce(u.name, e.name), e.handle),
+        sender_avatar_url: coalesce(u.avatar_url, e.avatar_url),
         channel_id: c.id
       },
       where: m.id == ^id

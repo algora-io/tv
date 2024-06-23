@@ -8,6 +8,8 @@ defmodule Algora.Chat.Message do
     field :body, :string
     field :platform, :string, virtual: true
     field :sender_handle, :string, virtual: true
+    field :sender_name, :string, virtual: true
+    field :sender_avatar_url, :string, virtual: true
     field :channel_id, :integer, virtual: true
     belongs_to :entity, Entity
     belongs_to :user, User
