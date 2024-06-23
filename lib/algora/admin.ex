@@ -176,7 +176,7 @@ defmodule Algora.Admin do
         thumbnail_url: video.thumbnail_url
       }
       |> change()
-      |> Video.put_video_url(:mp4, mp4_basename)
+      |> Video.put_video_url(:vod, :mp4, mp4_basename)
 
     %{remote_path: mp4_remote_path} = mp4_video.changes
 

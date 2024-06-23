@@ -49,6 +49,8 @@ defmodule Algora.Application do
       # Start the Endpoints (http/https)
       AlgoraWeb.Endpoint,
       AlgoraWeb.Embed.Endpoint,
+      # Start the LL-HLS controller registry
+      {Registry, keys: :unique, name: Algora.LLControllerRegistry},
       # Start the RTMP server
       %{
         id: Membrane.RTMP.Source.TcpServer,
@@ -61,6 +63,9 @@ defmodule Algora.Application do
       # Start a worker by calling: Algora.Worker.start_link(arg)
       # {Algora.Worker, arg}
     ]
+
+    :ets.new(:videos_to_tables, [:public, :set, :named_table])
+    :ets.new(:videos_to_folder_paths, [:public, :set, :named_table])
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
