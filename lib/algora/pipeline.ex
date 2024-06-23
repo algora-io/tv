@@ -1,10 +1,21 @@
 defmodule Algora.Pipeline do
-  alias Algora.Library
   use Membrane.Pipeline
+
+  alias Membrane.Time
+
+  alias Algora.{Admin, Library}
+  alias Algora.Pipeline.HLS.LLController
+
+  @segment_duration Time.seconds(6)
+  @partial_segment_duration Time.milliseconds(200)
 
   @impl true
   def handle_init(_context, socket: socket) do
     video = Library.init_livestream!()
+
+    dir = Path.join(Admin.tmp_dir(), video.uuid)
+
+    :rpc.multicall(LLController, :start, [video.uuid, dir])
 
     spec = [
       #
@@ -14,13 +25,14 @@ defmodule Algora.Pipeline do
       }),
 
       #
-      child(:sink, %Membrane.HTTPAdaptiveStream.SinkBin{
+      child(:sink, %Algora.Pipeline.SinkBin{
+        video_uuid: video.uuid,
         hls_mode: :muxed_av,
         mode: :live,
-        manifest_module: Membrane.HTTPAdaptiveStream.HLS,
+        manifest_module: Algora.Pipeline.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        storage: %Algora.Pipeline.Storage{video: video}
+        storage: %Algora.Pipeline.Storage{video: video, directory: dir}
       }),
 
       #
@@ -37,7 +49,11 @@ defmodule Algora.Pipeline do
       get_child(:tee_audio)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :audio),
-        options: [encoding: :AAC, segment_duration: Membrane.Time.seconds(2)]
+        options: [
+          encoding: :AAC,
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
+        ]
       )
       |> get_child(:sink),
 
@@ -45,7 +61,11 @@ defmodule Algora.Pipeline do
       get_child(:tee_video)
       |> via_out(:master)
       |> via_in(Pad.ref(:input, :video),
-        options: [encoding: :H264, segment_duration: Membrane.Time.seconds(2)]
+        options: [
+          encoding: :H264,
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
+        ]
       )
       |> get_child(:sink)
     ]
