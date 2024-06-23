@@ -13,8 +13,8 @@ defmodule AlgoraWeb.ApiSpec do
         title: "Algora TV",
         version: "0.1.0",
         license: %License{
-          name: "Apache 2.0",
-          url: "https://www.apache.org/licenses/LICENSE-2.0"
+          name: "AGPLv3",
+          url: "https://github.com/algora-io/tv/blob/main/LICENSE"
         }
       },
       paths: Paths.from_router(AlgoraWeb.Router),
