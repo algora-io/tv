@@ -1,4 +1,4 @@
-defmodule Algora.MessageValidator do
+defmodule Algora.Pipeline.MessageValidator do
   defstruct [:video_id, :pid]
 end
 

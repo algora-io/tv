@@ -19,9 +19,9 @@ defmodule Algora.Pipeline do
 
     spec = [
       #
-      child(:src, %Algora.SourceBin{
+      child(:src, %Algora.Pipeline.SourceBin{
         socket: socket,
-        validator: %Algora.MessageValidator{video_id: video.id, pid: self()}
+        validator: %Algora.Pipeline.MessageValidator{video_id: video.id, pid: self()}
       }),
 
       #
@@ -32,7 +32,7 @@ defmodule Algora.Pipeline do
         manifest_module: Algora.HLS,
         target_window_duration: :infinity,
         persist?: false,
-        storage: %Algora.Storage{video: video, directory: dir}
+        storage: %Algora.Pipeline.Storage{video: video, directory: dir}
       }),
 
       #
