@@ -2,7 +2,7 @@ defmodule Algora.Pipeline.MessageValidator do
   defstruct [:video_id, :pid]
 end
 
-defimpl Membrane.RTMP.MessageValidator, for: Algora.MessageValidator do
+defimpl Membrane.RTMP.MessageValidator, for: Algora.Pipeline.MessageValidator do
   @impl true
   def validate_connect(impl, message) do
     {:ok, video} =
