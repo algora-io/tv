@@ -2,6 +2,7 @@ defmodule AlgoraWeb.VideoLive do
   use AlgoraWeb, :live_view
   require Logger
   import Ecto.Query, warn: false
+  import AlgoraWeb.Components.Avatar
 
   alias Algora.{Accounts, Library, Storage, Chat, Repo}
   alias Algora.Events.Event
@@ -421,7 +422,7 @@ defmodule AlgoraWeb.VideoLive do
                   phx-hook="Chat"
                   phx-update="stream"
                   class={[
-                    "text-sm break-words flex-1 scrollbar-thin overflow-y-auto",
+                    "text-sm break-words flex-1 scrollbar-thin overflow-y-auto space-y-2.5",
                     if(@channel.solving_challenge,
                       do: "h-[calc(100svh-56.25vw-415px)] sm:h-[calc(100vh-19.5rem)]",
                       else: "h-[calc(100svh-56.25vw-375px)] sm:h-[calc(100vh-12rem)]"
@@ -431,19 +432,28 @@ defmodule AlgoraWeb.VideoLive do
                   <div
                     :for={{id, message} <- @streams.messages}
                     id={id}
-                    class="group hover:bg-white/5 relative px-4"
+                    class="group hover:bg-white/5 relative px-4 flex items-start gap-2"
                   >
-                    <RTMPDestinationIconComponent.icon
-                      :if={message.platform != "algora"}
-                      class="inline-flex w-5 h-5 shrink-0 mr-0.5"
-                      icon={String.to_atom(message.platform)}
-                    />
-                    <span class={"font-semibold #{if(system_message?(message), do: "text-emerald-400", else: "text-indigo-400")}"}>
-                      <%= message.sender_handle %>:
-                    </span>
-                    <span class="font-medium text-gray-100">
-                      <%= message.body %>
-                    </span>
+                    <div class="relative h-6 w-6 shrink-0">
+                      <.user_avatar
+                        src={message.sender_avatar_url}
+                        alt={message.sender_handle}
+                        class="rounded-full h-full w-full [&_.fallback]:bg-gray-700 [&_.fallback]:text-xs"
+                      />
+                      <RTMPDestinationIconComponent.icon
+                        :if={message.platform != "algora"}
+                        class="absolute -right-1 -bottom-1 flex w-4 h-4 shrink-0 bg-[#110f2c]"
+                        icon={String.to_atom(message.platform)}
+                      />
+                    </div>
+                    <div>
+                      <span class={"font-semibold #{if(system_message?(message), do: "text-indigo-400", else: "text-emerald-400")}"}>
+                        <%= message.sender_name %>
+                      </span>
+                      <span class="font-medium text-gray-100">
+                        <%= message.body %>
+                      </span>
+                    </div>
                     <button
                       :if={@current_user && Chat.can_delete?(@current_user, message)}
                       phx-click="delete"
