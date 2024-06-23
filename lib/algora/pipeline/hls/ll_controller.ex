@@ -4,7 +4,6 @@ defmodule Algora.Pipeline.HLS.LLController do
   use GenServer
   use Bunch.Access
 
-  alias Algora.Utils.PathValidation
   alias Algora.Pipeline.HLS.EtsHelper
   alias Algora.Library.Video
   alias Algora.Admin
@@ -55,7 +54,7 @@ defmodule Algora.Pipeline.HLS.LLController do
     with {:ok, video_path} <- EtsHelper.get_hls_folder_path(video_uuid) do
       file_path = video_path |> Path.join(filename) |> Path.expand()
 
-      if PathValidation.inside_directory?(file_path, Path.expand(video_path)),
+      if inside_directory?(file_path, Path.expand(video_path)),
         do: File.read(file_path),
         else: {:error, :invalid_path}
     end
@@ -392,6 +391,11 @@ defmodule Algora.Pipeline.HLS.LLController do
       last_segment_sn < segment_sn -> false
       true -> last_partial_sn >= partial_sn
     end
+  end
+
+  defp inside_directory?(path, directory) do
+    relative_path = Path.relative_to(path, directory)
+    relative_path != path and relative_path != "."
   end
 
   def broadcast!(video_uuid, [_module, _function, _args] = msg) do

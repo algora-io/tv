@@ -1,6 +1,4 @@
 defmodule Algora.Storage do
-  @moduledoc false
-
   def endpoint_url do
     %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
     "#{scheme}#{host}"
@@ -8,7 +6,6 @@ defmodule Algora.Storage do
 
   def upload_to_bucket(contents, remote_path, bucket, opts \\ []) do
     op = Algora.config([:buckets, bucket]) |> ExAws.S3.put_object(remote_path, contents, opts)
-    # op = %{op | headers: op.headers |> Map.merge(%{"x-tigris-regions" => upload_regions()})}
     ExAws.request(op, [])
   end
 
