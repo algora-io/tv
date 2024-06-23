@@ -4,7 +4,7 @@ defmodule AlgoraWeb.HLSContentController do
 
   require Logger
 
-  alias Algora.HLS.LLController
+  alias Algora.Pipeline.HLS.LLController
   alias AlgoraWeb.ApiSpec
   alias AlgoraWeb.ApiSpec.HLS.{Params, Response}
 

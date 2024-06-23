@@ -1,8 +1,8 @@
-defmodule Algora.Sink do
+defmodule Algora.Pipeline.Sink do
   @moduledoc """
   Sink for generating HTTP streaming manifests.
 
-  Uses `Algora.Manifest` for manifest serialization
+  Uses `Algora.Pipeline.Manifest` for manifest serialization
   and `Membrane.HTTPAdaptiveStream.Storage` for saving files.
 
   ## Notifications
@@ -28,7 +28,7 @@ defmodule Algora.Sink do
   require Membrane.HTTPAdaptiveStream.Manifest.SegmentAttribute
 
   alias Membrane.CMAF
-  alias Algora.Manifest
+  alias Algora.Pipeline.Manifest
   alias Membrane.HTTPAdaptiveStream.Manifest.Track
   alias Membrane.HTTPAdaptiveStream.Storage
 
@@ -55,13 +55,13 @@ defmodule Algora.Sink do
 
   defmodule ManifestConfig do
     @moduledoc """
-    `Algora.Manifest` configuration.
+    `Algora.Pipeline.Manifest` configuration.
     """
 
     @typedoc """
     Manifest configuration consists of the following fields:
     - `name` - name of the main manifest file.
-    - `module` - implementation of the `Algora.Manifest` behaviour.
+    - `module` - implementation of the `Algora.Pipeline.Manifest` behaviour.
     """
     @type t() :: %__MODULE__{
             video_uuid: String.t(),

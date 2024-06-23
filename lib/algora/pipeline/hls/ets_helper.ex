@@ -1,4 +1,4 @@
-defmodule Algora.HLS.EtsHelper do
+defmodule Algora.Pipeline.HLS.EtsHelper do
   @moduledoc false
 
   alias Algora.Library.Video

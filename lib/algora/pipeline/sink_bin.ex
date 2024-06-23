@@ -1,4 +1,4 @@
-defmodule Algora.SinkBin do
+defmodule Algora.Pipeline.SinkBin do
   @moduledoc """
   Bin responsible for receiving audio and video streams, performing payloading and CMAF muxing
   to eventually store them using provided storage configuration.
@@ -15,7 +15,7 @@ defmodule Algora.SinkBin do
   alias Membrane.{AAC, H264, MP4, Time}
   alias Membrane.HTTPAdaptiveStream.Storage
   alias Membrane.HTTPAdaptiveStream.Manifest.Track
-  alias Algora.Sink
+  alias Algora.Pipeline.Sink
 
   def_options(
     video_uuid: [
@@ -30,7 +30,7 @@ defmodule Algora.SinkBin do
     manifest_module: [
       spec: module,
       description: """
-      Implementation of the `Algora.Manifest`
+      Implementation of the `Algora.Pipeline.Manifest`
       behaviour.
       """
     ],

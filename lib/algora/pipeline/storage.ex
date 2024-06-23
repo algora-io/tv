@@ -4,7 +4,7 @@ defmodule Algora.Pipeline.Storage do
   @behaviour Membrane.HTTPAdaptiveStream.Storage
 
   require Membrane.Logger
-  alias Algora.HLS.LLController
+  alias Algora.Pipeline.HLS.LLController
   alias Algora.Library
 
   @pubsub Algora.PubSub

@@ -1,4 +1,4 @@
-defmodule Algora.Manifest do
+defmodule Algora.Pipeline.Manifest do
   @moduledoc """
   Behaviour for manifest serialization.
   """

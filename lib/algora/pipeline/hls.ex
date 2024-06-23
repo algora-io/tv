@@ -1,11 +1,11 @@
-defmodule Algora.HLS do
+defmodule Algora.Pipeline.HLS do
   @moduledoc false
 
-  @behaviour Algora.Manifest
+  @behaviour Algora.Pipeline.Manifest
 
   use Numbers, overload_operators: true
 
-  alias Algora.Manifest
+  alias Algora.Pipeline.Manifest
   alias Membrane.HTTPAdaptiveStream.BandwidthCalculator
   alias Membrane.HTTPAdaptiveStream.Manifest.{Segment, Track}
   alias Membrane.Time
@@ -311,7 +311,7 @@ defmodule Algora.HLS do
     """
 
     serialized_segments =
-       serialize_segments(manifest, Enum.drop(segments, segments_to_skip_count),
+      serialize_segments(manifest, Enum.drop(segments, segments_to_skip_count),
         supports_ll_hls?: supports_ll_hls?,
         segments_to_skip_count: 0
       )

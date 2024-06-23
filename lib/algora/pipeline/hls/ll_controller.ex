@@ -1,11 +1,11 @@
-defmodule Algora.HLS.LLController do
+defmodule Algora.Pipeline.HLS.LLController do
   @moduledoc false
 
   use GenServer
   use Bunch.Access
 
   alias Algora.Utils.PathValidation
-  alias Algora.HLS.EtsHelper
+  alias Algora.Pipeline.HLS.EtsHelper
   alias Algora.Library.Video
   alias Algora.Admin
 

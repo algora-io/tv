@@ -4,7 +4,7 @@ defmodule Algora.Pipeline do
   alias Membrane.Time
 
   alias Algora.{Admin, Library}
-  alias Algora.HLS.LLController
+  alias Algora.Pipeline.HLS.LLController
 
   @segment_duration Time.seconds(6)
   @partial_segment_duration Time.milliseconds(200)
@@ -25,11 +25,11 @@ defmodule Algora.Pipeline do
       }),
 
       #
-      child(:sink, %Algora.SinkBin{
+      child(:sink, %Algora.Pipeline.SinkBin{
         video_uuid: video.uuid,
         hls_mode: :muxed_av,
         mode: :live,
-        manifest_module: Algora.HLS,
+        manifest_module: Algora.Pipeline.HLS,
         target_window_duration: :infinity,
         persist?: false,
         storage: %Algora.Pipeline.Storage{video: video, directory: dir}
