@@ -26,4 +26,12 @@ defmodule Algora.Library.Events do
   defmodule ProcessingFailed do
     defstruct video: nil, attempt: nil, max_attempts: nil
   end
+
+  defmodule OverlaySetToLogos do
+    defstruct video: nil
+  end
+
+  defmodule OverlaySetToChat do
+    defstruct video: nil
+  end
 end

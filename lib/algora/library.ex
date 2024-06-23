@@ -817,6 +817,14 @@ defmodule Algora.Library do
     Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
   end
 
+  def broadcast_overlay_set_to_logos!(video) do
+    broadcast!(topic(video.user_id), %Events.OverlaySetToLogos{video: video})
+  end
+
+  def broadcast_overlay_set_to_chat!(video) do
+    broadcast!(topic(video.user_id), %Events.OverlaySetToChat{video: video})
+  end
+
   def broadcast_processing_progressed!(stage, video, pct) do
     broadcast!(topic_studio(), %Events.ProcessingProgressed{video: video, stage: stage, pct: pct})
   end
