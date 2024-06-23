@@ -400,7 +400,7 @@ defmodule Algora.Pipeline.HLS.LLController do
 
   def broadcast!(video_uuid, [_module, _function, _args] = msg) do
     for node <- Admin.nodes() do
-      :rpc.cast(node, Algora.HLS.LLController, :apply, [video_uuid, msg])
+      :rpc.cast(node, Algora.Pipeline.HLS.LLController, :apply, [video_uuid, msg])
     end
   end
 
