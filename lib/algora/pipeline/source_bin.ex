@@ -1,4 +1,4 @@
-defmodule Algora.SourceBin do
+defmodule Algora.Pipeline.SourceBin do
   @moduledoc """
   Bin responsible for demuxing and parsing an RTMP stream.
 
@@ -69,7 +69,7 @@ defmodule Algora.SourceBin do
         validator: opts.validator,
         use_ssl?: opts.use_ssl?
       })
-      |> child(:demuxer, Algora.Demuxer),
+      |> child(:demuxer, Algora.Pipeline.Demuxer),
       #
       child(:audio_parser, %Membrane.AAC.Parser{
         out_encapsulation: :none

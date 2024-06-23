@@ -1,4 +1,4 @@
-defmodule Algora.Demuxer do
+defmodule Algora.Pipeline.Demuxer do
   @moduledoc """
   Element for demuxing FLV streams into audio and video streams.
   FLV format supports only one video and audio stream.
