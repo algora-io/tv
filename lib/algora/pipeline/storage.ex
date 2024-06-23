@@ -182,8 +182,6 @@ defmodule Algora.Pipeline.Storage do
     end
   end
 
-  ## ---------------------------------------
-
   def store_content(
         parent_id,
         name,
