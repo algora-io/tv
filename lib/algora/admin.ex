@@ -10,6 +10,16 @@ defmodule Algora.Admin do
     video: "g3cFdmlkZW8.m3u8"
   }
 
+  def set_overlay(video_id, type) do
+    dispatch =
+      case type do
+        :chat -> &Library.broadcast_overlay_set_to_chat!/1
+        :logos -> &Library.broadcast_overlay_set_to_logos!/1
+      end
+
+    Library.get_video!(video_id) |> then(dispatch)
+  end
+
   def whoami(), do: {System.get_env("FLY_REGION"), Node.self()}
 
   defp get(url) do
