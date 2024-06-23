@@ -374,6 +374,12 @@ window.addEventListener("phx:page-loading-stop", (info) => topbar.hide());
 // Accessible routing
 window.addEventListener("phx:page-loading-stop", routeUpdated);
 
+window.addEventListener("phx:js-exec", ({ detail }) => {
+  document.querySelectorAll(detail.to).forEach((el) => {
+    liveSocket.execJS(el, el.getAttribute(detail.attr));
+  });
+});
+
 window.addEventListener("js:exec", (e) =>
   e.target[e.detail.call](...e.detail.args)
 );
