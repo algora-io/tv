@@ -4,6 +4,15 @@ defmodule Algora.Chat.Message do
   alias Algora.Library.Video
   import Ecto.Changeset
 
+  @derive {Jason.Encoder,
+           only: [
+             :body,
+             :platform,
+             :sender_handle,
+             :sender_name,
+             :sender_avatar_url,
+             :inserted_at
+           ]}
   schema "messages" do
     field :body, :string
     field :platform, :string, virtual: true
