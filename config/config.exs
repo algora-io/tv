@@ -15,6 +15,21 @@ config :algora,
   ecto_repos: [Algora.Repo.Local],
   rtmp_port: 9006
 
+# dispatch = [
+#   _: [
+#     {"/chat", AlgoraWeb.ChatSocket, []},
+#     {:_, Phoenix.Endpoint.Cowboy2Handler, {AlgoraWeb.Endpoint, []}}
+#   ]
+# ]
+
+# dispatch = [
+#   {:_,
+#    [
+#      {"/chat", AlgoraWeb.ChatSocket, []},
+#      {:_, Plug.Cowboy.Handler, {AlgoraWeb.Endpoint, []}}
+#    ]}
+# ]
+
 # Configures the endpoint
 config :algora, AlgoraWeb.Endpoint,
   url: [host: "localhost"],
@@ -25,6 +40,9 @@ config :algora, AlgoraWeb.Endpoint,
     formats: [html: AlgoraWeb.ErrorHTML, json: AlgoraWeb.ErrorJSON],
     layout: false
   ]
+
+# http: [dispatch: dispatch],
+# https: [dispatch: dispatch]
 
 config :algora, AlgoraWeb.Embed.Endpoint,
   url: [host: "localhost"],

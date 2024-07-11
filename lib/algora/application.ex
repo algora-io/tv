@@ -47,6 +47,11 @@ defmodule Algora.Application do
       # Clustering setup
       {DNSCluster, query: Application.get_env(:algora, :dns_cluster_query) || :ignore},
       # Start the Endpoints (http/https)
+      # Plug.Cowboy.child_spec(
+      #   scheme: :http,
+      #   plug: AlgoraWeb.Router,
+      #   options: [dispatch: dispatch(), port: 4000]
+      # ),
       AlgoraWeb.Endpoint,
       AlgoraWeb.Embed.Endpoint,
       # Start the LL-HLS controller registry
@@ -78,5 +83,14 @@ defmodule Algora.Application do
     AlgoraWeb.Endpoint.config_change(changed, removed)
     AlgoraWeb.Embed.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp dispatch do
+    [
+      {:_,
+       [
+         {"/ws/[...]", AlgoraWeb.ChatSocket, []}
+       ]}
+    ]
   end
 end
