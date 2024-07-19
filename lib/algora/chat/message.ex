@@ -15,6 +15,7 @@ defmodule Algora.Chat.Message do
            ]}
   schema "messages" do
     field :body, :string
+    field :platform_id, :string
     field :platform, :string, virtual: true
     field :sender_handle, :string, virtual: true
     field :sender_name, :string, virtual: true
@@ -30,7 +31,7 @@ defmodule Algora.Chat.Message do
   @doc false
   def changeset(message, attrs) do
     message
-    |> cast(attrs, [:body])
+    |> cast(attrs, [:body, :platform_id])
     |> validate_required([:body])
   end
 

@@ -52,6 +52,8 @@ defmodule Algora.Chat do
     user.id == message.channel_id or user.id == message.user_id or Accounts.admin?(user)
   end
 
+  def get_message_by(fields), do: Repo.get_by(Message, fields)
+
   def get_message!(id) do
     from(m in Message,
       join: e in Entity,
