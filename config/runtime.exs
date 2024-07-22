@@ -15,6 +15,16 @@ end
 config :algora,
   hf_token: System.get_env("HF_TOKEN")
 
+config :algora,
+  bots: [
+    bot: Algora.Twitch.Bot,
+    user: "algorabot",
+    pass: System.get_env("TWITCH_OAUTH_TOKEN"),
+    channels: [],
+    mod_channels: [],
+    debug: true
+  ]
+
 config :replicate,
   replicate_api_token: System.get_env("REPLICATE_API_TOKEN")
 
