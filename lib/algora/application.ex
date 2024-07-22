@@ -56,7 +56,8 @@ defmodule Algora.Application do
       },
       Algora.Stargazer,
       ExMarcel.TableWrapper,
-      Algora.Youtube.Chat.Supervisor
+      Algora.Youtube.Chat.Supervisor,
+      {TMI.Supervisor, Application.fetch_env!(:algora, :bots)}
       # Start a worker by calling: Algora.Worker.start_link(arg)
       # {Algora.Worker, arg}
     ]
