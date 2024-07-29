@@ -1,0 +1,53 @@
+<.header>
+  Listing Ads
+  <:actions>
+    <.link patch={~p"/ads/new"}>
+      <.button>New Ad</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="ads"
+  rows={@streams.ads}
+  row_click={fn {_id, ad} -> JS.navigate(~p"/ads/#{ad}") end}
+>
+  <:col :let={{_id, ad}} label="Verified"><%= ad.verified %></:col>
+  <:col :let={{_id, ad}} label="Website url"><%= ad.website_url %></:col>
+  <:col :let={{_id, ad}} label="Composite asset url"><%= ad.composite_asset_url %></:col>
+  <:col :let={{_id, ad}} label="Asset url"><%= ad.asset_url %></:col>
+  <:col :let={{_id, ad}} label="Logo url"><%= ad.logo_url %></:col>
+  <:col :let={{_id, ad}} label="Qrcode url"><%= ad.qrcode_url %></:col>
+  <:col :let={{_id, ad}} label="Start date"><%= ad.start_date %></:col>
+  <:col :let={{_id, ad}} label="End date"><%= ad.end_date %></:col>
+  <:col :let={{_id, ad}} label="Total budget"><%= ad.total_budget %></:col>
+  <:col :let={{_id, ad}} label="Daily budget"><%= ad.daily_budget %></:col>
+  <:col :let={{_id, ad}} label="Tech stack"><%= ad.tech_stack %></:col>
+  <:col :let={{_id, ad}} label="Click count"><%= ad.click_count %></:col>
+  <:col :let={{_id, ad}} label="Status"><%= ad.status %></:col>
+  <:action :let={{_id, ad}}>
+    <div class="sr-only">
+      <.link navigate={~p"/ads/#{ad}"}>Show</.link>
+    </div>
+    <.link patch={~p"/ads/#{ad}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, ad}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: ad.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="ad-modal" show on_cancel={JS.patch(~p"/ads")}>
+  <.live_component
+    module={AlgoraWeb.AdLive.FormComponent}
+    id={@ad.id || :new}
+    title={@page_title}
+    action={@live_action}
+    ad={@ad}
+    patch={~p"/ads"}
+  />
+</.modal>

@@ -1,0 +1,38 @@
+<.header>
+  Ad <%= @ad.id %>
+  <:subtitle>This is a ad record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/ads/#{@ad}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit ad</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Verified"><%= @ad.verified %></:item>
+  <:item title="Website url"><%= @ad.website_url %></:item>
+  <:item title="Composite asset url"><%= @ad.composite_asset_url %></:item>
+  <:item title="Asset url"><%= @ad.asset_url %></:item>
+  <:item title="Logo url"><%= @ad.logo_url %></:item>
+  <:item title="Qrcode url"><%= @ad.qrcode_url %></:item>
+  <:item title="Start date"><%= @ad.start_date %></:item>
+  <:item title="End date"><%= @ad.end_date %></:item>
+  <:item title="Total budget"><%= @ad.total_budget %></:item>
+  <:item title="Daily budget"><%= @ad.daily_budget %></:item>
+  <:item title="Tech stack"><%= @ad.tech_stack %></:item>
+  <:item title="Click count"><%= @ad.click_count %></:item>
+  <:item title="Status"><%= @ad.status %></:item>
+</.list>
+
+<.back navigate={~p"/ads"}>Back to ads</.back>
+
+<.modal :if={@live_action == :edit} id="ad-modal" show on_cancel={JS.patch(~p"/ads/#{@ad}")}>
+  <.live_component
+    module={AlgoraWeb.AdLive.FormComponent}
+    id={@ad.id}
+    title={@page_title}
+    action={@live_action}
+    ad={@ad}
+    patch={~p"/ads/#{@ad}"}
+  />
+</.modal>
