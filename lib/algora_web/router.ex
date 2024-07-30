@@ -56,6 +56,12 @@ defmodule AlgoraWeb.Router do
     get "/:channel_handle/embed", EmbedPopoutController, :get
     get "/:channel_handle/:video_id/embed", EmbedPopoutController, :get_by_id
 
+    live_session :ads,
+      layout: {AlgoraWeb.Layouts, :live_chat},
+      root_layout: {AlgoraWeb.Layouts, :root_embed} do
+      live "/:channel_handle/ads", AdOverlayLive, :show
+    end
+
     live_session :chat,
       layout: {AlgoraWeb.Layouts, :live_chat},
       root_layout: {AlgoraWeb.Layouts, :root_embed} do
