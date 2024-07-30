@@ -236,7 +236,7 @@ defmodule AlgoraWeb.PartnerLive do
           </div>
         </div>
         <!-- Contact form -->
-        <div class="isolate px-6 py-24 sm:py-32 lg:px-8">
+        <div class="isolate px-6 pt-24 sm:pt-32 pb-12 lg:px-8">
           <div
             id="contact-form"
             class="mx-auto relative px-12 py-12 ring-1 ring-purple-300 max-w-2xl rounded-lg shadow-lg overflow-hidden bg-white/5"
@@ -330,8 +330,8 @@ defmodule AlgoraWeb.PartnerLive do
       <!-- Footer -->
       <footer aria-labelledby="footer-heading" class="relative">
         <h2 id="footer-heading" class="sr-only">Footer</h2>
-        <div class="mx-auto max-w-7xl px-6 pb-8 pt-4 lg:px-8">
-          <div class="border-t border-white/10 pt-8 md:flex md:items-center md:justify-between">
+        <div class="mx-auto max-w-7xl px-6 pb-12 pt-4 lg:px-8">
+          <div class="border-t border-white/10 pt-12 md:flex md:items-center md:justify-between">
             <div class="flex space-x-6 md:order-2">
               <a href="https://twitter.com/algoraio" class="text-gray-500 hover:text-gray-400">
                 <span class="sr-only">X</span>
