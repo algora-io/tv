@@ -106,12 +106,12 @@ defmodule AlgoraWeb.PartnerLive do
               <img
                 src={~p"/images/analytics.png"}
                 alt="App screenshot"
-                class="mb-[-12%] rounded-xl shadow-2xl ring-1 ring-white/10"
-                width="2432"
-                height="1442"
+                class="rounded-xl shadow-2xl ring-1 ring-white/10"
+                width="1648"
+                height="800"
               />
               <div class="relative" aria-hidden="true">
-                <div class="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-gray-950 pt-[10%]">
+                <div class="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-gray-950 pt-[20%]">
                 </div>
               </div>
             </div>
