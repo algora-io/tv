@@ -7,11 +7,7 @@
   </:actions>
 </.header>
 
-<.table
-  id="ads"
-  rows={@streams.ads}
-  row_click={fn {_id, ad} -> JS.navigate(~p"/ads/#{ad}") end}
->
+<.table id="ads" rows={@streams.ads} row_click={fn {_id, ad} -> JS.navigate(~p"/ads/#{ad}") end}>
   <:col :let={{_id, ad}} label="Verified"><%= ad.verified %></:col>
   <:col :let={{_id, ad}} label="Website url"><%= ad.website_url %></:col>
   <:col :let={{_id, ad}} label="Composite asset url"><%= ad.composite_asset_url %></:col>
@@ -23,7 +19,6 @@
   <:col :let={{_id, ad}} label="Total budget"><%= ad.total_budget %></:col>
   <:col :let={{_id, ad}} label="Daily budget"><%= ad.daily_budget %></:col>
   <:col :let={{_id, ad}} label="Tech stack"><%= ad.tech_stack %></:col>
-  <:col :let={{_id, ad}} label="Click count"><%= ad.click_count %></:col>
   <:col :let={{_id, ad}} label="Status"><%= ad.status %></:col>
   <:action :let={{_id, ad}}>
     <div class="sr-only">

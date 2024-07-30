@@ -15,7 +15,6 @@ defmodule Algora.Ads.Ad do
     field :total_budget, :integer
     field :daily_budget, :integer
     field :tech_stack, {:array, :string}
-    field :click_count, :integer
     field :user_id, :id
 
     timestamps()
@@ -24,7 +23,33 @@ defmodule Algora.Ads.Ad do
   @doc false
   def changeset(ad, attrs) do
     ad
-    |> cast(attrs, [:verified, :website_url, :composite_asset_url, :asset_url, :logo_url, :qrcode_url, :start_date, :end_date, :total_budget, :daily_budget, :tech_stack, :click_count, :status])
-    |> validate_required([:verified, :website_url, :composite_asset_url, :asset_url, :logo_url, :qrcode_url, :start_date, :end_date, :total_budget, :daily_budget, :tech_stack, :click_count, :status])
+    |> cast(attrs, [
+      :verified,
+      :website_url,
+      :composite_asset_url,
+      :asset_url,
+      :logo_url,
+      :qrcode_url,
+      :start_date,
+      :end_date,
+      :total_budget,
+      :daily_budget,
+      :tech_stack,
+      :status
+    ])
+    |> validate_required([
+      :verified,
+      :website_url,
+      :composite_asset_url,
+      :asset_url,
+      :logo_url,
+      :qrcode_url,
+      :start_date,
+      :end_date,
+      :total_budget,
+      :daily_budget,
+      :tech_stack,
+      :status
+    ])
   end
 end

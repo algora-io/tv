@@ -36,7 +36,6 @@ defmodule AlgoraWeb.AdLive.FormComponent do
           label="Tech stack"
           options={[{"Option 1", "option1"}, {"Option 2", "option2"}]}
         />
-        <.input field={@form[:click_count]} type="number" label="Click count" />
         <.input
           field={@form[:status]}
           type="select"
