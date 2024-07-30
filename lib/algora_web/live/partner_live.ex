@@ -259,71 +259,30 @@ defmodule AlgoraWeb.PartnerLive do
                 We only partner with 1-2 new clients per month. Your application reaches our CEO's inbox faster than the speed of light.
               </p>
             </div>
-            <form action="#" method="POST" class="px-6 pt-8">
+            <.form for={@form} phx-submit="save" action="#" class="px-6 pt-8">
               <div class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div class="sm:col-span-2">
-                  <label for="email" class="block text-sm font-semibold leading-6 text-white">
-                    What is your email address?
-                  </label>
-                  <div class="mt-2.5">
-                    <input
-                      type="text"
-                      name="email"
-                      id="email"
-                      class="block w-full rounded-md border-0 bg-gray-950 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                    />
-                  </div>
+                  <.input field={@form[:email]} type="email" label="What is your email address?" />
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="website" class="block text-sm font-semibold leading-6 text-white">
-                    What is your website?
-                  </label>
-                  <div class="mt-2.5">
-                    <input
-                      type="text"
-                      name="website"
-                      id="website"
-                      class="block w-full rounded-md border-0 bg-gray-950 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                    />
-                  </div>
-                </div>
-
-                <div class="sm:col-span-2">
-                  <label for="revenue" class="block text-sm font-semibold leading-6 text-white">
-                    What is your revenue?
-                  </label>
-                  <div class="mt-2.5">
-                    <input
-                      type="text"
-                      name="revenue"
-                      id="revenue"
-                      class="block w-full rounded-md border-0 bg-gray-950 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                    />
-                  </div>
+                  <.input field={@form[:website]} type="url" label="What is your website?" />
                 </div>
                 <div class="sm:col-span-2">
-                  <label for="location" class="block text-sm font-semibold leading-6 text-white">
-                    Where is your company based?
-                  </label>
-                  <div class="mt-2.5">
-                    <input
-                      type="text"
-                      name="location"
-                      id="location"
-                      class="block w-full rounded-md border-0 bg-gray-950 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
-                    />
-                  </div>
+                  <.input field={@form[:revenue]} type="text" label="What is your revenue?" />
+                </div>
+                <div class="sm:col-span-2">
+                  <.input field={@form[:location]} type="text" label="Where is your company based?" />
                 </div>
               </div>
               <div class="mt-10">
-                <button
-                  type="submit"
-                  class="block w-full rounded-md bg-indigo-600 px-3.5 py-2.5 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                <.button
+                  phx-disable-with="Sending..."
+                  class=" w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-600 active:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400"
                 >
                   Let's talk
-                </button>
+                </.button>
               </div>
-            </form>
+            </.form>
           </div>
         </div>
       </main>
@@ -374,7 +333,35 @@ defmodule AlgoraWeb.PartnerLive do
   end
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, socket |> assign(:form, to_form(%{}, as: :partner))}
+  end
+
+  def handle_event("save", %{"partner" => partner_params}, socket) do
+    case validate_and_save_partner(partner_params) do
+      {:ok, _partner} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Thank you for your interest. We'll be in touch soon!")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  defp validate_and_save_partner(params) do
+    changeset =
+      %{}
+      |> Ecto.Changeset.cast(params, [:email, :website, :revenue, :location])
+      |> Ecto.Changeset.validate_required([:email, :website])
+
+    case Ecto.Changeset.apply_action(changeset, :insert) do
+      :ok ->
+        dbg(params)
+        {:ok, params}
+
+      {:error, changes} ->
+        {:error, changes}
+    end
   end
 
   def handle_params(params, _url, socket) do
