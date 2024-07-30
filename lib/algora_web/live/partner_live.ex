@@ -57,7 +57,7 @@ defmodule AlgoraWeb.PartnerLive do
                 Your most successful <br /><span class="text-green-300">ad campaign</span>
                 is just <br />a few livestreams away
               </h1>
-              <p class="mt-6 text-lg leading-8 text-gray-300">
+              <p class="mt-6 text-xl leading-8 tracking-tight text-gray-300">
                 In-video livestream ads that help you stand out<br />
                 in front of millions on Twitch, YouTube and X.
               </p>
@@ -84,15 +84,12 @@ defmodule AlgoraWeb.PartnerLive do
         <!-- Feature section -->
         <div class="mt-16 sm:mt-28">
           <div class="mx-auto max-w-7xl px-6 lg:px-8">
-            <div class="mx-auto max-w-2xl sm:text-center">
-              <h2 class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <div class="mx-auto max-w-4xl sm:text-center">
+              <h2 class="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">
                 Influencer Marketing on Autopilot
               </h2>
-              <p class="mt-6 text-lg leading-8 text-gray-300">
-                Distribute your ad creatives to the most engaged tech audience in-video
-              </p>
-              <p class="text-lg leading-8 text-gray-300">
-                Measure success with our comprehensive analytics
+              <p class="mt-6 text-2xl leading-8 tracking-tight text-gray-300">
+                Distribute your ad creatives to the most engaged tech audience in-video and measure success with our comprehensive analytics
               </p>
             </div>
           </div>
@@ -239,7 +236,7 @@ defmodule AlgoraWeb.PartnerLive do
         <div class="isolate px-6 pt-24 sm:pt-32 pb-12 lg:px-8">
           <div
             id="contact-form"
-            class="mx-auto relative px-12 py-12 ring-1 ring-purple-400 max-w-2xl rounded-xl shadow-lg overflow-hidden bg-white/5"
+            class="mx-auto relative px-12 py-12 ring-1 ring-purple-400 max-w-4xl rounded-xl shadow-lg overflow-hidden bg-white/5"
           >
             <div
               class="absolute inset-x-0 -z-10 transform overflow-hidden blur-3xl"
@@ -252,14 +249,14 @@ defmodule AlgoraWeb.PartnerLive do
               </div>
             </div>
             <div class="text-center">
-              <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Work with us</h2>
+              <h2 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">Work With Us</h2>
               <div class="w-96 h-0.5 mx-auto my-4 bg-gradient-to-r from-[#120f22] via-purple-400 to-[#120f22]">
               </div>
-              <p class="mt-2 text-lg leading-8 text-gray-300">
+              <p class="mt-2 text-2xl tracking-tight leading-8 text-gray-300">
                 We only partner with 1-2 new clients per month. Your application reaches our CEO's inbox faster than the speed of light.
               </p>
             </div>
-            <.form for={@form} phx-submit="save" action="#" class="px-6 pt-8">
+            <.form for={@form} phx-submit="save" action="#" class="pt-8">
               <div class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div class="sm:col-span-2">
                   <.input field={@form[:email]} type="email" label="What is your email address?" />
@@ -321,7 +318,7 @@ defmodule AlgoraWeb.PartnerLive do
             </div>
             <div class="mt-8 md:mt-0 md:order-1">
               <.logo />
-              <p class="mt-2 text-lg leading-5 text-gray-200">
+              <p class="mt-2 text-lg leading-5 text-gray-200 tracking-tight">
                 We work with elite tech startups to provide elite advertising.
               </p>
             </div>
