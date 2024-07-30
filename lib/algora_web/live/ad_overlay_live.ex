@@ -74,7 +74,7 @@ defmodule AlgoraWeb.AdOverlayLive do
   defp track_impressions(nil, _channel_handle), do: :ok
 
   defp track_impressions(ad, channel_handle) do
-    concurrent_viewers =
+    viewers_count =
       Presence.list_online_users(channel_handle)
       |> Enum.flat_map(fn %{metas: metas} -> metas end)
       |> Enum.filter(fn meta -> meta.id != channel_handle end)
@@ -83,7 +83,7 @@ defmodule AlgoraWeb.AdOverlayLive do
     Algora.Ads.track_impressions(%{
       ad_id: ad.id,
       duration: @ad_display_duration,
-      concurrent_viewers: concurrent_viewers
+      viewers_count: viewers_count
     })
   end
 end

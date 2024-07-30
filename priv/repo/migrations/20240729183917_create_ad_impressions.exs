@@ -4,7 +4,7 @@ defmodule Algora.Repo.Migrations.CreateAdImpressions do
   def change do
     create table(:ad_impressions) do
       add :duration, :integer
-      add :concurrent_viewers, :integer
+      add :viewers_count, :integer
       add :ad_id, references(:ads, on_delete: :nothing)
       add :video_id, references(:videos, on_delete: :nothing)
 
