@@ -3,7 +3,6 @@ defmodule Algora.Ads.Visit do
   import Ecto.Changeset
 
   schema "ad_visits" do
-
     field :ad_id, :id
     field :video_id, :id
 
