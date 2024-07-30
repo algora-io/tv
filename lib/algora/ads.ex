@@ -4,10 +4,9 @@ defmodule Algora.Ads do
   """
 
   import Ecto.Query, warn: false
-  import Ecto.Changeset
   alias Algora.Repo
 
-  alias Algora.Ads.{Ad, Visit}
+  alias Algora.Ads.{Ad, Visit, Impression}
 
   @doc """
   Returns the list of ads.
@@ -106,7 +105,12 @@ defmodule Algora.Ads do
   def track_visit(attrs \\ %{}) do
     %Visit{}
     |> Visit.changeset(attrs)
-    |> put_change(:ad_id, attrs[:ad_id])
+    |> Repo.insert()
+  end
+
+  def track_impressions(attrs \\ %{}) do
+    %Impression{}
+    |> Impression.changeset(attrs)
     |> Repo.insert()
   end
 end

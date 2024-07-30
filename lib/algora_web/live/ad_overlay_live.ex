@@ -2,7 +2,9 @@ defmodule AlgoraWeb.AdOverlayLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias AlgoraWeb.{LayoutComponent}
+  alias AlgoraWeb.{LayoutComponent, Presence}
+  alias Algora.Accounts
+  alias Algora.Library
 
   @ad_interval :timer.seconds(10)
   @ad_display_duration :timer.seconds(5)
@@ -21,10 +23,22 @@ defmodule AlgoraWeb.AdOverlayLive do
     """
   end
 
-  def mount(_params, _session, socket) do
+  def mount(%{"channel_handle" => channel_handle}, _session, socket) do
+    channel =
+      Accounts.get_user_by!(handle: channel_handle)
+      |> Library.get_channel!()
+
     ad = Algora.Ads.list_ads() |> List.first()
-    if connected?(socket), do: schedule_ad_toggle(@ad_interval)
-    {:ok, socket |> assign(:ad, ad) |> assign(:show_ad, false)}
+
+    if connected?(socket) do
+      schedule_ad_toggle(@ad_interval)
+    end
+
+    {:ok,
+     socket
+     |> assign(:channel, channel)
+     |> assign(:ad, ad)
+     |> assign(:show_ad, false)}
   end
 
   def handle_params(params, _url, socket) do
@@ -37,6 +51,7 @@ defmodule AlgoraWeb.AdOverlayLive do
       schedule_ad_toggle(@ad_interval)
       {:noreply, assign(socket, :show_ad, false)}
     else
+      track_impressions(socket.assigns.ad, socket.assigns.channel.handle)
       schedule_ad_toggle(@ad_display_duration)
       {:noreply, assign(socket, :show_ad, true)}
     end
@@ -54,5 +69,21 @@ defmodule AlgoraWeb.AdOverlayLive do
 
   defp schedule_ad_toggle(interval) do
     Process.send_after(self(), :toggle_ad, interval)
+  end
+
+  defp track_impressions(nil, _channel_handle), do: :ok
+
+  defp track_impressions(ad, channel_handle) do
+    concurrent_viewers =
+      Presence.list_online_users(channel_handle)
+      |> Enum.flat_map(fn %{metas: metas} -> metas end)
+      |> Enum.filter(fn meta -> meta.id != channel_handle end)
+      |> length()
+
+    Algora.Ads.track_impressions(%{
+      ad_id: ad.id,
+      duration: @ad_display_duration,
+      concurrent_viewers: concurrent_viewers
+    })
   end
 end

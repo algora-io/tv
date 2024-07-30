@@ -12,7 +12,7 @@ defmodule Algora.Ads.Visit do
   @doc false
   def changeset(visit, attrs) do
     visit
-    |> cast(attrs, [])
-    |> validate_required([])
+    |> cast(attrs, [:ad_id, :video_id])
+    |> validate_required([:ad_id])
   end
 end

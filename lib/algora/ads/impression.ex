@@ -14,7 +14,7 @@ defmodule Algora.Ads.Impression do
   @doc false
   def changeset(impression, attrs) do
     impression
-    |> cast(attrs, [:duration, :concurrent_viewers])
-    |> validate_required([:duration, :concurrent_viewers])
+    |> cast(attrs, [:duration, :concurrent_viewers, :ad_id, :video_id])
+    |> validate_required([:duration, :concurrent_viewers, :ad_id])
   end
 end
