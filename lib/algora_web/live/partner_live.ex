@@ -70,13 +70,13 @@ defmodule AlgoraWeb.PartnerLive do
                 </a>
               </div>
             </div>
-            <div class="mx-auto mt-16 flex sm:mt-24 lg:mt-0 w-full aspect-[1648/800]">
+            <div class="mx-auto mt-16 flex sm:mt-24 lg:mt-0 w-full aspect-[1456/756]">
               <img
-                src={~p"/images/analytics.png"}
-                alt="Demo"
-                width="1648"
-                height="800"
-                class="w-full rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10"
+                src={~p"/images/ads.png"}
+                alt="Ads Demo"
+                width="1456"
+                height="756"
+                class="w-full rounded-xl shadow-2xl ring-1 ring-white/10"
               />
             </div>
           </div>
