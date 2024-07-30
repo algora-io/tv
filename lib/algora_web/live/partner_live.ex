@@ -56,11 +56,12 @@ defmodule AlgoraWeb.PartnerLive do
               <.logo />
 
               <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                Your most successful <br /><span class="text-green-300">ad campaign</span>
-                is just <br />a few livestreams away
+                Your most successful<br class="hidden sm:inline" />
+                <span class="text-green-300">ad campaign</span>
+                is just<br class="hidden sm:inline" /> a few livestreams away
               </h1>
               <p class="mt-6 text-xl leading-8 tracking-tight text-gray-300">
-                In-video livestream ads that help you stand out<br />
+                In-video livestream ads that help you stand out<br class="hidden sm:inline" />
                 in front of millions on Twitch, YouTube and X.
               </p>
               <div class="mt-10 flex items-center gap-x-6">
