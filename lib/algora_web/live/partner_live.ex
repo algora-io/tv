@@ -82,7 +82,7 @@ defmodule AlgoraWeb.PartnerLive do
           </div>
         </div>
         <!-- Feature section -->
-        <div class="mt-32 sm:mt-56">
+        <div class="mt-16 sm:mt-28">
           <div class="mx-auto max-w-7xl px-6 lg:px-8">
             <div class="mx-auto max-w-2xl sm:text-center">
               <h2 class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
