@@ -49,16 +49,16 @@ defmodule AlgoraWeb.PartnerLive do
             >
             </div>
           </div>
-          <div class="mx-auto max-w-7xl px-6 pb-24 pt-10 sm:pb-40 lg:flex lg:px-8 lg:pt-40">
-            <div class="mx-auto max-w-2xl flex-shrink-0 lg:mx-0 lg:max-w-xl lg:pt-8">
+          <div class="mx-auto px-6 pb-24 pt-10 sm:pb-40 lg:flex lg:px-20 lg:pt-40 gap-8">
+            <div class="mx-auto max-w-2xl flex-shrink-0 lg:mx-0 lg:max-w-lg lg:pt-8">
               <.logo />
 
-              <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-6xl">
-                Your most successful <span class="text-green-300">ad campaign</span>
-                is just a few livestreams away
+              <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                Your most successful <br /><span class="text-green-300">ad campaign</span>
+                is just <br />a few livestreams away
               </h1>
               <p class="mt-6 text-lg leading-8 text-gray-300">
-                In-video livestream ads that help you stand out
+                In-video livestream ads that help you stand out<br />
                 in front of millions on Twitch, YouTube and X.
               </p>
               <div class="mt-10 flex items-center gap-x-6">
@@ -70,16 +70,14 @@ defmodule AlgoraWeb.PartnerLive do
                 </a>
               </div>
             </div>
-            <div class="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 lg:max-w-none lg:flex-none xl:ml-32">
-              <div class="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
-                <img
-                  src="https://tailwindui.com/img/component-images/dark-project-app-screenshot.png"
-                  alt="App screenshot"
-                  width="2432"
-                  height="1442"
-                  class="w-[76rem] rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10"
-                />
-              </div>
+            <div class="mx-auto mt-16 flex sm:mt-24 lg:mt-0 w-full aspect-[1648/800]">
+              <img
+                src={~p"/images/analytics.png"}
+                alt="Demo"
+                width="1648"
+                height="800"
+                class="w-full rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10"
+              />
             </div>
           </div>
         </div>
@@ -102,7 +100,7 @@ defmodule AlgoraWeb.PartnerLive do
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
               <img
                 src={~p"/images/analytics.png"}
-                alt="App screenshot"
+                alt="Analytics"
                 class="rounded-xl shadow-2xl ring-1 ring-white/10"
                 width="1648"
                 height="800"
