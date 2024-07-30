@@ -15,6 +15,6 @@ defmodule Algora.Contact.Info do
   def changeset(info, attrs) do
     info
     |> cast(attrs, [:email, :website_url, :revenue, :company_location])
-    |> validate_required([:email, :website_url, :revenue, :company_location])
+    |> validate_required([:email])
   end
 end
