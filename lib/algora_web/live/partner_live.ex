@@ -54,7 +54,8 @@ defmodule AlgoraWeb.PartnerLive do
               <.logo />
 
               <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-6xl">
-                Your most successful ad campaign is just a few livestreams away
+                Your most successful <span class="text-green-300">ad campaign</span>
+                is just a few livestreams away
               </h1>
               <p class="mt-6 text-lg leading-8 text-gray-300">
                 In-video livestream ads that help you stand out
@@ -110,7 +111,7 @@ defmodule AlgoraWeb.PartnerLive do
                 height="1442"
               />
               <div class="relative" aria-hidden="true">
-                <div class="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-gray-950 pt-[7%]">
+                <div class="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-gray-950 pt-[10%]">
                 </div>
               </div>
             </div>
@@ -151,10 +152,10 @@ defmodule AlgoraWeb.PartnerLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Secure Distribution
+                  Targeted Audience Reach
                 </dt>
                 <dd class="inline">
-                  Your ads are securely distributed to our network of tech-focused content creators.
+                  Connect with a highly engaged, tech-focused audience across multiple streaming platforms.
                 </dd>
               </div>
               <div class="relative pl-9">
@@ -225,10 +226,8 @@ defmodule AlgoraWeb.PartnerLive do
                     fill="currentColor"
                     aria-hidden="true"
                   >
-                    <path d="M4.632 3.533A2 2 0 016.577 2h6.846a2 2 0 011.945 1.533l1.976 8.234A3.489 3.489 0 0016 11.5H4c-.476 0-.93.095-1.344.267l1.976-8.234z" />
                     <path
-                      fill-rule="evenodd"
-                      d="M4 13a2 2 0 100 4h12a2 2 0 100-4H4zm11.24 2a.75.75 0 01.75-.75H16a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75V15zm-2.25-.75a.75.75 0 00-.75.75v.01c0 .414.336.75.75.75H13a.75.75 0 00.75-.75V15a.75.75 0 00-.75-.75h-.01z"
+                      d="M4.632 3.533A2 2 0 016.577 2h6.846a2 2 0 011.945 1.533l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z"
                       clip-rule="evenodd"
                     />
                   </svg>
