@@ -6,7 +6,7 @@ defmodule AlgoraWeb.PartnerLive do
 
   def render(assigns) do
     ~H"""
-    <div class="bg-gray-900">
+    <div class="bg-gray-950">
       <main>
         <!-- Hero section -->
         <div class="relative isolate overflow-hidden">
@@ -103,14 +103,14 @@ defmodule AlgoraWeb.PartnerLive do
           <div class="relative overflow-hidden pt-16">
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
               <img
-                src="https://tailwindui.com/img/component-images/dark-project-app-screenshot.png"
+                src={~p"/images/analytics.png"}
                 alt="App screenshot"
                 class="mb-[-12%] rounded-xl shadow-2xl ring-1 ring-white/10"
                 width="2432"
                 height="1442"
               />
               <div class="relative" aria-hidden="true">
-                <div class="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-gray-900 pt-[7%]">
+                <div class="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-gray-950 pt-[7%]">
                 </div>
               </div>
             </div>
@@ -131,10 +131,10 @@ defmodule AlgoraWeb.PartnerLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Push to deploy.
+                  Easy Upload
                 </dt>
                 <dd class="inline">
-                  Lorem ipsum, dolor sit amet consectetur adipisicing elit aute id magna.
+                  Upload your ad creatives quickly and easily through our intuitive interface.
                 </dd>
               </div>
               <div class="relative pl-9">
@@ -151,10 +151,10 @@ defmodule AlgoraWeb.PartnerLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  SSL certificates.
+                  Secure Distribution
                 </dt>
                 <dd class="inline">
-                  Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.
+                  Your ads are securely distributed to our network of tech-focused content creators.
                 </dd>
               </div>
               <div class="relative pl-9">
@@ -171,9 +171,11 @@ defmodule AlgoraWeb.PartnerLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Simple queues.
+                  Automated Placement
                 </dt>
-                <dd class="inline">Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus.</dd>
+                <dd class="inline">
+                  Our system automatically places your ads in relevant tech content.
+                </dd>
               </div>
               <div class="relative pl-9">
                 <dt class="inline font-semibold text-white">
@@ -189,10 +191,10 @@ defmodule AlgoraWeb.PartnerLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Advanced security.
+                  Wide Reach
                 </dt>
                 <dd class="inline">
-                  Lorem ipsum, dolor sit amet consectetur adipisicing elit aute id magna.
+                  Access a vast network of tech-savvy viewers through our platform.
                 </dd>
               </div>
               <div class="relative pl-9">
@@ -209,10 +211,10 @@ defmodule AlgoraWeb.PartnerLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Powerful API.
+                  Detailed Analytics
                 </dt>
                 <dd class="inline">
-                  Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.
+                  Get comprehensive insights into your ad performance with our powerful analytics tools.
                 </dd>
               </div>
               <div class="relative pl-9">
@@ -230,9 +232,11 @@ defmodule AlgoraWeb.PartnerLive do
                       clip-rule="evenodd"
                     />
                   </svg>
-                  Database backups.
+                  Smart Spending
                 </dt>
-                <dd class="inline">Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus.</dd>
+                <dd class="inline">
+                  Get more bang for your buck with our clever, targeted ad approach.
+                </dd>
               </div>
             </dl>
           </div>
