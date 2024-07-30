@@ -63,7 +63,7 @@ defmodule AlgoraWeb.PartnerLive do
               </p>
               <div class="mt-10 flex items-center gap-x-6">
                 <a
-                  href="#"
+                  href="#contact-form"
                   class="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
                 >
                   Get started
@@ -239,7 +239,10 @@ defmodule AlgoraWeb.PartnerLive do
         </div>
         <!-- Contact form -->
         <div class="isolate px-6 py-24 sm:py-32 lg:px-8">
-          <div class="mx-auto relative px-12 py-12 ring-1 ring-purple-300 max-w-2xl rounded-lg shadow-lg overflow-hidden bg-white/5">
+          <div
+            id="contact-form"
+            class="mx-auto relative px-12 py-12 ring-1 ring-purple-300 max-w-2xl rounded-lg shadow-lg overflow-hidden bg-white/5"
+          >
             <div
               class="absolute inset-x-0 -z-10 transform overflow-hidden blur-3xl"
               aria-hidden="true"
