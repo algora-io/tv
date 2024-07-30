@@ -99,6 +99,7 @@ defmodule AlgoraWeb.Router do
       live "/ads/:id/edit", AdLive.Index, :edit
       live "/ads/:id", AdLive.Show, :show
       live "/ads/:id/show/edit", AdLive.Show, :edit
+      live "/ads/:id/analytics", AdLive.Analytics, :show
     end
 
     live_session :authenticated,
