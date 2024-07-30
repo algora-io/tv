@@ -360,10 +360,11 @@ defmodule AlgoraWeb.PartnerLive do
 
   defp apply_action(socket, :show, _params) do
     socket
-    |> assign(:page_title, "Algora Ads")
+    |> assign(:page_title, "Partner")
     |> assign(
       :page_description,
       "In-video livestream ads that help you stand out in front of millions on Twitch, YouTube and X."
     )
+    |> assign(:page_image, "#{AlgoraWeb.Endpoint.url()}/images/og/partner.png")
   end
 end
