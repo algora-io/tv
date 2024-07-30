@@ -52,7 +52,7 @@ defmodule AlgoraWeb.PartnerLive do
             </div>
           </div>
           <div class="mx-auto px-6 pb-24 pt-10 sm:pb-40 lg:flex lg:px-20 lg:pt-40 gap-8">
-            <div class="mx-auto max-w-2xl flex-shrink-0 lg:mx-0 lg:max-w-lg lg:pt-8">
+            <div class="mx-auto max-w-3xl flex-shrink-0 lg:mx-0 lg:ml-auto lg:max-w-lg lg:pt-8">
               <.logo />
 
               <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -64,22 +64,20 @@ defmodule AlgoraWeb.PartnerLive do
                 In-video livestream ads that help you stand out<br class="hidden sm:inline" />
                 in front of millions on Twitch, YouTube and X.
               </p>
-              <div class="mt-10 flex items-center gap-x-6">
+              <div class="hidden lg:mt-10 lg:flex items-center gap-x-6">
                 <a
                   href="#contact-form"
-                  class="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
+                  class="rounded-md bg-indigo-500 px-3.5 py-2.5 text-lg font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
                 >
                   Get started
                 </a>
               </div>
             </div>
-            <div class="mx-auto mt-16 flex sm:mt-24 lg:mt-0 w-full aspect-[1456/756]">
+            <div class="mx-auto max-w-2xl xl:max-w-3xl aspect-[1456/756] w-full h-full flex-shrink-0 mt-12 flex lg:mt-6 xl:mt-0">
               <img
                 src={~p"/images/ads.png"}
                 alt="Ads Demo"
-                width="1456"
-                height="756"
-                class="w-full rounded-xl shadow-2xl ring-1 ring-white/10"
+                class="w-full h-full shrink-0 rounded-xl shadow-2xl ring-1 ring-white/10"
               />
             </div>
           </div>
