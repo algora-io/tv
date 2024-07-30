@@ -6,7 +6,7 @@ defmodule AlgoraWeb.PartnerLive do
 
   def render(assigns) do
     ~H"""
-    <div class="bg-gray-950">
+    <div class="bg-gray-950 font-display">
       <main>
         <!-- Hero section -->
         <div class="relative isolate overflow-hidden">
