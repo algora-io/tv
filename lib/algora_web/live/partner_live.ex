@@ -90,7 +90,7 @@ defmodule AlgoraWeb.PartnerLive do
               <h2 class="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">
                 Influencer Marketing on Autopilot
               </h2>
-              <p class="mt-6 text-2xl leading-8 tracking-tight text-gray-300">
+              <p class="mt-6 text-xl sm:text-2xl leading-8 tracking-tight text-gray-300">
                 Distribute your ad creatives to the most engaged tech audience in-video and measure success with our comprehensive analytics
               </p>
             </div>
@@ -254,7 +254,7 @@ defmodule AlgoraWeb.PartnerLive do
               <h2 class="text-4xl font-bold tracking-tight text-white sm:text-5xl">Work With Us</h2>
               <div class="w-96 h-0.5 mx-auto my-4 bg-gradient-to-r from-[#120f22] via-purple-400 to-[#120f22]">
               </div>
-              <p class="mt-2 text-2xl tracking-tight leading-8 text-gray-300">
+              <p class="mt-2 text-xl sm:text-2xl tracking-tight leading-8 text-gray-300">
                 We only partner with 1-2 new clients per month. Your application reaches our CEO's inbox faster than the speed of light.
               </p>
             </div>
