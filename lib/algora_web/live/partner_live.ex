@@ -75,8 +75,8 @@ defmodule AlgoraWeb.PartnerLive do
             </div>
             <div class="mx-auto max-w-2xl xl:max-w-3xl aspect-[1456/756] w-full h-full flex-shrink-0 mt-12 flex lg:mt-6 xl:mt-0">
               <img
-                src={~p"/images/ads.png"}
-                alt="Ads Demo"
+                src={~p"/images/partner-demo.png"}
+                alt="Demo"
                 class="w-full h-full shrink-0 rounded-xl shadow-2xl ring-1 ring-white/10"
               />
             </div>
