@@ -6,8 +6,8 @@ defmodule AlgoraWeb.AdOverlayLive do
   alias Algora.Accounts
   alias Algora.Library
 
-  @ad_interval :timer.seconds(4)
-  @ad_display_duration :timer.seconds(2)
+  @ad_interval :timer.minutes(10)
+  @ad_display_duration :timer.seconds(10)
 
   def render(assigns) do
     ~H"""
