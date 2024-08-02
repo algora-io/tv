@@ -11,15 +11,13 @@ defmodule AlgoraWeb.AdOverlayLive do
 
   def render(assigns) do
     ~H"""
-    <div class={"w-[900px] aspect-[1022/150] overflow-hidden rounded-xl transition-opacity duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}>
-      <%= if @ad do %>
-        <img src={@ad.composite_asset_url} alt={@ad.website_url} />
-      <% else %>
-        <div class="w-full h-full bg-gray-800 flex items-center justify-center">
-          <p class="text-gray-400">No ad available</p>
-        </div>
-      <% end %>
-    </div>
+    <%= if @ad do %>
+      <img
+        src={@ad.composite_asset_url}
+        alt={@ad.website_url}
+        class={"box-content w-[1092px] h-[135px] object-cover border-[4px] border-[#62feb5] rounded-xl transition-opacity  duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}
+      />
+    <% end %>
     """
   end
 
