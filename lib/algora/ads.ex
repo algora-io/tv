@@ -37,6 +37,10 @@ defmodule Algora.Ads do
   """
   def get_ad!(id), do: Repo.get!(Ad, id)
 
+  def get_ad_by_slug!(slug) do
+    Repo.get_by!(Ad, slug: slug)
+  end
+
   @doc """
   Creates a ad.
 

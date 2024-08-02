@@ -82,7 +82,7 @@ defmodule AlgoraWeb.Router do
   scope "/", AlgoraWeb do
     pipe_through :browser
 
-    get "/promotions/:ad_id", AdRedirectController, :go
+    get "/go/:slug", AdRedirectController, :go
 
     delete "/auth/logout", OAuthCallbackController, :sign_out
 

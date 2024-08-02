@@ -3,6 +3,7 @@ defmodule Algora.Ads.Ad do
   import Ecto.Changeset
 
   schema "ads" do
+    field :slug, :string
     field :status, Ecto.Enum, values: [:inactive, :active]
     field :verified, :boolean, default: false
     field :website_url, :string
@@ -24,6 +25,7 @@ defmodule Algora.Ads.Ad do
   def changeset(ad, attrs) do
     ad
     |> cast(attrs, [
+      :slug,
       :verified,
       :website_url,
       :composite_asset_url,
@@ -38,6 +40,7 @@ defmodule Algora.Ads.Ad do
       :status
     ])
     |> validate_required([
+      :slug,
       :verified,
       :website_url,
       :composite_asset_url,
@@ -51,5 +54,6 @@ defmodule Algora.Ads.Ad do
       :tech_stack,
       :status
     ])
+    |> unique_constraint(:slug)
   end
 end

@@ -2,22 +2,14 @@ defmodule AlgoraWeb.AdRedirectController do
   use AlgoraWeb, :controller
   alias Algora.Ads
 
-  def go(conn, %{"ad_id" => ad_id}) do
-    case Integer.parse(ad_id) do
-      {id, ""} ->
-        ad = Ads.get_ad!(id)
+  def go(conn, %{"slug" => slug}) do
+    ad = Ads.get_ad_by_slug!(slug)
 
-        ## TODO: log errors
-        Ads.track_visit(%{ad_id: id})
+    ## TODO: log errors
+    Ads.track_visit(%{ad_id: ad.id})
 
-        conn
-        |> put_status(:found)
-        |> redirect(external: ad.website_url)
-
-      _ ->
-        conn
-        |> put_status(:bad_request)
-        |> json(%{error: "Invalid ad_id format"})
-    end
+    conn
+    |> put_status(:found)
+    |> redirect(external: ad.website_url)
   end
 end
