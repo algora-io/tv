@@ -117,4 +117,15 @@ defmodule Algora.Ads do
     |> Impression.changeset(attrs)
     |> Repo.insert()
   end
+
+  def next_ad_slot(time \\ DateTime.utc_now()) do
+    time
+    |> DateTime.truncate(:second)
+    |> DateTime.add(600 - rem(time.minute * 60 + time.second, 600), :second)
+  end
+
+  def time_until_next_ad_slot(time \\ DateTime.utc_now()) do
+    next_ad_slot(time)
+    |> DateTime.diff(time, :millisecond)
+  end
 end

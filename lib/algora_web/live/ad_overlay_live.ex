@@ -3,10 +3,8 @@ defmodule AlgoraWeb.AdOverlayLive do
   require Logger
 
   alias AlgoraWeb.{LayoutComponent, Presence}
-  alias Algora.Accounts
-  alias Algora.Library
+  alias Algora.{Accounts, Library, Ads}
 
-  @ad_interval :timer.minutes(10)
   @ad_display_duration :timer.seconds(10)
 
   def render(assigns) do
@@ -29,7 +27,7 @@ defmodule AlgoraWeb.AdOverlayLive do
     ad = Algora.Ads.list_ads() |> List.first()
 
     if connected?(socket) do
-      schedule_ad_toggle(@ad_interval)
+      schedule_next_ad()
     end
 
     {:ok,
@@ -46,11 +44,11 @@ defmodule AlgoraWeb.AdOverlayLive do
 
   def handle_info(:toggle_ad, socket) do
     if socket.assigns.show_ad do
-      schedule_ad_toggle(@ad_interval)
+      schedule_next_ad()
       {:noreply, assign(socket, :show_ad, false)}
     else
       track_impressions(socket.assigns.ad, socket.assigns.channel.handle)
-      schedule_ad_toggle(@ad_display_duration)
+      Process.send_after(self(), :toggle_ad, @ad_display_duration)
       {:noreply, assign(socket, :show_ad, true)}
     end
   end
@@ -65,8 +63,8 @@ defmodule AlgoraWeb.AdOverlayLive do
     |> assign(:page_description, "Watch #{channel_name} on Algora TV")
   end
 
-  defp schedule_ad_toggle(interval) do
-    Process.send_after(self(), :toggle_ad, interval)
+  defp schedule_next_ad do
+    Process.send_after(self(), :toggle_ad, Ads.time_until_next_ad_slot())
   end
 
   defp track_impressions(nil, _channel_handle), do: :ok
