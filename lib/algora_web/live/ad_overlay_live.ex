@@ -19,7 +19,7 @@ defmodule AlgoraWeb.AdOverlayLive do
     """
   end
 
-  def mount(%{"channel_handle" => channel_handle}, _session, socket) do
+  def mount(%{"channel_handle" => channel_handle} = params, _session, socket) do
     channel =
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
@@ -34,7 +34,8 @@ defmodule AlgoraWeb.AdOverlayLive do
      socket
      |> assign(:channel, channel)
      |> assign(:ad, ad)
-     |> assign(:show_ad, false)}
+     |> assign(:show_ad, Map.has_key?(params, "test"))
+     |> assign(:test_mode, Map.has_key?(params, "test"))}
   end
 
   def handle_params(params, _url, socket) do
@@ -42,14 +43,18 @@ defmodule AlgoraWeb.AdOverlayLive do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
+  def handle_info(:toggle_ad, %{assigns: %{test_mode: true}} = socket), do: {:noreply, socket}
+
   def handle_info(:toggle_ad, socket) do
-    if socket.assigns.show_ad do
-      schedule_next_ad()
-      {:noreply, assign(socket, :show_ad, false)}
-    else
-      track_impressions(socket.assigns.ad, socket.assigns.channel.handle)
-      Process.send_after(self(), :toggle_ad, @ad_display_duration)
-      {:noreply, assign(socket, :show_ad, true)}
+    case socket.assigns.show_ad do
+      true ->
+        schedule_next_ad()
+        {:noreply, assign(socket, :show_ad, false)}
+
+      false ->
+        track_impressions(socket.assigns.ad, socket.assigns.channel.handle)
+        Process.send_after(self(), :toggle_ad, @ad_display_duration)
+        {:noreply, assign(socket, :show_ad, true)}
     end
   end
 
