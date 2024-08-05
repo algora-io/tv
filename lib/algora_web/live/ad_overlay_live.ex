@@ -98,7 +98,7 @@ defmodule AlgoraWeb.AdOverlayLive do
 
   defp get_current_ad_index(ads) do
     :os.system_time(:millisecond)
-    |> div(:timer.seconds(Ads.interval_seconds()))
+    |> div(Ads.rotation_interval())
     |> rem(length(ads))
   end
 

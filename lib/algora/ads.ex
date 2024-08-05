@@ -8,6 +8,9 @@ defmodule Algora.Ads do
 
   alias Algora.Ads.{Ad, Visit, Impression}
 
+  def display_duration, do: :timer.seconds(10)
+  def rotation_interval, do: :timer.minutes(10)
+
   @doc """
   Returns the list of ads.
 
@@ -120,19 +123,15 @@ defmodule Algora.Ads do
 
   def next_ad_slot(time \\ DateTime.utc_now()) do
     time
-    |> DateTime.truncate(:second)
-    |> DateTime.add(seconds_until_next_slot(time), :second)
+    |> DateTime.truncate(:millisecond)
+    |> DateTime.add(ms_until_next_slot(time), :millisecond)
   end
 
   def time_until_next_ad_slot(time \\ DateTime.utc_now()) do
     DateTime.diff(next_ad_slot(time), time, :millisecond)
   end
 
-  def interval_seconds, do: 10 * 60
-
-  def display_duration, do: :timer.seconds(10)
-
-  defp seconds_until_next_slot(time) do
-    interval_seconds() - rem(time.minute * 60 + time.second, interval_seconds())
+  defp ms_until_next_slot(time) do
+    rotation_interval() - rem(DateTime.to_unix(time, :millisecond), rotation_interval())
   end
 end
