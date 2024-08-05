@@ -1,5 +1,5 @@
-<.header>
-  Listing Ads
+<.header class="pl-4 pr-6">
+  Active Ads
   <:actions>
     <.link patch={~p"/ads/new"}>
       <.button>New Ad</.button>
@@ -8,18 +8,38 @@
 </.header>
 
 <.table id="ads" rows={@streams.ads} row_click={fn {_id, ad} -> JS.navigate(~p"/ads/#{ad}") end}>
-  <:col :let={{_id, ad}} label="Verified"><%= ad.verified %></:col>
-  <:col :let={{_id, ad}} label="Website url"><%= ad.website_url %></:col>
-  <:col :let={{_id, ad}} label="Composite asset url"><%= ad.composite_asset_url %></:col>
-  <:col :let={{_id, ad}} label="Asset url"><%= ad.asset_url %></:col>
-  <:col :let={{_id, ad}} label="Logo url"><%= ad.logo_url %></:col>
-  <:col :let={{_id, ad}} label="Qrcode url"><%= ad.qrcode_url %></:col>
-  <:col :let={{_id, ad}} label="Start date"><%= ad.start_date %></:col>
-  <:col :let={{_id, ad}} label="End date"><%= ad.end_date %></:col>
-  <:col :let={{_id, ad}} label="Total budget"><%= ad.total_budget %></:col>
-  <:col :let={{_id, ad}} label="Daily budget"><%= ad.daily_budget %></:col>
-  <:col :let={{_id, ad}} label="Tech stack"><%= ad.tech_stack %></:col>
-  <:col :let={{_id, ad}} label="Status"><%= ad.status %></:col>
+  <:col :let={{_id, ad}} label="">
+    <a href={ad.website_url} rel="noopener noreferrer" class="flex mb-3 font-medium">
+      <div class="flex justify-between w-[1092px]">
+        <div class="text-base text-gray-200">
+          <%= String.replace(ad.website_url, ~r/^https?:\/\//, "") %>
+        </div>
+        <div class="flex items-center gap-1 text-base text-gray-300">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-4 w-4"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M7 17l0 .01" /><path d="M14 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M7 7l0 .01" /><path d="M4 14m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M17 7l0 .01" /><path d="M14 14l3 0" /><path d="M20 14l0 .01" /><path d="M14 14l0 3" /><path d="M14 20l3 0" /><path d="M17 17l3 0" /><path d="M20 17l0 3" />
+          </svg>
+          algora.tv/go/<%= ad.slug %>
+        </div>
+      </div>
+    </a>
+    <img
+      src={ad.composite_asset_url}
+      alt={ad.website_url}
+      class="box-content w-[1092px] h-[135px] object-cover border-[4px] rounded-xl transition-opacity duration-1000"
+      style={"border-color: #{ad.border_color || "#fff"}"}
+    />
+  </:col>
   <:action :let={{_id, ad}}>
     <div class="sr-only">
       <.link navigate={~p"/ads/#{ad}"}>Show</.link>
