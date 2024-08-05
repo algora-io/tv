@@ -8,7 +8,7 @@ defmodule Algora.Ads do
 
   alias Algora.Ads.{Ad, Visit, Impression}
 
-  def display_duration, do: :timer.seconds(10)
+  def display_duration, do: :timer.seconds(20)
   def rotation_interval, do: :timer.minutes(10)
 
   @doc """
