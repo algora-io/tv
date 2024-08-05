@@ -8,11 +8,18 @@ defmodule AlgoraWeb.AdOverlayLive do
   def render(assigns) do
     ~H"""
     <%= if @ads && length(@ads) > 0 do %>
-      <img
-        src={@current_ad.composite_asset_url}
-        alt={@current_ad.website_url}
-        class={"box-content w-[1092px] h-[135px] object-cover border-[4px] border-[#62feb5] rounded-xl transition-opacity  duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}
-      />
+      <div class="relative">
+        <img
+          src={@current_ad.composite_asset_url}
+          alt={@current_ad.website_url}
+          class={"box-content w-[1092px] h-[135px] object-cover border-[4px] border-[#62feb5] rounded-xl transition-opacity duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}
+        />
+        <img
+          src={@next_ad.composite_asset_url}
+          alt={@next_ad.website_url}
+          class="absolute top-0 left-0 opacity-0 pointer-events-none"
+        />
+      </div>
     <% end %>
     """
   end
@@ -25,6 +32,7 @@ defmodule AlgoraWeb.AdOverlayLive do
     ads = Ads.list_ads()
     current_ad_index = get_current_ad_index(ads)
     current_ad = Enum.at(ads, current_ad_index)
+    {next_ad, next_index} = get_next_ad(ads, current_ad_index)
 
     if connected?(socket) do
       schedule_next_ad()
@@ -36,6 +44,8 @@ defmodule AlgoraWeb.AdOverlayLive do
      |> assign(:ads, ads)
      |> assign(:current_ad_index, current_ad_index)
      |> assign(:current_ad, current_ad)
+     |> assign(:next_ad, next_ad)
+     |> assign(:next_ad_index, next_index)
      |> assign(:show_ad, Map.has_key?(params, "test"))
      |> assign(:test_mode, Map.has_key?(params, "test"))}
   end
@@ -54,15 +64,19 @@ defmodule AlgoraWeb.AdOverlayLive do
         {:noreply, assign(socket, :show_ad, false)}
 
       false ->
-        {next_ad, next_index} = get_next_ad(socket.assigns.ads, socket.assigns.current_ad_index)
-        track_impressions(next_ad, socket.assigns.channel.handle)
+        track_impressions(socket.assigns.next_ad, socket.assigns.channel.handle)
         Process.send_after(self(), :toggle_ad, Ads.display_duration())
+
+        {new_next_ad, new_next_index} =
+          get_next_ad(socket.assigns.ads, socket.assigns.next_ad_index)
 
         {:noreply,
          socket
          |> assign(:show_ad, true)
-         |> assign(:current_ad_index, next_index)
-         |> assign(:current_ad, next_ad)}
+         |> assign(:current_ad, socket.assigns.next_ad)
+         |> assign(:current_ad_index, socket.assigns.next_ad_index)
+         |> assign(:next_ad, new_next_ad)
+         |> assign(:next_ad_index, new_next_index)}
     end
   end
 
