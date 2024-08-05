@@ -86,6 +86,11 @@ defmodule AlgoraWeb.Router do
 
     delete "/auth/logout", OAuthCallbackController, :sign_out
 
+    live_session :schedule,
+      on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
+      live "/ads/schedule", AdLive.Schedule, :schedule
+    end
+
     live_session :admin,
       on_mount: [
         {AlgoraWeb.UserAuth, :ensure_authenticated},
