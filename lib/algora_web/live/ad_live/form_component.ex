@@ -7,7 +7,7 @@ defmodule AlgoraWeb.AdLive.FormComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.header>
+      <.header class="mb-8">
         <%= @title %>
         <:subtitle>Use this form to manage ad records in your database.</:subtitle>
       </.header>
@@ -19,30 +19,15 @@ defmodule AlgoraWeb.AdLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:verified]} type="checkbox" label="Verified" />
-        <.input field={@form[:website_url]} type="text" label="Website url" />
-        <.input field={@form[:composite_asset_url]} type="text" label="Composite asset url" />
-        <.input field={@form[:asset_url]} type="text" label="Asset url" />
-        <.input field={@form[:logo_url]} type="text" label="Logo url" />
-        <.input field={@form[:qrcode_url]} type="text" label="Qrcode url" />
-        <.input field={@form[:start_date]} type="datetime-local" label="Start date" />
-        <.input field={@form[:end_date]} type="datetime-local" label="End date" />
-        <.input field={@form[:total_budget]} type="number" label="Total budget" />
-        <.input field={@form[:daily_budget]} type="number" label="Daily budget" />
-        <.input
-          field={@form[:tech_stack]}
-          type="select"
-          multiple
-          label="Tech stack"
-          options={[{"Option 1", "option1"}, {"Option 2", "option2"}]}
-        />
-        <.input
-          field={@form[:status]}
-          type="select"
-          label="Status"
-          prompt="Choose a value"
-          options={Ecto.Enum.values(Algora.Ads.Ad, :status)}
-        />
+        <div class="relative">
+          <div class="absolute text-sm start-0 flex items-center ps-3 top-10 mt-px pointer-events-none text-gray-400">
+            tv.algora.io/go/
+          </div>
+          <.input field={@form[:slug]} type="text" label="QR Code URL" class="ps-[6.75rem]" />
+        </div>
+        <.input field={@form[:website_url]} type="text" label="Website URL" />
+        <.input field={@form[:composite_asset_url]} type="text" label="Asset URL" />
+        <.input field={@form[:border_color]} type="text" label="Border color" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Ad</.button>
         </:actions>
