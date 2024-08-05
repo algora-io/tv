@@ -6,7 +6,27 @@ defmodule AlgoraWeb.AdLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :ads, Ads.list_ads())}
+    if connected?(socket) do
+      schedule_next_rotation()
+    end
+
+    next_slot = Ads.next_slot()
+
+    ads =
+      Ads.list_ads()
+      |> Ads.rotate_ads()
+      |> Enum.with_index()
+      |> Enum.map(fn {ad, index} ->
+        %{
+          ad
+          | scheduled_for: DateTime.add(next_slot, index * Ads.rotation_interval(), :millisecond)
+        }
+      end)
+
+    {:ok,
+     socket
+     |> stream(:ads, ads)
+     |> assign(:next_slot, Ads.next_slot())}
   end
 
   @impl true
@@ -38,11 +58,38 @@ defmodule AlgoraWeb.AdLive.Index do
   end
 
   @impl true
+  def handle_info(:rotate_ads, socket) do
+    schedule_next_rotation()
+
+    next_slot = Ads.next_slot()
+
+    rotated_ads =
+      socket.assigns.ads
+      |> Ads.rotate_ads(1)
+      |> Enum.with_index()
+      |> Enum.map(fn {ad, index} ->
+        %{
+          ad
+          | scheduled_for: DateTime.add(next_slot, index * Ads.rotation_interval(), :millisecond)
+        }
+      end)
+
+    {:noreply,
+     socket
+     |> stream(:ads, rotated_ads)
+     |> assign(:next_slot, Ads.next_slot())}
+  end
+
+  @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     ad = Ads.get_ad!(id)
     {:ok, _} = Ads.delete_ad(ad)
     Ads.broadcast_ad_deleted!(ad)
 
     {:noreply, stream_delete(socket, :ads, ad)}
+  end
+
+  defp schedule_next_rotation do
+    Process.send_after(self(), :rotate_ads, Ads.time_until_next_slot())
   end
 end

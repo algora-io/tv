@@ -18,6 +18,7 @@ defmodule Algora.Ads.Ad do
     field :tech_stack, {:array, :string}
     field :user_id, :id
     field :border_color, :string
+    field :scheduled_for, :utc_datetime, virtual: true
 
     timestamps()
   end

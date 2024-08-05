@@ -158,6 +158,11 @@ defmodule Algora.Ads do
     |> rem(length(ads))
   end
 
+  def rotate_ads(ads, index \\ nil) do
+    index = index || get_current_index(ads)
+    Enum.concat(Enum.drop(ads, index), Enum.take(ads, index))
+  end
+
   def next_slot(time \\ DateTime.utc_now()) do
     time
     |> DateTime.truncate(:millisecond)
