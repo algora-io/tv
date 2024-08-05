@@ -27,7 +27,12 @@ defmodule AlgoraWeb.AdLive.FormComponent do
         </div>
         <.input field={@form[:website_url]} type="text" label="Website URL" />
         <.input field={@form[:composite_asset_url]} type="text" label="Asset URL" />
-        <.input field={@form[:border_color]} type="text" label="Border color" />
+        <.input
+          field={@form[:border_color]}
+          type="text"
+          label="Border color"
+          style={"color: #{valid_color(@form[:border_color].value)}"}
+        />
         <:actions>
           <.button phx-disable-with="Saving...">Save Ad</.button>
         </:actions>
@@ -95,4 +100,12 @@ defmodule AlgoraWeb.AdLive.FormComponent do
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  defp valid_color(color) do
+    if is_valid_hex_color?(color), do: color, else: "inherit"
+  end
+
+  defp is_valid_hex_color?(color) do
+    color =~ ~r/^#([0-9A-F]{3}){1,2}$/i
+  end
 end
