@@ -36,6 +36,7 @@ defmodule AlgoraWeb.AdOverlayLive do
     {next_ad, next_index} = get_next_ad(ads, current_ad_index)
 
     if connected?(socket) do
+      Ads.subscribe_to_ads()
       schedule_next_ad()
     end
 
