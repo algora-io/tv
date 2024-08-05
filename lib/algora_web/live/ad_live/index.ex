@@ -15,7 +15,7 @@ defmodule AlgoraWeb.AdLive.Index do
     ads =
       Ads.list_ads()
       |> Ads.rotate_ads()
-      |> Enum.with_index()
+      |> Enum.with_index(-1)
       |> Enum.map(fn {ad, index} ->
         %{
           ad
@@ -66,7 +66,7 @@ defmodule AlgoraWeb.AdLive.Index do
     rotated_ads =
       socket.assigns.ads
       |> Ads.rotate_ads(1)
-      |> Enum.with_index()
+      |> Enum.with_index(-1)
       |> Enum.map(fn {ad, index} ->
         %{
           ad

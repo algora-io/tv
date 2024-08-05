@@ -15,7 +15,7 @@
           <%= String.replace(ad.website_url, ~r/^https?:\/\//, "") %>
         </div>
         <div class="mx-auto font-mono text-gray-200">
-          <%= Calendar.strftime(ad.scheduled_for, "%I:%M:%S %p") %>
+          <%= Calendar.strftime(ad.scheduled_for, "%I:%M:%S %p UTC") %>
         </div>
         <div class="ml-auto flex items-center gap-1 text-base text-gray-300">
           <svg
