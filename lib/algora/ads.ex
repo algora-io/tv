@@ -8,8 +8,6 @@ defmodule Algora.Ads do
 
   alias Algora.Ads.{Ad, Visit, Impression}
 
-  @ad_interval_seconds 10 * 60
-
   @doc """
   Returns the list of ads.
 
@@ -130,7 +128,11 @@ defmodule Algora.Ads do
     DateTime.diff(next_ad_slot(time), time, :millisecond)
   end
 
+  def interval_seconds, do: 10 * 60
+
+  def display_duration, do: :timer.seconds(10)
+
   defp seconds_until_next_slot(time) do
-    @ad_interval_seconds - rem(time.minute * 60 + time.second, @ad_interval_seconds)
+    interval_seconds() - rem(time.minute * 60 + time.second, interval_seconds())
   end
 end

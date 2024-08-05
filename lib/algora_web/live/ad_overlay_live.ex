@@ -5,14 +5,12 @@ defmodule AlgoraWeb.AdOverlayLive do
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias Algora.{Accounts, Library, Ads}
 
-  @ad_display_duration :timer.seconds(10)
-
   def render(assigns) do
     ~H"""
-    <%= if @ad do %>
+    <%= if @ads && length(@ads) > 0 do %>
       <img
-        src={@ad.composite_asset_url}
-        alt={@ad.website_url}
+        src={@current_ad.composite_asset_url}
+        alt={@current_ad.website_url}
         class={"box-content w-[1092px] h-[135px] object-cover border-[4px] border-[#62feb5] rounded-xl transition-opacity  duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}
       />
     <% end %>
@@ -24,7 +22,9 @@ defmodule AlgoraWeb.AdOverlayLive do
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
 
-    ad = Algora.Ads.list_ads() |> List.first()
+    ads = Ads.list_ads()
+    current_ad_index = get_current_ad_index(ads)
+    current_ad = Enum.at(ads, current_ad_index)
 
     if connected?(socket) do
       schedule_next_ad()
@@ -33,7 +33,9 @@ defmodule AlgoraWeb.AdOverlayLive do
     {:ok,
      socket
      |> assign(:channel, channel)
-     |> assign(:ad, ad)
+     |> assign(:ads, ads)
+     |> assign(:current_ad_index, current_ad_index)
+     |> assign(:current_ad, current_ad)
      |> assign(:show_ad, Map.has_key?(params, "test"))
      |> assign(:test_mode, Map.has_key?(params, "test"))}
   end
@@ -52,9 +54,15 @@ defmodule AlgoraWeb.AdOverlayLive do
         {:noreply, assign(socket, :show_ad, false)}
 
       false ->
-        track_impressions(socket.assigns.ad, socket.assigns.channel.handle)
-        Process.send_after(self(), :toggle_ad, @ad_display_duration)
-        {:noreply, assign(socket, :show_ad, true)}
+        {next_ad, next_index} = get_next_ad(socket.assigns.ads, socket.assigns.current_ad_index)
+        track_impressions(next_ad, socket.assigns.channel.handle)
+        Process.send_after(self(), :toggle_ad, Ads.display_duration())
+
+        {:noreply,
+         socket
+         |> assign(:show_ad, true)
+         |> assign(:current_ad_index, next_index)
+         |> assign(:current_ad, next_ad)}
     end
   end
 
@@ -81,10 +89,21 @@ defmodule AlgoraWeb.AdOverlayLive do
       |> Enum.filter(fn meta -> meta.id != channel_handle end)
       |> length()
 
-    Algora.Ads.track_impressions(%{
+    Ads.track_impressions(%{
       ad_id: ad.id,
-      duration: @ad_display_duration,
+      duration: Ads.display_duration(),
       viewers_count: viewers_count
     })
+  end
+
+  defp get_current_ad_index(ads) do
+    :os.system_time(:millisecond)
+    |> div(:timer.seconds(Ads.interval_seconds()))
+    |> rem(length(ads))
+  end
+
+  defp get_next_ad(ads, current_index) do
+    next_index = rem(current_index + 1, length(ads))
+    {Enum.at(ads, next_index), next_index}
   end
 end
