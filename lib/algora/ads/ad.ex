@@ -56,7 +56,7 @@ defmodule Algora.Ads.Ad do
       :tech_stack,
       :status
     ])
-    |> validate_format(:border_color, ~r/^#[0-9A-Fa-f]{6}$/,
+    |> validate_format(:border_color, ~r/^#([0-9A-F]{3}){1,2}$/i,
       message: "must be a valid hex color code"
     )
     |> unique_constraint(:slug)
