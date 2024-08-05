@@ -152,14 +152,20 @@ defmodule Algora.Ads do
     |> Repo.insert()
   end
 
-  def next_ad_slot(time \\ DateTime.utc_now()) do
+  def get_current_index(ads) do
+    :os.system_time(:millisecond)
+    |> div(rotation_interval())
+    |> rem(length(ads))
+  end
+
+  def next_slot(time \\ DateTime.utc_now()) do
     time
     |> DateTime.truncate(:millisecond)
     |> DateTime.add(ms_until_next_slot(time), :millisecond)
   end
 
-  def time_until_next_ad_slot(time \\ DateTime.utc_now()) do
-    DateTime.diff(next_ad_slot(time), time, :millisecond)
+  def time_until_next_slot(time \\ DateTime.utc_now()) do
+    DateTime.diff(next_slot(time), time, :millisecond)
   end
 
   defp ms_until_next_slot(time) do

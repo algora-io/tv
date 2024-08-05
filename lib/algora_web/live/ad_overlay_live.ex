@@ -31,7 +31,7 @@ defmodule AlgoraWeb.AdOverlayLive do
       |> Library.get_channel!()
 
     ads = Ads.list_ads()
-    current_ad_index = get_current_ad_index(ads)
+    current_ad_index = Ads.get_current_index(ads)
     current_ad = Enum.at(ads, current_ad_index)
     {next_ad, next_index} = get_next_ad(ads, current_ad_index)
 
@@ -105,7 +105,7 @@ defmodule AlgoraWeb.AdOverlayLive do
   end
 
   defp schedule_next_ad do
-    Process.send_after(self(), :toggle_ad, Ads.time_until_next_ad_slot())
+    Process.send_after(self(), :toggle_ad, Ads.time_until_next_slot())
   end
 
   defp track_impressions(nil, _channel_handle), do: :ok
@@ -124,12 +124,6 @@ defmodule AlgoraWeb.AdOverlayLive do
     })
   end
 
-  defp get_current_ad_index(ads) do
-    :os.system_time(:millisecond)
-    |> div(Ads.rotation_interval())
-    |> rem(length(ads))
-  end
-
   defp get_next_ad(ads, current_index) do
     next_index = rem(current_index + 1, length(ads))
     {Enum.at(ads, next_index), next_index}
@@ -137,7 +131,7 @@ defmodule AlgoraWeb.AdOverlayLive do
 
   defp update_ads_state(socket) do
     ads = Ads.list_ads()
-    current_ad_index = get_current_ad_index(ads)
+    current_ad_index = Ads.get_current_index(ads)
     current_ad = Enum.at(ads, current_ad_index)
     {next_ad, next_index} = get_next_ad(ads, current_ad_index)
 
