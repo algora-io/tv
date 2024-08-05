@@ -43,18 +43,9 @@ defmodule Algora.Ads.Ad do
     ])
     |> validate_required([
       :slug,
-      :verified,
       :website_url,
       :composite_asset_url,
-      :asset_url,
-      :logo_url,
-      :qrcode_url,
-      :start_date,
-      :end_date,
-      :total_budget,
-      :daily_budget,
-      :tech_stack,
-      :status
+      :border_color
     ])
     |> validate_format(:border_color, ~r/^#([0-9A-F]{3}){1,2}$/i,
       message: "must be a valid hex color code"

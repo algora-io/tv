@@ -107,7 +107,7 @@ defmodule AlgoraWeb.AdLive.FormComponent do
     if is_valid_hex_color?(color), do: color, else: "inherit"
   end
 
-  defp is_valid_hex_color?(color) do
-    color =~ ~r/^#([0-9A-F]{3}){1,2}$/i
-  end
+  defp is_valid_hex_color?(nil), do: false
+
+  defp is_valid_hex_color?(color), do: color =~ ~r/^#([0-9A-F]{3}){1,2}$/i
 end

@@ -88,7 +88,7 @@ defmodule Algora.Ads do
 
   """
   def create_ad(attrs \\ %{}) do
-    %Ad{}
+    %Ad{status: :active, verified: true}
     |> Ad.changeset(attrs)
     |> Repo.insert()
   end
