@@ -49,7 +49,10 @@ defmodule Algora.Ads do
 
   """
   def list_ads do
-    Repo.all(Ad)
+    Ad
+    |> where(verified: true, status: :active)
+    |> order_by(asc: :id)
+    |> Repo.all()
   end
 
   @doc """
