@@ -12,7 +12,8 @@ defmodule AlgoraWeb.AdOverlayLive do
         <img
           src={@current_ad.composite_asset_url}
           alt={@current_ad.website_url}
-          class={"box-content w-[1092px] h-[135px] object-cover border-[4px] border-[#62feb5] rounded-xl transition-opacity duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}
+          class={"box-content w-[1092px] h-[135px] object-cover border-[4px] rounded-xl transition-opacity duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}
+          style={"border-color: #{@current_ad.border_color || "#fff"}"}
         />
         <img
           src={@next_ad.composite_asset_url}

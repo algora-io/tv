@@ -17,6 +17,7 @@ defmodule Algora.Ads.Ad do
     field :daily_budget, :integer
     field :tech_stack, {:array, :string}
     field :user_id, :id
+    field :border_color, :string
 
     timestamps()
   end
@@ -37,7 +38,8 @@ defmodule Algora.Ads.Ad do
       :total_budget,
       :daily_budget,
       :tech_stack,
-      :status
+      :status,
+      :border_color
     ])
     |> validate_required([
       :slug,
@@ -54,6 +56,9 @@ defmodule Algora.Ads.Ad do
       :tech_stack,
       :status
     ])
+    |> validate_format(:border_color, ~r/^#[0-9A-Fa-f]{6}$/,
+      message: "must be a valid hex color code"
+    )
     |> unique_constraint(:slug)
   end
 end
