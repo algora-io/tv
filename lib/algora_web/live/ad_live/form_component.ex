@@ -69,6 +69,7 @@ defmodule AlgoraWeb.AdLive.FormComponent do
     case Ads.update_ad(socket.assigns.ad, ad_params) do
       {:ok, ad} ->
         notify_parent({:saved, ad})
+        Ads.broadcast_ad_updated!(ad)
 
         {:noreply,
          socket
@@ -84,6 +85,7 @@ defmodule AlgoraWeb.AdLive.FormComponent do
     case Ads.create_ad(ad_params) do
       {:ok, ad} ->
         notify_parent({:saved, ad})
+        Ads.broadcast_ad_created!(ad)
 
         {:noreply,
          socket

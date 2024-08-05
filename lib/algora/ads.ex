@@ -6,10 +6,38 @@ defmodule Algora.Ads do
   import Ecto.Query, warn: false
   alias Algora.Repo
 
-  alias Algora.Ads.{Ad, Visit, Impression}
+  alias Algora.Ads.{Ad, Visit, Impression, Events}
+
+  @pubsub Algora.PubSub
 
   def display_duration, do: :timer.seconds(20)
   def rotation_interval, do: :timer.minutes(10)
+
+  def unsubscribe_to_ads() do
+    Phoenix.PubSub.unsubscribe(@pubsub, topic())
+  end
+
+  def subscribe_to_ads() do
+    Phoenix.PubSub.subscribe(@pubsub, topic())
+  end
+
+  defp topic(), do: "ads"
+
+  defp broadcast!(topic, msg) do
+    Phoenix.PubSub.broadcast!(@pubsub, topic, {__MODULE__, msg})
+  end
+
+  def broadcast_ad_created!(ad) do
+    broadcast!(topic(), %Events.AdCreated{ad: ad})
+  end
+
+  def broadcast_ad_updated!(ad) do
+    broadcast!(topic(), %Events.AdUpdated{ad: ad})
+  end
+
+  def broadcast_ad_deleted!(ad) do
+    broadcast!(topic(), %Events.AdDeleted{ad: ad})
+  end
 
   @doc """
   Returns the list of ads.

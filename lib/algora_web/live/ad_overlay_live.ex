@@ -81,6 +81,18 @@ defmodule AlgoraWeb.AdOverlayLive do
     end
   end
 
+  def handle_info({Ads, %Ads.Events.AdCreated{}}, socket) do
+    update_ads_state(socket)
+  end
+
+  def handle_info({Ads, %Ads.Events.AdDeleted{}}, socket) do
+    update_ads_state(socket)
+  end
+
+  def handle_info({Ads, %Ads.Events.AdUpdated{}}, socket) do
+    update_ads_state(socket)
+  end
+
   def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :show, params) do
@@ -120,5 +132,20 @@ defmodule AlgoraWeb.AdOverlayLive do
   defp get_next_ad(ads, current_index) do
     next_index = rem(current_index + 1, length(ads))
     {Enum.at(ads, next_index), next_index}
+  end
+
+  defp update_ads_state(socket) do
+    ads = Ads.list_ads()
+    current_ad_index = get_current_ad_index(ads)
+    current_ad = Enum.at(ads, current_ad_index)
+    {next_ad, next_index} = get_next_ad(ads, current_ad_index)
+
+    {:noreply,
+     socket
+     |> assign(:ads, ads)
+     |> assign(:current_ad_index, current_ad_index)
+     |> assign(:current_ad, current_ad)
+     |> assign(:next_ad, next_ad)
+     |> assign(:next_ad_index, next_index)}
   end
 end

@@ -41,6 +41,7 @@ defmodule AlgoraWeb.AdLive.Index do
   def handle_event("delete", %{"id" => id}, socket) do
     ad = Ads.get_ad!(id)
     {:ok, _} = Ads.delete_ad(ad)
+    Ads.broadcast_ad_deleted!(ad)
 
     {:noreply, stream_delete(socket, :ads, ad)}
   end
