@@ -106,6 +106,8 @@ defmodule AlgoraWeb.Router do
       live "/ads/:id", AdLive.Show, :show
       live "/ads/:id/show/edit", AdLive.Show, :edit
       live "/ads/:id/analytics", AdLive.Analytics, :show
+
+      live "/admin/content", ContentLive, :show
     end
 
     live_session :authenticated,
@@ -135,7 +137,6 @@ defmodule AlgoraWeb.Router do
       live "/shows/:slug/edit", ShowLive.Show, :edit
 
       live "/:channel_handle", ChannelLive, :show
-      live "/:channel_handle/content", ContentLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
 
       get "/shows/:slug/event.ics", ShowCalendarController, :export
