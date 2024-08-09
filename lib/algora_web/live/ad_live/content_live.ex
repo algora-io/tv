@@ -39,8 +39,8 @@ defmodule AlgoraWeb.ContentLive do
             <thead>
               <tr>
                 <th class="text-sm px-6 py-3 text-left">Ad</th>
-                <th class="text-sm px-6 py-3 text-left">Airtime</th>
-                <th class="text-sm px-6 py-3 text-left">Clip</th>
+                <th class="text-sm px-6 py-3 text-right">Airtime</th>
+                <th class="text-sm px-6 py-3 text-right">Blurp</th>
                 <th class="text-sm px-6 py-3 text-left">Thumbnail</th>
               </tr>
             </thead>
@@ -49,14 +49,14 @@ defmodule AlgoraWeb.ContentLive do
                 <% ad = Ads.get_ad!(ad_id) %>
                 <tr>
                   <td class="text-sm px-6 py-3"><%= ad.slug %></td>
-                  <td class="text-sm px-6 py-3">
+                  <td class="text-sm px-6 py-3 text-right tabular-nums">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.appearances, &(&1.ad_id == ad_id)),
                       ", ",
                       &Library.to_hhmmss(&1.airtime)
                     ) %>
                   </td>
-                  <td class="text-sm px-6 py-3">
+                  <td class="text-sm px-6 py-3 text-right tabular-nums">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
