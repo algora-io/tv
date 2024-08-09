@@ -135,6 +135,7 @@ defmodule AlgoraWeb.Router do
       live "/shows/:slug/edit", ShowLive.Show, :edit
 
       live "/:channel_handle", ChannelLive, :show
+      live "/:channel_handle/content", ContentLive, :show
       live "/:channel_handle/:video_id", VideoLive, :show
 
       get "/shows/:slug/event.ics", ShowCalendarController, :export

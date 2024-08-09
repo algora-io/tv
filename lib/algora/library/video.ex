@@ -7,6 +7,7 @@ defmodule Algora.Library.Video do
   alias Algora.Library.Video
   alias Algora.Shows.Show
   alias Algora.Chat.Message
+  alias Algora.Ads.{Appearance, ContentMetrics, ProductReview}
 
   @type t() :: %__MODULE__{}
 
@@ -37,6 +38,9 @@ defmodule Algora.Library.Video do
     belongs_to :transmuxed_from, Video
 
     has_many :messages, Message
+    has_many :appearances, Appearance
+    has_many :content_metrics, ContentMetrics
+    has_many :product_reviews, ProductReview
 
     timestamps()
   end

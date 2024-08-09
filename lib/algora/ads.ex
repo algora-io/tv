@@ -6,7 +6,7 @@ defmodule Algora.Ads do
   import Ecto.Query, warn: false
   alias Algora.Repo
 
-  alias Algora.Ads.{Ad, Visit, Impression, Events}
+  alias Algora.Ads.{Ad, Visit, Impression, Events, ContentMetrics, Appearance, ProductReview}
 
   @pubsub Algora.PubSub
 
@@ -175,5 +175,40 @@ defmodule Algora.Ads do
 
   defp ms_until_next_slot(time) do
     rotation_interval() - rem(DateTime.to_unix(time, :millisecond), rotation_interval())
+  end
+
+  def list_content_metrics do
+    Repo.all(ContentMetrics)
+    |> Repo.preload(video: [:appearances, :product_reviews])
+  end
+
+  def create_content_metrics(attrs \\ %{}) do
+    %ContentMetrics{}
+    |> ContentMetrics.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def change_content_metrics(%ContentMetrics{} = content_metrics, attrs \\ %{}) do
+    ContentMetrics.changeset(content_metrics, attrs)
+  end
+
+  def create_appearance(attrs \\ %{}) do
+    %Appearance{}
+    |> Appearance.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def change_appearance(%Appearance{} = appearance, attrs \\ %{}) do
+    Appearance.changeset(appearance, attrs)
+  end
+
+  def create_product_review(attrs \\ %{}) do
+    %ProductReview{}
+    |> ProductReview.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def change_product_review(%ProductReview{} = product_review, attrs \\ %{}) do
+    ProductReview.changeset(product_review, attrs)
   end
 end
