@@ -26,44 +26,44 @@ defmodule AlgoraWeb.ContentLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-5xl mx-auto space-y-8 p-8">
+    <div class="max-w-5xl mx-auto space-y-6 p-6">
       <%= for content_metric <- @content_metrics do %>
-        <div class="bg-white/5 p-8 ring-1 ring-white/15 rounded-lg space-y-4">
+        <div class="bg-white/5 p-6 ring-1 ring-white/15 rounded-lg space-y-4">
           <div>
             <div class="text-lg font-semibold"><%= content_metric.video.title %></div>
             <div class="text-sm text-gray-400">
               <%= Calendar.strftime(content_metric.video.inserted_at, "%b %d, %Y, %I:%M %p UTC") %>
             </div>
           </div>
-          <table class="w-full ring-1 ring-white/20 bg-white/10 rounded-lg overflow-hidden">
+          <table class="w-full ring-1 ring-white/5 bg-gray-950/40 rounded-lg">
             <thead>
               <tr>
-                <th class="border border-white/10 text-sm px-4 py-2 text-left">Ad</th>
-                <th class="border border-white/10 text-sm px-4 py-2 text-left">Airtime</th>
-                <th class="border border-white/10 text-sm px-4 py-2 text-left">Clip</th>
-                <th class="border border-white/10 text-sm px-4 py-2 text-left">Thumbnail</th>
+                <th class="text-sm px-6 py-3 text-left">Ad</th>
+                <th class="text-sm px-6 py-3 text-left">Airtime</th>
+                <th class="text-sm px-6 py-3 text-left">Clip</th>
+                <th class="text-sm px-6 py-3 text-left">Thumbnail</th>
               </tr>
             </thead>
             <tbody>
               <%= for ad_id <- Enum.uniq(Enum.map(content_metric.video.appearances, & &1.ad_id) ++ Enum.map(content_metric.video.product_reviews, & &1.ad_id)) do %>
                 <% ad = Ads.get_ad!(ad_id) %>
                 <tr>
-                  <td class="border border-white/10 text-sm px-4 py-2"><%= ad.slug %></td>
-                  <td class="border border-white/10 text-sm px-4 py-2">
+                  <td class="text-sm px-6 py-3"><%= ad.slug %></td>
+                  <td class="text-sm px-6 py-3">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.appearances, &(&1.ad_id == ad_id)),
                       ", ",
                       &Library.to_hhmmss(&1.airtime)
                     ) %>
                   </td>
-                  <td class="border border-white/10 text-sm px-4 py-2">
+                  <td class="text-sm px-6 py-3">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
                       &"#{Library.to_hhmmss(&1.clip_from)} - #{Library.to_hhmmss(&1.clip_to)}"
                     ) %>
                   </td>
-                  <td class="border border-white/10 text-sm px-4 py-2">
+                  <td class="text-sm px-6 py-3">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
@@ -151,7 +151,7 @@ defmodule AlgoraWeb.ContentLive do
         </div>
       <% end %>
 
-      <div class="bg-white/5 p-8 ring-1 ring-white/15 rounded-lg">
+      <div class="bg-white/5 p-6 ring-1 ring-white/15 rounded-lg">
         <.simple_form for={@new_content_metrics_form} phx-submit="save_content_metrics">
           <.input
             field={@new_content_metrics_form[:video_id]}
