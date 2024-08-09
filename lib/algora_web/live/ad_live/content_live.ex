@@ -96,12 +96,7 @@ defmodule AlgoraWeb.ContentLive do
                 prompt="Select an ad"
                 options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
               />
-              <.input
-                field={@new_appearance_form[:airtime]}
-                label="Airtime"
-                required
-                placeholder="hh:mm:ss"
-              />
+              <.input field={@new_appearance_form[:airtime]} label="Airtime" placeholder="hh:mm:ss" />
               <div />
               <div />
               <.button type="submit">Submit</.button>
@@ -127,14 +122,12 @@ defmodule AlgoraWeb.ContentLive do
                 type="text"
                 label="Clip From"
                 placeholder="hh:mm:ss"
-                required
               />
               <.input
                 field={@new_product_review_form[:clip_to]}
                 type="text"
                 label="Clip To"
                 placeholder="hh:mm:ss"
-                required
               />
               <.input
                 field={@new_product_review_form[:thumbnail_url]}
@@ -159,7 +152,6 @@ defmodule AlgoraWeb.ContentLive do
                  video.id}
               end)
             }
-            required
             prompt="Select a video"
           />
           <.input
