@@ -29,10 +29,65 @@ defmodule AlgoraWeb.ContentLive do
     <div class="max-w-5xl mx-auto space-y-6 p-6">
       <%= for content_metric <- @content_metrics do %>
         <div class="bg-white/5 p-6 ring-1 ring-white/15 rounded-lg space-y-4">
-          <div>
-            <div class="text-lg font-semibold"><%= content_metric.video.title %></div>
-            <div class="text-sm text-gray-400">
-              <%= Calendar.strftime(content_metric.video.inserted_at, "%b %d, %Y, %I:%M %p UTC") %>
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="text-lg font-semibold"><%= content_metric.video.title %></div>
+              <div class="text-sm text-gray-400">
+                <%= Calendar.strftime(content_metric.video.inserted_at, "%b %d, %Y, %I:%M %p UTC") %>
+              </div>
+            </div>
+            <div class="flex items-center gap-6 text-sm font-display">
+              <.link href={content_metric.twitch_stream_url} class="flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-twitch"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 5v11a1 1 0 0 0 1 1h2v4l4 -4h5.584c.266 0 .52 -.105 .707 -.293l2.415 -2.414c.187 -.188 .293 -.442 .293 -.708v-8.585a1 1 0 0 0 -1 -1h-14a1 1 0 0 0 -1 1z" /><path d="M16 8l0 4" /><path d="M12 8l0 4" />
+                </svg>
+                <%= content_metric.twitch_avg_concurrent_viewers || 0 %> CCV
+              </.link>
+              <.link href={content_metric.youtube_video_url} class="flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z" /><path d="M10 9l5 3l-5 3z" />
+                </svg>
+                <%= content_metric.youtube_views || 0 %> Views
+              </.link>
+              <.link href={content_metric.twitter_video_url} class="flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                </svg>
+                <%= content_metric.twitter_views || 0 %> Views
+              </.link>
             </div>
           </div>
           <table class="w-full ring-1 ring-white/5 bg-gray-950/40 rounded-lg">
