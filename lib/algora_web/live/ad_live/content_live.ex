@@ -219,11 +219,14 @@ defmodule AlgoraWeb.ContentLive do
               end)
             }
             prompt="Select a video"
+            phx-change="video_selected"
           />
           <.input
             field={@new_content_metrics_form[:algora_stream_url]}
             type="text"
             label="Algora URL"
+            phx-change="url_entered"
+            phx-debounce="300"
           />
           <div class="grid grid-cols-3 gap-4">
             <.input
@@ -345,6 +348,45 @@ defmodule AlgoraWeb.ContentLive do
      |> assign(
        :new_product_review_form,
        to_form(Ads.change_product_review(%ProductReview{video_id: video_id}))
+     )}
+  end
+
+  @impl true
+  def handle_event("video_selected", %{"content_metrics" => %{"video_id" => video_id}}, socket) do
+    video =
+      if video_id != "",
+        do: Enum.find(socket.assigns.videos, &(&1.id == String.to_integer(video_id)))
+
+    url =
+      if video, do: "#{AlgoraWeb.Endpoint.url()}/#{video.channel_handle}/#{video_id}", else: ""
+
+    {:noreply,
+     socket
+     |> assign(
+       :new_content_metrics_form,
+       to_form(
+         Ads.change_content_metrics(%ContentMetrics{video_id: video_id, algora_stream_url: url})
+       )
+     )}
+  end
+
+  @impl true
+  def handle_event("url_entered", %{"content_metrics" => %{"algora_stream_url" => url}}, socket) do
+    video =
+      Enum.find(
+        socket.assigns.videos,
+        &(url == "#{AlgoraWeb.Endpoint.url()}/#{&1.channel_handle}/#{&1.id}")
+      )
+
+    video_id = if video, do: video.id, else: nil
+
+    {:noreply,
+     socket
+     |> assign(
+       :new_content_metrics_form,
+       to_form(
+         Ads.change_content_metrics(%ContentMetrics{video_id: video_id, algora_stream_url: url})
+       )
      )}
   end
 end
