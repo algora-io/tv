@@ -60,16 +60,14 @@ defmodule AlgoraWeb.ContentLive do
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.appearances, &(&1.ad_id == ad_id)),
                       ", ",
-                      & &1.airtime
+                      &Library.to_hhmmss(&1.airtime)
                     ) %>
                   </td>
                   <td class="border border-white/10 text-sm px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
-                      fn r ->
-                        "#{Library.to_hhmmss(r.clip_from)} - #{Library.to_hhmmss(r.clip_to)}"
-                      end
+                      &"#{Library.to_hhmmss(&1.clip_from)} - #{Library.to_hhmmss(&1.clip_to)}"
                     ) %>
                   </td>
                   <td class="border border-white/10 text-sm px-4 py-2">
@@ -98,7 +96,12 @@ defmodule AlgoraWeb.ContentLive do
                 prompt="Select an ad"
                 options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
               />
-              <.input field={@new_appearance_form[:airtime]} type="number" label="Airtime" required />
+              <.input
+                field={@new_appearance_form[:airtime]}
+                label="Airtime"
+                required
+                placeholder="hh:mm:ss"
+              />
               <div />
               <div />
               <.button type="submit">Submit</.button>
@@ -122,13 +125,15 @@ defmodule AlgoraWeb.ContentLive do
               <.input
                 field={@new_product_review_form[:clip_from]}
                 type="text"
-                label="Clip From (hh:mm:ss)"
+                label="Clip From"
+                placeholder="hh:mm:ss"
                 required
               />
               <.input
                 field={@new_product_review_form[:clip_to]}
                 type="text"
-                label="Clip To (hh:mm:ss)"
+                label="Clip To"
+                placeholder="hh:mm:ss"
                 required
               />
               <.input
@@ -222,6 +227,8 @@ defmodule AlgoraWeb.ContentLive do
 
   @impl true
   def handle_event("save_appearance", %{"appearance" => params}, socket) do
+    params = Map.update!(params, "airtime", &Library.from_hhmmss/1)
+
     case Ads.create_appearance(params) do
       {:ok, _appearance} ->
         content_metrics = Ads.list_content_metrics()

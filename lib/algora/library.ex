@@ -361,6 +361,12 @@ defmodule Algora.Library do
         String.to_integer(hours) * 3600 + String.to_integer(minutes) * 60 +
           String.to_integer(seconds)
 
+      [minutes, seconds] ->
+        String.to_integer(minutes) * 60 + String.to_integer(seconds)
+
+      [seconds] ->
+        String.to_integer(seconds)
+
       _ ->
         raise ArgumentError, "Invalid time format. Expected hh:mm:ss"
     end
