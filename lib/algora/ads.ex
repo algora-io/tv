@@ -10,8 +10,8 @@ defmodule Algora.Ads do
 
   @pubsub Algora.PubSub
 
-  def display_duration, do: :timer.seconds(20)
-  def rotation_interval, do: :timer.minutes(10)
+  def display_duration, do: :timer.minutes(2)
+  def rotation_interval, do: :timer.minutes(30)
 
   def unsubscribe_to_ads() do
     Phoenix.PubSub.unsubscribe(@pubsub, topic())
