@@ -51,13 +51,13 @@ defmodule Algora.Ads do
 
   def list_ads do
     Ad
-    |> where(verified: true, status: :active)
     |> order_by(asc: :id)
     |> Repo.all()
   end
 
   def list_active_ads do
     Ad
+    |> where(verified: true, status: :active)
     |> order_by(asc: :id)
     |> Repo.all()
   end
