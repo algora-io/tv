@@ -30,7 +30,7 @@ defmodule AlgoraWeb.AdOverlayLive do
       Accounts.get_user_by!(handle: channel_handle)
       |> Library.get_channel!()
 
-    ads = Ads.list_ads()
+    ads = Ads.list_active_ads()
     current_ad_index = Ads.get_current_index(ads)
     current_ad = Enum.at(ads, current_ad_index)
     {next_ad, next_index} = get_next_ad(ads, current_ad_index)
@@ -130,7 +130,7 @@ defmodule AlgoraWeb.AdOverlayLive do
   end
 
   defp update_ads_state(socket) do
-    ads = Ads.list_ads()
+    ads = Ads.list_active_ads()
     current_ad_index = Ads.get_current_index(ads)
     current_ad = Enum.at(ads, current_ad_index)
     {next_ad, next_index} = get_next_ad(ads, current_ad_index)

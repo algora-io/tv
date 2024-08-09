@@ -1,14 +1,20 @@
 defmodule AlgoraWeb.ContentLive do
   use AlgoraWeb, :live_view
+
   alias Algora.Ads
   alias Algora.Ads.{ContentMetrics, Appearance, ProductReview}
+  alias Algora.Library
 
   @impl true
   def mount(_params, _session, socket) do
     content_metrics = Ads.list_content_metrics()
+    ads = Ads.list_ads()
+    videos = Library.list_videos()
 
     {:ok,
      socket
+     |> assign(:ads, ads)
+     |> assign(:videos, videos)
      |> assign(:content_metrics, content_metrics)
      |> assign(:new_content_metrics_form, to_form(Ads.change_content_metrics(%ContentMetrics{})))
      |> assign(:new_appearance_form, to_form(Ads.change_appearance(%Appearance{})))
@@ -32,43 +38,43 @@ defmodule AlgoraWeb.ContentLive do
           <p class="text-sm text-gray-400">
             <%= Calendar.strftime(content_metric.video.inserted_at, "%b %d, %Y, %I:%M %p UTC") %>
           </p>
-          <table class="w-full border-collapse border border-gray-300 mt-4">
+          <table class="w-full border-collapse border border-white/20 mt-4 bg-white/10 rounded-lg">
             <thead>
               <tr>
-                <th class="border border-gray-300 px-4 py-2">Ad</th>
-                <th class="border border-gray-300 px-4 py-2">Airtime</th>
-                <th class="border border-gray-300 px-4 py-2">Clip From</th>
-                <th class="border border-gray-300 px-4 py-2">Clip To</th>
-                <th class="border border-gray-300 px-4 py-2">Thumbnail URL</th>
+                <th class="border border-white/20 px-4 py-2">Ad</th>
+                <th class="border border-white/20 px-4 py-2">Airtime</th>
+                <th class="border border-white/20 px-4 py-2">Clip From</th>
+                <th class="border border-white/20 px-4 py-2">Clip To</th>
+                <th class="border border-white/20 px-4 py-2">Thumbnail URL</th>
               </tr>
             </thead>
             <tbody>
               <%= for ad_id <- Enum.uniq(Enum.map(content_metric.video.appearances, & &1.ad_id) ++ Enum.map(content_metric.video.product_reviews, & &1.ad_id)) do %>
                 <% ad = Ads.get_ad!(ad_id) %>
                 <tr>
-                  <td class="border border-gray-300 px-4 py-2"><%= ad.slug %></td>
-                  <td class="border border-gray-300 px-4 py-2">
+                  <td class="border border-white/20 px-4 py-2"><%= ad.slug %></td>
+                  <td class="border border-white/20 px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.appearances, &(&1.ad_id == ad_id)),
                       ", ",
                       & &1.airtime
                     ) %>
                   </td>
-                  <td class="border border-gray-300 px-4 py-2">
+                  <td class="border border-white/20 px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
-                      & &1.clip_from
+                      &Library.to_hhmmss(&1.clip_from)
                     ) %>
                   </td>
-                  <td class="border border-gray-300 px-4 py-2">
+                  <td class="border border-white/20 px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
-                      & &1.clip_to
+                      &Library.to_hhmmss(&1.clip_to)
                     ) %>
                   </td>
-                  <td class="border border-gray-300 px-4 py-2">
+                  <td class="border border-white/20 px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
@@ -87,8 +93,13 @@ defmodule AlgoraWeb.ContentLive do
                 field={@new_appearance_form[:video_id]}
                 value={content_metric.video_id}
               />
+              <.input
+                field={@new_appearance_form[:ad_id]}
+                type="select"
+                label="Ad"
+                options={[{nil,nil} | Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)]}
+              />
               <.input field={@new_appearance_form[:airtime]} type="number" label="Airtime" required />
-              <.input field={@new_appearance_form[:ad_id]} type="number" label="Ad ID" required />
               <.button type="submit">Submit</.button>
             </div>
           </.simple_form>
@@ -101,15 +112,21 @@ defmodule AlgoraWeb.ContentLive do
                 value={content_metric.video_id}
               />
               <.input
+                field={@new_appearance_form[:ad_id]}
+                type="select"
+                label="Ad"
+                options={[{nil,nil} | Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)]}
+              />
+              <.input
                 field={@new_product_review_form[:clip_from]}
-                type="number"
-                label="Clip From"
+                type="text"
+                label="Clip From (hh:mm:ss)"
                 required
               />
               <.input
                 field={@new_product_review_form[:clip_to]}
-                type="number"
-                label="Clip To"
+                type="text"
+                label="Clip To (hh:mm:ss)"
                 required
               />
               <.input
@@ -117,7 +134,6 @@ defmodule AlgoraWeb.ContentLive do
                 type="text"
                 label="Thumbnail URL"
               />
-              <.input field={@new_product_review_form[:ad_id]} type="number" label="Ad ID" required />
               <.button type="submit">Submit</.button>
             </div>
           </.simple_form>
@@ -126,6 +142,20 @@ defmodule AlgoraWeb.ContentLive do
 
       <div class="bg-white/5 p-8 ring-1 ring-white/15 rounded-lg">
         <.simple_form for={@new_content_metrics_form} phx-submit="save_content_metrics">
+          <.input
+            field={@new_content_metrics_form[:video_id]}
+            type="select"
+            label="Video"
+            options={
+              [
+                {nil, nil}
+                | Enum.map(@videos, fn video ->
+                    {"#{video.title} (#{Calendar.strftime(video.inserted_at, "%b %d, %Y, %I:%M %p UTC")})",
+                     video.id}
+              end)]
+            }
+            required
+          />
           <.input
             field={@new_content_metrics_form[:algora_stream_url]}
             type="text"
@@ -162,12 +192,7 @@ defmodule AlgoraWeb.ContentLive do
             type="number"
             label="Twitter Views"
           />
-          <.input
-            field={@new_content_metrics_form[:video_id]}
-            type="number"
-            label="Video ID"
-            required
-          />
+
           <.button type="submit">Create Content Metrics</.button>
         </.simple_form>
       </div>
@@ -212,6 +237,9 @@ defmodule AlgoraWeb.ContentLive do
 
   @impl true
   def handle_event("save_product_review", %{"product_review" => params}, socket) do
+    params = Map.update!(params, "clip_from", &Library.from_hhmmss/1)
+    params = Map.update!(params, "clip_to", &Library.from_hhmmss/1)
+
     case Ads.create_product_review(params) do
       {:ok, _product_review} ->
         content_metrics = Ads.list_content_metrics()

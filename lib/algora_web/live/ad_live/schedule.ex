@@ -12,7 +12,7 @@ defmodule AlgoraWeb.AdLive.Schedule do
     next_slot = Ads.next_slot()
 
     ads =
-      Ads.list_ads()
+      Ads.list_active_ads()
       |> Ads.rotate_ads()
       |> Enum.with_index(-1)
       |> Enum.map(fn {ad, index} ->

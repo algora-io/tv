@@ -355,6 +355,17 @@ defmodule Algora.Library do
     to_hhmmss(trunc(duration))
   end
 
+  def from_hhmmss(timestamp) do
+    case String.split(timestamp, ":") do
+      [hours, minutes, seconds] ->
+        String.to_integer(hours) * 3600 + String.to_integer(minutes) * 60 +
+          String.to_integer(seconds)
+
+      _ ->
+        raise ArgumentError, "Invalid time format. Expected hh:mm:ss"
+    end
+  end
+
   def unsubscribe_to_channel(%Channel{} = channel) do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end

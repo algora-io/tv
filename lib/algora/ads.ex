@@ -48,9 +48,16 @@ defmodule Algora.Ads do
       [%Ad{}, ...]
 
   """
+
   def list_ads do
     Ad
     |> where(verified: true, status: :active)
+    |> order_by(asc: :id)
+    |> Repo.all()
+  end
+
+  def list_active_ads do
+    Ad
     |> order_by(asc: :id)
     |> Repo.all()
   end
