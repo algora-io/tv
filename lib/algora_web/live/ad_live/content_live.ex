@@ -26,55 +26,53 @@ defmodule AlgoraWeb.ContentLive do
     ~H"""
     <div class="max-w-5xl mx-auto space-y-8 p-8">
       <%= for content_metric <- @content_metrics do %>
-        <div class="bg-white/5 p-8 ring-1 ring-white/15 rounded-lg">
-          <div class="mb-4">
-            <img
-              src={content_metric.video.thumbnail_url}
-              alt={content_metric.video.title}
-              class="max-w-sm w-full h-auto rounded-lg shadow-lg"
-            />
+        <div class="bg-white/5 p-8 ring-1 ring-white/15 rounded-lg space-y-4">
+          <div class="space-y-4">
+            <div>
+              <p class="text-lg font-semibold"><%= content_metric.video.title %></p>
+              <p class="text-sm text-gray-400">
+                <%= Calendar.strftime(content_metric.video.inserted_at, "%b %d, %Y, %I:%M %p UTC") %>
+              </p>
+            </div>
+            <div>
+              <img
+                src={content_metric.video.thumbnail_url}
+                alt={content_metric.video.title}
+                class="max-w-sm w-full h-auto rounded-lg shadow-lg"
+              />
+            </div>
           </div>
-          <p class="text-lg font-semibold"><%= content_metric.video.title %></p>
-          <p class="text-sm text-gray-400">
-            <%= Calendar.strftime(content_metric.video.inserted_at, "%b %d, %Y, %I:%M %p UTC") %>
-          </p>
-          <table class="w-full border-collapse border border-white/20 mt-4 bg-white/10 rounded-lg">
+          <table class="w-full ring-1 ring-white/20 bg-white/10 rounded-lg overflow-hidden">
             <thead>
               <tr>
-                <th class="border border-white/20 px-4 py-2">Ad</th>
-                <th class="border border-white/20 px-4 py-2">Airtime</th>
-                <th class="border border-white/20 px-4 py-2">Clip From</th>
-                <th class="border border-white/20 px-4 py-2">Clip To</th>
-                <th class="border border-white/20 px-4 py-2">Thumbnail URL</th>
+                <th class="border border-white/10 text-sm px-4 py-2 text-left">Ad</th>
+                <th class="border border-white/10 text-sm px-4 py-2 text-left">Airtime</th>
+                <th class="border border-white/10 text-sm px-4 py-2 text-left">Clip</th>
+                <th class="border border-white/10 text-sm px-4 py-2 text-left">Thumbnail</th>
               </tr>
             </thead>
             <tbody>
               <%= for ad_id <- Enum.uniq(Enum.map(content_metric.video.appearances, & &1.ad_id) ++ Enum.map(content_metric.video.product_reviews, & &1.ad_id)) do %>
                 <% ad = Ads.get_ad!(ad_id) %>
                 <tr>
-                  <td class="border border-white/20 px-4 py-2"><%= ad.slug %></td>
-                  <td class="border border-white/20 px-4 py-2">
+                  <td class="border border-white/10 text-sm px-4 py-2"><%= ad.slug %></td>
+                  <td class="border border-white/10 text-sm px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.appearances, &(&1.ad_id == ad_id)),
                       ", ",
                       & &1.airtime
                     ) %>
                   </td>
-                  <td class="border border-white/20 px-4 py-2">
+                  <td class="border border-white/10 text-sm px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
-                      &Library.to_hhmmss(&1.clip_from)
+                      fn r ->
+                        "#{Library.to_hhmmss(r.clip_from)} - #{Library.to_hhmmss(r.clip_to)}"
+                      end
                     ) %>
                   </td>
-                  <td class="border border-white/20 px-4 py-2">
-                    <%= Enum.map_join(
-                      Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
-                      ", ",
-                      &Library.to_hhmmss(&1.clip_to)
-                    ) %>
-                  </td>
-                  <td class="border border-white/20 px-4 py-2">
+                  <td class="border border-white/10 text-sm px-4 py-2">
                     <%= Enum.map_join(
                       Enum.filter(content_metric.video.product_reviews, &(&1.ad_id == ad_id)),
                       ", ",
@@ -87,12 +85,12 @@ defmodule AlgoraWeb.ContentLive do
           </table>
 
           <.simple_form for={@new_appearance_form} phx-submit="save_appearance">
-            <div class="flex items-center gap-4">
-              <.input
-                type="hidden"
-                field={@new_appearance_form[:video_id]}
-                value={content_metric.video_id}
-              />
+            <.input
+              type="hidden"
+              field={@new_appearance_form[:video_id]}
+              value={content_metric.video_id}
+            />
+            <div class="grid grid-cols-5 gap-4">
               <.input
                 field={@new_appearance_form[:ad_id]}
                 type="select"
@@ -101,17 +99,19 @@ defmodule AlgoraWeb.ContentLive do
                 options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
               />
               <.input field={@new_appearance_form[:airtime]} type="number" label="Airtime" required />
+              <div />
+              <div />
               <.button type="submit">Submit</.button>
             </div>
           </.simple_form>
 
           <.simple_form for={@new_product_review_form} phx-submit="save_product_review">
-            <div class="flex items-center gap-4">
-              <.input
-                type="hidden"
-                field={@new_product_review_form[:video_id]}
-                value={content_metric.video_id}
-              />
+            <.input
+              type="hidden"
+              field={@new_product_review_form[:video_id]}
+              value={content_metric.video_id}
+            />
+            <div class="grid grid-cols-5 gap-4">
               <.input
                 field={@new_product_review_form[:ad_id]}
                 type="select"
