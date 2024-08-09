@@ -97,7 +97,8 @@ defmodule AlgoraWeb.ContentLive do
                 field={@new_appearance_form[:ad_id]}
                 type="select"
                 label="Ad"
-                options={[{nil,nil} | Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)]}
+                prompt="Select an ad"
+                options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
               />
               <.input field={@new_appearance_form[:airtime]} type="number" label="Airtime" required />
               <.button type="submit">Submit</.button>
@@ -112,10 +113,11 @@ defmodule AlgoraWeb.ContentLive do
                 value={content_metric.video_id}
               />
               <.input
-                field={@new_appearance_form[:ad_id]}
+                field={@new_product_review_form[:ad_id]}
                 type="select"
                 label="Ad"
-                options={[{nil,nil} | Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)]}
+                prompt="Select an ad"
+                options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
               />
               <.input
                 field={@new_product_review_form[:clip_from]}
@@ -147,14 +149,13 @@ defmodule AlgoraWeb.ContentLive do
             type="select"
             label="Video"
             options={
-              [
-                {nil, nil}
-                | Enum.map(@videos, fn video ->
-                    {"#{video.title} (#{Calendar.strftime(video.inserted_at, "%b %d, %Y, %I:%M %p UTC")})",
-                     video.id}
-              end)]
+              Enum.map(@videos, fn video ->
+                {"#{video.title} (#{Calendar.strftime(video.inserted_at, "%b %d, %Y, %I:%M %p UTC")})",
+                 video.id}
+              end)
             }
             required
+            prompt="Select a video"
           />
           <.input
             field={@new_content_metrics_form[:algora_stream_url]}
