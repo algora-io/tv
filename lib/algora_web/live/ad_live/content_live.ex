@@ -168,41 +168,45 @@ defmodule AlgoraWeb.ContentLive do
           <.input
             field={@new_content_metrics_form[:algora_stream_url]}
             type="text"
-            label="Algora Stream URL"
+            label="Algora URL"
           />
-          <.input
-            field={@new_content_metrics_form[:twitch_stream_url]}
-            type="text"
-            label="Twitch Stream URL"
-          />
-          <.input
-            field={@new_content_metrics_form[:youtube_video_url]}
-            type="text"
-            label="YouTube Video URL"
-          />
-          <.input
-            field={@new_content_metrics_form[:twitter_video_url]}
-            type="text"
-            label="Twitter Video URL"
-          />
-          <.input
-            field={@new_content_metrics_form[:twitch_avg_concurrent_viewers]}
-            type="number"
-            label="Twitch Avg Concurrent Viewers"
-          />
-          <.input field={@new_content_metrics_form[:twitch_views]} type="number" label="Twitch Views" />
-          <.input
-            field={@new_content_metrics_form[:youtube_views]}
-            type="number"
-            label="YouTube Views"
-          />
-          <.input
-            field={@new_content_metrics_form[:twitter_views]}
-            type="number"
-            label="Twitter Views"
-          />
+          <div class="grid grid-cols-3 gap-4">
+            <.input
+              field={@new_content_metrics_form[:twitch_stream_url]}
+              type="text"
+              label="Twitch URL"
+            />
+            <.input
+              field={@new_content_metrics_form[:youtube_video_url]}
+              type="text"
+              label="YouTube URL"
+            />
+            <.input
+              field={@new_content_metrics_form[:twitter_video_url]}
+              type="text"
+              label="Twitter URL"
+            />
+          </div>
 
-          <.button type="submit">Create Content Metrics</.button>
+          <div class="grid grid-cols-3 gap-4">
+            <.input
+              field={@new_content_metrics_form[:twitch_avg_concurrent_viewers]}
+              type="number"
+              label="Twitch Average CCV"
+            />
+            <.input
+              field={@new_content_metrics_form[:youtube_views]}
+              type="number"
+              label="YouTube Views"
+            />
+            <.input
+              field={@new_content_metrics_form[:twitter_views]}
+              type="number"
+              label="Twitter Views"
+            />
+          </div>
+
+          <.button type="submit">Submit</.button>
         </.simple_form>
       </div>
     </div>
