@@ -95,7 +95,7 @@ defmodule AlgoraWeb.ContentLive do
               <tr>
                 <th class="text-sm px-6 py-3 text-left">Ad</th>
                 <th class="text-sm px-6 py-3 text-right">Airtime</th>
-                <th class="text-sm px-6 py-3 text-right">Blurp</th>
+                <th class="text-sm px-6 py-3 text-right">Blurb</th>
                 <th class="text-sm px-6 py-3 text-left">Thumbnail</th>
               </tr>
             </thead>
@@ -139,7 +139,7 @@ defmodule AlgoraWeb.ContentLive do
                 phx-click="toggle_product_review_form"
                 phx-value-video_id={content_metric.video_id}
               >
-                Add blurp
+                Add blurb
               </.button>
             </div>
           <% end %>
