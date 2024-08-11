@@ -22,7 +22,8 @@ defmodule AlgoraWeb.ContentLive do
      |> assign(:new_product_review_form, to_form(Ads.change_product_review(%ProductReview{})))
      |> assign(:show_appearance_modal, false)
      |> assign(:show_product_review_modal, false)
-     |> assign(:show_content_metrics_modal, false)}
+     |> assign(:show_content_metrics_modal, false)
+     |> assign(:editing_content_metrics, nil)}
   end
 
   @impl true
@@ -143,12 +144,15 @@ defmodule AlgoraWeb.ContentLive do
             >
               Add blurb
             </.button>
+            <.button phx-click="edit_content_metrics" phx-value-id={content_metric.id}>
+              Edit metrics
+            </.button>
           </div>
         </div>
       <% end %>
 
       <div class="bg-white/5 p-6 ring-1 ring-white/15 rounded-lg">
-        <.button phx-click="open_content_metrics_modal">Add Content Metrics</.button>
+        <.button phx-click="open_content_metrics_modal">Add content</.button>
       </div>
     </div>
 
@@ -214,7 +218,7 @@ defmodule AlgoraWeb.ContentLive do
       show
       on_cancel={JS.patch(~p"/admin/content")}
     >
-      <.header>Add Content Metrics</.header>
+      <.header>Add content</.header>
       <.simple_form for={@new_content_metrics_form} phx-submit="save_content_metrics">
         <.input
           field={@new_content_metrics_form[:video_id]}
@@ -275,6 +279,77 @@ defmodule AlgoraWeb.ContentLive do
         </div>
 
         <.button type="submit">Submit</.button>
+      </.simple_form>
+    </.modal>
+
+    <.modal
+      :if={@editing_content_metrics}
+      id="edit-content-metrics-modal"
+      show
+      on_cancel={JS.patch(~p"/admin/content")}
+    >
+      <.header>Edit metrics</.header>
+      <.simple_form for={@new_content_metrics_form} phx-submit="update_content_metrics">
+        <%= hidden_input(@new_content_metrics_form, :id) %>
+        <.input
+          field={@new_content_metrics_form[:video_id]}
+          type="select"
+          label="Video"
+          options={
+            Enum.map(@videos, fn video ->
+              {"#{video.title} (#{Calendar.strftime(video.inserted_at, "%b %d, %Y, %I:%M %p UTC")})",
+               video.id}
+            end)
+          }
+          prompt="Select a video"
+          phx-change="video_selected"
+        />
+        <.input
+          field={@new_content_metrics_form[:algora_stream_url]}
+          type="text"
+          label="Algora URL"
+          phx-change="url_entered"
+          phx-debounce="300"
+        />
+        <div class="grid grid-cols-3 gap-4">
+          <.input
+            field={@new_content_metrics_form[:twitch_stream_url]}
+            type="text"
+            label="Twitch URL"
+          />
+          <.input
+            field={@new_content_metrics_form[:youtube_video_url]}
+            type="text"
+            label="YouTube URL"
+          />
+          <.input
+            field={@new_content_metrics_form[:twitter_video_url]}
+            type="text"
+            label="Twitter URL"
+          />
+        </div>
+
+        <.input
+          field={@new_content_metrics_form[:twitch_avg_concurrent_viewers]}
+          type="number"
+          label="Twitch Average CCV"
+        />
+
+        <div class="grid grid-cols-3 gap-4">
+          <.input field={@new_content_metrics_form[:twitch_views]} type="number" label="Twitch Views" />
+          <.input
+            field={@new_content_metrics_form[:youtube_views]}
+            type="number"
+            label="YouTube Views"
+          />
+          <.input
+            field={@new_content_metrics_form[:twitter_views]}
+            type="number"
+            label="Twitter Views"
+          />
+        </div>
+
+        <.button type="submit">Update</.button>
       </.simple_form>
     </.modal>
     """
@@ -406,6 +481,35 @@ defmodule AlgoraWeb.ContentLive do
          Ads.change_content_metrics(%ContentMetrics{video_id: video_id, algora_stream_url: url})
        )
      )}
+  end
+
+  @impl true
+  def handle_event("edit_content_metrics", %{"id" => id}, socket) do
+    content_metrics = Ads.get_content_metrics!(id)
+    changeset = Ads.change_content_metrics(content_metrics)
+
+    {:noreply,
+     socket
+     |> assign(:editing_content_metrics, content_metrics)
+     |> assign(:new_content_metrics_form, to_form(changeset))
+     |> assign(:show_content_metrics_modal, true)}
+  end
+
+  @impl true
+  def handle_event("update_content_metrics", %{"content_metrics" => params}, socket) do
+    case Ads.update_content_metrics(socket.assigns.editing_content_metrics, params) do
+      {:ok, _updated_content_metrics} ->
+        content_metrics = Ads.list_content_metrics()
+
+        {:noreply,
+         socket
+         |> assign(:content_metrics, content_metrics)
+         |> assign(:editing_content_metrics, nil)
+         |> assign(:show_content_metrics_modal, false)}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, :new_content_metrics_form, to_form(changeset))}
+    end
   end
 
   @impl true

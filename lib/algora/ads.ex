@@ -199,6 +199,42 @@ defmodule Algora.Ads do
     ContentMetrics.changeset(content_metrics, attrs)
   end
 
+  @doc """
+  Gets a single content_metrics.
+
+  Raises `Ecto.NoResultsError` if the ContentMetrics does not exist.
+
+  ## Examples
+
+      iex> get_content_metrics!(123)
+      %ContentMetrics{}
+
+      iex> get_content_metrics!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_content_metrics!(id) do
+    Repo.get!(ContentMetrics, id)
+  end
+
+  @doc """
+  Updates a content_metrics.
+
+  ## Examples
+
+      iex> update_content_metrics(content_metrics, %{field: new_value})
+      {:ok, %ContentMetrics{}}
+
+      iex> update_content_metrics(content_metrics, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_content_metrics(%ContentMetrics{} = content_metrics, attrs) do
+    content_metrics
+    |> ContentMetrics.changeset(attrs)
+    |> Repo.update()
+  end
+
   def create_appearance(attrs \\ %{}) do
     %Appearance{}
     |> Appearance.changeset(attrs)
