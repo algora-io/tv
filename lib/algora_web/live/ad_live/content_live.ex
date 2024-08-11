@@ -52,7 +52,8 @@ defmodule AlgoraWeb.ContentLive do
                 >
                   <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 5v11a1 1 0 0 0 1 1h2v4l4 -4h5.584c.266 0 .52 -.105 .707 -.293l2.415 -2.414c.187 -.188 .293 -.442 .293 -.708v-8.585a1 1 0 0 0 -1 -1h-14a1 1 0 0 0 -1 1z" /><path d="M16 8l0 4" /><path d="M12 8l0 4" />
                 </svg>
-                <%= content_metric.twitch_avg_concurrent_viewers || 0 %> CCV
+                <%= content_metric.twitch_avg_concurrent_viewers || 0 %> CCV / <%= content_metric.twitch_views ||
+                  0 %> Views
               </.link>
               <.link href={content_metric.youtube_video_url} class="flex items-center gap-2">
                 <svg
@@ -246,11 +247,17 @@ defmodule AlgoraWeb.ContentLive do
             />
           </div>
 
+          <.input
+            field={@new_content_metrics_form[:twitch_avg_concurrent_viewers]}
+            type="number"
+            label="Twitch Average CCV"
+          />
+
           <div class="grid grid-cols-3 gap-4">
             <.input
-              field={@new_content_metrics_form[:twitch_avg_concurrent_viewers]}
+              field={@new_content_metrics_form[:twitch_views]}
               type="number"
-              label="Twitch Average CCV"
+              label="Twitch Views"
             />
             <.input
               field={@new_content_metrics_form[:youtube_views]}
