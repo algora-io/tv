@@ -4,6 +4,7 @@ defmodule AlgoraWeb.ContentLive do
   alias Algora.Ads
   alias Algora.Ads.{ContentMetrics, Appearance, ProductReview}
   alias Algora.Library
+  alias AlgoraWeb.LayoutComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -19,8 +20,9 @@ defmodule AlgoraWeb.ContentLive do
      |> assign(:new_content_metrics_form, to_form(Ads.change_content_metrics(%ContentMetrics{})))
      |> assign(:new_appearance_form, to_form(Ads.change_appearance(%Appearance{})))
      |> assign(:new_product_review_form, to_form(Ads.change_product_review(%ProductReview{})))
-     |> assign(:show_appearance_form, -1)
-     |> assign(:show_product_review_form, -1)}
+     |> assign(:show_appearance_modal, false)
+     |> assign(:show_product_review_modal, false)
+     |> assign(:show_content_metrics_modal, false)}
   end
 
   @impl true
@@ -131,150 +133,150 @@ defmodule AlgoraWeb.ContentLive do
             </tbody>
           </table>
 
-          <%= if @show_appearance_form == -1 and @show_product_review_form == -1 do %>
-            <div class="flex space-x-4">
-              <.button phx-click="toggle_appearance_form" phx-value-video_id={content_metric.video_id}>
-                Add airtime
-              </.button>
-              <.button
-                phx-click="toggle_product_review_form"
-                phx-value-video_id={content_metric.video_id}
-              >
-                Add blurb
-              </.button>
-            </div>
-          <% end %>
-
-          <%= if @show_appearance_form == content_metric.video_id do %>
-            <.simple_form for={@new_appearance_form} phx-submit="save_appearance">
-              <.input
-                type="hidden"
-                field={@new_appearance_form[:video_id]}
-                value={content_metric.video_id}
-              />
-              <div class="grid grid-cols-5 gap-4">
-                <.input
-                  field={@new_appearance_form[:ad_id]}
-                  type="select"
-                  label="Ad"
-                  prompt="Select an ad"
-                  options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
-                />
-                <.input field={@new_appearance_form[:airtime]} label="Airtime" placeholder="hh:mm:ss" />
-                <div />
-                <div />
-                <.button type="submit">Submit</.button>
-              </div>
-            </.simple_form>
-          <% end %>
-
-          <%= if @show_product_review_form == content_metric.video_id do %>
-            <.simple_form for={@new_product_review_form} phx-submit="save_product_review">
-              <.input
-                type="hidden"
-                field={@new_product_review_form[:video_id]}
-                value={content_metric.video_id}
-              />
-              <div class="grid grid-cols-5 gap-4">
-                <.input
-                  field={@new_product_review_form[:ad_id]}
-                  type="select"
-                  label="Ad"
-                  prompt="Select an ad"
-                  options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
-                />
-                <.input
-                  field={@new_product_review_form[:clip_from]}
-                  type="text"
-                  label="Clip From"
-                  placeholder="hh:mm:ss"
-                />
-                <.input
-                  field={@new_product_review_form[:clip_to]}
-                  type="text"
-                  label="Clip To"
-                  placeholder="hh:mm:ss"
-                />
-                <.input
-                  field={@new_product_review_form[:thumbnail_url]}
-                  type="text"
-                  label="Thumbnail URL"
-                />
-                <.button type="submit">Submit</.button>
-              </div>
-            </.simple_form>
-          <% end %>
+          <div class="flex space-x-4">
+            <.button phx-click="open_appearance_modal" phx-value-video_id={content_metric.video_id}>
+              Add airtime
+            </.button>
+            <.button
+              phx-click="open_product_review_modal"
+              phx-value-video_id={content_metric.video_id}
+            >
+              Add blurb
+            </.button>
+          </div>
         </div>
       <% end %>
 
       <div class="bg-white/5 p-6 ring-1 ring-white/15 rounded-lg">
-        <.simple_form for={@new_content_metrics_form} phx-submit="save_content_metrics">
-          <.input
-            field={@new_content_metrics_form[:video_id]}
-            type="select"
-            label="Video"
-            options={
-              Enum.map(@videos, fn video ->
-                {"#{video.title} (#{Calendar.strftime(video.inserted_at, "%b %d, %Y, %I:%M %p UTC")})",
-                 video.id}
-              end)
-            }
-            prompt="Select a video"
-            phx-change="video_selected"
-          />
-          <.input
-            field={@new_content_metrics_form[:algora_stream_url]}
-            type="text"
-            label="Algora URL"
-            phx-change="url_entered"
-            phx-debounce="300"
-          />
-          <div class="grid grid-cols-3 gap-4">
-            <.input
-              field={@new_content_metrics_form[:twitch_stream_url]}
-              type="text"
-              label="Twitch URL"
-            />
-            <.input
-              field={@new_content_metrics_form[:youtube_video_url]}
-              type="text"
-              label="YouTube URL"
-            />
-            <.input
-              field={@new_content_metrics_form[:twitter_video_url]}
-              type="text"
-              label="Twitter URL"
-            />
-          </div>
-
-          <.input
-            field={@new_content_metrics_form[:twitch_avg_concurrent_viewers]}
-            type="number"
-            label="Twitch Average CCV"
-          />
-
-          <div class="grid grid-cols-3 gap-4">
-            <.input
-              field={@new_content_metrics_form[:twitch_views]}
-              type="number"
-              label="Twitch Views"
-            />
-            <.input
-              field={@new_content_metrics_form[:youtube_views]}
-              type="number"
-              label="YouTube Views"
-            />
-            <.input
-              field={@new_content_metrics_form[:twitter_views]}
-              type="number"
-              label="Twitter Views"
-            />
-          </div>
-
-          <.button type="submit">Submit</.button>
-        </.simple_form>
+        <.button phx-click="open_content_metrics_modal">Add Content Metrics</.button>
       </div>
     </div>
+
+    <.modal
+      :if={@show_appearance_modal}
+      id="appearance-modal"
+      show
+      on_cancel={JS.patch(~p"/admin/content")}
+    >
+      <.header>Add Airtime</.header>
+      <.simple_form for={@new_appearance_form} phx-submit="save_appearance">
+        <%= hidden_input(@new_appearance_form, :video_id) %>
+        <.input
+          field={@new_appearance_form[:ad_id]}
+          type="select"
+          label="Ad"
+          prompt="Select an ad"
+          options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
+        />
+        <.input field={@new_appearance_form[:airtime]} label="Airtime" placeholder="hh:mm:ss" />
+        <div />
+        <div />
+        <.button type="submit">Submit</.button>
+      </.simple_form>
+    </.modal>
+
+    <.modal
+      :if={@show_product_review_modal}
+      id="product-review-modal"
+      show
+      on_cancel={JS.patch(~p"/admin/content")}
+    >
+      <.header>Add Blurb</.header>
+      <.simple_form for={@new_product_review_form} phx-submit="save_product_review">
+        <%= hidden_input(@new_product_review_form, :video_id) %>
+        <.input
+          field={@new_product_review_form[:ad_id]}
+          type="select"
+          label="Ad"
+          prompt="Select an ad"
+          options={Enum.map(@ads, fn ad -> {ad.slug, ad.id} end)}
+        />
+        <.input
+          field={@new_product_review_form[:clip_from]}
+          type="text"
+          label="Clip From"
+          placeholder="hh:mm:ss"
+        />
+        <.input
+          field={@new_product_review_form[:clip_to]}
+          type="text"
+          label="Clip To"
+          placeholder="hh:mm:ss"
+        />
+        <.input field={@new_product_review_form[:thumbnail_url]} type="text" label="Thumbnail URL" />
+        <.button type="submit">Submit</.button>
+      </.simple_form>
+    </.modal>
+
+    <.modal
+      :if={@show_content_metrics_modal}
+      id="content-metrics-modal"
+      show
+      on_cancel={JS.patch(~p"/admin/content")}
+    >
+      <.header>Add Content Metrics</.header>
+      <.simple_form for={@new_content_metrics_form} phx-submit="save_content_metrics">
+        <.input
+          field={@new_content_metrics_form[:video_id]}
+          type="select"
+          label="Video"
+          options={
+            Enum.map(@videos, fn video ->
+              {"#{video.title} (#{Calendar.strftime(video.inserted_at, "%b %d, %Y, %I:%M %p UTC")})",
+               video.id}
+            end)
+          }
+          prompt="Select a video"
+          phx-change="video_selected"
+        />
+        <.input
+          field={@new_content_metrics_form[:algora_stream_url]}
+          type="text"
+          label="Algora URL"
+          phx-change="url_entered"
+          phx-debounce="300"
+        />
+        <div class="grid grid-cols-3 gap-4">
+          <.input
+            field={@new_content_metrics_form[:twitch_stream_url]}
+            type="text"
+            label="Twitch URL"
+          />
+          <.input
+            field={@new_content_metrics_form[:youtube_video_url]}
+            type="text"
+            label="YouTube URL"
+          />
+          <.input
+            field={@new_content_metrics_form[:twitter_video_url]}
+            type="text"
+            label="Twitter URL"
+          />
+        </div>
+
+        <.input
+          field={@new_content_metrics_form[:twitch_avg_concurrent_viewers]}
+          type="number"
+          label="Twitch Average CCV"
+        />
+
+        <div class="grid grid-cols-3 gap-4">
+          <.input field={@new_content_metrics_form[:twitch_views]} type="number" label="Twitch Views" />
+          <.input
+            field={@new_content_metrics_form[:youtube_views]}
+            type="number"
+            label="YouTube Views"
+          />
+          <.input
+            field={@new_content_metrics_form[:twitter_views]}
+            type="number"
+            label="Twitter Views"
+          />
+        </div>
+
+        <.button type="submit">Submit</.button>
+      </.simple_form>
+    </.modal>
     """
   end
 
@@ -290,7 +292,8 @@ defmodule AlgoraWeb.ContentLive do
          |> assign(
            :new_content_metrics_form,
            to_form(Ads.change_content_metrics(%ContentMetrics{}))
-         )}
+         )
+         |> assign(:show_content_metrics_modal, false)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :new_content_metrics_form, to_form(changeset))}
@@ -309,7 +312,7 @@ defmodule AlgoraWeb.ContentLive do
          socket
          |> assign(:content_metrics, content_metrics)
          |> assign(:new_appearance_form, to_form(Ads.change_appearance(%Appearance{})))
-         |> assign(:show_appearance_form, -1)}
+         |> assign(:show_appearance_modal, false)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :new_appearance_form, to_form(changeset))}
@@ -329,7 +332,7 @@ defmodule AlgoraWeb.ContentLive do
          socket
          |> assign(:content_metrics, content_metrics)
          |> assign(:new_product_review_form, to_form(Ads.change_product_review(%ProductReview{})))
-         |> assign(:show_product_review_form, -1)}
+         |> assign(:show_product_review_modal, false)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, :new_product_review_form, to_form(changeset))}
@@ -337,25 +340,33 @@ defmodule AlgoraWeb.ContentLive do
   end
 
   @impl true
-  def handle_event("toggle_appearance_form", %{"video_id" => video_id}, socket) do
+  def handle_event("open_appearance_modal", %{"video_id" => video_id}, socket) do
     {:noreply,
      socket
-     |> assign(:show_appearance_form, String.to_integer(video_id))
+     |> assign(:show_appearance_modal, true)
      |> assign(
        :new_appearance_form,
-       to_form(Ads.change_appearance(%Appearance{video_id: video_id}))
+       to_form(Ads.change_appearance(%Appearance{video_id: String.to_integer(video_id)}))
      )}
   end
 
   @impl true
-  def handle_event("toggle_product_review_form", %{"video_id" => video_id}, socket) do
+  def handle_event("open_product_review_modal", %{"video_id" => video_id}, socket) do
     {:noreply,
      socket
-     |> assign(:show_product_review_form, String.to_integer(video_id))
+     |> assign(:show_product_review_modal, true)
      |> assign(
        :new_product_review_form,
-       to_form(Ads.change_product_review(%ProductReview{video_id: video_id}))
+       to_form(Ads.change_product_review(%ProductReview{video_id: String.to_integer(video_id)}))
      )}
+  end
+
+  @impl true
+  def handle_event("open_content_metrics_modal", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_content_metrics_modal, true)
+     |> assign(:new_content_metrics_form, to_form(Ads.change_content_metrics(%ContentMetrics{})))}
   end
 
   @impl true
@@ -395,5 +406,17 @@ defmodule AlgoraWeb.ContentLive do
          Ads.change_content_metrics(%ContentMetrics{video_id: video_id, algora_stream_url: url})
        )
      )}
+  end
+
+  @impl true
+  def handle_params(params, _url, socket) do
+    LayoutComponent.hide_modal()
+    {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :show, _params) do
+    socket
+    |> assign(:page_title, "Content")
+    |> assign(:page_description, "Content")
   end
 end
