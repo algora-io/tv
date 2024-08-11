@@ -110,9 +110,11 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
         consume_uploaded_entry(socket, entry, fn %{path: path} = _meta ->
           remote_path = "shows/#{socket.assigns.show.id}/cover/#{System.os_time(:second)}"
 
+          content_type = ExMarcel.MimeType.for({:path, path})
+
           {:ok, _} =
             Algora.Storage.upload_from_filename(path, remote_path, fn _ -> nil end,
-              content_type: "image/jpeg"
+              content_type: content_type
             )
 
           bucket = Algora.config([:buckets, :media])
