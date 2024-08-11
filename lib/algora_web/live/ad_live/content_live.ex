@@ -1,6 +1,8 @@
 defmodule AlgoraWeb.ContentLive do
   use AlgoraWeb, :live_view
 
+  import Ecto.Changeset
+
   alias Algora.Ads
   alias Algora.Ads.{ContentMetrics, Appearance, ProductReview}
   alias Algora.Library
@@ -23,7 +25,15 @@ defmodule AlgoraWeb.ContentLive do
      |> assign(:show_appearance_modal, false)
      |> assign(:show_product_review_modal, false)
      |> assign(:show_content_metrics_modal, false)
-     |> assign(:editing_content_metrics, nil)}
+     |> assign(:editing_content_metrics, nil)
+     |> assign(:uploaded_files, [])
+     |> allow_upload(:product_review_thumbnail,
+       accept: accept(),
+       max_file_size: max_file_size() * 1_000_000,
+       max_entries: 1,
+       auto_upload: true,
+       progress: &handle_progress/3
+     )}
   end
 
   @impl true
@@ -186,7 +196,11 @@ defmodule AlgoraWeb.ContentLive do
       on_cancel={JS.patch(~p"/admin/content")}
     >
       <.header>Add Blurb</.header>
-      <.simple_form for={@new_product_review_form} phx-submit="save_product_review">
+      <.simple_form
+        for={@new_product_review_form}
+        phx-change="validate_product_review"
+        phx-submit="save_product_review"
+      >
         <%= hidden_input(@new_product_review_form, :video_id) %>
         <.input
           field={@new_product_review_form[:ad_id]}
@@ -207,7 +221,35 @@ defmodule AlgoraWeb.ContentLive do
           label="Clip To"
           placeholder="hh:mm:ss"
         />
-        <.input field={@new_product_review_form[:thumbnail_url]} type="text" label="Thumbnail URL" />
+        <div class="shrink-0">
+          <label for="show_title" class="block text-sm font-semibold leading-6 text-gray-100 mb-2">
+            Thumbnail
+          </label>
+          <div
+            id="show_image"
+            phx-drop-target={@uploads.product_review_thumbnail.ref}
+            class="relative"
+          >
+            <.live_file_input
+              upload={@uploads.product_review_thumbnail}
+              class="absolute inset-0 opacity-0 cursor-pointer"
+            />
+            <img
+              :if={@new_product_review_form[:thumbnail_url].value}
+              src={@new_product_review_form[:thumbnail_url].value}
+              class="h-[180px] aspect-video object-cover rounded-lg"
+            />
+            <div
+              :if={!@new_product_review_form[:thumbnail_url].value}
+              class="h-[180px] aspect-video bg-white/10 rounded-lg"
+            >
+            </div>
+          </div>
+        </div>
+        <%= hidden_input(@new_product_review_form, :thumbnail_url) %>
+        <%= for err <- upload_errors(@uploads.product_review_thumbnail) do %>
+          <p class="alert alert-danger"><%= error_to_string(err) %></p>
+        <% end %>
         <.button type="submit">Submit</.button>
       </.simple_form>
     </.modal>
@@ -395,6 +437,11 @@ defmodule AlgoraWeb.ContentLive do
   end
 
   @impl true
+  def handle_event("validate_product_review", _params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("save_product_review", %{"product_review" => params}, socket) do
     params = Map.update!(params, "clip_from", &Library.from_hhmmss/1)
     params = Map.update!(params, "clip_to", &Library.from_hhmmss/1)
@@ -512,6 +559,47 @@ defmodule AlgoraWeb.ContentLive do
     end
   end
 
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :product_review_thumbnail, ref)}
+  end
+
+  defp handle_progress(:product_review_thumbnail, entry, socket) do
+    if entry.done? do
+      form =
+        consume_uploaded_entry(socket, entry, fn %{path: path} = _meta ->
+          uuid = Ecto.UUID.generate()
+          remote_path = "blurbs/#{uuid}"
+
+          content_type = ExMarcel.MimeType.for({:path, path})
+
+          {:ok, _} =
+            Algora.Storage.upload_from_filename(path, remote_path, fn _ -> nil end,
+              content_type: content_type
+            )
+
+          bucket = Algora.config([:buckets, :media])
+          %{scheme: scheme, host: host} = Application.fetch_env!(:ex_aws, :s3) |> Enum.into(%{})
+
+          # {:ok, form} =
+          #   Ecto.Changeset.apply_action(socket.assigns.new_product_review_form.source, :update)
+
+          form =
+            socket.assigns.new_product_review_form.source
+            |> put_change(
+              :thumbnail_url,
+              "#{scheme}#{host}/#{bucket}/#{remote_path}"
+            )
+            |> to_form()
+
+          {:ok, form}
+        end)
+
+      {:noreply, socket |> assign(:new_product_review_form, form)}
+    else
+      {:noreply, socket}
+    end
+  end
+
   @impl true
   def handle_params(params, _url, socket) do
     LayoutComponent.hide_modal()
@@ -523,4 +611,15 @@ defmodule AlgoraWeb.ContentLive do
     |> assign(:page_title, "Content")
     |> assign(:page_description, "Content")
   end
+
+  defp error_to_string(:too_large) do
+    "Only images up to #{max_file_size()} MB are allowed."
+  end
+
+  defp error_to_string(:not_accepted) do
+    "Uploaded file is not a valid image. Only #{accept() |> Enum.intersperse(", ") |> Enum.join()} files are allowed."
+  end
+
+  defp max_file_size, do: 10
+  defp accept, do: ~w(.png .jpg .jpeg .gif)
 end
