@@ -9,10 +9,14 @@
     <img src={@ad.composite_asset_url} class="h-16 rounded-lg" />
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-2">
-        <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-white/5 ring-1 ring-white/10 text-white">
+        <button
+          disabled
+          class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-white/5 ring-1 ring-white/10 text-white"
+        >
           Edit
         </button>
         <button
+          disabled
           type="button"
           role="combobox"
           aria-controls="radix-:r7:"
@@ -49,113 +53,22 @@
       data-v0-t="card"
     >
       <div class="flex p-6 justify-center items-center">
-        <div class="grid grid-cols-5 gap-4 text-center">
+        <div class="grid grid-cols-4 gap-4 text-center">
           <div>
-            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">
-              Live Impressions
-            </p>
-            <p class="text-2xl font-bold">122.1K</p>
-            <p class="text-sm font-medium text-green-300 flex justify-center items-center gap-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-trending-up h-4 w-4"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 17l6 -6l4 4l8 -8" /><path d="M14 7l7 0l0 7" />
-              </svg>
-              25%
-            </p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Visits</p>
+            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Views</p>
             <p class="text-2xl font-bold">7.2K</p>
-            <p class="text-sm font-medium text-green-300 flex justify-center items-center gap-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-trending-up h-4 w-4"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 17l6 -6l4 4l8 -8" /><path d="M14 7l7 0l0 7" />
-              </svg>
-              26%
-            </p>
           </div>
           <div>
-            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">CTR</p>
-            <p class="text-2xl font-bold">5.9%</p>
-            <p class="text-sm font-medium text-green-300 flex justify-center items-center gap-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-trending-up h-4 w-4"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 17l6 -6l4 4l8 -8" /><path d="M14 7l7 0l0 7" />
-              </svg>
-              0.5%
-            </p>
+            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Airtime</p>
+            <p class="text-2xl font-bold">30m 15s</p>
           </div>
           <div>
             <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Streams</p>
             <p class="text-2xl font-bold">389</p>
-            <p class="text-sm font-medium text-green-300 flex justify-center items-center gap-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-trending-up h-4 w-4"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 17l6 -6l4 4l8 -8" /><path d="M14 7l7 0l0 7" />
-              </svg>
-              32%
-            </p>
           </div>
           <div>
             <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Creators</p>
             <p class="text-2xl font-bold">42</p>
-            <p class="text-sm font-medium text-green-300 flex justify-center items-center gap-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-trending-up h-4 w-4"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 17l6 -6l4 4l8 -8" /><path d="M14 7l7 0l0 7" />
-              </svg>
-              10%
-            </p>
           </div>
         </div>
       </div>
@@ -177,7 +90,7 @@
                     Source
                   </th>
                   <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
-                    Impressions
+                    Views
                   </th>
                 </tr>
               </thead>
@@ -238,28 +151,6 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-device-tv"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M16 3l-4 4l-4 -4" />
-                    </svg>
-                    AlgoraTV
-                  </td>
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                    11,734
-                  </td>
-                </tr>
-                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
                       class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x"
                     >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
@@ -294,7 +185,7 @@
                     Creators
                   </th>
                   <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
-                    Visitors
+                    Views
                   </th>
                 </tr>
               </thead>
