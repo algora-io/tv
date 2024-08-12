@@ -254,4 +254,18 @@ defmodule Algora.Ads do
   def change_product_review(%ProductReview{} = product_review, attrs \\ %{}) do
     ProductReview.changeset(product_review, attrs)
   end
+
+  def list_appearances(ad) do
+    Appearance
+    |> where(ad_id: ^ad.id)
+    |> Repo.all()
+  end
+
+  def list_content_metrics(appearances) do
+    video_ids = Enum.map(appearances, & &1.video_id)
+
+    ContentMetrics
+    |> where([cm], cm.video_id in ^video_ids)
+    |> Repo.all()
+  end
 end
