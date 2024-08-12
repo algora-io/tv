@@ -95,7 +95,7 @@
                 </tr>
               </thead>
               <tbody class="[&_tr:last-child]:border-0">
-                <%= for {source, views} <- Enum.sort_by(@stats.views, fn {_, v} -> v end, :desc) do %>
+                <%= for {source, views} <- @stats.views do %>
                   <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                     <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
                       <.source_icon icon={source |> String.downcase() |> String.to_atom()} />
@@ -135,7 +135,7 @@
                 </tr>
               </thead>
               <tbody class="[&_tr:last-child]:border-0">
-                <%= for {tech, data} <- Enum.sort_by(@stats.tech_stack_data, fn {_, d} -> d.views end, :desc) do %>
+                <%= for {tech, data} <- @stats.tech_stack_data do %>
                   <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                     <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
                       <.tech_icon tech={tech} /> <%= tech %>
@@ -209,20 +209,20 @@
               </tr>
             </thead>
             <tbody class="[&_tr:last-child]:border-0">
-              <%= for {appearance, airtime} <- Enum.sort_by(@appearances, & &1.airtime, :desc) do %>
+              <%= for product_review <- @product_reviews do %>
                 <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                   <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0">
                     <div class="space-y-2">
                       <div class="text-sm text-gray-100">
-                        <%= appearance.video.title %>
+                        <%= product_review.video.title %>
                       </div>
                       <div class="text-xs text-gray-300">
-                        <%= appearance.video.inserted_at |> Calendar.strftime("%b %d, %Y") %>
+                        <%= product_review.video.inserted_at |> Calendar.strftime("%b %d, %Y") %>
                       </div>
                     </div>
                   </td>
                   <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                    <%= format_duration(airtime) %>
+                    <%= format_duration(product_review.clip_to - product_review.clip_from) %>
                   </td>
                 </tr>
               <% end %>

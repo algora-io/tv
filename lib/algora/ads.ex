@@ -262,6 +262,13 @@ defmodule Algora.Ads do
     |> Repo.all()
   end
 
+  def list_product_reviews(ad) do
+    ProductReview
+    |> where(ad_id: ^ad.id)
+    |> preload(video: :user)
+    |> Repo.all()
+  end
+
   def list_content_metrics(appearances) do
     video_ids = Enum.map(appearances, & &1.video_id)
 

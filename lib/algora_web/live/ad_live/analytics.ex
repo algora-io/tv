@@ -9,13 +9,19 @@ defmodule AlgoraWeb.AdLive.Analytics do
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
     ad = Algora.Ads.get_ad_by_slug!(slug)
-    %{stats: stats, appearances: appearances, top_appearance: top_appearance} = fetch_ad_stats(ad)
+
+    %{
+      stats: stats,
+      appearances: appearances,
+      product_reviews: product_reviews,
+      product_review: product_review
+    } = fetch_ad_stats(ad)
 
     blurb =
-      if top_appearance,
+      if product_review,
         do: %{
-          video: Library.get_video!(top_appearance.video_id),
-          current_time: top_appearance.start_time
+          video: Library.get_video!(product_review.video_id),
+          current_time: product_review.start_time
         }
 
     if connected?(socket) do
@@ -34,7 +40,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
      |> assign(ad: ad)
      |> assign(stats: stats)
      |> assign(appearances: appearances)
-     |> assign(top_appearance: top_appearance)}
+     |> assign(product_reviews: product_reviews)}
   end
 
   @impl true
@@ -56,21 +62,31 @@ defmodule AlgoraWeb.AdLive.Analytics do
     appearances = Algora.Ads.list_appearances(ad)
     content_metrics = Algora.Ads.list_content_metrics(appearances)
 
+    product_reviews =
+      Algora.Ads.list_product_reviews(ad) |> Enum.sort_by(&(&1.clip_to - &1.clip_from), :desc)
+
     twitch_views = Enum.reduce(content_metrics, 0, fn cm, acc -> acc + cm.twitch_views end)
     youtube_views = Enum.reduce(content_metrics, 0, fn cm, acc -> acc + cm.youtube_views end)
     twitter_views = Enum.reduce(content_metrics, 0, fn cm, acc -> acc + cm.twitter_views end)
 
-    tech_stack_data = group_data_by_tech_stack(appearances, content_metrics)
+    tech_stack_data =
+      appearances
+      |> group_data_by_tech_stack(content_metrics)
+      |> Enum.sort_by(fn {_, d} -> d.views end, :desc)
 
-    top_appearance = Enum.sort_by(appearances, & &1.airtime, :desc) |> List.first()
+    product_review = List.first(product_reviews)
+
+    views =
+      %{
+        "Twitch" => twitch_views,
+        "YouTube" => youtube_views,
+        "Twitter" => twitter_views
+      }
+      |> Enum.sort_by(fn {_, v} -> v end, :desc)
 
     %{
       stats: %{
-        views: %{
-          "Twitch" => twitch_views,
-          "YouTube" => youtube_views,
-          "Twitter" => twitter_views
-        },
+        views: views,
         total_views: twitch_views + youtube_views + twitter_views,
         airtime: calculate_total_airtime(appearances),
         streams: length(appearances),
@@ -78,7 +94,8 @@ defmodule AlgoraWeb.AdLive.Analytics do
         tech_stack_data: tech_stack_data
       },
       appearances: appearances,
-      top_appearance: top_appearance
+      product_reviews: product_reviews,
+      product_review: product_review
     }
   end
 
