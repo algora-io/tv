@@ -10,6 +10,16 @@ defmodule AlgoraWeb.AdLive.Analytics do
     ad = Algora.Ads.get_ad_by_slug!(slug)
     stats = fetch_ad_stats(ad)
 
+    if connected?(socket) do
+      if stats.top_appearance do
+        send_update(PlayerComponent, %{
+          id: "analytics-player",
+          video: stats.top_appearance.video,
+          current_user: socket.assigns.current_user
+        })
+      end
+    end
+
     {:ok, socket |> assign(ad: ad) |> assign(stats: stats)}
   end
 
@@ -33,6 +43,8 @@ defmodule AlgoraWeb.AdLive.Analytics do
 
     tech_stack_data = group_data_by_tech_stack(appearances, content_metrics)
 
+    top_appearance = Enum.sort_by(appearances, fn {_, v} -> v end, :desc) |> List.first()
+
     %{
       views: %{
         twitch: twitch_views,
@@ -43,7 +55,9 @@ defmodule AlgoraWeb.AdLive.Analytics do
       airtime: calculate_total_airtime(appearances),
       streams: length(appearances),
       creators: length(Enum.uniq_by(appearances, & &1.video.user.id)),
-      tech_stack_data: tech_stack_data
+      tech_stack_data: tech_stack_data,
+      appearances: appearances,
+      top_appearance: top_appearance
     }
   end
 

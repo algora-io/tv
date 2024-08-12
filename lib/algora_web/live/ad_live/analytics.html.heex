@@ -162,6 +162,32 @@
         </div>
       </div>
     </div>
+
+    <div :if={@top_appearance} class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <div class="w-full max-w-3xl">
+        <.live_component module={PlayerComponent} id="analytics-player" />
+      </div>
+      <.link
+        href={"/#{@top_appearance.video.user.handle}/#{@top_appearance.video.id}"}
+        class="w-full max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden rounded-lg lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
+      >
+        <div class="flex items-center gap-4">
+          <div class="relative h-20 w-20 shrink-0">
+            <img
+              src={@top_appearance.video.user.avatar_url}
+              alt={@top_appearance.video.user.handle}
+              class="w-full h-full p-1 rounded-full"
+            />
+          </div>
+          <div>
+            <div class="text-3xl font-semibold"><%= @top_appearance.video.user.name %></div>
+            <div class="font-medium text-gray-300">@<%= @top_appearance.video.user.handle %></div>
+          </div>
+        </div>
+        <div class="pt-4 font-medium text-gray-100"><%= @top_appearance.video.title %></div>
+      </.link>
+    </div>
+
     <div
       class="rounded-lg border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
       data-v0-t="card"
