@@ -89,6 +89,7 @@ defmodule AlgoraWeb.Router do
     live_session :schedule,
       on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
       live "/ads/schedule", AdLive.Schedule, :schedule
+      live "/analytics/:slug", AdLive.Analytics, :show
     end
 
     live_session :admin,
@@ -105,7 +106,6 @@ defmodule AlgoraWeb.Router do
       live "/ads/:id/edit", AdLive.Index, :edit
       live "/ads/:id", AdLive.Show, :show
       live "/ads/:id/show/edit", AdLive.Show, :edit
-      live "/ads/:id/analytics", AdLive.Analytics, :show
 
       live "/admin/content", ContentLive, :show
     end
