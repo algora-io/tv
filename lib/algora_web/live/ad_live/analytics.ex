@@ -3,7 +3,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
   alias AlgoraWeb.Components.TechIcon
   alias AlgoraWeb.RTMPDestinationIconComponent
 
-  alias Algora.Ads
+  alias Algora.{Ads, Library}
   alias AlgoraWeb.PlayerComponent
 
   @impl true
@@ -11,12 +11,20 @@ defmodule AlgoraWeb.AdLive.Analytics do
     ad = Algora.Ads.get_ad_by_slug!(slug)
     %{stats: stats, appearances: appearances, top_appearance: top_appearance} = fetch_ad_stats(ad)
 
+    blurb =
+      if top_appearance,
+        do: %{
+          video: Library.get_video!(top_appearance.video_id),
+          current_time: top_appearance.start_time
+        }
+
     if connected?(socket) do
-      if top_appearance do
+      if blurb do
         send_update(PlayerComponent, %{
           id: "analytics-player",
-          video: top_appearance.video,
-          current_user: socket.assigns.current_user
+          video: blurb.video,
+          current_user: socket.assigns.current_user,
+          current_time: blurb.current_time
         })
       end
     end
@@ -59,9 +67,9 @@ defmodule AlgoraWeb.AdLive.Analytics do
     %{
       stats: %{
         views: %{
-          twitch: twitch_views,
-          youtube: youtube_views,
-          twitter: twitter_views
+          "Twitch" => twitch_views,
+          "YouTube" => youtube_views,
+          "Twitter" => twitter_views
         },
         total_views: twitch_views + youtube_views + twitter_views,
         airtime: calculate_total_airtime(appearances),
@@ -94,6 +102,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
   # TODO: This is a hack, we need to get the tech stack from the user's profile
   defp get_tech_stack(user_id) do
     case user_id do
+      7 -> "TypeScript"
       109 -> "TypeScript"
       307 -> "PHP"
       _ -> "Other"

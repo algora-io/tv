@@ -98,7 +98,7 @@
                 <%= for {source, views} <- Enum.sort_by(@stats.views, fn {_, v} -> v end, :desc) do %>
                   <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                     <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                      <.source_icon icon={source} />
+                      <.source_icon icon={source |> String.downcase() |> String.to_atom()} />
                       <%= source %>
                     </td>
                     <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
@@ -163,28 +163,28 @@
       </div>
     </div>
 
-    <div :if={@top_appearance} class="flex flex-col sm:flex-row items-center justify-center gap-4">
+    <div :if={@blurb.video} class="flex flex-col sm:flex-row items-center justify-center gap-4">
       <div class="w-full max-w-3xl">
         <.live_component module={PlayerComponent} id="analytics-player" />
       </div>
       <.link
-        href={"/#{@top_appearance.video.user.handle}/#{@top_appearance.video.id}"}
+        href={"/#{@blurb.video.channel_handle}/#{@blurb.video.id}"}
         class="w-full max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden rounded-lg lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
       >
         <div class="flex items-center gap-4">
           <div class="relative h-20 w-20 shrink-0">
             <img
-              src={@top_appearance.video.user.avatar_url}
-              alt={@top_appearance.video.user.handle}
-              class="w-full h-full p-1 rounded-full"
+              src={@blurb.video.channel_avatar_url}
+              alt={@blurb.video.channel_handle}
+              class="w-full h-full p-1 ring-4 rounded-full"
             />
           </div>
           <div>
-            <div class="text-3xl font-semibold"><%= @top_appearance.video.user.name %></div>
-            <div class="font-medium text-gray-300">@<%= @top_appearance.video.user.handle %></div>
+            <div class="text-3xl font-semibold"><%= @blurb.video.channel_name %></div>
+            <div class="font-medium text-gray-300">@<%= @blurb.video.channel_handle %></div>
           </div>
         </div>
-        <div class="pt-4 font-medium text-gray-100"><%= @top_appearance.video.title %></div>
+        <div class="pt-4 font-medium text-gray-100"><%= @blurb.video.title %></div>
       </.link>
     </div>
 
@@ -233,23 +233,21 @@
     </div>
 
     <div class="relative isolate overflow-hidden">
-      <div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
-        <div class="mx-auto max-w-2xl text-center">
+      <div class="px-6 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-4xl text-center">
           <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            Your most successful<br class="hidden sm:inline" />
-            <span class="text-green-300">ad campaign</span>
-            is just<br class="hidden sm:inline" /> a few livestreams away
+            Your most successful <span class="text-green-300">ad campaign</span>
+            <br class="hidden sm:inline" />is just a few livestreams away
           </h1>
           <p class="mt-6 text-xl leading-8 tracking-tight text-gray-300">
-            Stand out<br class="hidden sm:inline" />
-            in front of millions on Twitch, YouTube and X with in-video livestream ads
+            Stand out in front of millions on Twitch, YouTube and X with in-video livestream ads
           </p>
           <div class="mt-10 flex items-center justify-center gap-x-6">
             <.link
               href="https://cal.com/ioannisflo"
               class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              Contact us
+              Let's talk
             </.link>
           </div>
         </div>
