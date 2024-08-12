@@ -258,6 +258,7 @@ defmodule Algora.Ads do
   def list_appearances(ad) do
     Appearance
     |> where(ad_id: ^ad.id)
+    |> preload(video: :user)
     |> Repo.all()
   end
 

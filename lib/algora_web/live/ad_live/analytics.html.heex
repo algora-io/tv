@@ -56,7 +56,7 @@
         <div class="grid grid-cols-4 gap-4 text-center">
           <div>
             <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Views</p>
-            <p class="text-2xl font-bold"><%= @stats.total_views %></p>
+            <p class="text-2xl font-bold"><%= format_number(@stats.total_views) %></p>
           </div>
           <div>
             <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Airtime</p>
@@ -68,7 +68,7 @@
           </div>
           <div>
             <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Creators</p>
-            <p class="text-2xl font-bold"><%= @stats.creators %></p>
+            <p class="text-2xl font-bold"><%= @stats.streams %></p>
           </div>
         </div>
       </div>
@@ -95,72 +95,17 @@
                 </tr>
               </thead>
               <tbody class="[&_tr:last-child]:border-0">
-                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-brand-twitch"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 5v11a1 1 0 0 0 1 1h2v4l4 -4h5.584c.266 0 .52 -.105 .707 -.293l2.415 -2.414c.187 -.188 .293 -.442 .293 -.708v-8.585a1 1 0 0 0 -1 -1h-14a1 1 0 0 0 -1 1z" /><path d="M16 8l0 4" /><path d="M12 8l0 4" />
-                    </svg>
-                    Twitch
-                  </td>
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                    <%= @stats.views.twitch %>
-                  </td>
-                </tr>
-                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z" /><path d="M10 9l5 3l-5 3z" />
-                    </svg>
-                    YouTube
-                  </td>
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                    <%= @stats.views.youtube %>
-                  </td>
-                </tr>
-                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-                    </svg>
-                    X (Twitter)
-                  </td>
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                    <%= @stats.views.twitter %>
-                  </td>
-                </tr>
+                <%= for {source, views} <- Enum.sort_by(@stats.views, fn {_, v} -> v end, :desc) do %>
+                  <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
+                      <.source_icon icon={source |> String.downcase() |> String.to_atom()} />
+                      <%= source %>
+                    </td>
+                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                      <%= format_number(views) %>
+                    </td>
+                  </tr>
+                <% end %>
               </tbody>
             </table>
           </div>
@@ -190,68 +135,27 @@
                 </tr>
               </thead>
               <tbody class="[&_tr:last-child]:border-0">
-                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-brand-typescript"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M15 17.5c.32 .32 .754 .5 1.207 .5h.543c.69 0 1.25 -.56 1.25 -1.25v-.25a1.5 1.5 0 0 0 -1.5 -1.5a1.5 1.5 0 0 1 -1.5 -1.5v-.25c0 -.69 .56 -1.25 1.25 -1.25h.543c.453 0 .887 .18 1.207 .5" /><path d="M9 12h4" /><path d="M11 12v6" /><path d="M21 19v-14a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2z" />
-                    </svg>
-                    TypeScript
-                  </td>
-                  <td class="align-middle [&:has([role=checkbox])]:pr-0">
-                    <div class="flex items-center justify-center -space-x-1">
-                      <img
-                        class="inline-block h-8 w-8 rounded-full ring-4 ring-[#16112f]"
-                        src="https://pbs.twimg.com/profile_images/619557646450831360/58ES9E4X_400x400.jpg"
-                        alt="Avatar 1"
-                      />
-                    </div>
-                  </td>
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                    3,550
-                  </td>
-                </tr>
-                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-brand-php"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 12m-10 0a10 9 0 1 0 20 0a10 9 0 1 0 -20 0" /><path d="M5.5 15l.395 -1.974l.605 -3.026h1.32a1 1 0 0 1 .986 1.164l-.167 1a1 1 0 0 1 -.986 .836h-1.653" /><path d="M15.5 15l.395 -1.974l.605 -3.026h1.32a1 1 0 0 1 .986 1.164l-.167 1a1 1 0 0 1 -.986 .836h-1.653" /><path d="M12 7.5l-1 5.5" /><path d="M11.6 10h2.4l-.5 3" />
-                    </svg>
-                    PHP
-                  </td>
-                  <td class="align-middle [&:has([role=checkbox])]:pr-0">
-                    <div class="flex items-center justify-center -space-x-1">
-                      <img
-                        class="inline-block h-8 w-8 rounded-full ring-4 ring-[#16112f]"
-                        src="https://avatars.githubusercontent.com/u/5845193?v=4"
-                        alt="Avatar 2"
-                      />
-                    </div>
-                  </td>
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                    1,930
-                  </td>
-                </tr>
+                <%= for {tech, data} <- Enum.sort_by(@stats.tech_stack_data, fn {_, d} -> d.views end, :desc) do %>
+                  <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
+                      <.tech_icon tech={tech} /> <%= tech %>
+                    </td>
+                    <td class="align-middle [&:has([role=checkbox])]:pr-0">
+                      <div class="flex items-center justify-center -space-x-1">
+                        <%= for creator <- Enum.take(data.creators, 5) do %>
+                          <img
+                            class="inline-block h-8 w-8 rounded-full ring-4 ring-[#16112f]"
+                            src={creator.avatar_url}
+                            alt={"Avatar of #{creator.name}"}
+                          />
+                        <% end %>
+                      </div>
+                    </td>
+                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                      <%= format_number(data.views) %>
+                    </td>
+                  </tr>
+                <% end %>
               </tbody>
             </table>
           </div>
