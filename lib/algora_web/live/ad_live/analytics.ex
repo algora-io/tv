@@ -21,7 +21,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
       if product_review,
         do: %{
           video: Library.get_video!(product_review.video_id),
-          current_time: product_review.start_time
+          current_time: product_review.clip_from
         }
 
     if connected?(socket) do
@@ -40,7 +40,8 @@ defmodule AlgoraWeb.AdLive.Analytics do
      |> assign(ad: ad)
      |> assign(stats: stats)
      |> assign(appearances: appearances)
-     |> assign(product_reviews: product_reviews)}
+     |> assign(product_reviews: product_reviews)
+     |> assign(blurb: blurb)}
   end
 
   @impl true
