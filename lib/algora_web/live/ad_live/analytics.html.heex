@@ -1,4 +1,4 @@
-<div class="min-h-screen text-white p-4 max-w-7xl mx-auto">
+<div class="min-h-screen text-white p-4 max-w-7xl mx-auto font-display">
   <header class="flex items-center justify-between py-4">
     <div class="flex items-center gap-2 text-lg font-semibold">
       <img src={@ad.logo_url} class="h-12 w-12 rounded-full" />
@@ -211,8 +211,15 @@
             <tbody class="[&_tr:last-child]:border-0">
               <%= for {appearance, airtime} <- Enum.sort_by(@appearances, & &1.airtime, :desc) do %>
                 <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                    <%= appearance.video.title %>
+                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0">
+                    <div class="space-y-2">
+                      <div class="text-sm text-gray-100">
+                        <%= appearance.video.title %>
+                      </div>
+                      <div class="text-xs text-gray-300">
+                        <%= appearance.video.inserted_at |> Calendar.strftime("%b %d, %Y") %>
+                      </div>
+                    </div>
                   </td>
                   <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
                     <%= format_duration(airtime) %>
@@ -223,6 +230,49 @@
           </table>
         </div>
       </div>
+    </div>
+
+    <div class="relative isolate overflow-hidden">
+      <div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            Your most successful<br class="hidden sm:inline" />
+            <span class="text-green-300">ad campaign</span>
+            is just<br class="hidden sm:inline" /> a few livestreams away
+          </h1>
+          <p class="mt-6 text-xl leading-8 tracking-tight text-gray-300">
+            Stand out<br class="hidden sm:inline" />
+            in front of millions on Twitch, YouTube and X with in-video livestream ads
+          </p>
+          <div class="mt-10 flex items-center justify-center gap-x-6">
+            <.link
+              href="https://cal.com/ioannisflo"
+              class="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Contact us
+            </.link>
+          </div>
+        </div>
+      </div>
+      <svg
+        viewBox="0 0 1024 1024"
+        class="absolute left-1/2 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-x-1/2 [mask-image:radial-gradient(closest-side,white,transparent)]"
+        aria-hidden="true"
+      >
+        <circle
+          cx="512"
+          cy="512"
+          r="512"
+          fill="url(#8d958450-c69f-4251-94bc-4e091a323369)"
+          fill-opacity="0.7"
+        />
+        <defs>
+          <radialGradient id="8d958450-c69f-4251-94bc-4e091a323369">
+            <stop stop-color="#6366f1" />
+            <stop offset="1" stop-color="#3b82f6" />
+          </radialGradient>
+        </defs>
+      </svg>
     </div>
   </main>
 </div>

@@ -4,6 +4,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
   alias AlgoraWeb.RTMPDestinationIconComponent
 
   alias Algora.Ads
+  alias AlgoraWeb.PlayerComponent
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -26,6 +27,11 @@ defmodule AlgoraWeb.AdLive.Analytics do
      |> assign(stats: stats)
      |> assign(appearances: appearances)
      |> assign(top_appearance: top_appearance)}
+  end
+
+  @impl true
+  def handle_info(_arg, socket) do
+    {:noreply, socket}
   end
 
   @impl true
