@@ -162,5 +162,41 @@
         </div>
       </div>
     </div>
+    <div
+      class="rounded-lg border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
+      data-v0-t="card"
+    >
+      <h3 class="whitespace-nowrap text-xl font-semibold leading-none tracking-tight mb-3 ml-3">
+        Livestreams
+      </h3>
+      <div>
+        <div class="relative w-full overflow-auto">
+          <table class="w-full caption-bottom text-sm">
+            <thead class="[&_tr]:border-b">
+              <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                  Stream
+                </th>
+                <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
+                  Airtime
+                </th>
+              </tr>
+            </thead>
+            <tbody class="[&_tr:last-child]:border-0">
+              <%= for {appearance, airtime} <- Enum.sort_by(@appearances, fn {_, v} -> v end, :desc) do %>
+                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
+                    <%= appearance.video.title %>
+                  </td>
+                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                    <%= format_duration(airtime) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </main>
 </div>

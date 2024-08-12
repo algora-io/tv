@@ -74,13 +74,21 @@ defmodule AlgoraWeb.AdLive.Analytics do
   end
 
   defp calculate_total_airtime(appearances) do
-    total_seconds =
-      Enum.reduce(appearances, 0, fn appearance, acc -> acc + appearance.airtime end)
+    appearances
+    |> Enum.reduce(0, fn appearance, acc -> acc + appearance.airtime end)
+    |> format_duration()
+  end
 
-    minutes = div(total_seconds, 60)
-    seconds = rem(total_seconds, 60)
+  defp format_duration(seconds) do
+    hours = div(seconds, 3600)
+    minutes = div(rem(seconds, 3600), 60)
+    remaining_seconds = rem(seconds, 60)
 
-    "#{minutes}m #{seconds}s"
+    cond do
+      hours > 0 -> "#{hours}h #{minutes}m #{remaining_seconds}s"
+      minutes > 0 -> "#{minutes}m #{remaining_seconds}s"
+      true -> "#{remaining_seconds}s"
+    end
   end
 
   defp format_number(number) when number >= 1_000_000 do
