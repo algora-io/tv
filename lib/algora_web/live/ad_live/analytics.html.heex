@@ -98,7 +98,7 @@
                 <%= for {source, views} <- Enum.sort_by(@stats.views, fn {_, v} -> v end, :desc) do %>
                   <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                     <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                      <.source_icon icon={source |> String.downcase() |> String.to_atom()} />
+                      <.source_icon icon={source} />
                       <%= source %>
                     </td>
                     <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
@@ -209,7 +209,7 @@
               </tr>
             </thead>
             <tbody class="[&_tr:last-child]:border-0">
-              <%= for {appearance, airtime} <- Enum.sort_by(@appearances, fn {_, v} -> v end, :desc) do %>
+              <%= for {appearance, airtime} <- Enum.sort_by(@appearances, & &1.airtime, :desc) do %>
                 <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                   <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
                     <%= appearance.video.title %>

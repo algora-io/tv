@@ -8,19 +8,24 @@ defmodule AlgoraWeb.AdLive.Analytics do
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
     ad = Algora.Ads.get_ad_by_slug!(slug)
-    stats = fetch_ad_stats(ad)
+    %{stats: stats, appearances: appearances, top_appearance: top_appearance} = fetch_ad_stats(ad)
 
     if connected?(socket) do
-      if stats.top_appearance do
+      if top_appearance do
         send_update(PlayerComponent, %{
           id: "analytics-player",
-          video: stats.top_appearance.video,
+          video: top_appearance.video,
           current_user: socket.assigns.current_user
         })
       end
     end
 
-    {:ok, socket |> assign(ad: ad) |> assign(stats: stats)}
+    {:ok,
+     socket
+     |> assign(ad: ad)
+     |> assign(stats: stats)
+     |> assign(appearances: appearances)
+     |> assign(top_appearance: top_appearance)}
   end
 
   @impl true
@@ -43,19 +48,21 @@ defmodule AlgoraWeb.AdLive.Analytics do
 
     tech_stack_data = group_data_by_tech_stack(appearances, content_metrics)
 
-    top_appearance = Enum.sort_by(appearances, fn {_, v} -> v end, :desc) |> List.first()
+    top_appearance = Enum.sort_by(appearances, & &1.airtime, :desc) |> List.first()
 
     %{
-      views: %{
-        twitch: twitch_views,
-        youtube: youtube_views,
-        twitter: twitter_views
+      stats: %{
+        views: %{
+          twitch: twitch_views,
+          youtube: youtube_views,
+          twitter: twitter_views
+        },
+        total_views: twitch_views + youtube_views + twitter_views,
+        airtime: calculate_total_airtime(appearances),
+        streams: length(appearances),
+        creators: length(Enum.uniq_by(appearances, & &1.video.user.id)),
+        tech_stack_data: tech_stack_data
       },
-      total_views: twitch_views + youtube_views + twitter_views,
-      airtime: calculate_total_airtime(appearances),
-      streams: length(appearances),
-      creators: length(Enum.uniq_by(appearances, & &1.video.user.id)),
-      tech_stack_data: tech_stack_data,
       appearances: appearances,
       top_appearance: top_appearance
     }
