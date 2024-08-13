@@ -42,3 +42,4 @@ npm-debug.log
 /priv/cache
 *.patch
 /.fly
+/xref*
