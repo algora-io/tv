@@ -152,8 +152,11 @@ const Hooks = {
 
       this.playerId = this.el.id;
 
+      // TODO: remove this once we have a better way to handle autoplay
+      const autoplay = this.el.id.startsWith("analytics-") ? false : "any";
+
       this.player = videojs(this.el, {
-        autoplay: "any",
+        autoplay: autoplay,
         liveui: true,
         html5: {
           vhs: {
