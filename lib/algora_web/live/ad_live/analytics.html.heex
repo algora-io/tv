@@ -111,15 +111,17 @@
               </thead>
               <tbody class="[&_tr:last-child]:border-0">
                 <%= for {source, views} <- @stats.views do %>
-                  <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                      <.source_icon icon={source |> String.downcase() |> String.to_atom()} />
-                      <%= source %>
-                    </td>
-                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
-                      <%= format_number(views) %>
-                    </td>
-                  </tr>
+                  <%= if views > 0 do %>
+                    <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
+                        <.source_icon icon={source |> String.downcase() |> String.to_atom()} />
+                        <%= source %>
+                      </td>
+                      <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                        <%= format_number(views) %>
+                      </td>
+                    </tr>
+                  <% end %>
                 <% end %>
               </tbody>
             </table>
