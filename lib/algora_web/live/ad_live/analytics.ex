@@ -57,7 +57,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
      |> assign(:ad, Ads.get_ad_by_slug!(slug))}
   end
 
-  defp page_title(:show), do: "Show Ad"
+  defp page_title(:show), do: "Analytics"
 
   defp fetch_ad_stats(ad) do
     appearances = Algora.Ads.list_appearances(ad)
