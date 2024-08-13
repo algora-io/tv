@@ -1,13 +1,23 @@
 <div class="min-h-screen text-white p-4 max-w-7xl mx-auto font-display">
-  <header class="flex items-center justify-between py-4">
+  <header class="flex items-center justify-between py-4 gap-4">
     <div class="flex items-center gap-2 text-lg font-semibold">
       <img src={@ad.logo_url} class="h-12 w-12 rounded-full" />
-      <a href={@ad.website_url} target="_blank" rel="noopener noreferrer">
-        <span><%= String.replace(@ad.website_url, ~r/^https?:\/\//, "") %></span>
+      <a
+        href={@ad.website_url |> String.replace(~r/[?#].*$/, "")}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="truncate max-w-[300px]"
+      >
+        <span>
+          <%= @ad.website_url
+          |> String.replace(~r/[?#].*$/, "")
+          |> String.replace(~r/^https?:\/\//, "")
+          |> String.replace(~r/\/$/, "") %>
+        </span>
       </a>
     </div>
     <img src={@ad.composite_asset_url} class="h-16 rounded-lg" />
-    <div class="flex items-center gap-4">
+    <div class="shrink-0 flex items-center gap-4">
       <div class="flex items-center gap-2">
         <button
           disabled
