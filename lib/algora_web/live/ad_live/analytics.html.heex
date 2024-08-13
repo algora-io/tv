@@ -178,8 +178,8 @@
       </div>
     </div>
 
-    <div :if={@blurb.video} class="flex flex-col sm:flex-row items-center justify-center gap-4">
-      <div class="w-full max-w-3xl">
+    <div :if={@blurb.video} class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="w-full">
         <.live_component module={PlayerComponent} id="analytics-player" />
       </div>
       <.link
@@ -191,7 +191,7 @@
             <img
               src={@blurb.video.channel_avatar_url}
               alt={@blurb.video.channel_handle}
-              class="w-full h-full p-1 ring-4 rounded-full"
+              class="w-full h-full p-1 rounded-full"
             />
           </div>
           <div>
@@ -200,6 +200,9 @@
           </div>
         </div>
         <div class="pt-4 font-medium text-gray-100"><%= @blurb.video.title %></div>
+        <div class="pt-1 text-sm font-medium text-gray-300">
+          Streamed on <%= @blurb.video.inserted_at |> Calendar.strftime("%b %d, %Y") %>
+        </div>
       </.link>
     </div>
 
