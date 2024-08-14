@@ -1,5 +1,5 @@
 <div class="min-h-screen text-white max-w-7xl mx-auto font-display">
-  <header class="flex items-center justify-between py-4 gap-4">
+  <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 px-4 gap-4">
     <div class="flex items-center gap-2 text-lg font-semibold">
       <img src={@ad.logo_url} class="h-12 w-12 rounded-full" />
       <a
@@ -19,10 +19,10 @@
     <img
       src={@ad.composite_asset_url}
       alt={@ad.website_url}
-      class="box-content h-16 aspect-[1092/135] object-cover border-[3px] rounded-xl"
+      class="box-content max-h-16 max-w-screen aspect-[1092/135] object-cover border-[3px] rounded-md lg:rounded-xl"
       style={"border-color: #{@ad.border_color || "#fff"}"}
     />
-    <div class="shrink-0 flex items-center gap-4">
+    <div class="shrink-0 hidden sm:flex items-center gap-4">
       <div class="flex items-center gap-2">
         <button
           disabled
@@ -62,13 +62,13 @@
       </div>
     </div>
   </header>
-  <main class="space-y-4">
+  <main class="space-y-4 px-4">
     <div
       class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10"
       data-v0-t="card"
     >
       <div class="flex p-6 justify-center items-center">
-        <div class="grid grid-cols-4 gap-4 text-center">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
           <div>
             <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Views</p>
             <p class="text-2xl font-bold"><%= format_number(@stats.total_views) %></p>
@@ -88,7 +88,7 @@
         </div>
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid sm:grid-cols-2 gap-4">
       <div
         class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
         data-v0-t="card"
@@ -186,7 +186,7 @@
       </div>
       <.link
         href={"/#{@blurb.video.channel_handle}/#{@blurb.video.id}"}
-        class="w-full max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden rounded-lg lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
+        class="hidden sm:block w-full max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden rounded-lg lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
       >
         <div class="flex items-center gap-4">
           <div class="relative h-20 w-20 shrink-0">
@@ -234,11 +234,11 @@
                   <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0">
                     <.link
                       navigate={"/#{product_review.video.user.handle}/#{product_review.video.id}?t=#{product_review.clip_from}"}
-                      class="flex items-center gap-2"
+                      class="flex flex-col sm:flex-row items-start sm:items-center gap-2"
                     >
                       <img
                         src={product_review.thumbnail_url}
-                        class="h-24 object-cover aspect-video rounded-lg"
+                        class="h-16 sm:h-24 object-cover aspect-video rounded-lg"
                       />
                       <div class="space-y-1">
                         <div class="text-sm text-gray-100">
@@ -266,46 +266,46 @@
         </div>
       </div>
     </div>
+  </main>
 
-    <div class="relative isolate overflow-hidden">
-      <div class="px-6 py-24 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-4xl text-center">
-          <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            Your most successful <span class="text-green-300">ad campaign</span>
-            <br class="hidden sm:inline" />is just a few livestreams away
-          </h1>
-          <p class="mt-6 text-xl leading-8 tracking-tight text-gray-300">
-            Stand out in front of millions on Twitch, YouTube and X with in-video livestream ads
-          </p>
-          <div class="mt-10 flex items-center justify-center gap-x-6">
-            <.link
-              href="https://cal.com/ioannisflo"
-              class="rounded-md bg-white px-3.5 py-2.5 text-2xl font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              Let's talk
-            </.link>
-          </div>
+  <div class="relative isolate overflow-hidden">
+    <div class="px-6 py-12 sm:py-24 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+          Your most successful <span class="text-green-300">ad campaign</span>
+          <br class="hidden sm:inline" />is just a few livestreams away
+        </h1>
+        <p class="mt-6 text-xl leading-8 tracking-tight text-gray-300">
+          Stand out in front of millions on Twitch, YouTube and X with in-video livestream ads
+        </p>
+        <div class="mt-10 flex items-center justify-center gap-x-6">
+          <.link
+            href="https://cal.com/ioannisflo"
+            class="rounded-md bg-white px-3.5 py-2.5 text-2xl font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Let's talk
+          </.link>
         </div>
       </div>
-      <svg
-        viewBox="0 0 1024 1024"
-        class="absolute left-1/2 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-x-1/2 [mask-image:radial-gradient(closest-side,white,transparent)]"
-        aria-hidden="true"
-      >
-        <circle
-          cx="512"
-          cy="512"
-          r="512"
-          fill="url(#8d958450-c69f-4251-94bc-4e091a323369)"
-          fill-opacity="0.7"
-        />
-        <defs>
-          <radialGradient id="8d958450-c69f-4251-94bc-4e091a323369">
-            <stop stop-color="#6366f1" />
-            <stop offset="1" stop-color="#3b82f6" />
-          </radialGradient>
-        </defs>
-      </svg>
     </div>
-  </main>
+    <svg
+      viewBox="0 0 1024 1024"
+      class="absolute left-1/2 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-x-1/2 [mask-image:radial-gradient(closest-side,white,transparent)]"
+      aria-hidden="true"
+    >
+      <circle
+        cx="512"
+        cy="512"
+        r="512"
+        fill="url(#8d958450-c69f-4251-94bc-4e091a323369)"
+        fill-opacity="0.7"
+      />
+      <defs>
+        <radialGradient id="8d958450-c69f-4251-94bc-4e091a323369">
+          <stop stop-color="#6366f1" />
+          <stop offset="1" stop-color="#3b82f6" />
+        </radialGradient>
+      </defs>
+    </svg>
+  </div>
 </div>
