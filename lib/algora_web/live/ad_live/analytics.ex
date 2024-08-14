@@ -67,7 +67,10 @@ defmodule AlgoraWeb.AdLive.Analytics do
     {:noreply,
      socket
      |> assign(:page_title, socket.assigns.ad.name)
-     |> assign(:page_description, "View analytics for #{socket.assigns.ad.name} ad campaign")}
+     |> assign(
+       :page_description,
+       "Discover the appearances of #{socket.assigns.ad.name} in livestreams and videos"
+     )}
   end
 
   defp fetch_ad_stats(ad) do
