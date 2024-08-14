@@ -51,13 +51,14 @@ defmodule AlgoraWeb.AdLive.Analytics do
 
   @impl true
   def handle_params(%{"slug" => slug}, _, socket) do
+    ad = Ads.get_ad_by_slug!(slug)
+
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:ad, Ads.get_ad_by_slug!(slug))}
+     |> assign(:page_title, ad.name)
+     |> assign(:page_description, "View analytics for #{ad.name} ad campaign")
+     |> assign(:ad, ad)}
   end
-
-  defp page_title(:show), do: "Analytics"
 
   defp fetch_ad_stats(ad) do
     appearances = Algora.Ads.list_appearances(ad)

@@ -4,6 +4,7 @@ defmodule Algora.Ads.Ad do
 
   schema "ads" do
     field :slug, :string
+    field :name, :string
     field :status, Ecto.Enum, values: [:inactive, :active]
     field :verified, :boolean, default: false
     field :website_url, :string
@@ -28,6 +29,7 @@ defmodule Algora.Ads.Ad do
     ad
     |> cast(attrs, [
       :slug,
+      :name,
       :verified,
       :website_url,
       :composite_asset_url,
