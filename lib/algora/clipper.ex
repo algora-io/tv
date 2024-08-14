@@ -3,10 +3,10 @@ defmodule Algora.Clipper do
 
   defp bucket(), do: Algora.config([:buckets, :media])
 
-  defp to_absolute(:video, uuid, uri),
+  def to_absolute(:video, uuid, uri),
     do: "#{Storage.endpoint_url()}/#{bucket()}/#{uuid}/#{uri}"
 
-  defp to_absolute(:clip, uuid, uri),
+  def to_absolute(:clip, uuid, uri),
     do: "#{Storage.endpoint_url()}/#{bucket()}/clips/#{uuid}/#{uri}"
 
   def clip(video, from, to) do
