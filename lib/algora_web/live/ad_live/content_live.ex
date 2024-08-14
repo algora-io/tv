@@ -12,7 +12,7 @@ defmodule AlgoraWeb.ContentLive do
   def mount(_params, _session, socket) do
     content_metrics = Ads.list_content_metrics()
     ads = Ads.list_ads()
-    videos = Library.list_videos()
+    videos = Library.list_all_videos(1000)
 
     {:ok,
      socket
