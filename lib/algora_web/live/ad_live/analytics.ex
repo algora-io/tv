@@ -8,7 +8,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
-    ad = Algora.Ads.get_ad_by_slug!(slug)
+    ad = Ads.get_ad_by_slug!(slug)
 
     %{
       stats: stats,
@@ -40,6 +40,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
      |> assign(ad: ad)
      |> assign(stats: stats)
      |> assign(appearances: appearances)
+     |> assign(product_review: product_review)
      |> assign(product_reviews: product_reviews)
      |> assign(blurb: blurb)}
   end
@@ -50,22 +51,24 @@ defmodule AlgoraWeb.AdLive.Analytics do
   end
 
   @impl true
-  def handle_params(%{"slug" => slug}, _, socket) do
-    ad = Ads.get_ad_by_slug!(slug)
+  def handle_params(_params, _url, socket) do
+    socket =
+      if socket.assigns.product_review do
+        socket |> assign(:page_image, socket.assigns.product_review.thumbnail_url)
+      end
 
     {:noreply,
      socket
-     |> assign(:page_title, ad.name)
-     |> assign(:page_description, "View analytics for #{ad.name} ad campaign")
-     |> assign(:ad, ad)}
+     |> assign(:page_title, socket.assigns.ad.name)
+     |> assign(:page_description, "View analytics for #{socket.assigns.ad.name} ad campaign")}
   end
 
   defp fetch_ad_stats(ad) do
-    appearances = Algora.Ads.list_appearances(ad)
-    content_metrics = Algora.Ads.list_content_metrics(appearances)
+    appearances = Ads.list_appearances(ad)
+    content_metrics = Ads.list_content_metrics(appearances)
 
     product_reviews =
-      Algora.Ads.list_product_reviews(ad) |> Enum.sort_by(&(&1.clip_to - &1.clip_from), :desc)
+      Ads.list_product_reviews(ad) |> Enum.sort_by(&(&1.clip_to - &1.clip_from), :desc)
 
     twitch_views = Enum.reduce(content_metrics, 0, fn cm, acc -> acc + cm.twitch_views end)
     youtube_views = Enum.reduce(content_metrics, 0, fn cm, acc -> acc + cm.youtube_views end)
