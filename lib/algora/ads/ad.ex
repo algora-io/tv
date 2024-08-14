@@ -12,6 +12,7 @@ defmodule Algora.Ads.Ad do
     field :asset_url, :string
     field :logo_url, :string
     field :qrcode_url, :string
+    field :og_image_url, :string
     field :start_date, :naive_datetime
     field :end_date, :naive_datetime
     field :total_budget, :integer
@@ -36,6 +37,7 @@ defmodule Algora.Ads.Ad do
       :asset_url,
       :logo_url,
       :qrcode_url,
+      :og_image_url,
       :start_date,
       :end_date,
       :total_budget,

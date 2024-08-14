@@ -53,8 +53,15 @@ defmodule AlgoraWeb.AdLive.Analytics do
   @impl true
   def handle_params(_params, _url, socket) do
     socket =
-      if socket.assigns.product_review do
-        socket |> assign(:page_image, socket.assigns.product_review.thumbnail_url)
+      cond do
+        socket.assigns.ad.og_image_url ->
+          assign(socket, :page_image, socket.assigns.ad.og_image_url)
+
+        socket.assigns.product_review ->
+          assign(socket, :page_image, socket.assigns.product_review.thumbnail_url)
+
+        true ->
+          socket
       end
 
     {:noreply,
