@@ -20,6 +20,13 @@
   }
 }
 
+.font-display {
+  font-family: "Space Grotesk", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
 .scrollbar-thin::-webkit-scrollbar {
   width: 0.25em;
   height: 0.25em;

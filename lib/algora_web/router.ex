@@ -56,6 +56,13 @@ defmodule AlgoraWeb.Router do
     get "/:channel_handle/embed", EmbedPopoutController, :get
     get "/:channel_handle/:video_id/embed", EmbedPopoutController, :get_by_id
 
+    live_session :ads,
+      layout: {AlgoraWeb.Layouts, :live_bare},
+      root_layout: {AlgoraWeb.Layouts, :root_embed} do
+      live "/partner", PartnerLive, :show
+      live "/:channel_handle/ads", AdOverlayLive, :show
+    end
+
     live_session :chat,
       layout: {AlgoraWeb.Layouts, :live_chat},
       root_layout: {AlgoraWeb.Layouts, :root_embed} do
@@ -75,7 +82,15 @@ defmodule AlgoraWeb.Router do
   scope "/", AlgoraWeb do
     pipe_through :browser
 
+    get "/go/:slug", AdRedirectController, :go
+
     delete "/auth/logout", OAuthCallbackController, :sign_out
+
+    live_session :schedule,
+      on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
+      live "/ads/schedule", AdLive.Schedule, :schedule
+      live "/analytics/:slug", AdLive.Analytics, :show
+    end
 
     live_session :admin,
       on_mount: [
@@ -85,6 +100,14 @@ defmodule AlgoraWeb.Router do
       ] do
       live "/shows", ShowLive.Index, :index
       live "/shows/new", ShowLive.Index, :new
+
+      live "/ads", AdLive.Index, :index
+      live "/ads/new", AdLive.Index, :new
+      live "/ads/:id/edit", AdLive.Index, :edit
+      live "/ads/:id", AdLive.Show, :show
+      live "/ads/:id/show/edit", AdLive.Show, :edit
+
+      live "/admin/content", ContentLive, :show
     end
 
     live_session :authenticated,

@@ -1,0 +1,311 @@
+<div class="min-h-screen text-white max-w-7xl mx-auto font-display">
+  <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 px-4 gap-4">
+    <div class="flex items-center gap-2 text-lg font-semibold">
+      <img src={@ad.logo_url} class="h-12 w-12 rounded-full" />
+      <a
+        href={@ad.website_url |> String.replace(~r/[?#].*$/, "")}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="truncate max-w-[300px]"
+      >
+        <span>
+          <%= @ad.website_url
+          |> String.replace(~r/[?#].*$/, "")
+          |> String.replace(~r/^https?:\/\//, "")
+          |> String.replace(~r/\/$/, "") %>
+        </span>
+      </a>
+    </div>
+    <img
+      src={@ad.composite_asset_url}
+      alt={@ad.website_url}
+      class="box-content max-h-16 max-w-screen aspect-[1092/135] object-cover border-[3px] rounded-md lg:rounded-xl"
+      style={"border-color: #{@ad.border_color || "#fff"}"}
+    />
+    <div class="shrink-0 hidden sm:flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <button
+          disabled
+          class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-white/5 ring-1 ring-white/10 text-white"
+        >
+          Edit
+        </button>
+        <button
+          disabled
+          type="button"
+          role="combobox"
+          aria-controls="radix-:r7:"
+          aria-expanded="false"
+          aria-autocomplete="none"
+          dir="ltr"
+          data-state="closed"
+          data-placeholder=""
+          class="flex h-10 w-full items-center justify-between rounded-md border border-input px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white/5 ring-1 ring-white/10 text-white"
+        >
+          <span style="pointer-events: none;" class="mr-1">Last 30 days</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <main class="space-y-4 px-4">
+    <div
+      class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10"
+      data-v0-t="card"
+    >
+      <div class="flex p-6 justify-center items-center">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div>
+            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Views</p>
+            <p class="text-2xl font-bold"><%= format_number(@stats.total_views) %></p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Airtime</p>
+            <p class="text-2xl font-bold"><%= @stats.airtime %></p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Streams</p>
+            <p class="text-2xl font-bold"><%= @stats.streams %></p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-300 tracking-tight font-bold uppercase">Creators</p>
+            <p class="text-2xl font-bold"><%= @stats.creators %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div
+        class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
+        data-v0-t="card"
+      >
+        <h3 class="whitespace-nowrap text-xl font-semibold leading-none tracking-tight mb-3 ml-3">
+          Top Sources
+        </h3>
+        <div>
+          <div class="relative w-full overflow-auto">
+            <table class="w-full caption-bottom text-sm">
+              <thead class="[&_tr]:border-b">
+                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                    Source
+                  </th>
+                  <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
+                    Views
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="[&_tr:last-child]:border-0">
+                <%= for {source, views} <- @stats.views do %>
+                  <%= if views > 0 do %>
+                    <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
+                        <.source_icon icon={source |> String.downcase() |> String.to_atom()} />
+                        <%= source %>
+                      </td>
+                      <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                        <%= format_number(views) %>
+                      </td>
+                    </tr>
+                  <% end %>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div
+        class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
+        data-v0-t="card"
+      >
+        <h3 class="whitespace-nowrap text-xl font-semibold leading-none tracking-tight mb-3 ml-3">
+          Top Languages
+        </h3>
+        <div>
+          <div class="relative w-full overflow-auto">
+            <table class="w-full caption-bottom text-sm">
+              <thead class="[&_tr]:border-b">
+                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                    Language
+                  </th>
+                  <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-center">
+                    Creators
+                  </th>
+                  <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
+                    Views
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="[&_tr:last-child]:border-0">
+                <%= for {tech, data} <- @stats.tech_stack_data do %>
+                  <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
+                      <.tech_icon tech={tech} /> <%= tech %>
+                    </td>
+                    <td class="align-middle [&:has([role=checkbox])]:pr-0">
+                      <div class="flex items-center justify-center -space-x-1">
+                        <%= for creator <- Enum.take(data.creators, 5) do %>
+                          <img
+                            class="inline-block h-8 w-8 rounded-full ring-4 ring-[#16112f]"
+                            src={creator.avatar_url}
+                            alt={"Avatar of #{creator.name}"}
+                          />
+                        <% end %>
+                      </div>
+                    </td>
+                    <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                      <%= format_number(data.views) %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div :if={@blurb.video} class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="w-full cursor-pointer">
+        <.live_component module={PlayerComponent} id="analytics-player" />
+      </div>
+      <.link
+        href={"/#{@blurb.video.channel_handle}/#{@blurb.video.id}"}
+        class="hidden sm:block w-full max-w-sm p-6 bg-gray-800/40 hover:bg-gray-800/60 overflow-hidden rounded-lg lg:rounded-2xl shadow-inner shadow-white/[10%] lg:border border-white/[15%] hover:border/white/[20%]"
+      >
+        <div class="flex items-center gap-4">
+          <div class="relative h-20 w-20 shrink-0">
+            <img
+              src={@blurb.video.channel_avatar_url}
+              alt={@blurb.video.channel_handle}
+              class="w-full h-full p-1 rounded-full"
+            />
+          </div>
+          <div>
+            <div class="text-3xl font-semibold"><%= @blurb.video.channel_name %></div>
+            <div class="font-medium text-gray-300">@<%= @blurb.video.channel_handle %></div>
+          </div>
+        </div>
+        <div class="pt-4 font-medium text-gray-100"><%= @blurb.video.title %></div>
+        <div class="pt-1 text-sm font-medium text-gray-300">
+          Streamed on <%= @blurb.video.inserted_at |> Calendar.strftime("%b %d, %Y") %>
+        </div>
+      </.link>
+    </div>
+
+    <div
+      class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
+      data-v0-t="card"
+    >
+      <h3 class="whitespace-nowrap text-xl font-semibold leading-none tracking-tight mb-3 ml-3">
+        Appearances
+      </h3>
+      <div>
+        <div class="relative w-full overflow-auto">
+          <table class="w-full caption-bottom text-sm">
+            <thead class="[&_tr]:border-b">
+              <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                  Livestream
+                </th>
+                <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
+                  Airtime
+                </th>
+              </tr>
+            </thead>
+            <tbody class="[&_tr:last-child]:border-0">
+              <%= for product_review <- @product_reviews do %>
+                <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0">
+                    <.link
+                      navigate={"/#{product_review.video.user.handle}/#{product_review.video.id}?t=#{product_review.clip_from}"}
+                      class="flex flex-col sm:flex-row items-start sm:items-center gap-2"
+                    >
+                      <img
+                        src={product_review.thumbnail_url}
+                        class="h-16 sm:h-24 object-cover aspect-video rounded-lg"
+                      />
+                      <div class="space-y-1">
+                        <div class="text-sm text-gray-100">
+                          <%= product_review.video.user.name %> &bull; <%= product_review.video.title %>
+                        </div>
+                        <div class="text-xs text-gray-300">
+                          Streamed on <%= product_review.video.inserted_at
+                          |> Calendar.strftime("%b %d, %Y") %>
+                        </div>
+                        <div class="text-xs text-purple-300">
+                          <%= Library.to_hhmmss(product_review.clip_from) %> - <%= Library.to_hhmmss(
+                            product_review.clip_to
+                          ) %>
+                        </div>
+                      </div>
+                    </.link>
+                  </td>
+                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                    <%= format_duration(product_review.clip_to - product_review.clip_from) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="relative isolate overflow-hidden">
+    <div class="px-6 py-12 sm:py-24 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <h1 class="mt-10 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+          Your most successful <span class="text-green-300">ad campaign</span>
+          <br class="hidden sm:inline" />is just a few livestreams away
+        </h1>
+        <p class="mt-6 text-xl leading-8 tracking-tight text-gray-300">
+          Stand out in front of millions on Twitch, YouTube and X with in-video livestream ads
+        </p>
+        <div class="mt-10 flex items-center justify-center gap-x-6">
+          <.link
+            href="https://cal.com/ioannisflo"
+            class="rounded-md bg-white px-3.5 py-2.5 text-2xl font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Let's talk
+          </.link>
+        </div>
+      </div>
+    </div>
+    <svg
+      viewBox="0 0 1024 1024"
+      class="absolute left-1/2 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-x-1/2 [mask-image:radial-gradient(closest-side,white,transparent)]"
+      aria-hidden="true"
+    >
+      <circle
+        cx="512"
+        cy="512"
+        r="512"
+        fill="url(#8d958450-c69f-4251-94bc-4e091a323369)"
+        fill-opacity="0.7"
+      />
+      <defs>
+        <radialGradient id="8d958450-c69f-4251-94bc-4e091a323369">
+          <stop stop-color="#6366f1" />
+          <stop offset="1" stop-color="#3b82f6" />
+        </radialGradient>
+      </defs>
+    </svg>
+  </div>
+</div>

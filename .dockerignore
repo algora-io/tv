@@ -30,3 +30,4 @@ node_modules
 /priv/cache
 *.patch
 /.fly
+/xref*

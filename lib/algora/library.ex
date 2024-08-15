@@ -355,6 +355,23 @@ defmodule Algora.Library do
     to_hhmmss(trunc(duration))
   end
 
+  def from_hhmmss(timestamp) do
+    case String.split(timestamp, ":") do
+      [hours, minutes, seconds] ->
+        String.to_integer(hours) * 3600 + String.to_integer(minutes) * 60 +
+          String.to_integer(seconds)
+
+      [minutes, seconds] ->
+        String.to_integer(minutes) * 60 + String.to_integer(seconds)
+
+      [seconds] ->
+        String.to_integer(seconds)
+
+      _ ->
+        raise ArgumentError, "Invalid time format. Expected hh:mm:ss"
+    end
+  end
+
   def unsubscribe_to_channel(%Channel{} = channel) do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end
@@ -547,6 +564,21 @@ defmodule Algora.Library do
           v.visibility == :public and
           is_nil(v.vertical_thumbnail_url) and
           (v.is_live == true or v.duration >= 120 or v.type == :vod),
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url
+      }
+    )
+    |> order_by_inserted(:desc)
+    |> Repo.all()
+  end
+
+  def list_all_videos(limit \\ 100) do
+    from(v in Video,
+      join: u in User,
+      on: v.user_id == u.id,
+      limit: ^limit,
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
