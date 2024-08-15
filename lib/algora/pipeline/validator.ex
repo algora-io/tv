@@ -32,6 +32,20 @@ defimpl Membrane.RTMP.MessageValidator, for: Algora.Pipeline.MessageValidator do
       )
     end
 
+    youtube_handle =
+      case user.id do
+        307 -> "@heyandras"
+        9 -> "@dragonroyale"
+        _ -> nil
+      end
+
+    if youtube_handle do
+      DynamicSupervisor.start_child(
+        Algora.Youtube.Chat.Supervisor,
+        {Algora.Youtube.Chat.Fetcher, %{video: video, youtube_handle: youtube_handle}}
+      )
+    end
+
     {:ok, "connect success"}
   end
 
