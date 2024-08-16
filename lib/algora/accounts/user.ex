@@ -15,6 +15,8 @@ defmodule Algora.Accounts.User do
     field :videos_count, :integer
     field :is_live, :boolean, default: false
     field :stream_key, :string
+    field :stream_key_created_at, :utc_datetime
+    field :stream_key_last_used_at, :utc_datetime
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
     field :bounties_count, :integer
     field :solving_challenge, :boolean, default: false
@@ -112,5 +114,19 @@ defmodule Algora.Accounts.User do
           put_change(changeset, :channel_tagline, "#{handle}'s channel")
       end
     end)
+  end
+
+  def changeset(user, attrs) do
+    user
+    |> cast(attrs, [:stream_key, :stream_key_created_at, :stream_key_last_used_at, :email, :name, :handle, :channel_tagline, :avatar_url, :external_homepage_url, :visibility])
+    |> validate_required([:stream_key, :stream_key_created_at, :stream_key_last_used_at, :email, :name, :handle, :visibility])
+    |> validate_stream_key()
+    |> unique_constraint(:stream_key)
+  end
+
+  defp validate_stream_key(changeset) do
+    changeset
+    |> validate_length(:stream_key, min: 32, max: 64)
+    |> validate_format(:stream_key, ~r/^[a-zA-Z0-9_-]+$/)
   end
 end

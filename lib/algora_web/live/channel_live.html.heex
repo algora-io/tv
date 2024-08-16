@@ -1,0 +1,35 @@
+<div>
+  <h2>Stream Settings</h2>
+
+  <div>
+    <label>RTMP URL:</label>
+    <input type="text" value={@rtmp_url} readonly />
+    <button phx-click="copy_rtmp_url">Copy</button>
+  </div>
+
+  <%= if @owns_channel? do %>
+    <div>
+      <label>Stream Key:</label>
+      <input type="password" value={@stream_key_info.stream_key} readonly />
+      <button phx-click="copy_stream_key">Copy</button>
+      <button phx-click="generate_stream_key">Generate New Key</button>
+    </div>
+
+    <div>
+      <p>Created: <%= @stream_key_info.created_at %></p>
+      <p>Last Used: <%= @stream_key_info.last_used_at || "Never" %></p>
+      <p>Expires: <%= @stream_key_info.expires_at %></p>
+    </div>
+
+    <div>
+      <label>Custom Stream Key:</label>
+      <form phx-submit="set_custom_stream_key">
+        <input type="text" name="key" placeholder="Enter custom stream key" />
+        <button type="submit">Set Custom Key</button>
+      </form>
+      <%= if @stream_key_error do %>
+        <p class="error"><%= @stream_key_error %></p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

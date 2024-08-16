@@ -5,6 +5,8 @@ defmodule Algora.Accounts do
   alias Algora.{Repo, Restream}
   alias Algora.Accounts.{User, Identity, Destination, Entity}
 
+  @stream_key_expiration_days 30
+
   def list_users(opts) do
     Repo.all(from u in User, limit: ^Keyword.fetch!(opts, :limit))
   end
@@ -269,5 +271,62 @@ defmodule Algora.Accounts do
       nil -> create_entity!(attrs)
       entity -> entity
     end
+  end
+
+  def generate_stream_key do
+    :crypto.strong_rand_bytes(32) |> Base.url_encode64(padding: false)
+  end
+
+  def set_stream_key(%User{} = user, key) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    user
+    |> User.changeset(%{
+      stream_key: key,
+      stream_key_created_at: now,
+      stream_key_last_used_at: nil
+    })
+    |> Repo.update()
+  end
+
+  def reset_stream_key(%User{} = user) do
+    set_stream_key(user, generate_stream_key())
+  end
+
+  def validate_stream_key(%User{} = user, key) do
+    cond do
+      is_nil(user.stream_key) ->
+        {:error, :no_stream_key}
+
+      not Plug.Crypto.secure_compare(user.stream_key, key) ->
+        {:error, :invalid_stream_key}
+
+      stream_key_expired?(user) ->
+        {:error, :expired_stream_key}
+
+      true ->
+        update_stream_key_last_used(user)
+        {:ok, user}
+    end
+  end
+
+  defp stream_key_expired?(%User{stream_key_created_at: created_at}) do
+    expiration_date = DateTime.add(created_at, @stream_key_expiration_days, :day)
+    DateTime.compare(expiration_date, DateTime.utc_now()) == :lt
+  end
+
+  defp update_stream_key_last_used(user) do
+    user
+    |> User.changeset(%{stream_key_last_used_at: DateTime.utc_now()})
+    |> Repo.update()
+  end
+
+  def get_stream_key_info(%User{} = user) do
+    %{
+      stream_key: user.stream_key,
+      created_at: user.stream_key_created_at,
+      last_used_at: user.stream_key_last_used_at,
+      expires_at: DateTime.add(user.stream_key_created_at, @stream_key_expiration_days, :day)
+    }
   end
 end

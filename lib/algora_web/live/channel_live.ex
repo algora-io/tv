@@ -234,6 +234,11 @@ defmodule AlgoraWeb.ChannelLive do
       |> stream(:videos, videos)
       |> stream(:presences, Presence.list_online_users(channel_handle))
 
+    if socket.assigns.owns_channel? do
+      stream_key_info = Accounts.get_stream_key_info(current_user)
+      socket = assign(socket, stream_key_info: stream_key_info)
+    end
+
     {:ok, socket}
   end
 
@@ -334,5 +339,37 @@ defmodule AlgoraWeb.ChannelLive do
     })
 
     socket
+  end
+
+  def handle_event("generate_stream_key", _, socket) do
+    user = socket.assigns.current_user
+    case Accounts.reset_stream_key(user) do
+      {:ok, updated_user} ->
+        stream_key_info = Accounts.get_stream_key_info(updated_user)
+        {:noreply, assign(socket, current_user: updated_user, stream_key_info: stream_key_info)}
+      {:error, changeset} ->
+        {:noreply, assign(socket, stream_key_error: changeset.errors[:stream_key])}
+    end
+  end
+
+  def handle_event("set_custom_stream_key", %{"key" => key}, socket) do
+    user = socket.assigns.current_user
+    case Accounts.set_stream_key(user, key) do
+      {:ok, updated_user} ->
+        stream_key_info = Accounts.get_stream_key_info(updated_user)
+        {:noreply, assign(socket, current_user: updated_user, stream_key_info: stream_key_info)}
+      {:error, changeset} ->
+        {:noreply, assign(socket, stream_key_error: changeset.errors[:stream_key])}
+    end
+  end
+
+  def handle_event("copy_stream_key", _, socket) do
+    # Implement copy to clipboard functionality
+    {:noreply, socket}
+  end
+
+  def handle_event("copy_rtmp_url", _, socket) do
+    # Implement copy to clipboard functionality
+    {:noreply, socket}
   end
 end
