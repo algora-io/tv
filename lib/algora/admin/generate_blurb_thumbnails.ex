@@ -13,6 +13,7 @@ defmodule Algora.Admin.GenerateBlurbThumbnails do
     Repo.all(
       from pr in ProductReview,
         join: v in assoc(pr, :video),
+        where: is_nil(pr.thumbnail_url),
         preload: [video: v]
     )
   end
