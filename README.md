@@ -19,6 +19,15 @@
     ·
     <a href="https://github.com/algora-io/tv/issues">Issues</a>
   </p>
+  
+  <p align="center">
+    <a href="https://console.algora.io/org/algora/bounties?status=open">
+      <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fconsole.algora.io%2Fapi%2Fshields%2Falgora%2Fbounties%3Fstatus%3Dopen" alt="Open Bounties">
+    </a>
+    <a href="https://console.algora.io/org/algora/bounties?status=completed">
+      <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fconsole.algora.io%2Fapi%2Fshields%2Falgora%2Fbounties%3Fstatus%3Dcompleted" alt="Rewarded Bounties">
+    </a>
+  </p>
 </p>
 
 ## Architecture
