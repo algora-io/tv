@@ -206,8 +206,15 @@ const Hooks = {
 
         setMediaSession();
 
-        if (opts.current_time && opts.player_type !== "video/youtube") {
-          this.player.currentTime(opts.current_time);
+        if (opts.current_time) {
+          if (opts.player_type === "video/youtube") {
+            // HACK: wait for the video to load
+            setTimeout(() => {
+              this.player.currentTime(opts.current_time);
+            }, 2000);
+          } else {
+            this.player.currentTime(opts.current_time);
+          }
         }
 
         if (backdrop) {
