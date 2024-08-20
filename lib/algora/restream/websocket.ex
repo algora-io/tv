@@ -65,7 +65,7 @@ defmodule Algora.Restream.Websocket do
     parts = String.split(identifier, "-")
 
     case parts do
-      [_prefix, platform, _suffix] ->
+      [_prefix, platform | _rest] ->
         platform
 
       _ ->
