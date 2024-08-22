@@ -40,7 +40,7 @@
           dir="ltr"
           data-state="closed"
           data-placeholder=""
-          class="flex h-10 w-full items-center justify-between rounded-md border border-input px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white/5 ring-1 ring-white/10 text-white"
+          class="flex h-10 w-full items-center justify-between rounded-md border border-input px-3 py-2 text-sm ring-offset-background placeholder:focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-white/5 ring-1 ring-white/10 text-white"
         >
           <span style="pointer-events: none;" class="mr-1">Last 30 days</span>
           <svg
@@ -64,7 +64,7 @@
   </header>
   <main class="space-y-4 px-4">
     <div
-      class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10"
+      class="rounded-lg lg:rounded-2xl border shadow-inner bg-white/5 ring-1 ring-white/10"
       data-v0-t="card"
     >
       <div class="flex p-6 justify-center items-center">
@@ -89,10 +89,7 @@
       </div>
     </div>
     <div class="grid sm:grid-cols-2 gap-4">
-      <div
-        class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
-        data-v0-t="card"
-      >
+      <div class="rounded-lg lg:rounded-2xl border shadow-inner bg-white/5 ring-1 ring-white/10 p-6 min-w-0">
         <h3 class="whitespace-nowrap text-xl font-semibold leading-none tracking-tight mb-3 ml-3">
           Top Sources
         </h3>
@@ -101,10 +98,10 @@
             <table class="w-full caption-bottom text-sm">
               <thead class="[&_tr]:border-b">
                 <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                  <th class="h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0">
                     Source
                   </th>
-                  <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
+                  <th class="h-12 px-4 align-middle font-medium [&:has([role=checkbox])]:pr-0 text-right">
                     Views
                   </th>
                 </tr>
@@ -128,10 +125,7 @@
           </div>
         </div>
       </div>
-      <div
-        class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
-        data-v0-t="card"
-      >
+      <div class="rounded-lg lg:rounded-2xl border shadow-inner bg-white/5 ring-1 ring-white/10 p-6 min-w-0">
         <h3 class="whitespace-nowrap text-xl font-semibold leading-none tracking-tight mb-3 ml-3">
           Top Languages
         </h3>
@@ -140,13 +134,13 @@
             <table class="w-full caption-bottom text-sm">
               <thead class="[&_tr]:border-b">
                 <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                  <th class="h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0">
                     Language
                   </th>
-                  <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-center">
+                  <th class="h-12 px-4 align-middle font-medium [&:has([role=checkbox])]:pr-0 text-center">
                     Creators
                   </th>
-                  <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
+                  <th class="h-12 px-4 align-middle font-medium [&:has([role=checkbox])]:pr-0 text-right">
                     Views
                   </th>
                 </tr>
@@ -209,7 +203,7 @@
     </div>
 
     <div
-      class="rounded-lg lg:rounded-2xl border text-card-foreground shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
+      class="rounded-lg lg:rounded-2xl border shadow-inner bg-white/5 ring-1 ring-white/10 p-6"
       data-v0-t="card"
     >
       <h3 class="whitespace-nowrap text-xl font-semibold leading-none tracking-tight mb-3 ml-3">
@@ -220,10 +214,17 @@
           <table class="w-full caption-bottom text-sm">
             <thead class="[&_tr]:border-b">
               <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                <th class="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                <th class="h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0">
                   Livestream
                 </th>
-                <th class="h-12 px-4 align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 text-right">
+                <th class="hidden sm:table-cell h-12 px-4 text-center align-middle font-medium [&:has([role=checkbox])]:pr-0">
+                </th>
+                <th class="hidden sm:table-cell h-12 px-4 pr-7 text-right align-middle font-medium [&:has([role=checkbox])]:pr-0">
+                  Views
+                </th>
+                <th class="hidden sm:table-cell h-12 px-4 text-center align-middle font-medium [&:has([role=checkbox])]:pr-0">
+                </th>
+                <th class="h-12 px-4 align-middle font-medium [&:has([role=checkbox])]:pr-0 text-right">
                   Airtime
                 </th>
               </tr>
@@ -254,6 +255,75 @@
                           ) %>
                         </div>
                       </div>
+                    </.link>
+                  </td>
+                  <td class="hidden sm:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                    <.link
+                      :if={product_review.video.content_metrics.twitter_views > 0}
+                      href={product_review.video.content_metrics.twitter_video_url}
+                      class="flex items-center justify-end gap-2"
+                    >
+                      <%= format_number(product_review.video.content_metrics.twitter_views) %>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                      </svg>
+                    </.link>
+                  </td>
+                  <td class="hidden sm:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                    <.link
+                      :if={product_review.video.content_metrics.twitch_views > 0}
+                      href={product_review.video.content_metrics.twitch_stream_url}
+                      class="flex items-center justify-end gap-2"
+                    >
+                      <%= format_number(product_review.video.content_metrics.twitch_views) %>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-brand-twitch"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 5v11a1 1 0 0 0 1 1h2v4l4 -4h5.584c.266 0 .52 -.105 .707 -.293l2.415 -2.414c.187 -.188 .293 -.442 .293 -.708v-8.585a1 1 0 0 0 -1 -1h-14a1 1 0 0 0 -1 1z" /><path d="M16 8l0 4" /><path d="M12 8l0 4" />
+                      </svg>
+                    </.link>
+                  </td>
+                  <td class="hidden sm:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                    <.link
+                      :if={product_review.video.content_metrics.youtube_views > 0}
+                      href={product_review.video.content_metrics.youtube_video_url}
+                      class="flex items-center justify-end gap-2"
+                    >
+                      <%= format_number(product_review.video.content_metrics.youtube_views) %>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z" /><path d="M10 9l5 3l-5 3z" />
+                      </svg>
                     </.link>
                   </td>
                   <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">

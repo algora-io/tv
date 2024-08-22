@@ -37,9 +37,9 @@ defmodule Algora.Library.Video do
     belongs_to :show, Show
     belongs_to :transmuxed_from, Video
 
+    has_one :content_metrics, ContentMetrics
     has_many :messages, Message
     has_many :appearances, Appearance
-    has_many :content_metrics, ContentMetrics
     has_many :product_reviews, ProductReview
 
     timestamps()

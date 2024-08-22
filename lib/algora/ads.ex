@@ -265,7 +265,7 @@ defmodule Algora.Ads do
   def list_product_reviews(ad) do
     ProductReview
     |> where(ad_id: ^ad.id)
-    |> preload(video: :user)
+    |> preload(video: [:user, :content_metrics])
     |> Repo.all()
   end
 
