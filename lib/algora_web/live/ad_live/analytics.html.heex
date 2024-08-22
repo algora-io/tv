@@ -217,14 +217,12 @@
                 <th class="h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0">
                   Livestream
                 </th>
-                <th class="hidden sm:table-cell h-12 px-4 text-center align-middle font-medium [&:has([role=checkbox])]:pr-0">
-                </th>
-                <th class="hidden sm:table-cell h-12 px-4 pr-7 text-right align-middle font-medium [&:has([role=checkbox])]:pr-0">
+                <th class="hidden lg:table-cell"></th>
+                <th class="hidden lg:table-cell h-12 px-4 pr-7 text-right align-middle font-medium [&:has([role=checkbox])]:pr-0">
                   Views
                 </th>
-                <th class="hidden sm:table-cell h-12 px-4 text-center align-middle font-medium [&:has([role=checkbox])]:pr-0">
-                </th>
-                <th class="h-12 px-4 align-middle font-medium [&:has([role=checkbox])]:pr-0 text-right">
+                <th class="hidden lg:table-cell"></th>
+                <th class="hidden sm:table-cell h-12 px-4 align-middle font-medium [&:has([role=checkbox])]:pr-0 text-right">
                   Airtime
                 </th>
               </tr>
@@ -235,11 +233,11 @@
                   <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0">
                     <.link
                       navigate={"/#{product_review.video.user.handle}/#{product_review.video.id}?t=#{product_review.clip_from}"}
-                      class="flex flex-col sm:flex-row items-start sm:items-center gap-2"
+                      class="flex flex-col sm:flex-row items-start sm:items-center gap-4"
                     >
                       <img
                         src={product_review.thumbnail_url}
-                        class="h-16 sm:h-24 object-cover aspect-video rounded-lg"
+                        class="h-24 object-cover aspect-video rounded-lg"
                       />
                       <div class="space-y-1">
                         <div class="text-sm text-gray-100">
@@ -256,8 +254,81 @@
                         </div>
                       </div>
                     </.link>
+                    <div class="mt-4 lg:hidden flex items-center">
+                      <div class="font-semibold">Views:</div>
+                      <.link
+                        :if={product_review.video.content_metrics.twitter_views > 0}
+                        href={product_review.video.content_metrics.twitter_video_url}
+                        class="ml-2 flex items-center gap-2"
+                      >
+                        <%= format_number(product_review.video.content_metrics.twitter_views) %>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="icon icon-tabler icons-tabler-outline icon-tabler-brand-x"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+                        </svg>
+                      </.link>
+                      <.link
+                        :if={product_review.video.content_metrics.twitch_views > 0}
+                        href={product_review.video.content_metrics.twitch_stream_url}
+                        class="ml-2 flex items-center gap-2"
+                      >
+                        <%= format_number(product_review.video.content_metrics.twitch_views) %>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="icon icon-tabler icons-tabler-outline icon-tabler-brand-twitch"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 5v11a1 1 0 0 0 1 1h2v4l4 -4h5.584c.266 0 .52 -.105 .707 -.293l2.415 -2.414c.187 -.188 .293 -.442 .293 -.708v-8.585a1 1 0 0 0 -1 -1h-14a1 1 0 0 0 -1 1z" /><path d="M16 8l0 4" /><path d="M12 8l0 4" />
+                        </svg>
+                      </.link>
+                      <.link
+                        :if={product_review.video.content_metrics.youtube_views > 0}
+                        href={product_review.video.content_metrics.youtube_video_url}
+                        class="ml-2 flex items-center gap-2"
+                      >
+                        <%= format_number(product_review.video.content_metrics.youtube_views) %>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="icon icon-tabler icons-tabler-outline icon-tabler-brand-youtube"
+                        >
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8z" /><path d="M10 9l5 3l-5 3z" />
+                        </svg>
+                      </.link>
+                    </div>
+
+                    <div class="mt-2 sm:hidden flex items-center">
+                      <div class="font-semibold">Airtime:</div>
+                      <div class="ml-2">
+                        <%= format_duration(product_review.clip_to - product_review.clip_from) %>
+                      </div>
+                    </div>
                   </td>
-                  <td class="hidden sm:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                  <td class="hidden lg:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
                     <.link
                       :if={product_review.video.content_metrics.twitter_views > 0}
                       href={product_review.video.content_metrics.twitter_video_url}
@@ -280,7 +351,7 @@
                       </svg>
                     </.link>
                   </td>
-                  <td class="hidden sm:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                  <td class="hidden lg:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
                     <.link
                       :if={product_review.video.content_metrics.twitch_views > 0}
                       href={product_review.video.content_metrics.twitch_stream_url}
@@ -303,7 +374,7 @@
                       </svg>
                     </.link>
                   </td>
-                  <td class="hidden sm:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                  <td class="hidden lg:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
                     <.link
                       :if={product_review.video.content_metrics.youtube_views > 0}
                       href={product_review.video.content_metrics.youtube_video_url}
@@ -326,7 +397,7 @@
                       </svg>
                     </.link>
                   </td>
-                  <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
+                  <td class="hidden sm:table-cell p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right">
                     <%= format_duration(product_review.clip_to - product_review.clip_from) %>
                   </td>
                 </tr>
