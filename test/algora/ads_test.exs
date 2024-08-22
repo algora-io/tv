@@ -4,18 +4,18 @@ defmodule Algora.AdsTest do
   alias Algora.Ads
 
   describe "next_slot/1" do
-    test "returns the next 10-minute slot" do
+    test "returns the next 30-minute slot" do
       # Test case 1: Exactly at the start of a slot
       time = ~U[2024-08-03 10:00:00.000Z]
-      assert Ads.next_slot(time) == ~U[2024-08-03 10:10:00.000Z]
+      assert Ads.next_slot(time) == ~U[2024-08-03 10:30:00.000Z]
 
       # Test case 2: In the middle of a slot
-      time = ~U[2024-08-03 10:05:30.123Z]
-      assert Ads.next_slot(time) == ~U[2024-08-03 10:10:00.000Z]
+      time = ~U[2024-08-03 10:15:30.123Z]
+      assert Ads.next_slot(time) == ~U[2024-08-03 10:30:00.000Z]
 
       # Test case 3: Just before the next slot
-      time = ~U[2024-08-03 10:09:59.999Z]
-      assert Ads.next_slot(time) == ~U[2024-08-03 10:10:00.000Z]
+      time = ~U[2024-08-03 10:29:59.999Z]
+      assert Ads.next_slot(time) == ~U[2024-08-03 10:30:00.000Z]
 
       # Test case 4: Crossing an hour boundary
       time = ~U[2024-08-03 10:55:00.123Z]
