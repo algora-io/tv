@@ -135,6 +135,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
   defp get_tech_stack(user_id) do
     case user_id do
       7 -> "TypeScript"
+      8 -> "TypeScript"
       109 -> "TypeScript"
       307 -> "PHP"
       _ -> "Other"
