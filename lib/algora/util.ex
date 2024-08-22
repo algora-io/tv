@@ -82,6 +82,25 @@ defmodule Algora.Util do
     "your"
   ]
 
+  def app_url() do
+    config = Application.get_env(:algora, AlgoraWeb.Endpoint)
+
+    scheme =
+      case Application.get_env(:algora, :mode) do
+        :prod -> "https"
+        _ -> "http"
+      end
+
+    host = config[:url][:host] || "localhost"
+    port = config[:http][:port]
+
+    "#{scheme}://#{host}#{port_string(scheme, port)}"
+  end
+
+  defp port_string("http", 80), do: ""
+  defp port_string("https", 443), do: ""
+  defp port_string(_, port), do: ":#{port}"
+
   def common_word?(s), do: Enum.member?(@common_words, s)
 
   def random_string do
