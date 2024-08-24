@@ -411,6 +411,12 @@ window.addEventListener("phx:remove-el", (e) =>
   document.getElementById(e.detail.id)?.remove()
 );
 
+window.addEventListener("phx:copy_to_clipboard", (e) => {
+  const text = e.detail.text;
+  navigator.clipboard.writeText(text).then(() => {
+    console.log("Copied to clipboard");
+  });
+});
 // connect if there are any LiveViews on the page
 liveSocket.getSocket().onOpen(() => execJS("#connection-status", "js-hide"));
 liveSocket.getSocket().onError(() => execJS("#connection-status", "js-show"));

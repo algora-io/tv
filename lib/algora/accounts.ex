@@ -180,20 +180,17 @@ defmodule Algora.Accounts do
   end
 
   def gen_stream_key(%User{} = user) do
-    user =
-      Repo.one!(from(u in User, where: u.id == ^user.id))
+    user = Repo.one!(from(u in User, where: u.id == ^user.id))
 
-    token = :crypto.strong_rand_bytes(32)
-    hashed_token = :crypto.hash(:sha256, token)
-    encoded_token = Base.url_encode64(hashed_token, padding: false)
+    stream_key = :crypto.strong_rand_bytes(16) |> Base.url_encode64(padding: false)
 
-    {:ok, _} =
+    {:ok, updated_user} =
       user
       |> change()
-      |> put_change(:stream_key, encoded_token)
+      |> put_change(:stream_key, stream_key)
       |> Repo.update()
 
-    {:ok, user}
+    {:ok, updated_user}
   end
 
   def list_destinations(user_id) do
