@@ -21,16 +21,51 @@ defmodule AlgoraWeb.SettingsLive do
           <.input field={@form[:name]} label="Name" />
           <.input label="Email" name="email" value={@current_user.email} disabled />
           <.input field={@form[:channel_tagline]} label="Stream tagline" />
-          <div>
-            <.input
-              label="Stream URL"
-              name="stream_url"
-              value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
-              disabled
-            />
-            <p class="mt-2 text-sm text-gray-400">
-              <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
-            </p>
+          <div class="space-y-4">
+            <div>
+              <label for="rtmp_url" class="block text-sm font-medium text-gray-200">
+                RTMP URL
+              </label>
+              <div class="mt-1">
+                <div class="py-2 px-3 bg-gray-800 text-white rounded-md text-sm">
+                  <%= "rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/live" %>
+                </div>
+              </div>
+              <p class="mt-2 text-sm text-gray-400">
+                Paste into OBS Studio > File > Settings > Stream > Server
+              </p>
+            </div>
+
+            <div>
+              <label for="stream_key" class="block text-sm font-medium text-gray-200">
+                Stream key
+              </label>
+              <div class="mt-1 flex items-center">
+                <input
+                  type="password"
+                  value={@current_user.stream_key}
+                  readonly
+                  class="bg-gray-800 text-white flex-1 rounded-md py-2 px-3 text-sm"
+                />
+                <button
+                  type="button"
+                  phx-click="reset_stream_key"
+                  class="ml-2 px-3 py-2 bg-gray-700 text-white rounded-md text-sm"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  phx-click="copy_stream_key"
+                  class="ml-2 px-3 py-2 bg-gray-700 text-white rounded-md text-sm"
+                >
+                  Copy
+                </button>
+              </div>
+              <p class="mt-2 text-sm text-gray-400">
+                Paste into OBS Studio > File > Settings > Stream > Stream Key
+              </p>
+            </div>
           </div>
           <:actions>
             <.button>Save</.button>
@@ -222,5 +257,34 @@ defmodule AlgoraWeb.SettingsLive do
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
+  end
+
+  def handle_event("reset_stream_key", _, socket) do
+    case Accounts.gen_stream_key(socket.assigns.current_user) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(current_user: user)
+         |> assign_form(Accounts.change_settings(user, %{}))
+         |> put_flash(:info, "Stream key generated successfully")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to generate stream key")}
+    end
+  end
+
+  def handle_event("copy_stream_key", _, socket) do
+    {:noreply,
+     socket
+     |> push_event("copy_to_clipboard", %{text: socket.assigns.current_user.stream_key})
+     |> put_flash(:info, "Stream key copied to clipboard")}
+  end
+
+  def handle_event("copy_rtmp_url", _, socket) do
+    rtmp_url = "rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/live"
+    {:noreply,
+     socket
+     |> push_event("copy_to_clipboard", %{text: rtmp_url})
+     |> put_flash(:info, "RTMP URL copied to clipboard")}
   end
 end

@@ -25,59 +25,18 @@
 
         <div class="sm:col-span-4">
           <label for="about" class="block text-sm font-medium text-gray-200">
-            RTMP URL
+            Stream URL
           </label>
-          <div class="mt-1 flex items-center">
+          <div class="mt-1">
             <div class="py-2 border px-3 border-1 bg-gray-950 text-white flex-1 focus:ring-purple-400 focus:border-purple-400 block w-full min-w-0 rounded-md sm:text-sm border-gray-600">
-              <%= "rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/live" %>
+              <%= "rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}" %>
             </div>
-            <button
-              type="button"
-              phx-click="copy_rtmp_url"
-              class="ml-2 px-3 py-2 bg-purple-600 text-white rounded-md"
-            >
-              Copy
-            </button>
           </div>
           <p class="mt-2 text-sm text-gray-400">
             <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
           </p>
         </div>
-
-        <div class="sm:col-span-4">
-          <label for="about" class="block text-sm font-medium text-gray-200">
-            Stream key
-          </label>
-          <div class="mt-1 flex items-center">
-            <%= text_input(f, :stream_key,
-              class:
-                "bg-gray-950 text-white flex-1 focus:ring-purple-400 focus:border-purple-400 block w-full min-w-0 rounded-md sm:text-sm border-gray-600",
-              value: @current_user.stream_key,
-              placeholder: "Enter custom stream key or generate one"
-            ) %>
-            <button
-              type="button"
-              phx-click="reset_stream_key"
-              class="ml-2 px-3 py-2 bg-purple-600 text-white rounded-md"
-            >
-              Generate
-            </button>
-            <button
-              type="button"
-              phx-click="copy_stream_key"
-              class="ml-2 px-3 py-2 bg-purple-600 text-white rounded-md"
-            >
-              Copy
-            </button>
-          </div>
-          <p class="mt-2 text-sm text-gray-400">
-            <%= "Paste into OBS Studio > File > Settings > Stream > Stream Key" %>
-          </p>
-        </div>
       </div>
-    </div>
-    <div>
-      <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md">Save</button>
     </div>
   </.form>
 </div>
