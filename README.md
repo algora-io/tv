@@ -69,51 +69,99 @@ To get a local copy up and running, please follow these steps.
 
 ### Prerequisites
 
-Here is what you need to be able to run Algora TV.
+- Elixir and Erlang/OTP
 
-- Elixir (Version: >=1.12)
-- OTP
+  - We recommend using [asdf](https://github.com/asdf-vm/asdf) to install and manage different [Elixir](https://github.com/asdf-vm/asdf-elixir) and [Erlang/OTP](https://github.com/asdf-vm/asdf-erlang) versions.
+  - Keep in mind that each Elixir version supports specific Erlang/OTP versions. [See the supported versions here.](https://hexdocs.pm/elixir/compatibility-and-deprecations.html#between-elixir-and-erlang-otp)
+  - Make sure you have at least Elixir 1.12 installed to run Algora TV.
+
 - PostgreSQL
 - FFmpeg
+- OBS Studio (recommended for testing livestreaming features)
 
-## Development
+### Setting up the project
 
-### Setup
-
-1. Clone the repo into a public GitHub repository (or fork https://github.com/algora-io/tv/fork).
-
-   ```sh
-   git clone https://github.com/algora-io/tv.git
-   ```
-
-2. Go to the project folder
+1. Clone the repo and go to the project folder
 
    ```sh
-   cd tv
+   git clone https://github.com/algora-io/tv.git; cd tv
    ```
 
-3. Install dependencies with mix
+2. Fetch dependencies
 
    ```sh
    mix deps.get
    ```
 
-4. Set up your `.env` file
-
-   - Duplicate `.env.example` to `.env`
-   - Add your environment variables in the `.env` file
-
-5. Create and migrate your database with mix
+3. Initialize your `.env` file
 
    ```sh
-   mix ecto.setup
+   cp .env.example .env
    ```
 
-6. Start your development server
+4. Create your database
+
+   ```sh
+   sudo -u postgres psql
+   ```
+
+   ```sql
+   CREATE USER algora WITH PASSWORD 'password';
+   CREATE DATABASE tv;
+   GRANT ALL PRIVILEGES ON DATABASE tv TO algora;
+   ```
+
+5. Paste your connection string into your `.env` file
+
+   ```env
+   DATABASE_URL="postgresql://algora:password@localhost:5432/tv"
+   ```
+
+6. Set up your database and run migrations
+
+   ```sh
+   env $(cat .env | xargs -L 1) mix ecto.setup
+   ```
+
+7. Start your development server
 
    ```sh
    env $(cat .env | xargs -L 1) iex -S mix phx.server
    ```
+
+### Setting up external services
+
+Some features of Algora TV rely on external services. If you're not planning on using these features, feel free to skip setting them up.
+
+#### GitHub
+
+GitHub is used for authenticating users.
+
+[Create a GitHub OAuth app](https://github.com/settings/applications/new) and set
+
+- Homepage URL: http://localhost:4000
+- Authorization callback URL: http://localhost:4000/oauth/callbacks/github
+
+Once you have obtained your client ID and secret, add them to your `.env` file.
+
+```env
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET="..."
+```
+
+#### Tigris
+
+Tigris is used for storing and delivering livestreams and other media.
+
+[Create a public Tigris bucket](https://console.tigris.dev/) to obtain your secrets and add them to your `.env` file.
+
+```env
+AWS_ENDPOINT_URL_S3="https://fly.storage.tigris.dev"
+AWS_REGION="auto"
+AWS_ACCESS_KEY_ID="tid_..."
+AWS_SECRET_ACCESS_KEY="tsec_..."
+BUCKET_MEDIA="..."
+```
 
 <!-- LICENSE -->
 
