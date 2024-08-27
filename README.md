@@ -30,37 +30,6 @@
   </p>
 </p>
 
-## Architecture
-
-### Overview
-
-```mermaid
-graph
-    Streamers{Streamers} --> Fly
-    Fly[Fly<br>Elixir App] --> RTMP
-    Fly --> Web[Phoenix<br>Web Server]
-    Fly --> Db[Fly<br>Postgres]
-    RTMP[Membrane<br>RTMP Server] -->|First mile delivery| Tigris[Tigris<br>Object Storage]
-    Viewers{Viewers} -->|Last mile delivery| Tigris
-    Viewers --> Fly
-```
-
-### Livestream pipeline
-
-```mermaid
-graph
-    Encoder{Encoder<br>e.g. OBS} -->|RTMP| Source[FLV Demuxer]
-    Source -->|video| H264Parser[H264 Parser]
-    Source -->|audio| AACParser[AAC Parser]
-    H264Parser --> H264Payloader[H264 Payloader]
-    AACParser --> AACPayloader[AAC Payloader]
-    H264Payloader --> CMAFMuxerVideo[CMAF Muxer]
-    AACPayloader --> CMAFMuxerAudio[CMAF Muxer]
-    CMAFMuxerVideo --> fMP4
-    CMAFMuxerAudio --> fMP4
-    fMP4[Fragmented MP4] -->|HLS| Tigris{Tigris Object Storage}
-```
-
 <!-- GETTING STARTED -->
 
 ## Getting Started
@@ -161,6 +130,39 @@ AWS_REGION="auto"
 AWS_ACCESS_KEY_ID="tid_..."
 AWS_SECRET_ACCESS_KEY="tsec_..."
 BUCKET_MEDIA="..."
+```
+
+<!-- ARCHITECTURE -->
+
+## Architecture
+
+### Overview
+
+```mermaid
+graph
+    Streamers{Streamers} --> Fly
+    Fly[Fly<br>Elixir App] --> RTMP
+    Fly --> Web[Phoenix<br>Web Server]
+    Fly --> Db[Fly<br>Postgres]
+    RTMP[Membrane<br>RTMP Server] -->|First mile delivery| Tigris[Tigris<br>Object Storage]
+    Viewers{Viewers} -->|Last mile delivery| Tigris
+    Viewers --> Fly
+```
+
+### Livestream pipeline
+
+```mermaid
+graph
+    Encoder{Encoder<br>e.g. OBS} -->|RTMP| Source[FLV Demuxer]
+    Source -->|video| H264Parser[H264 Parser]
+    Source -->|audio| AACParser[AAC Parser]
+    H264Parser --> H264Payloader[H264 Payloader]
+    AACParser --> AACPayloader[AAC Payloader]
+    H264Payloader --> CMAFMuxerVideo[CMAF Muxer]
+    AACPayloader --> CMAFMuxerAudio[CMAF Muxer]
+    CMAFMuxerVideo --> fMP4
+    CMAFMuxerAudio --> fMP4
+    fMP4[Fragmented MP4] -->|HLS| Tigris{Tigris Object Storage}
 ```
 
 <!-- LICENSE -->
