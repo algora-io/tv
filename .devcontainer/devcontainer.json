@@ -1,0 +1,24 @@
+{
+  "name": "Algora TV Development",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "jakebecker.elixir-ls",
+        "phoenixframework.phoenix",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "streetsidesoftware.code-spell-checker",
+        "bierner.markdown-mermaid",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "forwardPorts": [4000],
+  "remoteUser": "root",
+  "remoteEnv": {
+    "MIX_ENV": "dev"
+  }
+}

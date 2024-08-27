@@ -1,0 +1,72 @@
+# Base images
+ARG BUILDER_IMAGE="hexpm/elixir:1.15.7-erlang-26.2-debian-bookworm-20231009-slim"
+ARG RUNNER_IMAGE="hexpm/elixir:1.15.7-erlang-26.2-debian-bookworm-20231009-slim"
+
+FROM ${BUILDER_IMAGE} as builder
+
+# Install build dependencies
+RUN apt-get update -y && \
+    apt-get install -y build-essential git curl postgresql-client && \
+    apt-get clean && \
+    rm -f /var/lib/apt/lists/*_*
+
+# Prepare build dir
+WORKDIR /app
+
+# Install hex + rebar
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+# Set build ENV to development
+ENV MIX_ENV="dev"
+
+# Install mix dependencies
+COPY mix.exs mix.lock ./
+RUN mix deps.get --only $MIX_ENV
+RUN mkdir config
+
+# Copy compile-time config files
+COPY config/config.exs config/${MIX_ENV}.exs config/
+RUN mix deps.compile
+
+COPY priv priv
+
+# Compile the release
+COPY lib lib
+
+COPY assets assets
+RUN mix assets.deploy
+RUN mix compile
+
+# Copy runtime config
+COPY config/runtime.exs config/
+COPY rel rel
+
+# Don't run mix release for dev
+# RUN mix release
+
+FROM ${RUNNER_IMAGE}
+
+# Install runtime dependencies
+RUN apt-get update -y && \
+    apt-get install -y libstdc++6 openssl libncurses5 locales ffmpeg imagemagick postgresql-client inotify-tools git && \
+    apt-get clean && \
+    rm -f /var/lib/apt/lists/*_*
+
+WORKDIR /app
+
+# Copy the built artifact from the builder stage
+COPY --from=builder /app /app
+COPY --from=builder /root/.mix /root/.mix
+
+# Install hex and rebar
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+# Add this near the end of the file
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+# Change the ENTRYPOINT to use shell form
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh"]
+CMD ["phx.server"]
