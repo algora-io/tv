@@ -331,18 +331,12 @@ defmodule AlgoraWeb.PartnerLive do
               </ul>
             </div>
             <div class="-mt-2 p-2 lg:mt-0 lg:w-full lg:max-w-md lg:flex-shrink-0 h-full">
-              <div class="rounded-2xl bg-gray-900/50 py-10 text-center ring-1 ring-inset ring-white/5 lg:flex lg:flex-col lg:justify-center lg:py-20">
+              <div class="rounded-2xl bg-gray-900/50 py-10 text-center ring-1 ring-inset ring-white/5 lg:flex lg:flex-col lg:justify-center lg:py-28">
                 <div class="mx-auto max-w-xs px-8">
-                  <p class="text-base font-semibold text-gray-300">Get started</p>
-                  <p class="mt-6 flex items-baseline justify-center gap-x-2">
-                    <span class="text-5xl font-bold tracking-tight text-white">$5,000</span>
-                    <span class="text-sm font-semibold leading-6 tracking-wide text-gray-300">
-                      USD
-                    </span>
-                  </p>
+                  <p class="text-xl font-semibold text-gray-300">Get started now</p>
                   <.link
                     href="https://cal.com/ioannisflo"
-                    class="mt-10 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    class="mt-6 block w-full rounded-md bg-indigo-600 px-3 py-2 text-center text-lg font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
                     Launch campaign
                   </.link>
