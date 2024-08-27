@@ -39,11 +39,9 @@ To get a local copy up and running, follow these steps.
 ### Prerequisites
 
 - Elixir and Erlang/OTP
-
   - We recommend using [asdf](https://github.com/asdf-vm/asdf) to install and manage different [Elixir](https://github.com/asdf-vm/asdf-elixir) and [Erlang/OTP](https://github.com/asdf-vm/asdf-erlang) versions.
   - Keep in mind that each Elixir version supports specific Erlang/OTP versions. [See the compatibility table here.](https://hexdocs.pm/elixir/compatibility-and-deprecations.html#between-elixir-and-erlang-otp)
   - Make sure you have at least Elixir 1.12 installed to run Algora TV.
-
 - PostgreSQL
 - FFmpeg
 - OBS Studio (recommended for testing livestreaming features)
