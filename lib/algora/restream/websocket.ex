@@ -4,16 +4,15 @@ defmodule Algora.Restream.Websocket do
 
   alias Algora.{Accounts, Chat}
 
-  def start_link(%{url: url, video: video} = opts) do
-    retry = opts[:retry] || 0
+  def start_link(%{url: url, video: video, user: user} = opts) do
     restart = opts[:restart] || 0
-    Logger.info("Starting WebSocket: #{video.id} (restart: #{restart}, retry: #{retry})")
+    Logger.info("Starting WebSocket: #{video.id} (restart: #{restart})")
 
     WebSockex.start_link(url, __MODULE__, %{
       url: url,
       video: video,
-      restart: restart,
-      retry: retry
+      user: user,
+      restart: restart
     })
   end
 
@@ -33,40 +32,30 @@ defmodule Algora.Restream.Websocket do
   end
 
   def handle_connect(_conn, state) do
-    if state.restart == 0 and state.retry == 0 do
+    if state.restart == 0 do
       Logger.info("WebSocket connected: #{state.video.id}")
     else
-      Logger.info(
-        "WebSocket reconnected: #{state.video.id} (restart: #{state.restart}, retry: #{state.retry})"
-      )
+      Logger.info("WebSocket reconnected: #{state.video.id} (restart: #{state.restart})")
     end
 
-    {:ok, state}
+    {:ok, %{state | restart: 0}}
   end
 
   def handle_disconnect(reason, state) do
     Logger.error("WebSocket disconnected: #{state.video.id} (reason: #{inspect(reason)})")
 
-    # latest_video = Library.get_latest_video(Accounts.get_user!(state.video.user_id))
-    # socket_video = Library.get_video!(state.video.id)
-    # if socket_video.id == latest_video.id and socket_video.is_live and state.retry < 10 do
+    :timer.sleep(:timer.seconds(min(2 ** state.restart, 60)))
 
-    if state.retry < 3 do
-      :timer.sleep(:timer.seconds(min(2 ** state.retry, 60)))
-      state = %{state | retry: state.retry + 1}
-      {:reconnect, state}
-    else
-      :timer.sleep(:timer.seconds(min(2 ** state.restart, 60)))
-      state = %{state | restart: state.restart + 1, retry: 0}
+    url = Accounts.get_restream_ws_url(state.user)
+    state = %{state | restart: state.restart + 1, url: url || state.url}
 
-      Task.Supervisor.start_child(
-        Algora.TaskSupervisor,
-        fn -> Algora.Restream.Websocket.start_link(state) end,
-        restart: :transient
-      )
+    Task.Supervisor.start_child(
+      Algora.TaskSupervisor,
+      fn -> Algora.Restream.Websocket.start_link(state) end,
+      restart: :transient
+    )
 
-      {:ok, state}
-    end
+    {:ok, state}
   end
 
   defp handle_payload(%{"eventPayload" => %{"contentModifiers" => %{"whisper" => true}}}, state) do

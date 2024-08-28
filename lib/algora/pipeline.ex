@@ -132,7 +132,13 @@ defmodule Algora.Pipeline do
     if url = Algora.Accounts.get_restream_ws_url(user) do
       Task.Supervisor.start_child(
         Algora.TaskSupervisor,
-        fn -> Algora.Restream.Websocket.start_link(%{url: url, video: state.video}) end,
+        fn ->
+          Algora.Restream.Websocket.start_link(%{
+            url: url,
+            user: user,
+            video: state.video
+          })
+        end,
         restart: :transient
       )
     end
