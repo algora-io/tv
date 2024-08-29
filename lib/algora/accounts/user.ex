@@ -36,8 +36,9 @@ defmodule Algora.Accounts.User do
     timestamps()
   end
 
+  # Determines visibility based on user info
   def get_visibility(info) do
-    # HACK: temporary heuristic to prevent abuse
+    # Temporary heuristic to prevent abuse
     with %{"followers" => followers, "created_at" => created_at} <- info,
          {:ok, registered_at, _} <- DateTime.from_iso8601(created_at),
          true <- DateTime.diff(DateTime.utc_now(), registered_at, :second) > 30 * 24 * 60 * 60,
@@ -49,7 +50,7 @@ defmodule Algora.Accounts.User do
   end
 
   @doc """
-  A user changeset for github registration.
+  A user changeset for GitHub registration.
   """
   def github_registration_changeset(info, primary_email, emails, token) do
     %{"login" => handle, "avatar_url" => avatar_url, "html_url" => external_homepage_url} = info
@@ -88,6 +89,7 @@ defmodule Algora.Accounts.User do
     |> validate_handle()
   end
 
+  # Validates email format and uniqueness
   defp validate_email(changeset) do
     changeset
     |> validate_required([:email])
@@ -97,6 +99,7 @@ defmodule Algora.Accounts.User do
     |> unique_constraint(:email)
   end
 
+  # Validates handle format and uniqueness
   defp validate_handle(changeset) do
     changeset
     |> validate_format(:handle, ~r/^[a-zA-Z0-9_-]{2,32}$/)

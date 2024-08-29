@@ -24,6 +24,7 @@ defmodule Algora.Library.Video do
     field :url, :string
     field :url_root, :string
     field :uuid, :string
+    field :hls_playlist_id, :uuid
     field :filename, :string
     field :channel_handle, :string, virtual: true
     field :channel_name, :string, virtual: true
@@ -59,9 +60,11 @@ defmodule Algora.Library.Video do
   def put_video_uuid(%Ecto.Changeset{} = changeset) do
     if changeset.valid? do
       uuid = Ecto.UUID.generate()
+      hls_playlist_id = Ecto.UUID.generate()
 
       changeset
       |> put_change(:uuid, uuid)
+      |> put_change(:hls_playlist_id, hls_playlist_id)
       |> put_change(:url_root, url_root(uuid))
     else
       changeset

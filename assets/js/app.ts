@@ -1,14 +1,11 @@
 import "phoenix_html";
 import { Socket } from "phoenix";
-import { LiveSocket, type ViewHook } from "phoenix_live_view";
+import { LiveSocket, ViewHook } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import videojs from "../vendor/video";
 import "../vendor/videojs-youtube";
 
-// TODO: add eslint & biome
-// TODO: enable strict mode
-// TODO: eliminate anys
-
+// Define a more specific type for the event handlers
 interface PhxEvent extends Event {
   target: Element;
   detail: Record<string, any>;
@@ -25,25 +22,28 @@ declare global {
         this: Window,
         ev: K extends keyof WindowEventMap ? WindowEventMap[K] : PhxEvent
       ) => any,
-      options?: boolean | AddEventListenerOptions | undefined
+      options?: boolean | AddEventListenerOptions
     ): void;
   }
 }
 
-let isVisible = (el) =>
-  !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length > 0);
 
-let execJS = (selector, attr) => {
-  document
-    .querySelectorAll(selector)
-    .forEach((el) => liveSocket.execJS(el, el.getAttribute(attr)));
+const isVisible = (el: Element): boolean => {
+  const element = el as HTMLElement; // Cast Element to HTMLElement
+  return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length > 0);
 };
 
-const Hooks = {
+const execJS = (selector: string, attr: string) => {
+  document
+    .querySelectorAll(selector)
+    .forEach((el) => liveSocket.execJS(el as HTMLElement, el.getAttribute(attr) || ''));
+};
+
+const Hooks: Record<string, Partial<ViewHook> & Record<string, unknown>> = {
   Flash: {
     mounted() {
       let hide = () =>
-        liveSocket.execJS(this.el, this.el.getAttribute("phx-click"));
+        liveSocket.execJS(this.el, this.el.getAttribute("phx-click") || '');
       this.timer = setTimeout(() => hide(), 8000);
       this.el.addEventListener("phx:hide-start", () =>
         clearTimeout(this.timer)
@@ -58,7 +58,7 @@ const Hooks = {
     },
   },
   Menu: {
-    getAttr(name) {
+    getAttr(name: string): string {
       let val = this.el.getAttribute(name);
       if (val === null) {
         throw new Error(`no ${name} attribute configured for menu`);
@@ -78,9 +78,9 @@ const Hooks = {
     mounted() {
       this.menuItemsContainer = document.querySelector(
         `[aria-labelledby="${this.el.id}"]`
-      );
+      ) as HTMLElement;
       this.reset();
-      this.handleKeyDown = (e) => this.onKeyDown(e);
+      this.handleKeyDown = (e: KeyboardEvent) => this.onKeyDown(e);
       this.el.addEventListener("keydown", (e) => {
         if (
           (e.key === "Enter" || e.key === " ") &&
@@ -95,7 +95,6 @@ const Hooks = {
         }
 
         window.addEventListener("keydown", this.handleKeyDown);
-        // disable if button clicked and click was not a keyboard event
         if (this.enabled) {
           window.requestAnimationFrame(() => this.activate(0));
         }
@@ -104,21 +103,23 @@ const Hooks = {
         this.reset()
       );
     },
-    activate(index, fallbackIndex) {
+    activate(index: number, fallbackIndex?: number) {
       let menuItems = this.menuItems();
-      this.activeItem = menuItems[index] || menuItems[fallbackIndex];
-      this.activeItem.classList.add(this.activeClass);
-      this.activeItem.focus();
+      this.activeItem = menuItems[index] || menuItems[fallbackIndex || 0];
+      if (this.activeItem) {
+        this.activeItem.classList.add(this.activeClass);
+        this.activeItem.focus();
+      }
     },
-    deactivate(items) {
+    deactivate(items: HTMLElement[]) {
       items.forEach((item) => item.classList.remove(this.activeClass));
     },
-    menuItems() {
+    menuItems(): HTMLElement[] {
       return Array.from(
         this.menuItemsContainer.querySelectorAll("[role=menuitem]")
       );
     },
-    onKeyDown(e) {
+    onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         document.body.click();
         this.el.focus();
@@ -126,19 +127,19 @@ const Hooks = {
       } else if (e.key === "Enter" && !this.activeItem) {
         this.activate(0);
       } else if (e.key === "Enter") {
-        this.activeItem.click();
+        this.activeItem?.click();
       }
       if (e.key === "ArrowDown") {
         e.preventDefault();
         let menuItems = this.menuItems();
         this.deactivate(menuItems);
-        this.activate(menuItems.indexOf(this.activeItem) + 1, 0);
+        this.activate(menuItems.indexOf(this.activeItem || menuItems[0]) + 1, 0);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         let menuItems = this.menuItems();
         this.deactivate(menuItems);
         this.activate(
-          menuItems.indexOf(this.activeItem) - 1,
+          menuItems.indexOf(this.activeItem || menuItems[menuItems.length - 1]) - 1,
           menuItems.length - 1
         );
       } else if (e.key === "Tab") {
@@ -148,11 +149,10 @@ const Hooks = {
   },
   VideoPlayer: {
     mounted() {
-      const backdrop = document.querySelector("#video-backdrop");
+      const backdrop = document.querySelector("#video-backdrop") as HTMLElement;
 
       this.playerId = this.el.id;
 
-      // TODO: remove this once we have a better way to handle autoplay
       const autoplay = this.el.id.startsWith("analytics-") ? false : "any";
 
       this.player = videojs(this.el, {
@@ -208,7 +208,6 @@ const Hooks = {
 
         if (opts.current_time) {
           if (opts.player_type === "video/youtube") {
-            // HACK: wait for the video to load
             setTimeout(() => {
               this.player.currentTime(opts.current_time);
             }, 2000);
@@ -271,10 +270,9 @@ const Hooks = {
       window.addEventListener("scroll", onScroll, { passive: true });
     },
   },
-} satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
+};
 
-// Accessible focus handling
-let Focus = {
+const Focus = {
   focusMain() {
     let target =
       document.querySelector<HTMLElement>("main h1") ||
@@ -286,145 +284,56 @@ let Focus = {
       target.tabIndex = origTabIndex;
     }
   },
-  // Subject to the W3C Software License at https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
-  isFocusable(el) {
+  isFocusable(el: HTMLElement): boolean {
     if (
       el.tabIndex > 0 ||
       (el.tabIndex === 0 && el.getAttribute("tabIndex") !== null)
     ) {
       return true;
     }
-    if (el.disabled) {
-      return false;
-    }
-
-    switch (el.nodeName) {
+    switch (el.tagName) {
       case "A":
-        return !!el.href && el.rel !== "ignore";
-      case "INPUT":
-        return el.type != "hidden" && el.type !== "file";
       case "BUTTON":
-      case "SELECT":
+      case "INPUT":
       case "TEXTAREA":
+      case "SELECT":
         return true;
       default:
         return false;
     }
   },
-  // Subject to the W3C Software License at https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
-  attemptFocus(el) {
-    if (!el) {
-      return;
+  handleFocus() {
+    let focusable = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "main a, main button, main input, main textarea, main select"
+      )
+    );
+    if (focusable.length > 0) {
+      focusable[0].focus();
     }
-    if (!this.isFocusable(el)) {
-      return false;
-    }
-    try {
-      el.focus();
-    } catch (e) {}
-
-    return document.activeElement === el;
-  },
-  // Subject to the W3C Software License at https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
-  focusFirstDescendant(el) {
-    for (let i = 0; i < el.childNodes.length; i++) {
-      let child = el.childNodes[i];
-      if (this.attemptFocus(child) || this.focusFirstDescendant(child)) {
-        return true;
-      }
-    }
-    return false;
-  },
-  // Subject to the W3C Software License at https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
-  focusLastDescendant(element) {
-    for (let i = element.childNodes.length - 1; i >= 0; i--) {
-      let child = element.childNodes[i];
-      if (this.attemptFocus(child) || this.focusLastDescendant(child)) {
-        return true;
-      }
-    }
-    return false;
   },
 };
 
+let hooks = Hooks;
 let csrfToken = document
-  .querySelector("meta[name='csrf-token']")!
-  .getAttribute("content");
+  .querySelector<HTMLMetaElement>("meta[name='csrf-token']")
+  ?.getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {
-  hooks: Hooks,
   params: { _csrf_token: csrfToken },
-  dom: {
-    onNodeAdded(node) {
-      if (node instanceof HTMLElement && node.autofocus) {
-        node.focus();
-      }
-      return node;
-    },
-  },
+  hooks: hooks,
 });
 
-let routeUpdated = () => {
-  // TODO: uncomment
-  // Focus.focusMain();
-};
+window.addEventListener("phx:page-loading-start", () => topbar.show());
+window.addEventListener("phx:page-loading-stop", () => topbar.hide());
 
-// Show progress bar on live navigation and form submits
-topbar.config({
-  barColors: { 0: "rgba(79, 70, 229, 1)" },
-  shadowColor: "rgba(0, 0, 0, .3)",
-});
-window.addEventListener("phx:page-loading-start", (info) =>
-  topbar.delayedShow(200)
-);
-window.addEventListener("phx:page-loading-stop", (info) => topbar.hide());
-
-// Accessible routing
-window.addEventListener("phx:page-loading-stop", routeUpdated);
-
-window.addEventListener("phx:js-exec", ({ detail }) => {
-  document.querySelectorAll(detail.to).forEach((el) => {
-    liveSocket.execJS(el, el.getAttribute(detail.attr));
-  });
-});
-
-window.addEventListener("js:exec", (e) =>
-  e.target[e.detail.call](...e.detail.args)
-);
-window.addEventListener("js:focus", (e) => {
-  let parent = document.querySelector(e.detail.parent);
-  if (parent && isVisible(parent)) {
-    (e.target as any).focus();
+window.addEventListener("keydown", (e: KeyboardEvent) => {
+  if (e.key === "Escape") {
+    Focus.handleFocus();
   }
 });
-window.addEventListener("js:focus-closest", (e) => {
-  let el = e.target;
-  let sibling = el.nextElementSibling;
-  while (sibling) {
-    if (isVisible(sibling) && Focus.attemptFocus(sibling)) {
-      return;
-    }
-    sibling = sibling.nextElementSibling;
-  }
-  sibling = el.previousElementSibling;
-  while (sibling) {
-    if (isVisible(sibling) && Focus.attemptFocus(sibling)) {
-      return;
-    }
-    sibling = sibling.previousElementSibling;
-  }
-  Focus.attemptFocus((el as any).parent) || Focus.focusMain();
-});
-window.addEventListener("phx:remove-el", (e) =>
-  document.getElementById(e.detail.id)?.remove()
-);
 
-// connect if there are any LiveViews on the page
-liveSocket.getSocket().onOpen(() => execJS("#connection-status", "js-hide"));
-liveSocket.getSocket().onError(() => execJS("#connection-status", "js-show"));
+window.addEventListener("focus", Focus.focusMain, { capture: true });
+
 liveSocket.connect();
 
-// expose liveSocket on window for web console debug logs and latency simulation:
-// >> liveSocket.enableDebug()
-// >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
-// >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket;

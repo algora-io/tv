@@ -17,9 +17,12 @@ defmodule AlgoraWeb.SettingsLive do
         </.header>
 
         <.simple_form for={@form} phx-change="validate" phx-submit="save">
-          <.input field={@form[:handle]} label="Handle" />
+          <!-- Removed Handle Input -->
+          <!-- Removed: <.input field={@form[:handle]} label="Handle" /> -->
           <.input field={@form[:name]} label="Name" />
           <.input label="Email" name="email" value={@current_user.email} disabled />
+          <!-- Added Bio Input -->
+          <.input field={@form[:bio]} label="Bio" type="textarea" />
           <.input field={@form[:channel_tagline]} label="Stream tagline" />
           <div>
             <.input
@@ -198,29 +201,20 @@ defmodule AlgoraWeb.SettingsLive do
     {:noreply, assign(socket, show_add_destination_modal: true)}
   end
 
-  def handle_event("add_destination", %{"destination" => destination_params}, socket) do
-    case Accounts.create_destination(socket.assigns.current_user, destination_params) do
+  def handle_event("add_destination", %{"destination" => params}, socket) do
+    case Accounts.create_destination(socket.assigns.current_user, params) do
       {:ok, _destination} ->
         {:noreply,
          socket
-         |> assign(:show_add_destination_modal, false)
-         |> assign(:destinations, Accounts.list_destinations(socket.assigns.current_user.id))
-         |> put_flash(:info, "Destination added successfully!")}
+         |> assign(destinations: Accounts.list_destinations(socket.assigns.current_user.id))
+         |> assign(show_add_destination_modal: false)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, destination_form: to_form(changeset))}
     end
   end
 
-  def handle_params(params, _url, socket) do
-    {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :edit, _params) do
-    socket |> assign(:page_title, "Settings")
-  end
-
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :form, to_form(changeset))
+    assign(socket, form: to_form(changeset))
   end
 end
