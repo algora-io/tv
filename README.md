@@ -30,6 +30,12 @@
   </p>
 </p>
 
+## ✨ New feature: Earn with Livestream Billboards! ✨
+
+Algora Live Billboards allow for in-video ads, helping devs earn money while livestreaming and giving devtools companies a novel channel to reach new audiences. [Learn more](https://tv.algora.io/partner)
+
+https://github.com/user-attachments/assets/6f706a4b-210f-4ec8-a817-2a72cea0954a
+
 <!-- GETTING STARTED -->
 
 ## Getting Started
