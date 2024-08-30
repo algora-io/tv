@@ -8,6 +8,56 @@ defmodule AlgoraWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <div class="mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
+      <div class="-mt-12">
+        <div class="mx-auto">
+          <div class="mx-auto mt-16 max-w-2xl rounded-3xl bg-white/5 ring-2 ring-purple-500 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
+            <div class="p-8 sm:p-10 lg:flex-auto">
+              <h3 class="text-3xl font-bold tracking-tight text-white">
+                ✨ New feature: Live Billboards!
+              </h3>
+              <p class="mt-6 font-medium text-lg leading-7 text-gray-300">
+                We just launched in-video ads to help developers earn money while livestreaming and give devtools companies a channel to reach new audiences.
+              </p>
+              <div class="mt-6 flex items-center gap-4">
+                <.button>
+                  <.link navigate={~p"/partner"}>
+                    Learn more
+                  </.link>
+                </.button>
+                <.button>
+                  <.link
+                    href="https://www.youtube.com/watch?v=te6k6EfHjnI"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Watch demo
+                  </.link>
+                </.button>
+              </div>
+            </div>
+            <div class="-mt-2 p-8 pt-0 sm:p-10 sm:pt-0 lg:p-2 lg:mr-2 xl:mr-0 lg:mt-0 lg:w-full lg:max-w-lg xl:max-w-xl lg:flex-shrink-0 h-full">
+              <.link
+                class="cursor-pointer truncate"
+                href="https://www.youtube.com/watch?v=te6k6EfHjnI"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <div class="relative flex items-center justify-center overflow-hidden aspect-[16/9] bg-gray-800 rounded-sm lg:rounded-3xl lg:rounded-l-none">
+                  <img
+                    src="https://i.ytimg.com/vi/te6k6EfHjnI/maxresdefault.jpg"
+                    alt="Algora Live Billboards"
+                    class="absolute w-full h-full object-cover z-10"
+                  />
+                  <div class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20">
+                    2:27
+                  </div>
+                </div>
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <.header class="pt-8">
         <h1 class="text-4xl font-semibold">Livestreaming for developers</h1>
         <p class="text-xl font-medium text-gray-200 italic">You'll never ship alone!</p>

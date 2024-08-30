@@ -73,12 +73,24 @@ defmodule AlgoraWeb.PartnerLive do
                 </a>
               </div>
             </div>
-            <div class="mx-auto max-w-2xl xl:max-w-3xl aspect-[1456/756] w-full h-full flex-shrink-0 mt-12 flex lg:mt-6 xl:mt-0">
-              <img
-                src={~p"/images/partner-demo.png"}
-                alt="Demo"
-                class="w-full h-full shrink-0 rounded-xl shadow-2xl ring-1 ring-white/10"
-              />
+            <div class="mx-auto max-w-2xl xl:max-w-3xl aspect-video w-full h-full flex-shrink-0 mt-12 flex lg:mt-6 xl:mt-0">
+              <.link
+                class="cursor-pointer truncate w-full"
+                href="https://www.youtube.com/watch?v=te6k6EfHjnI"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <div class="relative flex items-center justify-center overflow-hidden aspect-[16/9] bg-gray-800 rounded-sm">
+                  <img
+                    src="https://i.ytimg.com/vi/te6k6EfHjnI/maxresdefault.jpg"
+                    alt="Algora Live Billboards"
+                    class="absolute w-full h-full object-cover z-10"
+                  />
+                  <div class="absolute font-medium text-xs px-2 py-0.5 rounded-xl bottom-1 bg-gray-950/90 text-white right-1 z-20">
+                    2:27
+                  </div>
+                </div>
+              </.link>
             </div>
           </div>
         </div>
