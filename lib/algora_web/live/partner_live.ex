@@ -82,7 +82,7 @@ defmodule AlgoraWeb.PartnerLive do
               >
                 <div class="relative flex items-center justify-center overflow-hidden aspect-[16/9] bg-gray-800 rounded-sm">
                   <img
-                    src="https://i.ytimg.com/vi/te6k6EfHjnI/maxresdefault.jpg"
+                    src={~p"/images/live-billboard.png"}
                     alt="Algora Live Billboards"
                     class="absolute w-full h-full object-cover z-10"
                   />
