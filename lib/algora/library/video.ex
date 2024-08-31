@@ -17,6 +17,7 @@ defmodule Algora.Library.Video do
     field :description, :string
     field :type, Ecto.Enum, values: [vod: 1, livestream: 2]
     field :format, Ecto.Enum, values: [mp4: 1, hls: 2, youtube: 3]
+    field :corrupted, :boolean, default: false
     field :is_live, :boolean, default: false
     field :thumbnail_url, :string
     field :vertical_thumbnail_url, :string

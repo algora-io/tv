@@ -1,9 +1,7 @@
 defmodule Algora.Terminate do
   use GenServer
 
-  import Ecto.Query, warn: false
-
-  @terminate_interval :timer.se(10)
+  @terminate_interval :timer.hours(1)
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
@@ -17,13 +15,7 @@ defmodule Algora.Terminate do
 
   @impl true
   def handle_info(:terminate, state) do
-    from(v in Algora.Library.Video,
-          where: v.duration == 0 and v.is_live == false,
-          select: v.id
-        )
-        |> Algora.Repo.Local.all
-        |> Enum.each(&Algora.Library.terminate_stream/1)
-
+    Algora.Library.terminate_interrupted_streams()
     schedule_terminate()
     {:noreply, state}
   end

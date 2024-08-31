@@ -227,26 +227,40 @@ defmodule Algora.Library do
   end
 
   def terminate_stream(video_id) do
-    video = from(v in Video,
-      where: v.id == ^video_id
-    )
-    |> Repo.one()
+    video = Repo.get!(Video, video_id)
 
-    {:ok, response} = Finch.build(:get, "#{video.url_root}/g3cFdmlkZW8.m3u8")
-    |> Finch.request(Algora.Finch);
+    case Finch.build(:get, "#{video.url_root}/g3cFdmlkZW8.m3u8")
+        |> Finch.request(Algora.Finch) do
+      {:ok, %Finch.Response{status: 200, body: body}} ->
+        if !String.ends_with?(body, "#EXT-X-ENDLIST\n") do
+          Storage.upload(
+            String.trim_trailing(body) <> "\n#EXT-X-ENDLIST\n",
+            "#{video.uuid}/g3cFdmlkZW8.m3u8",
+            content_type: "application/x-mpegURL"
+          )
+        end
 
-    if !String.ends_with?(response.body, "#EXT-X-ENDLIST\n") do
-      Storage.upload(
-        String.trim_trailing(response.body) <> "\n#EXT-X-ENDLIST\n",
-        "#{video.uuid}/g3cFdmlkZW8.m3u8",
-        content_type: "application/x-mpegURL"
-      )
+        {:ok, duration} = get_duration(video)
+
+        video
+        |> change()
+        |> put_change(:duration, duration)
+        |> Repo.update()
+
+      _missing_manifest -> video
+        |> change()
+        |> put_change(:corrupted, true)
+        |> Repo.update()
     end
+  end
 
-    with {:ok, duration} <- get_duration(video),
-      {:ok, _} <- video |> change() |> put_change(:duration, duration) |> Repo.update() do
-      :ok
-    end
+  def terminate_interrupted_streams() do
+    from(v in Video,
+          where: v.duration == 0 and v.is_live == false and v.format == :hls and v.corrupted == false,
+          select: v.id
+        )
+        |> Repo.all
+        |> Enum.each(&terminate_stream/1)
   end
 
   def toggle_streamer_live(%Video{} = video, is_live) do
