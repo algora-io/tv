@@ -256,11 +256,11 @@ defmodule Algora.Library do
 
   def terminate_interrupted_streams() do
     from(v in Video,
-          where: v.duration == 0 and v.is_live == false and v.format == :hls and v.corrupted == false,
-          select: v.id
-        )
-        |> Repo.all
-        |> Enum.each(&terminate_stream/1)
+      where: v.duration == 0 and v.is_live == false and v.format == :hls and v.corrupted == false,
+      select: v.id
+    )
+    |> Repo.all()
+    |> Enum.each(&terminate_stream/1)
   end
 
   def toggle_streamer_live(%Video{} = video, is_live) do
