@@ -316,8 +316,10 @@ defmodule Algora.Library do
 
   defp get_media_playlist(%Video{} = video) do
     with {:ok, playlist} <- get_playlist(video) do
-      uri = playlist.items |> Enum.find(&match?(%{uri: _}, &1)) |> then(& &1.uri)
-      get_media_playlist(video, uri)
+      case playlist.items |> Enum.find(&match?(%{uri: _}, &1)) do
+        nil -> {:error, :not_found}
+        item -> get_media_playlist(video, item.uri)
+      end
     end
   end
 
