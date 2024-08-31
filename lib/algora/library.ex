@@ -229,25 +229,25 @@ defmodule Algora.Library do
   def terminate_stream(video_id) do
     video = Repo.get!(Video, video_id)
 
-    case Finch.build(:get, "#{video.url_root}/g3cFdmlkZW8.m3u8")
-        |> Finch.request(Algora.Finch) do
-      {:ok, %Finch.Response{status: 200, body: body}} ->
-        if !String.ends_with?(body, "#EXT-X-ENDLIST\n") do
-          Storage.upload(
-            String.trim_trailing(body) <> "\n#EXT-X-ENDLIST\n",
-            "#{video.uuid}/g3cFdmlkZW8.m3u8",
-            content_type: "application/x-mpegURL"
-          )
-        end
+    resp = Finch.build(:get, "#{video.url_root}/g3cFdmlkZW8.m3u8") |> Finch.request(Algora.Finch)
 
-        {:ok, duration} = get_duration(video)
+    with {:ok, %Finch.Response{status: 200, body: body}} <- resp,
+         {:ok, duration} <- get_duration(video) do
+      if !String.ends_with?(body, "#EXT-X-ENDLIST\n") do
+        Storage.upload(
+          String.trim_trailing(body) <> "\n#EXT-X-ENDLIST\n",
+          "#{video.uuid}/g3cFdmlkZW8.m3u8",
+          content_type: "application/x-mpegURL"
+        )
+      end
 
+      video
+      |> change()
+      |> put_change(:duration, duration)
+      |> Repo.update()
+    else
+      _missing_manifest ->
         video
-        |> change()
-        |> put_change(:duration, duration)
-        |> Repo.update()
-
-      _missing_manifest -> video
         |> change()
         |> put_change(:corrupted, true)
         |> Repo.update()
