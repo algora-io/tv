@@ -226,6 +226,29 @@ defmodule Algora.Library do
     |> Repo.one()
   end
 
+  def terminate_stream(video_id) do
+    video = from(v in Video,
+      where: v.id == ^video_id
+    )
+    |> Repo.one()
+
+    {:ok, response} = Finch.build(:get, "#{video.url_root}/g3cFdmlkZW8.m3u8")
+    |> Finch.request(Algora.Finch);
+
+    if !String.ends_with?(response.body, "#EXT-X-ENDLIST\n") do
+      Storage.upload(
+        String.trim_trailing(response.body) <> "\n#EXT-X-ENDLIST\n",
+        "#{video.uuid}/g3cFdmlkZW8.m3u8",
+        content_type: "application/x-mpegURL"
+      )
+    end
+
+    with {:ok, duration} <- get_duration(video),
+      {:ok, _} <- video |> change() |> put_change(:duration, duration) |> Repo.update() do
+      :ok
+    end
+  end
+
   def toggle_streamer_live(%Video{} = video, is_live) do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
