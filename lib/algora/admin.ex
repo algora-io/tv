@@ -16,6 +16,104 @@ defmodule Algora.Admin do
     Finch.build(:get, url) |> Finch.request(Algora.Finch)
   end
 
+  defp bucket(), do: Algora.config([:buckets, :media])
+
+  defp to_absolute(uuid, uri) do
+    if String.starts_with?(uri, Storage.endpoint_url()) do
+      uri
+    else
+      "#{Storage.endpoint_url()}/#{bucket()}/#{uuid}/#{uri}"
+    end
+  end
+
+  defp get_absolute_playlist(video) do
+    %ExM3U8.MediaPlaylist{timeline: timeline, info: info} = get_media_playlist(video, @tracks.video)
+
+    timeline = timeline
+    |> Enum.reduce([], fn x, acc ->
+        case x do
+          %ExM3U8.Tags.MediaInit{uri: uri} -> [
+            %ExM3U8.Tags.MediaInit{uri: to_absolute(video.uuid, uri)}
+            | acc
+          ]
+          %ExM3U8.Tags.Segment{uri: uri, duration: duration} -> [
+            %ExM3U8.Tags.Segment{uri: to_absolute(video.uuid, uri), duration: duration}
+            | acc
+          ]
+          others -> [others | acc]
+        end
+      end)
+    |> Enum.reverse()
+
+    %ExM3U8.MediaPlaylist{timeline: timeline, info: info}
+  end
+
+  defp merge_playlists(video, nil), do: get_absolute_playlist(video)
+
+  defp merge_playlists(video, playlist) do
+    new_playlist = video |> get_absolute_playlist
+
+    %ExM3U8.MediaPlaylist{
+      playlist
+      | timeline: playlist.timeline ++ [%ExM3U8.Tags.Discontinuity{} | new_playlist.timeline],
+      info: %ExM3U8.MediaPlaylist.Info{
+        playlist.info
+        | target_duration: max(playlist.info.target_duration, new_playlist.info.target_duration)
+      }
+    }
+  end
+
+  defp copy_index_to_video(from_uuid, to_uuid) do
+    ExAws.S3.put_object_copy(bucket(), "#{to_uuid}/index.m3u8", bucket(), "#{from_uuid}/index.m3u8")
+    |> ExAws.request()
+  end
+
+  defp insert_merged_video(videos) do
+    [video | _] = videos
+
+    {duration, ids} = Enum.reduce(
+      videos,
+      {0, []},
+      fn x, {acc_duration, acc_ids} -> {acc_duration + x.duration, [x.id | acc_ids]} end
+    )
+
+    %Video{
+        title: "Merged VODs " <> (Enum.reverse(ids) |> Enum.join(", ")),
+        duration: duration,
+        type: :vod,
+        format: :hls,
+        is_live: false,
+        visibility: :public,
+        user_id: video.user_id,
+        thumbnail_url: video.thumbnail_url
+      }
+      |> change()
+      |> Video.put_video_uuid()
+      |> Video.put_video_url(:hls)
+      |> Repo.insert()
+  end
+
+  def merge_streams(videos) do
+    [video | _] = videos
+
+    with playlist <- Enum.reduce(videos, nil, &merge_playlists/2),
+      {:ok, new_video} <- insert_merged_video(videos),
+      {:ok, _} <- Storage.upload(
+        "#{ExM3U8.serialize(playlist)}#EXT-X-ENDLIST\n",
+        "#{new_video.uuid}/g3cFdmlkZW8.m3u8",
+        content_type: "application/x-mpegURL"
+      ),
+      {:ok, _} <- copy_index_to_video(video.uuid, new_video.uuid) do
+        ids = Enum.map(videos, & &1.id)
+        Repo.update_all(
+          from(v in Video, where: v.id in ^ids),
+          set: [visibility: :unlisted]
+        )
+
+        new_video
+    end
+  end
+
   def get_playlist(video) do
     {:ok, resp} = get(video.url)
     {:ok, playlist} = ExM3U8.deserialize_playlist(resp.body, [])
