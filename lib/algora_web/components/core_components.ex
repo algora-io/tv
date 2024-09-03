@@ -167,13 +167,11 @@ defmodule AlgoraWeb.CoreComponents do
   def playlist(assigns) do
     ~H"""
     <div class="align-middle inline-block min-w-full">
-      <div id={@id} class="px-4 min-w-full">
-        <div
-          id={"#{@id}-body"}
-          class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-3"
-          phx-update="stream"
-        >
-          <.video_entry :for={{_id, video} <- @videos} video={video} />
+      <div class="px-4 min-w-full">
+        <div id={@id} class="mt-3 gap-8 grid sm:grid-cols-2 lg:grid-cols-3" phx-update="stream">
+          <div :for={{id, video} <- @videos} id={id}>
+            <.video_entry video={video} />
+          </div>
         </div>
       </div>
     </div>
