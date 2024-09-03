@@ -279,6 +279,13 @@ defmodule AlgoraWeb.ChannelLive do
        socket
        |> assign(channel: %{channel | is_live: true})
        |> stream_insert(:videos, video, at: 0)
+       |> put_flash(:note, %{
+         body: "#{channel.name} just went live!",
+         action: %{
+           href: ~p"/#{channel.handle}/#{video.id}",
+           body: "Click here to start watching"
+         }
+       })
      else
        socket
      end}
