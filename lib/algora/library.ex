@@ -270,11 +270,9 @@ defmodule Algora.Library do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
 
-    if user.visibility == :public do
-      Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
-        set: [is_live: is_live]
-      )
-    end
+    Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
+      set: [is_live: is_live]
+    )
 
     Repo.update_all(
       from(v in Video,
@@ -755,7 +753,7 @@ defmodule Algora.Library do
 
   def list_active_channels(opts) do
     from(u in Algora.Accounts.User,
-      where: u.is_live,
+      where: u.is_live and u.visibility == :public,
       limit: ^Keyword.fetch!(opts, :limit),
       order_by: [desc: u.updated_at],
       select: struct(u, [:id, :handle, :channel_tagline, :avatar_url, :external_homepage_url])
