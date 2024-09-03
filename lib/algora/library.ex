@@ -301,7 +301,7 @@ defmodule Algora.Library do
 
     sink_url = Algora.config([:event_sink, :url])
 
-    if sink_url && user.visibility == :public do
+    if sink_url && sink_url != "" && user.visibility == :public do
       identity =
         from(i in Algora.Accounts.Identity,
           join: u in assoc(i, :user),
