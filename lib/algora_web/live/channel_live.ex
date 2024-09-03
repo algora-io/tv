@@ -2,7 +2,8 @@ defmodule AlgoraWeb.ChannelLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Accounts, Library, Storage}
+  alias Algora.Pipeline.Storage
+  alias Algora.{Accounts, Library}
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.StreamFormComponent
 

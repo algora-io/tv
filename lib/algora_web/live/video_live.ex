@@ -4,7 +4,8 @@ defmodule AlgoraWeb.VideoLive do
   import Ecto.Query, warn: false
   import AlgoraWeb.Components.Avatar
 
-  alias Algora.{Accounts, Library, Storage, Chat, Repo}
+  alias Algora.Pipeline.Storage
+  alias Algora.{Accounts, Library, Chat, Repo}
   alias Algora.Events.Event
 
   alias AlgoraWeb.{
