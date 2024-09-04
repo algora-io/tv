@@ -90,7 +90,7 @@ To get a local copy up and running, follow these steps.
    DATABASE_URL="postgresql://algora:password@localhost:5432/tv"
    ```
 
-6. Set up your database and run migrations
+6. Run migrations and seed your database
 
    ```sh
    env $(cat .env | xargs -L 1) mix ecto.setup
