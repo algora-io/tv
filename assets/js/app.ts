@@ -2,7 +2,6 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket, type ViewHook } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import videojs from "../vendor/video";
 import "../vendor/videojs-youtube";
 
 // TODO: add eslint & biome
@@ -19,6 +18,7 @@ type PhxEventKey = `js:${string}` | `phx:${string}`;
 declare global {
   interface Window {
     liveSocket: LiveSocket;
+    VidstackPlayer: any;
     addEventListener<K extends keyof WindowEventMap | PhxEventKey>(
       type: K,
       listener: (
@@ -147,22 +147,22 @@ const Hooks = {
     },
   },
   VideoPlayer: {
-    mounted() {
+    async mounted() {
       const backdrop = document.querySelector("#video-backdrop");
-
       this.playerId = this.el.id;
 
       // TODO: remove this once we have a better way to handle autoplay
       const autoplay = this.el.id.startsWith("analytics-") ? false : "any";
 
-      this.player = videojs(this.el, {
-        autoplay: autoplay,
-        liveui: true,
-        html5: {
-          vhs: {
-            llhls: true,
-          },
-        },
+      this.player = await window.VidstackPlayer.create({
+        target: this.el,
+        autoplay,
+        viewType: "video",
+        streamType: "on-demand",
+        logLevel: "warn",
+        crossOrigin: true,
+        playsInline: true,
+        poster: "https://files.vidstack.io/sprite-fight/poster.webp",
       });
 
       const playVideo = (opts: {
@@ -174,14 +174,10 @@ const Hooks = {
         current_time?: number;
         channel_name: string;
       }) => {
-        if (this.playerId !== opts.player_id) {
-          return;
-        }
+        if (this.playerId !== opts.player_id) return;
 
         const setMediaSession = () => {
-          if (!("mediaSession" in navigator)) {
-            return;
-          }
+          if (!("mediaSession" in navigator)) return;
           navigator.mediaSession.metadata = new MediaMetadata({
             title: opts.title,
             artist: opts.channel_name,
@@ -194,15 +190,17 @@ const Hooks = {
           });
         };
 
-        this.player.options({
-          techOrder: [
-            opts.player_type === "video/youtube" ? "youtube" : "html5",
-          ],
-          ...(opts.current_time && opts.player_type === "video/youtube"
-            ? { youtube: { customVars: { start: opts.current_time } } }
-            : {}),
-        });
-        this.player.src({ src: opts.url, type: opts.player_type });
+        // this.player.options({
+        //   techOrder: [
+        //     opts.player_type === "video/youtube" ? "youtube" : "html5",
+        //   ],
+        //   ...(opts.current_time && opts.player_type === "video/youtube"
+        //     ? { youtube: { customVars: { start: opts.current_time } } }
+        //     : {}),
+        // });
+        this.player.src = opts.url;
+        this.player.type =
+          opts.player_type === "video/youtube" ? "youtube" : "html5";
 
         setMediaSession();
 

@@ -48,8 +48,19 @@
     <meta property="og:site_name" content="Algora TV" />
     <meta property="og:type" content="website" />
 
+    <link rel="stylesheet" href="https://cdn.vidstack.io/player/theme.css" />
+    <link rel="stylesheet" href="https://cdn.vidstack.io/player/video.css" />
+
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+
+    <script type="module">
+      import { VidstackPlayer, VidstackPlayerLayout } from 'https://cdn.vidstack.io/player';
+    
+      window.VidstackPlayer = VidstackPlayer
+      window.VidstackPlayerLayout = VidstackPlayerLayout
+    </script>
+
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
     <script defer data-domain="tv.algora.io" src="https://plausible.io/js/script.js">
