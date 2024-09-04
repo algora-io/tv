@@ -7,20 +7,18 @@ defmodule AlgoraWeb.Layouts do
   attr :users, :list
 
   def sidebar_active_users(assigns) do
+    duplicated_users = Enum.concat(assigns.users, assigns.users)
     ~H"""
     <div :if={length(@users) > 0}>
-      <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider" id={@id}>
-        Live now
-      </h3>
-      <ul class="mt-4 space-y-1" role="group" aria-labelledby={@id}>
-        <%= for user <- @users do %>
+      <ul class="mt-4 space-y-5" role="group" aria-labelledby={@id}>
+        <%= for user <- duplicated_users do %>
           <li class="relative col-span-1 flex shadow-sm rounded-md overflow-hidden">
             <.link
               navigate={channel_path(user)}
-              class="pr-3 flex-1 flex items-center justify-between border-t border-r border-b border-gray-700 bg-gray-900 rounded-r-md truncate"
+              class="pr-3 flex-1 flex items-center justify-between rounded-r-md truncate"
             >
               <img
-                class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-l-md bg-purple-300"
+                class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-300"
                 src={user.avatar_url}
                 alt={user.handle}
               />

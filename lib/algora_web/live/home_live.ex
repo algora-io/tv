@@ -13,7 +13,7 @@ defmodule AlgoraWeb.HomeLive do
           <div class="mx-auto mt-16 max-w-2xl rounded-3xl bg-white/5 ring-2 ring-purple-500 sm:mt-20 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
             <div class="p-8 sm:p-10 lg:flex-auto">
               <h3 class="text-3xl font-bold tracking-tight text-white">
-                ✨ New feature: Live Billboards!
+                ✨ New feature: 12 Billboards!
               </h3>
               <p class="mt-6 font-medium text-lg leading-7 text-gray-300">
                 We just launched in-video ads to help developers earn money while livestreaming and give devtools companies a channel to reach new audiences.

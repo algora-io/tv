@@ -251,26 +251,6 @@ const Hooks = {
       });
     },
   },
-  NavBar: {
-    mounted() {
-      const offset = 16;
-      this.isOpaque = false;
-
-      const onScroll = () => {
-        if (!this.isOpaque && window.scrollY > offset) {
-          this.isOpaque = true;
-          this.el.classList.add("bg-gray-950");
-          this.el.classList.remove("bg-transparent");
-        } else if (this.isOpaque && window.scrollY <= offset) {
-          this.isOpaque = false;
-          this.el.classList.add("bg-transparent");
-          this.el.classList.remove("bg-gray-950");
-        }
-      };
-
-      window.addEventListener("scroll", onScroll, { passive: true });
-    },
-  },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
 // Accessible focus handling

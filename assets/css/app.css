@@ -16,7 +16,7 @@
     @apply border-gray-800;
   }
   body {
-    @apply bg-gray-950 text-white;
+    @apply bg-black text-white;
   }
 }
 
