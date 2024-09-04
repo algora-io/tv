@@ -162,14 +162,35 @@ const Hooks = {
         logLevel: "warn",
         crossOrigin: true,
         playsInline: true,
-        poster: "https://files.vidstack.io/sprite-fight/poster.webp",
+        live: true,
+        seeking: true,
+        poster:
+          "https://console.algora.io/asset/storage/v1/object/public/images/algora-gradient-90px.png",
       });
+      const getVideoProvider = (type: string) => {
+        switch (type) {
+          case "youtube":
+          case "youtube/video":
+            return (this.player.type = "youtube/video");
+
+          case "hls":
+            return (this.player.type = "application/x-mpegURL");
+
+          case "dash":
+            return (this.player.type = "application/dash+xml");
+
+          default:
+            return (this.player.type = "video/mp4");
+        }
+      };
 
       const playVideo = (opts: {
         player_id: string;
         id: string;
         url: string;
+        format: string;
         title: string;
+        type: string;
         player_type: string;
         current_time?: number;
         channel_name: string;
@@ -190,17 +211,16 @@ const Hooks = {
           });
         };
 
-        // this.player.options({
-        //   techOrder: [
-        //     opts.player_type === "video/youtube" ? "youtube" : "html5",
-        //   ],
-        //   ...(opts.current_time && opts.player_type === "video/youtube"
-        //     ? { youtube: { customVars: { start: opts.current_time } } }
-        //     : {}),
-        // });
+        this.player.title = opts.title;
         this.player.src = opts.url;
-        this.player.type =
-          opts.player_type === "video/youtube" ? "youtube" : "html5";
+        this.player.type = getVideoProvider(opts.type || opts.format);
+        this.player.currentTime =
+          opts.current_time && opts.player_type === "video/youtube"
+            ? opts.current_time
+            : 0; // appending ?t=number to the URL updates the current time. where 1 reps 10s
+
+        this.player.streamType =
+          opts.type === "livestream" ? "ll-live:dvr" : "on-demand";
 
         setMediaSession();
 
@@ -208,10 +228,10 @@ const Hooks = {
           if (opts.player_type === "video/youtube") {
             // HACK: wait for the video to load
             setTimeout(() => {
-              this.player.currentTime(opts.current_time);
+              this.player.currentTime = opts.current_time;
             }, 2000);
           } else {
-            this.player.currentTime(opts.current_time);
+            this.player.currentTime = opts.current_time;
           }
         }
 
