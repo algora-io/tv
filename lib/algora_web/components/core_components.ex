@@ -383,29 +383,53 @@ defmodule AlgoraWeb.CoreComponents do
 
   def show_mobile_sidebar(js \\ %JS{}) do
     js
+    |> JS.show(to: "#sidebar-close-button")
+    |> JS.hide(to: "#sidebar-open-button")
     |> JS.show(to: "#mobile-sidebar-container", transition: "fade-in")
     |> JS.show(
       to: "#mobile-sidebar",
       display: "flex",
-      time: 300,
-      transition:
-        {"transition ease-in-out duration-300 transform", "-translate-x-full", "translate-x-0"}
+      # time: 300,
+      # transition:
+      #   {"transition ease-in-out duration-300 transform", "-translate-x-full", "translate-x-0"}
     )
-    |> JS.hide(to: "#show-mobile-sidebar", transition: "fade-out")
-    |> JS.dispatch("js:exec", to: "#hide-mobile-sidebar", detail: %{call: "focus", args: []})
+    # |> JS.hide(to: "#show-mobile-sidebar", transition: "fade-out")
+    # |> JS.dispatch("js:exec", to: "#hide-mobile-sidebar", detail: %{call: "focus", args: []})
   end
 
   def hide_mobile_sidebar(js \\ %JS{}) do
     js
+    |> JS.hide(to: "#sidebar-close-button")
+    |> JS.show(to: "#sidebar-open-button")
     |> JS.hide(to: "#mobile-sidebar-container", transition: "fade-out")
     |> JS.hide(
       to: "#mobile-sidebar",
-      time: 300,
-      transition:
-        {"transition ease-in-out duration-300 transform", "translate-x-0", "-translate-x-full"}
+      # time: 300,
+      # transition:
+      #   {"transition ease-in-out duration-300 transform", "translate-x-0", "-translate-x-full"}
     )
-    |> JS.show(to: "#show-mobile-sidebar", transition: "fade-in")
-    |> JS.dispatch("js:exec", to: "#show-mobile-sidebar", detail: %{call: "focus", args: []})
+    # |> JS.show(to: "#show-mobile-sidebar", transition: "fade-in")
+    # |> JS.dispatch("js:exec", to: "#show-mobile-sidebar", detail: %{call: "focus", args: []})
+  end
+
+  def toggle_mobile_sidebar(js \\ %JS{}) do
+    js
+    |> JS.toggle(to: "#mobile-sidebar-container", in: "fade-in", out: "fade-out")
+    |> JS.toggle(
+      to: "#mobile-sidebar",
+      # time: 300,
+      # out:
+      #   {"transition ease-in-out duration-300 transform", "translate-x-0", "-translate-x-full"},
+      # in:
+      #   {"transition ease-in-out duration-300 transform", "-translate-x-full", "translate-x-0"}
+    )
+    |> JS.toggle_class(
+      "ml-44",
+      to: "#sidebar-toggle-button",
+
+    )
+    # |> JS.toggle(to: "#show-mobile-sidebar", out: "fade-out", in: "fade-in")
+    # |> JS.dispatch("js:exec", to: "#show-mobile-sidebar", detail: %{call: "focus", args: []})
   end
 
   def show_dropdown(to) do

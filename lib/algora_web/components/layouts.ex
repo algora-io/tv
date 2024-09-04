@@ -7,7 +7,7 @@ defmodule AlgoraWeb.Layouts do
   attr :users, :list
 
   def sidebar_active_users(assigns) do
-    duplicated_users = Enum.concat(assigns.users, assigns.users)
+    duplicated_users = assigns.users ++ assigns.users ++ assigns.users ++ assigns.users ++ assigns.users ++ assigns.users
     ~H"""
     <div :if={length(@users) > 0}>
       <ul class="mt-4 space-y-5" role="group" aria-labelledby={@id}>
@@ -15,19 +15,20 @@ defmodule AlgoraWeb.Layouts do
           <li class="relative col-span-1 flex shadow-sm rounded-md overflow-hidden">
             <.link
               navigate={channel_path(user)}
-              class="pr-3 flex-1 flex items-center justify-between rounded-r-md truncate"
+              class="px-1 pr-3 flex-1 flex items-center justify-between rounded-r-md truncate"
             >
               <img
-                class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-300"
+                class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-300"
                 src={user.avatar_url}
                 alt={user.handle}
               />
-              <div class="flex-1 flex items-center justify-between text-gray-50 text-sm font-medium hover:text-gray-300 pl-3">
+              <div class="flex-1 flex flex-col justify-between text-gray-50 text-sm font-medium hover:text-gray-300 pl-3">
                 <div class="flex-1 py-1 text-sm truncate">
                   <%= user.handle %>
                 </div>
               </div>
               <span class="w-2.5 h-2.5 bg-red-500 rounded-full" aria-hidden="true" />
+              &nbsp;&nbsp;<p>Live</p>
             </.link>
           </li>
         <% end %>

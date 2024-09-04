@@ -67,20 +67,32 @@
       <div
         id="navbar"
         phx-hook="NavBar"
-        class="fixed z-30 top-0 w-full bg-black transition-colors flex gap-4 items-center justify-between h-[56px] px-4"
+        class="fixed z-50 top-0 w-full bg-black transition-colors flex gap-4 items-center justify-between h-[56px] px-4"
       >
         <div class="sm:w-1/3 flex items-center gap-4">
+          <.logo class="w-16 h-auto hidden sm:flex" />
           <button
             type="button"
             aria-expanded="false"
             aria-controls="mobile-sidebar"
-            class="-ml-2 p-2 text-white focus:outline-none focus:bg-white/10 rounded-full"
+            class="hidden p-2 text-white focus:outline-none focus:bg-white/10 rounded-full"
             phx-click={show_mobile_sidebar()}
+            id="sidebar-open-button"
           >
-            <span class="sr-only">Open sidebar</span>
-            <Heroicons.bars_3 class="h-6 w-6" />
+            <span class="sr-only">Toggle sidebar</span>
+            <Heroicons.arrow_right class="h-5 w-5"/>
           </button>
-          <.logo class="w-16 h-auto hidden sm:flex" />
+          <button
+            type="button"
+            aria-expanded="false"
+            aria-controls="mobile-sidebar"
+            class="ml-44 p-2 text-white focus:outline-none focus:bg-white/10 rounded-full"
+            phx-click={hide_mobile_sidebar()}
+            id="sidebar-close-button"
+          >
+            <span class="sr-only">Toggle sidebar</span>
+            <Heroicons.arrow_left class="h-5 w-5"/>
+          </button>
         </div>
         <div class="sm:w-1/3 items-center justify-end gap-2 hidden sm:flex">
           <a

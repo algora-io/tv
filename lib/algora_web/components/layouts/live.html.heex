@@ -1,80 +1,25 @@
 <div
   id="mobile-sidebar-container"
-  class="flex inset-0 h-full flex z-40 lg:hidden"
+  class="flex inset-0 h-full flex z-40"
   aria-modal="true"
-  style="display: none;"
   role="region"
 >
   <div
     id="mobile-sidebar"
-    class="relative flex-1 flex-col w-full pt-5 pb-4 bg-black hidden min-h-screen sm:max-w-xs"
+    class="relative flex-1 flex-col w-full pt-5 pb-4 bg-black min-h-screen sm:max-w-xs"
   >
-    <div class="relative  pt-3">
-      <button
-        type="button"
-        id="hide-mobile-sidebar"
-        aria-expanded="true"
-        aria-controls="mobile-sidebar"
-        class="ml-1 flex items-center justify-center h-10 w-10 rounded-full"
-        phx-click={hide_mobile_sidebar()}
-      >
-        <span class="sr-only">Close sidebar</span>
-        <svg
-          class="h-6 w-6 text-white"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          >
-          </path>
-        </svg>
-      </button>
-    </div>
 
     <div class="mt-4 flex-1 h-0 w-80 overflow-y-auto">
 
-      <nav class="fixed px-3 w-80">
+      <nav class="mt-4 fixed px-3 w-80 top-10 left-0 bottom-0 overflow-y-auto">
         <.sidebar_active_users id="desktop-active-users" users={@active_users} />
       </nav>
     </div>
-  </div>
-
-  <div class="flex-shrink-0 w-14" aria-hidden="true">
-    <!-- Dummy element to force sidebar to shrink to fit close icon -->
   </div>
 </div>
 
 <!-- Main column -->
 <div class="flex flex-col w-0 flex-1 overflow-hidden">
-  <%!-- <div
-    :if={@current_user}
-    class="relative z-10 flex-shrink-0 flex h-16 border-b border-gray-800 lg:hidden"
-    role="navigation"
-  >
-    <div class="flex-1 flex justify-between px-4 sm:px-6 lg:px-8">
-      <div class="my-auto">
-        <.logo />
-      </div>
-      <button
-        type="button"
-        id="show-mobile-sidebar"
-        aria-expanded="false"
-        aria-controls="mobile-sidebar"
-        class="ml-auto -mr-4 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 lg:hidden"
-        phx-click={show_mobile_sidebar()}
-      >
-        <span class="sr-only">Open sidebar</span>
-        <Heroicons.bars_3 class="h-6 w-6" />
-      </button>
-    </div>
-  </div> --%>
   <.flash flash={@flash} kind={:info} />
   <.flash flash={@flash} kind={:note} />
   <.flash flash={@flash} kind={:error} />
