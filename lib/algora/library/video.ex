@@ -2,6 +2,7 @@ defmodule Algora.Library.Video do
   require Logger
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   alias Algora.Accounts.User
   alias Algora.Library.Video
@@ -33,6 +34,7 @@ defmodule Algora.Library.Video do
     field :visibility, Ecto.Enum, values: [public: 1, unlisted: 2]
     field :remote_path, :string
     field :local_path, :string
+    field :deleted_at, :naive_datetime
 
     belongs_to :user, User
     belongs_to :show, Show
@@ -110,4 +112,8 @@ defmodule Algora.Library.Video do
   def slug(%Video{} = video), do: Slug.slugify("#{video.id}-#{video.title}")
 
   def id_from_slug(slug), do: slug |> String.split("-") |> Enum.at(0)
+
+  def not_deleted(query) do
+    from v in query, where: is_nil(v.deleted_at)
+  end
 end

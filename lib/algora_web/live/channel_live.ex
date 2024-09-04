@@ -2,7 +2,8 @@ defmodule AlgoraWeb.ChannelLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Accounts, Library, Storage}
+  alias Algora.Pipeline.Storage
+  alias Algora.{Accounts, Library}
   alias AlgoraWeb.{LayoutComponent, Presence}
   alias AlgoraWeb.ChannelLive.StreamFormComponent
 
@@ -278,6 +279,13 @@ defmodule AlgoraWeb.ChannelLive do
        socket
        |> assign(channel: %{channel | is_live: true})
        |> stream_insert(:videos, video, at: 0)
+       |> put_flash(:note, %{
+         body: "#{channel.name} just went live!",
+         action: %{
+           href: ~p"/#{channel.handle}/#{video.id}",
+           body: "Click here to start watching"
+         }
+       })
      else
        socket
      end}

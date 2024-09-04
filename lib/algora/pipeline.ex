@@ -68,8 +68,9 @@ defmodule Algora.Pipeline do
   def handle_child_notification(:end_of_stream, _element, _ctx, state) do
     Algora.Library.toggle_streamer_live(state.video, false)
 
-    # TODO: gracefully terminate open connections (e.g. RTMP, WS)
-    {[], state}
+    # TODO: close any open connections (e.g. Algora.Restream.WebSocket)
+
+    {[terminate: :normal], state}
   end
 
   def handle_child_notification({:track_playable, :video}, _element, _ctx, state) do
