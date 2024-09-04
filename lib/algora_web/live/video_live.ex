@@ -834,8 +834,6 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   defp set_active_tab(js \\ %JS{}, tab) do
-    IO.puts("TAB TAB TAB TAB:")
-    IO.puts(tab)
     js
     |> JS.remove_class("active-tab text-white pointer-events-none",
       to: "#side-panel .active-tab"
