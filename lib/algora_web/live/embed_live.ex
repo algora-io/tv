@@ -2,7 +2,8 @@ defmodule AlgoraWeb.EmbedLive do
   use AlgoraWeb, :live_view
   require Logger
 
-  alias Algora.{Accounts, Library, Storage, Chat}
+  alias Algora.Pipeline.Storage
+  alias Algora.{Accounts, Library, Chat}
   alias AlgoraWeb.{LayoutComponent, Presence, PlayerComponent}
 
   def render(assigns) do

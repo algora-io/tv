@@ -95,6 +95,10 @@ defmodule Algora.Pipeline.Storage do
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
       with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents),
            {:ok, video} <- Library.store_og_image(video) do
+        # HACK: this shouldn't be necessary
+        # atm we need it because initially the video does not have the user field set
+        video = Library.get_video!(video.id)
+
         broadcast_thumbnails_generated!(video)
       else
         _ ->

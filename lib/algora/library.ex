@@ -192,6 +192,7 @@ defmodule Algora.Library do
       order_by: [desc: v.inserted_at],
       limit: 1
     )
+    |> Video.not_deleted()
     |> Repo.one()
   end
 
@@ -223,6 +224,7 @@ defmodule Algora.Library do
         channel_avatar_url: u.avatar_url
       }
     )
+    |> Video.not_deleted()
     |> Repo.one()
   end
 
@@ -259,6 +261,7 @@ defmodule Algora.Library do
       where: v.duration == 0 and v.is_live == false and v.format == :hls and v.corrupted == false,
       select: v.id
     )
+    |> Video.not_deleted()
     |> Repo.all()
     |> Enum.each(&terminate_stream/1)
   end
@@ -267,11 +270,9 @@ defmodule Algora.Library do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
 
-    if user.visibility == :public do
-      Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
-        set: [is_live: is_live]
-      )
-    end
+    Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
+      set: [is_live: is_live]
+    )
 
     Repo.update_all(
       from(v in Video,
@@ -301,7 +302,7 @@ defmodule Algora.Library do
 
     sink_url = Algora.config([:event_sink, :url])
 
-    if sink_url && user.visibility == :public do
+    if sink_url && sink_url != "" && user.visibility == :public do
       identity =
         from(i in Algora.Accounts.Identity,
           join: u in assoc(i, :user),
@@ -609,6 +610,7 @@ defmodule Algora.Library do
         channel_avatar_url: u.avatar_url
       }
     )
+    |> Video.not_deleted()
     |> order_by_inserted(:desc)
     |> Repo.all()
   end
@@ -624,6 +626,7 @@ defmodule Algora.Library do
         channel_avatar_url: u.avatar_url
       }
     )
+    |> Video.not_deleted()
     |> order_by_inserted(:desc)
     |> Repo.all()
   end
@@ -640,6 +643,7 @@ defmodule Algora.Library do
         channel_avatar_url: u.avatar_url
       }
     )
+    |> Video.not_deleted()
     |> order_by_inserted(:desc)
     |> Repo.all()
   end
@@ -656,6 +660,7 @@ defmodule Algora.Library do
         },
         where: v.id in ^ids
       )
+      |> Video.not_deleted()
       |> Repo.all()
 
     video_by_id = fn id ->
@@ -680,6 +685,7 @@ defmodule Algora.Library do
       },
       where: v.show_id in ^ids
     )
+    |> Video.not_deleted()
     |> order_by_inserted(:desc)
     |> Repo.all()
   end
@@ -699,6 +705,7 @@ defmodule Algora.Library do
         channel_avatar_url: u.avatar_url
       }
     )
+    |> Video.not_deleted()
     |> order_by_inserted(:desc)
     |> Repo.all()
   end
@@ -718,6 +725,7 @@ defmodule Algora.Library do
           is_nil(v.transmuxed_from_id) and
           v.user_id == ^channel.user_id
     )
+    |> Video.not_deleted()
     |> order_by_inserted(:desc)
     |> Repo.all()
   end
@@ -738,13 +746,14 @@ defmodule Algora.Library do
         is_nil(v.transmuxed_from_id) and
           v.user_id == ^channel.user_id
     )
+    |> Video.not_deleted()
     |> order_by_inserted(:desc)
     |> Repo.all()
   end
 
   def list_active_channels(opts) do
     from(u in Algora.Accounts.User,
-      where: u.is_live,
+      where: u.is_live and u.visibility == :public,
       limit: ^Keyword.fetch!(opts, :limit),
       order_by: [desc: u.updated_at],
       select: struct(u, [:id, :handle, :channel_tagline, :avatar_url, :external_homepage_url])
@@ -790,6 +799,7 @@ defmodule Algora.Library do
           channel_avatar_url: u.avatar_url
         }
       )
+      |> Video.not_deleted()
       |> Repo.one!()
 
   def update_video(%Video{} = video, attrs) do
@@ -799,7 +809,11 @@ defmodule Algora.Library do
   end
 
   def delete_video(%Video{} = video) do
-    Repo.delete(video)
+    deleted_at = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+    video
+    |> Ecto.Changeset.change(deleted_at: deleted_at)
+    |> Repo.update()
   end
 
   defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
