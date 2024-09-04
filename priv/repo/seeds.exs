@@ -12,7 +12,8 @@ user =
     name: "Algora",
     avatar_url: "https://fly.storage.tigris.dev/algora/test/algora.png",
     email: "algora@example.com",
-    visibility: :public
+    visibility: :public,
+    is_live: true
   })
 
 Repo.insert!(%Video{
