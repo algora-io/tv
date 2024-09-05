@@ -26,7 +26,7 @@ defmodule Algora.Admin do
     end
   end
 
-  defp get_absolute_playlist(video) do
+  defp get_absolute_media_playlist(video) do
     %ExM3U8.MediaPlaylist{timeline: timeline, info: info} = get_media_playlist(video, @tracks.video)
 
     timeline = timeline
@@ -48,10 +48,10 @@ defmodule Algora.Admin do
     %ExM3U8.MediaPlaylist{timeline: timeline, info: info}
   end
 
-  defp merge_playlists(video, nil), do: get_absolute_playlist(video)
+  defp merge_media_playlists(video, nil), do: get_absolute_media_playlist(video)
 
-  defp merge_playlists(video, playlist) do
-    new_playlist = video |> get_absolute_playlist
+  defp merge_media_playlists(video, playlist) do
+    new_playlist = video |> get_absolute_media_playlist
 
     %ExM3U8.MediaPlaylist{
       playlist
@@ -63,54 +63,75 @@ defmodule Algora.Admin do
     }
   end
 
+  defp merge_playlists(videos) do
+    playlists = Enum.map(videos, &get_playlist/1)
+
+    streams = Enum.flat_map(playlists, &Map.get(&1, :items))
+    example_stream = Enum.at(streams, 1)
+
+    if Enum.all?(streams, fn x -> example_stream.resolution == x.resolution && example_stream.codecs == x.codecs end) do
+      max_bandwidth = Enum.map(streams, &Map.get(&1, :bandwidth)) |> Enum.max(&Ratio.gte?/2)
+      avg_bandwidth = streams
+        |> Enum.reduce(0, fn s, sum -> sum + s.average_bandwidth end)
+        |> then(&(&1 / Enum.count(streams)))
+
+      {:ok, %{ Enum.at(playlists, 0)
+          | items: [
+            %{ example_stream
+              | average_bandwidth: Ratio.trunc(avg_bandwidth),
+              bandwidth: max_bandwidth
+            }
+          ]
+        }
+      }
+    else
+      {:error, "Codecs or resolutions don't match"}
+    end
+  end
+
   defp copy_index_to_video(from_uuid, to_uuid) do
     ExAws.S3.put_object_copy(bucket(), "#{to_uuid}/index.m3u8", bucket(), "#{from_uuid}/index.m3u8")
     |> ExAws.request()
   end
 
-  defp insert_merged_video(videos) do
+  defp insert_merged_video(videos, playlist, media_playlist) do
     [video | _] = videos
 
-    {duration, ids} = Enum.reduce(
-      videos,
-      {0, []},
-      fn x, {acc_duration, acc_ids} -> {acc_duration + x.duration, [x.id | acc_ids]} end
-    )
+    duration = videos |> Enum.reduce(0, fn v, d -> d + v.duration end)
 
-    %Video{
-        title: "Merged VODs " <> (Enum.reverse(ids) |> Enum.join(", ")),
-        duration: duration,
-        type: :vod,
-        format: :hls,
-        is_live: false,
-        visibility: :public,
-        user_id: video.user_id,
-        thumbnail_url: video.thumbnail_url
-      }
+    result = %{video | duration: duration, id: nil, filename: nil}
       |> change()
-      |> Video.put_video_uuid()
-      |> Video.put_video_url(:hls)
+      |> Video.put_video_url(video.format)
       |> Repo.insert()
+
+    upload_to = fn uuid, track_atom, m3u8_body -> Storage.upload(
+      "#{ExM3U8.serialize(m3u8_body)}#EXT-X-ENDLIST\n",
+      "#{uuid}/#{@tracks[track_atom]}",
+      content_type: "application/x-mpegURL"
+    ) end
+
+    with {:ok, new_video} <- result,
+      {:ok, _} <- upload_to.(new_video.uuid, :manifest, playlist),
+      {:ok, _} <- upload_to.(new_video.uuid, :video, media_playlist),
+      {:ok, _} <- copy_index_to_video(video.uuid, new_video.uuid)do
+        result
+    end
   end
 
   def merge_streams(videos) do
-    [video | _] = videos
-
-    with playlist <- Enum.reduce(videos, nil, &merge_playlists/2),
-      {:ok, new_video} <- insert_merged_video(videos),
-      {:ok, _} <- Storage.upload(
-        "#{ExM3U8.serialize(playlist)}#EXT-X-ENDLIST\n",
-        "#{new_video.uuid}/g3cFdmlkZW8.m3u8",
-        content_type: "application/x-mpegURL"
-      ),
-      {:ok, _} <- copy_index_to_video(video.uuid, new_video.uuid) do
-        ids = Enum.map(videos, & &1.id)
+    with {:ok, playlist} <- merge_playlists(videos),
+      media_playlist <- Enum.reduce(videos, nil, &merge_media_playlists/2),
+      {:ok, new_video} <- insert_merged_video(videos, playlist, media_playlist) do
+        ids = Enum.map(videos, &(&1.id))
         Repo.update_all(
           from(v in Video, where: v.id in ^ids),
-          set: [visibility: :unlisted]
+          set: [
+            visibility: :unlisted,
+            deleted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          ]
         )
 
-        new_video
+        {:ok, new_video}
     end
   end
 
