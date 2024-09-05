@@ -87,3 +87,26 @@ kill_timeout = '5s'
     hard_limit = 100000
     soft_limit = 10000
 
+
+[deploy]
+  strategy = "rolling"
+  max_unavailable = 0
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 2
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "15s"
+    method = "GET"
+    path = "/health"
+    protocol = "http"
+    timeout = "10s"
+
+# ... rest of your configuration ...
+

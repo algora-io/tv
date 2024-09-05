@@ -5,6 +5,31 @@ import topbar from "../vendor/topbar";
 import videojs from "../vendor/video";
 import "../vendor/videojs-youtube";
 
+import express from "express";
+import http from "http";
+
+const app = express();
+const server = http.createServer(app);
+
+// ... your existing setup ...
+
+// Graceful shutdown handler
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    console.log("HTTP server closed");
+    // Close database connections, stop processing jobs, etc.
+    process.exit(0);
+  });
+});
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+// ... rest of your server code ...
+
 // TODO: add eslint & biome
 // TODO: enable strict mode
 // TODO: eliminate anys
