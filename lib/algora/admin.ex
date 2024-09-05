@@ -16,16 +16,6 @@ defmodule Algora.Admin do
     Finch.build(:get, url) |> Finch.request(Algora.Finch)
   end
 
-  defp bucket(), do: Algora.config([:buckets, :media])
-
-  defp to_absolute(uuid, uri) do
-    if String.starts_with?(uri, Storage.endpoint_url()) do
-      uri
-    else
-      "#{Storage.endpoint_url()}/#{bucket()}/#{uuid}/#{uri}"
-    end
-  end
-
   defp get_absolute_media_playlist(video) do
     %ExM3U8.MediaPlaylist{timeline: timeline, info: info} = get_media_playlist(video, @tracks.video)
 
@@ -33,11 +23,11 @@ defmodule Algora.Admin do
     |> Enum.reduce([], fn x, acc ->
         case x do
           %ExM3U8.Tags.MediaInit{uri: uri} -> [
-            %ExM3U8.Tags.MediaInit{uri: to_absolute(video.uuid, uri)}
+            %ExM3U8.Tags.MediaInit{uri: Storage.to_absolute(:video, video.uuid, uri)}
             | acc
           ]
           %ExM3U8.Tags.Segment{uri: uri, duration: duration} -> [
-            %ExM3U8.Tags.Segment{uri: to_absolute(video.uuid, uri), duration: duration}
+            %ExM3U8.Tags.Segment{uri: Storage.to_absolute(:video, video.uuid, uri), duration: duration}
             | acc
           ]
           others -> [others | acc]
@@ -90,8 +80,12 @@ defmodule Algora.Admin do
   end
 
   defp copy_index_to_video(from_uuid, to_uuid) do
-    ExAws.S3.put_object_copy(bucket(), "#{to_uuid}/index.m3u8", bucket(), "#{from_uuid}/index.m3u8")
-    |> ExAws.request()
+    ExAws.S3.put_object_copy(
+      Storage.bucket(),
+      "#{to_uuid}/index.m3u8",
+      Storage.bucket(),
+      "#{from_uuid}/index.m3u8"
+    ) |> ExAws.request()
   end
 
   defp insert_merged_video(videos, playlist, media_playlist) do
