@@ -43,3 +43,4 @@ npm-debug.log
 *.patch
 /.fly
 /xref*
+.lexical
