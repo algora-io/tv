@@ -157,7 +157,6 @@ const Hooks = {
       this.player = await window.VidstackPlayer.create({
         target: this.el,
         autoplay,
-        muted: true,
         viewType: "video",
         streamType: "on-demand",
         logLevel: "warn",
@@ -166,17 +165,9 @@ const Hooks = {
         live: true,
         seeking: true,
         layout: await new window.VidstackPlayerLayout(),
-        onAutoplayFail: async ({ muted }) => {
-          if (!muted) {
-            try {
-              this.player.muted = true;
-              this.player.autoplay = true;
-            } catch (error) {
-              console.error(error);
-            }
-          }
-        },
       });
+
+      this.player.muted = true;
       const getVideoProvider = (type: string) => {
         switch (type) {
           case "youtube":
@@ -219,6 +210,16 @@ const Hooks = {
               type: "image/png",
             })),
           });
+        };
+
+        this.player.onAutoplayFail = async () => {
+          if (!this.player.muted) {
+            try {
+              this.player.mute();
+            } catch (error) {
+              console.error(error);
+            }
+          }
         };
 
         this.player.poster = opts.poster;
