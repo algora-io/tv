@@ -79,15 +79,6 @@ defmodule Algora.Admin do
     end
   end
 
-  defp copy_index_to_video(from_uuid, to_uuid) do
-    ExAws.S3.put_object_copy(
-      Storage.bucket(),
-      "#{to_uuid}/index.m3u8",
-      Storage.bucket(),
-      "#{from_uuid}/index.m3u8"
-    ) |> ExAws.request()
-  end
-
   defp insert_merged_video(videos, playlist, media_playlist) do
     [video | _] = videos
 
@@ -106,8 +97,7 @@ defmodule Algora.Admin do
 
     with {:ok, new_video} <- result,
       {:ok, _} <- upload_to.(new_video.uuid, :manifest, playlist),
-      {:ok, _} <- upload_to.(new_video.uuid, :video, media_playlist),
-      {:ok, _} <- copy_index_to_video(video.uuid, new_video.uuid)do
+      {:ok, _} <- upload_to.(new_video.uuid, :video, media_playlist) do
         result
     end
   end
