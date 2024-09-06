@@ -2,7 +2,6 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket, type ViewHook } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import "../vendor/videojs-youtube";
 
 // TODO: add eslint & biome
 // TODO: enable strict mode
@@ -19,6 +18,7 @@ declare global {
   interface Window {
     liveSocket: LiveSocket;
     VidstackPlayer: any;
+    VidstackPlayerLayout: any;
     addEventListener<K extends keyof WindowEventMap | PhxEventKey>(
       type: K,
       listener: (
@@ -157,6 +157,7 @@ const Hooks = {
       this.player = await window.VidstackPlayer.create({
         target: this.el,
         autoplay,
+        muted: true,
         viewType: "video",
         streamType: "on-demand",
         logLevel: "warn",
@@ -164,8 +165,17 @@ const Hooks = {
         playsInline: true,
         live: true,
         seeking: true,
-        poster:
-          "https://console.algora.io/asset/storage/v1/object/public/images/algora-gradient-90px.png",
+        layout: await new window.VidstackPlayerLayout(),
+        onAutoplayFail: async ({ muted }) => {
+          if (!muted) {
+            try {
+              this.player.muted = true;
+              this.player.autoplay = true;
+            } catch (error) {
+              console.error(error);
+            }
+          }
+        },
       });
       const getVideoProvider = (type: string) => {
         switch (type) {
@@ -188,9 +198,9 @@ const Hooks = {
         player_id: string;
         id: string;
         url: string;
-        format: string;
         title: string;
-        type: string;
+        poster: string;
+        is_live: boolean;
         player_type: string;
         current_time?: number;
         channel_name: string;
@@ -211,16 +221,16 @@ const Hooks = {
           });
         };
 
+        this.player.poster = opts.poster;
         this.player.title = opts.title;
         this.player.src = opts.url;
-        this.player.type = getVideoProvider(opts.type || opts.format);
+        this.player.type = getVideoProvider(opts.player_type);
         this.player.currentTime =
           opts.current_time && opts.player_type === "video/youtube"
             ? opts.current_time
-            : 0; // appending ?t=number to the URL updates the current time. where 1 reps 10s
+            : 0; // appending ?t=number to the URL updates the current time.
 
-        this.player.streamType =
-          opts.type === "livestream" ? "ll-live:dvr" : "on-demand";
+        this.player.streamType = opts.is_live ? "ll-live:dvr" : "on-demand";
 
         setMediaSession();
 

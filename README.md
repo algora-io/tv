@@ -96,6 +96,12 @@ To get a local copy up and running, follow these steps.
    env $(cat .env | xargs -L 1) mix ecto.setup
    ```
 
+   Use the command below to seed your db
+
+   ```sh
+   env $(cat .env | xargs -L 1) mix run priv/repo/seeds.exs
+   ```
+
 7. Start your development server
 
    ```sh

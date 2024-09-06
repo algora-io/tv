@@ -1,0 +1,1831 @@
+19:31:50.996 [info] Child {LoggerFileBackend, :general_log} of Supervisor Logger.Backends.Supervisor started
+Pid: #PID<0.113.0>
+Start Call: Logger.Backends.Watcher.start_link({{LoggerFileBackend, :general_log}, {LoggerFileBackend, :general_log}})
+Restart: :transient
+Shutdown: 5000
+Type: :worker
+19:31:50.997 [info] Child Logger.Backends.Supervisor of Supervisor Logger.Backends.Internal started
+Pid: #PID<0.112.0>
+Start Call: Logger.Backends.Supervisor.start_link([{LoggerFileBackend, :general_log}])
+Restart: :permanent
+Shutdown: :infinity
+Type: :supervisor
+19:31:50.997 [info] Child Logger.Backends.Internal of Supervisor Logger.Supervisor started
+Pid: #PID<0.108.0>
+Start Call: Logger.Backends.Internal.start_link([])
+Restart: :permanent
+Shutdown: :infinity
+Type: :supervisor
+19:31:50.997 [info] Application logger started at :nonode@nohost
+19:31:58.728 [info] Child :ttb_autostart of Supervisor :runtime_tools_sup started
+Pid: #PID<0.1521.0>
+Start Call: :ttb_autostart.start_link()
+Restart: :temporary
+Shutdown: 3000
+Type: :worker
+19:31:58.729 [info] Application runtime_tools started at :nonode@nohost
+19:31:58.762 [info] Application erts started at :nonode@nohost
+19:31:58.762 [info] Application lx_lexical_shared started at :nonode@nohost
+19:31:58.762 [info] Application lx_lexical_test started at :nonode@nohost
+19:31:58.786 [info] Child LXSnowflake.Generator of Supervisor #PID<0.1524.0> (Supervisor.Default) started
+Pid: #PID<0.1525.0>
+Start Call: LXSnowflake.Generator.start_link(1704070800000, 1)
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:31:58.787 [info] Application lx_snowflake started at :nonode@nohost
+19:31:58.788 [info] Application lx_sourceror started at :nonode@nohost
+19:31:58.788 [info] Application lx_common started at :nonode@nohost
+19:31:58.788 [info] Application lx_elixir_sense started at :nonode@nohost
+19:31:58.788 [info] Application jason started at :nonode@nohost
+19:31:58.788 [info] Application logger_file_backend started at :nonode@nohost
+19:31:58.788 [info] Application lx_path_glob started at :nonode@nohost
+19:31:58.788 [info] Application lx_proto started at :nonode@nohost
+19:31:58.788 [info] Application lx_protocol started at :nonode@nohost
+19:31:59.275 [info] Child LXical.Document.Store of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1529.0>
+Start Call: LXical.Document.Store.start_link([derive: [analysis: &LXical.Ast.analyze/1]])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:31:59.381 [info] Child LXical.Server of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1530.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:31:59.382 [info] Child LXical.Server.ProjectSupervisor of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1531.0>
+Start Call: DynamicSupervisor.start_link([name: LXical.Server.ProjectSupervisor, strategy: :one_for_one])
+Restart: :permanent
+Shutdown: :infinity
+Type: :supervisor
+19:31:59.382 [info] Child LXical.Server.TaskQueue.State.TaskSupervisor of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1532.0>
+Start Call: Task.Supervisor.start_link([name: LXical.Server.TaskQueue.State.TaskSupervisor])
+Restart: :permanent
+Shutdown: :infinity
+Type: :supervisor
+19:31:59.382 [info] Child LXical.Server.TaskQueue of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1533.0>
+Start Call: LXical.Server.TaskQueue.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:31:59.382 [info] Child LXical.Server.Transport.StdIO of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1534.0>
+Start Call: LXical.Server.Transport.StdIO.start_link(:standard_io, &LXical.Server.protocol_message/1)
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:31:59.382 [info] Application lx_server started at :nonode@nohost
+19:31:59.917 [info] Starting project at uri file:///home/seven/Documents/codes/oss/tv
+19:32:00.484 [info] Child {LXical.Server.Project.Progress, "tv"} of Supervisor :"tv::supervisor" started
+Pid: #PID<0.1536.0>
+Start Call: LXical.Server.Project.Progress.start_link(%{__struct__: LXical.Project, entropy: 41986, project_module: nil, mix_exs_uri: "file:///home/seven/Documents/codes/oss/tv/mix.exs", mix_project?: true, root_uri: "file:///home/seven/Documents/codes/oss/tv", env_variables: %{}, mix_env: nil, mix_target: nil})
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:32:00.610 [info] Child {LXical.RemoteControl.ProjectNodeSupervisor, "tv"} of Supervisor :"tv::supervisor" started
+Pid: #PID<0.1537.0>
+Start Call: LXical.RemoteControl.ProjectNodeSupervisor.start_link(%{__struct__: LXical.Project, entropy: 41986, project_module: nil, mix_exs_uri: "file:///home/seven/Documents/codes/oss/tv/mix.exs", mix_project?: true, root_uri: "file:///home/seven/Documents/codes/oss/tv", env_variables: %{}, mix_env: nil, mix_target: nil})
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:32:00.897 [info] Child :erl_epmd of Supervisor :net_sup started
+Pid: #PID<0.1540.0>
+Start Call: :erl_epmd.start_link()
+Restart: :permanent
+Shutdown: 2000
+Type: :worker
+19:32:00.923 [info] Child :auth of Supervisor :net_sup started
+Pid: #PID<0.1541.0>
+Start Call: :auth.start_link()
+Restart: :permanent
+Shutdown: 2000
+Type: :worker
+19:32:00.979 [info] Child :net_kernel of Supervisor :net_sup started
+Pid: #PID<0.1542.0>
+Start Call: :net_kernel.start_link(%{name: :"manager-tv-41986@127.0.0.1", supervisor: :net_sup_dynamic, name_domain: :longnames, clean_halt: false})
+Restart: :permanent
+Shutdown: 2000
+Type: :worker
+19:32:00.979 [info] Child :net_sup_dynamic of Supervisor :kernel_sup started
+Pid: #PID<0.1539.0>
+Start Call: :erl_distribution.start_link(%{name: :"manager-tv-41986@127.0.0.1", supervisor: :net_sup_dynamic, name_domain: :longnames, clean_halt: false})
+Restart: :permanent
+Shutdown: 1000
+Type: :supervisor
+19:32:04.063 [error] Process #PID<0.1538.0> terminating
+** (exit) {:error, :start_timeout}
+    (stdlib 6.0.1) gen_server.erl:2038: :gen_server.init_it/6
+    (stdlib 6.0.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Initial Call: LXical.Server.Project.Node.init/1
+Ancestors: [:"tv::supervisor", LXical.Server.ProjectSupervisor, LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 0
+Messages: []
+Links: [#PID<0.1535.0>]
+Dictionary: []
+Trapping Exits: false
+Status: :running
+Heap Size: 4185
+Stack Size: 29
+Reductions: 231606
+19:32:04.063 [error] Child {LXical.Server.Project.Node, "tv"} of Supervisor :"tv::supervisor" failed to start
+** (exit) {:error, :start_timeout}
+Start Call: LXical.Server.Project.Node.start_link(%{__struct__: LXical.Project, entropy: 41986, project_module: nil, mix_exs_uri: "file:///home/seven/Documents/codes/oss/tv/mix.exs", mix_project?: true, root_uri: "file:///home/seven/Documents/codes/oss/tv", env_variables: %{}, mix_env: nil, mix_target: nil})
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:32:04.135 [error] GenServer :"tv::node_process" terminating
+** (stop) :start_timeout
+Last message: :maybe_start_timeout
+State: nil
+19:32:04.135 [error] Process :"tv::node_process" (#PID<0.1545.0>) terminating
+** (exit) :start_timeout
+    (stdlib 6.0.1) gen_server.erl:2304: :gen_server.handle_common_reply/8
+    (stdlib 6.0.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Initial Call: LXical.RemoteControl.ProjectNode.init/1
+Ancestors: [LXical.RemoteControl.ProjectNodeSupervisor, :"tv::supervisor", LXical.Server.ProjectSupervisor, LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 1
+Messages: [{:EXIT, #PID<0.1537.0>, :shutdown}]
+Links: [#Port<0.8>]
+Dictionary: []
+Trapping Exits: true
+Status: :running
+Heap Size: 28690
+Stack Size: 29
+Reductions: 26769
+19:32:04.179 [error] Child :undefined of Supervisor LXical.RemoteControl.ProjectNodeSupervisor shut down abnormally
+** (exit) :start_timeout
+Pid: #PID<0.1545.0>
+Start Call: LXical.RemoteControl.ProjectNode.start_link(%{__struct__: LXical.Project, entropy: 41986, project_module: nil, mix_exs_uri: "file:///home/seven/Documents/codes/oss/tv/mix.exs", mix_project?: true, root_uri: "file:///home/seven/Documents/codes/oss/tv", env_variables: %{}, mix_env: nil, mix_target: nil})
+Restart: :transient
+Shutdown: 5000
+Type: :worker
+19:32:04.210 [info] Lexical Initialized
+19:32:04.210 [info] opened file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex
+19:32:04.382 [info] Child of Supervisor :inet_gethost_native_sup started
+Pid: #PID<0.1554.0>
+Start Call: :inet_gethost_native.init([])
+19:32:04.382 [info] Child :inet_gethost_native_sup of Supervisor :kernel_safe_sup started
+Pid: #PID<0.1553.0>
+Start Call: :inet_gethost_native.start_link()
+Restart: :temporary
+Shutdown: 1000
+Type: :worker
+19:32:04.398 [error] ** (ErlangError) Erlang error: {:erpc, :noconnection}
+    (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:16: LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:04.398 [error] ** (ErlangError) Erlang error: {:erpc, :noconnection}
+    (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:16: LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:04.399 [error] ** (ErlangError) Erlang error: {:erpc, :noconnection}
+    (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:16: LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:04.399 [error] ** (ErlangError) Erlang error: {:erpc, :noconnection}
+    (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:16: LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:04.399 [error] ** (ErlangError) Erlang error: {:erpc, :noconnection}
+    (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:16: LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:04.389 [error] GenServer LXical.Server terminating
+** (stop) {:erpc, :noconnection}
+    (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+    (lx_server 0.5.0) lib/lexical/server/state.ex:164: LXical.Server.State.apply/2
+    (lx_server 0.5.0) lib/lexical/server.ex:154: LXical.Server.apply_to_state/2
+    (lx_server 0.5.0) lib/lexical/server.ex:117: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+    (stdlib 6.0.1) gen_server.erl:2199: :gen_server.try_handle_cast/3
+    (stdlib 6.0.1) gen_server.erl:2261: :gen_server.handle_msg/6
+    (stdlib 6.0.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Last message: {:"$gen_cast", {:protocol_message, %{__struct__: LXical.Protocol.Notifications.DidChange, document: nil, lsp: %{__struct__: LXical.Protocol.Notifications.DidChange.LSP, text_document: #Protocol.Types.TextDocument.Versioned.Identifier<[version: 58, uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: [#Protocol.Types.TextDocument.ContentChangeEvent.TextDocumentContentChangeEvent<[text: " ", range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 46, character: 13]>, end: #Protocol.Types.Position<[line: 46, character: 13]>]>, range_length: 0]>]}, text_document: nil, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: nil}}}
+State: %{__struct__: LXical.Server.State, configuration: %{__struct__: LXical.Server.Configuration, project: %{__struct__: LXical.Project, entropy: 41986, project_module: nil, mix_exs_uri: "file:///home/seven/Documents/codes/oss/tv/mix.exs", mix_project?: true, root_uri: "file:///home/seven/Documents/codes/oss/tv", env_variables: %{}, mix_env: nil, mix_target: nil}, support: %{deprecated: true, __struct__: LXical.Server.Configuration.Support, snippet: true, work_done_progress: true, tags: #Protocol.Types.Completion.ClientCapabilities.TagSupport<[value_set: [:deprecated]]>, signature_help: #Protocol.Types.SignatureHelp.ClientCapabilities<[dynamic_registration: true, context_support: true, signature_information: #Protocol.Types.SignatureHelp.ClientCapabilities.SignatureInformation<[documentation_format: [:markdown, :plain_text], active_parameter_support: true, parameter_information: #Protocol.Types.SignatureHelp.ClientCapabilities.ParameterInformation<[label_offset_support: true]>]>]>, code_action_dynamic_registration: true, hierarchical_symbols: true}, client_name: "Visual Studio Code", dialyzer_enabled?: false, additional_watched_extensions: nil}, in_flight_requests: %{}, initialized?: true, shutdown_received?: false}
+19:32:04.440 [error] Process LXical.Server (#PID<0.1530.0>) terminating
+** (ErlangError) Erlang error: {:erpc, :noconnection}
+    (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+    (lx_server 0.5.0) lib/lexical/server/state.ex:164: LXical.Server.State.apply/2
+    (lx_server 0.5.0) lib/lexical/server.ex:154: LXical.Server.apply_to_state/2
+    (lx_server 0.5.0) lib/lexical/server.ex:117: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+    (stdlib 6.0.1) gen_server.erl:2199: :gen_server.try_handle_cast/3
+    (stdlib 6.0.1) gen_server.erl:2261: :gen_server.handle_msg/6
+    (stdlib 6.0.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Initial Call: LXical.Server.init/1
+Ancestors: [LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 8
+Messages: ["$gen_cast": {:protocol_message, %{id: nil, __struct__: LXical.Protocol.Notifications.Cancel, lsp: %{id: 2, __struct__: LXical.Protocol.Notifications.Cancel.LSP, method: "$/cancelRequest", jsonrpc: "2.0"}, method: "$/cancelRequest", jsonrpc: "2.0"}}, "$gen_cast": {:protocol_message, %{id: nil, __struct__: LXical.Protocol.Notifications.Cancel, lsp: %{id: 3, __struct__: LXical.Protocol.Notifications.Cancel.LSP, method: "$/cancelRequest", jsonrpc: "2.0"}, method: "$/cancelRequest", jsonrpc: "2.0"}}, "$gen_cast": {:protocol_message, %{__struct__: LXical.Protocol.Notifications.DidChange, document: nil, lsp: %{__struct__: LXical.Protocol.Notifications.DidChange.LSP, text_document: #Protocol.Types.TextDocument.Versioned.Identifier<[version: 59, uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: [#Protocol.Types.TextDocument.ContentChangeEvent.TextDocumentContentChangeEvent<[text: "|", range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 46, character: 14]>, end: #Protocol.Types.Position<[line: 46, character: 14]>]>, range_length: 0]>]}, text_document: nil, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: nil}}, "$gen_cast": {:protocol_message, %{__struct__: LXical.Protocol.Notifications.DidChange, document: nil, lsp: %{__struct__: LXical.Protocol.Notifications.DidChange.LSP, text_document: #Protocol.Types.TextDocument.Versioned.Identifier<[version: 60, uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: [#Protocol.Types.TextDocument.ContentChangeEvent.TextDocumentContentChangeEvent<[text: "|", range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 46, character: 15]>, end: #Protocol.Types.Position<[line: 46, character: 15]>]>, range_length: 0]>]}, text_document: nil, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: nil}}, "$gen_cast": {:protocol_message, %{id: nil, __struct__: LXical.Protocol.Notifications.Cancel, lsp: %{id: 5, __struct__: LXical.Protocol.Notifications.Cancel.LSP, method: "$/cancelRequest", jsonrpc: "2.0"}, method: "$/cancelRequest", jsonrpc: "2.0"}}, "$gen_cast": {:protocol_message, %{id: nil, __struct__: LXical.Protocol.Notifications.Cancel, lsp: %{id: 4, __struct__: LXical.Protocol.Notifications.Cancel.LSP, method: "$/cancelRequest", jsonrpc: "2.0"}, method: "$/cancelRequest", jsonrpc: "2.0"}}, "$gen_cast": {:protocol_message, %{__struct__: LXical.Protocol.Notifications.DidChange, document: nil, lsp: %{__struct__: LXical.Protocol.Notifications.DidChange.LSP, text_document: #Protocol.Types.TextDocument.Versioned.Identifier<[version: 61, uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: [#Protocol.Types.TextDocument.ContentChangeEvent.TextDocumentContentChangeEvent<[text: " ", range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 46, character: 16]>, end: #Protocol.Types.Position<[line: 46, character: 16]>]>, range_length: 0]>]}, text_document: nil, method: "textDocument/didChange", jsonrpc: "2.0", content_changes: nil}}, "$gen_cast": {:protocol_message, %{id: 8, context: nil, range: nil, __struct__: LXical.Protocol.Requests.CodeAction, document: nil, lsp: %{id: 8, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 46, character: 17]>, end: #Protocol.Types.Position<[line: 46, character: 17]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: nil, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}}]
+Links: [#PID<0.1528.0>]
+Dictionary: [rand_seed: {%{type: :exsss, next: #Function<0.40079776/1 in :rand.exsss_next>, bits: 58, uniform: #Function<1.40079776/1 in :rand.exsss_uniform>, uniform_n: #Function<2.40079776/2 in :rand.exsss_uniform>, jump: #Function<3.40079776/1 in :rand.exsplus_jump>}, [25902285127494868 | 104557333325028511]}]
+Trapping Exits: false
+Status: :running
+Heap Size: 4185
+Stack Size: 29
+Reductions: 30908
+19:32:04.510 [error] Child LXical.Server of Supervisor LXical.Server.Supervisor terminated
+** (exit) an exception was raised:
+    ** (ErlangError) Erlang error: {:erpc, :noconnection}
+        (kernel 10.0.1) erpc.erl:1376: :erpc.call/5
+        (lx_server 0.5.0) lib/lexical/server/state.ex:164: LXical.Server.State.apply/2
+        (lx_server 0.5.0) lib/lexical/server.ex:154: LXical.Server.apply_to_state/2
+        (lx_server 0.5.0) lib/lexical/server.ex:117: LXical.Server.handle_message/2
+        (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+        (stdlib 6.0.1) gen_server.erl:2199: :gen_server.try_handle_cast/3
+        (stdlib 6.0.1) gen_server.erl:2261: :gen_server.handle_msg/6
+        (stdlib 6.0.1) proc_lib.erl:329: :proc_lib.init_p_do_apply/3
+Pid: #PID<0.1530.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:32:04.511 [info] Child LXical.Server of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1557.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:32:04.671 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 10, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 10, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:04.793 [error] Received textDocument/didChange before server was initialized
+19:32:04.833 [error] Failed to handle Elixir.LXical.Protocol.Notifications.DidChange, {{:error, :not_initialized}, %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}}
+19:32:04.834 [error] Could not handle message LXical.Protocol.Notifications.DidChange :ok
+19:32:05.072 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 11, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<47, 15>>...<<47, 15>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 11, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 46, character: 18]>, end: #Protocol.Types.Position<[line: 46, character: 18]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:05.137 [error] Received textDocument/didChange before server was initialized
+19:32:05.140 [error] Failed to handle Elixir.LXical.Protocol.Notifications.DidChange, {{:error, :not_initialized}, %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}}
+19:32:05.140 [error] Could not handle message LXical.Protocol.Notifications.DidChange :ok
+19:32:05.397 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 12, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<47, 15>>...<<47, 15>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 12, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 46, character: 19]>, end: #Protocol.Types.Position<[line: 46, character: 19]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:05.616 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 13, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 13, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:05.629 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 14, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 14, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:05.971 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 15, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<48, 1>>...<<48, 1>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 15, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 47, character: 0]>, end: #Protocol.Types.Position<[line: 47, character: 0]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:06.227 [error] Received textDocument/didSave before server was initialized
+19:32:06.243 [error] Failed to handle Elixir.LXical.Protocol.Notifications.DidSave, {{:error, :not_initialized}, %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}}
+19:32:06.243 [error] Could not handle message LXical.Protocol.Notifications.DidSave :ok
+19:32:06.556 [error] Received workspace/didChangeWatchedFiles before server was initialized
+19:32:06.558 [error] Failed to handle Elixir.LXical.Protocol.Notifications.DidChangeWatchedFiles, {{:error, :not_initialized}, %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}}
+19:32:06.558 [error] Could not handle message LXical.Protocol.Notifications.DidChangeWatchedFiles :ok
+19:32:08.428 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 16, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 16, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:08.450 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 17, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 17, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:08.456 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 18, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 18, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:25.572 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.Hover.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/hover.ex:17: LXical.Server.Provider.Handlers.Hover.handle(%{id: 19, position: LxPos<<50, 16>>, __struct__: LXical.Protocol.Requests.Hover, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 19, position: #Protocol.Types.Position<[line: 49, character: 15]>, __struct__: LXical.Protocol.Requests.Hover.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:26.066 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.Hover.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/hover.ex:17: LXical.Server.Provider.Handlers.Hover.handle(%{id: 20, position: LxPos<<38, 46>>, __struct__: LXical.Protocol.Requests.Hover, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 20, position: #Protocol.Types.Position<[line: 37, character: 45]>, __struct__: LXical.Protocol.Requests.Hover.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:29.952 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.Hover.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/hover.ex:17: LXical.Server.Provider.Handlers.Hover.handle(%{id: 21, position: LxPos<<59, 4>>, __struct__: LXical.Protocol.Requests.Hover, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 21, position: #Protocol.Types.Position<[line: 58, character: 3]>, __struct__: LXical.Protocol.Requests.Hover.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:30.824 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.Hover.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/hover.ex:17: LXical.Server.Provider.Handlers.Hover.handle(%{id: 22, position: LxPos<<42, 21>>, __struct__: LXical.Protocol.Requests.Hover, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 22, position: #Protocol.Types.Position<[line: 41, character: 20]>, __struct__: LXical.Protocol.Requests.Hover.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:36.458 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.Hover.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/hover.ex:17: LXical.Server.Provider.Handlers.Hover.handle(%{id: 23, position: LxPos<<29, 9>>, __struct__: LXical.Protocol.Requests.Hover, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 23, position: #Protocol.Types.Position<[line: 28, character: 8]>, __struct__: LXical.Protocol.Requests.Hover.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:52.500 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 24, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<1, 1>>...<<1, 1>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 24, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 0, character: 0]>, end: #Protocol.Types.Position<[line: 0, character: 0]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:52.779 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 25, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<48, 1>>...<<48, 1>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 25, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 47, character: 0]>, end: #Protocol.Types.Position<[line: 47, character: 0]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:52.789 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 26, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 26, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:32:53.612 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 27, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 27, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:02.761 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 28, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<52, 36>>...<<52, 36>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 28, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 51, character: 35]>, end: #Protocol.Types.Position<[line: 51, character: 35]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:03.549 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 29, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 29, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:04.143 [error] read protocol message: {:unknown_notification, "$/setTrace"}
+19:34:04.701 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 30, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<52, 36>>...<<52, 36>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 30, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 51, character: 35]>, end: #Protocol.Types.Position<[line: 51, character: 35]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:05.168 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 31, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 31, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:13.000 [error] read protocol message: {:unknown_notification, "$/setTrace"}
+19:34:25.503 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 32, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<52, 36>>...<<52, 36>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 32, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 51, character: 35]>, end: #Protocol.Types.Position<[line: 51, character: 35]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:25.588 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 33, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<1, 1>>...<<1, 1>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 33, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 0, character: 0]>, end: #Protocol.Types.Position<[line: 0, character: 0]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:25.914 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeAction.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_action.ex:12: LXical.Server.Provider.Handlers.CodeAction.handle(%{id: 34, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: LxRange[<<48, 1>>...<<48, 1>>], __struct__: LXical.Protocol.Requests.CodeAction, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 34, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 47, character: 0]>, end: #Protocol.Types.Position<[line: 47, character: 0]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:25.923 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 35, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 35, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:34:26.473 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 36, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 36, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:43:26.500 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 37, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 37, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:43:36.075 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 38, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 38, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:43:46.654 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 39, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 39, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:44:44.296 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 40, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 40, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:45:12.918 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 41, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 41, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:45:43.523 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 42, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 42, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:46:00.139 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 43, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 43, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:46:48.877 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 44, __struct__: LXical.Protocol.Requests.CodeLens, document: #Inspect.Error<
+  got UndefinedFunctionError with message:
+
+      """
+      function Code.Identifier.inspect_as_atom/1 is undefined or private
+      """
+
+  while inspecting:
+
+      %{
+        version: 58,
+        path: "/home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex",
+        __struct__: LXical.Document,
+        lines: %Lines<"defmodule AlgoraWeb.PlayerComponent do..."(67 lines)>,
+        dirty?: true,
+        language_id: "elixir"
+      }
+
+  Stacktrace:
+
+    (elixir 1.17.2) Code.Identifier.inspect_as_atom(LXical.Document)
+    (lx_lexical_shared 0.5.0) lib/lexical/document.ex:25: Inspect.LXical.Document.inspect/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/inspect.ex:287: Inspect.List.keyword/2
+    (elixir 1.17.2) lib/inspect/algebra.ex:478: Inspect.Algebra.container_each/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:455: Inspect.Algebra.container_doc/6
+    (elixir 1.17.2) lib/inspect/algebra.ex:347: Inspect.Algebra.to_doc/2
+    (elixir 1.17.2) lib/kernel.ex:2381: Kernel.inspect/2
+
+>, lsp: %{id: 44, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/lib/algora_web/live/player_component.ex"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:48:32.721 [error] Received textDocument/didOpen before server was initialized
+19:48:32.730 [error] Failed to handle Elixir.LXical.Protocol.Notifications.DidOpen, {{:error, :not_initialized}, %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}}
+19:48:32.730 [error] Could not handle message LXical.Protocol.Notifications.DidOpen :ok
+19:48:32.762 [error] GenServer LXical.Server terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 0, character: 0]>, end: #Protocol.Types.Position<[line: 0, character: 0]>]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Last message: {:"$gen_cast", {:protocol_message, %{id: 45, context: nil, range: nil, __struct__: LXical.Protocol.Requests.CodeAction, document: nil, lsp: %{id: 45, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 0, character: 0]>, end: #Protocol.Types.Position<[line: 0, character: 0]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: nil, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}}}
+State: %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}
+19:48:32.810 [error] Process LXical.Server (#PID<0.1557.0>) terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 0, character: 0]>, end: #Protocol.Types.Position<[line: 0, character: 0]>]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Initial Call: LXical.Server.init/1
+Ancestors: [LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 1
+Messages: ["$gen_cast": {:protocol_message, %{id: 46, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: nil, lsp: %{id: 46, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: nil, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}}]
+Links: [#PID<0.1528.0>]
+Dictionary: []
+Trapping Exits: false
+Status: :running
+Heap Size: 17731
+Stack Size: 29
+Reductions: 37753
+19:48:32.844 [error] Child LXical.Server of Supervisor LXical.Server.Supervisor terminated
+** (exit) an exception was raised:
+    ** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+        (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 0, character: 0]>, end: #Protocol.Types.Position<[line: 0, character: 0]>]>, nil)
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+        (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+        (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+        (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+        (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+        (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Pid: #PID<0.1557.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:32.845 [info] Child LXical.Server of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1593.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:33.603 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.DocumentSymbols.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/document_symbols.ex:13: LXical.Server.Provider.Handlers.DocumentSymbols.handle(%{id: 47, __struct__: LXical.Protocol.Requests.DocumentSymbols, document: nil, lsp: %{id: 47, __struct__: LXical.Protocol.Requests.DocumentSymbols.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/documentSymbol", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:48:34.075 [error] ** (FunctionClauseError) no function clause matching in LXical.Server.Provider.Handlers.CodeLens.handle/2
+    (lx_server 0.5.0) lib/lexical/server/provider/handlers/code_lens.ex:16: LXical.Server.Provider.Handlers.CodeLens.handle(%{id: 48, __struct__: LXical.Protocol.Requests.CodeLens, document: nil, lsp: %{id: 48, __struct__: LXical.Protocol.Requests.CodeLens.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/codeLens", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, nil)
+    (lx_server 0.5.0) lib/lexical/server/task_queue.ex:77: anonymous fn/4 in LXical.Server.TaskQueue.State.as_task/2
+    (elixir 1.17.2) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+    (elixir 1.17.2) lib/task/supervised.ex:36: Task.Supervised.reply/4
+
+19:48:38.934 [error] GenServer LXical.Server terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 29]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Last message: {:"$gen_cast", {:protocol_message, %{id: 49, context: nil, range: nil, __struct__: LXical.Protocol.Requests.CodeAction, document: nil, lsp: %{id: 49, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 29]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: nil, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}}}
+State: %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}
+19:48:38.950 [error] Process LXical.Server (#PID<0.1593.0>) terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 29]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Initial Call: LXical.Server.init/1
+Ancestors: [LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 1
+Messages: ["$gen_cast": {:protocol_message, %{id: nil, __struct__: LXical.Protocol.Notifications.Cancel, lsp: %{id: 45, __struct__: LXical.Protocol.Notifications.Cancel.LSP, method: "$/cancelRequest", jsonrpc: "2.0"}, method: "$/cancelRequest", jsonrpc: "2.0"}}]
+Links: [#PID<0.1528.0>]
+Dictionary: []
+Trapping Exits: false
+Status: :running
+Heap Size: 17731
+Stack Size: 29
+Reductions: 13252
+19:48:38.960 [error] Child LXical.Server of Supervisor LXical.Server.Supervisor terminated
+** (exit) an exception was raised:
+    ** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+        (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 29]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, nil)
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+        (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+        (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+        (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+        (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+        (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Pid: #PID<0.1593.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:38.962 [info] Child LXical.Server of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1596.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:39.783 [error] GenServer LXical.Server terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 6]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Last message: {:"$gen_cast", {:protocol_message, %{id: 50, context: nil, range: nil, __struct__: LXical.Protocol.Requests.CodeAction, document: nil, lsp: %{id: 50, context: #Protocol.Types.CodeAction.Context<[diagnostics: [], trigger_kind: :automatic]>, range: #Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 6]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, __struct__: LXical.Protocol.Requests.CodeAction.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: nil, method: "textDocument/codeAction", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}}}
+State: %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}
+19:48:39.791 [error] Process LXical.Server (#PID<0.1596.0>) terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 6]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Initial Call: LXical.Server.init/1
+Ancestors: [LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 1
+Messages: ["$gen_cast": {:protocol_message, %{id: nil, __struct__: LXical.Protocol.Notifications.Cancel, lsp: %{id: 49, __struct__: LXical.Protocol.Notifications.Cancel.LSP, method: "$/cancelRequest", jsonrpc: "2.0"}, method: "$/cancelRequest", jsonrpc: "2.0"}}]
+Links: [#PID<0.1528.0>]
+Dictionary: []
+Trapping Exits: false
+Status: :running
+Heap Size: 17731
+Stack Size: 29
+Reductions: 12625
+19:48:39.796 [error] Child LXical.Server of Supervisor LXical.Server.Supervisor terminated
+** (exit) an exception was raised:
+    ** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+        (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Range<[start: #Protocol.Types.Position<[line: 2, character: 6]>, end: #Protocol.Types.Position<[line: 2, character: 62]>]>, nil)
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+        (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+        (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+        (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+        (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+        (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Pid: #PID<0.1596.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:39.797 [info] Child LXical.Server of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1597.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:40.802 [error] GenServer LXical.Server terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Position<[line: 9, character: 4]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Last message: {:"$gen_cast", {:protocol_message, %{id: 51, position: nil, __struct__: LXical.Protocol.Requests.Hover, document: nil, lsp: %{id: 51, position: #Protocol.Types.Position<[line: 9, character: 4]>, __struct__: LXical.Protocol.Requests.Hover.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}, text_document: nil, method: "textDocument/hover", jsonrpc: "2.0", work_done_token: nil}}}
+State: %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}
+19:48:40.813 [error] Process LXical.Server (#PID<0.1597.0>) terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Position<[line: 9, character: 4]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Initial Call: LXical.Server.init/1
+Ancestors: [LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 0
+Messages: []
+Links: [#PID<0.1528.0>]
+Dictionary: []
+Trapping Exits: false
+Status: :running
+Heap Size: 4185
+Stack Size: 29
+Reductions: 10022
+19:48:40.814 [error] Child LXical.Server of Supervisor LXical.Server.Supervisor terminated
+** (exit) an exception was raised:
+    ** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+        (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Position<[line: 9, character: 4]>, nil)
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+        (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+        (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+        (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+        (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+        (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Pid: #PID<0.1597.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:40.814 [info] Child LXical.Server of Supervisor LXical.Server.Supervisor started
+Pid: #PID<0.1598.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:41.012 [error] GenServer LXical.Server terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Position<[line: 9, character: 5]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Last message: {:"$gen_cast", {:protocol_message, %{id: 52, position: nil, __struct__: LXical.Protocol.Requests.GoToDefinition, document: nil, lsp: %{id: 52, position: #Protocol.Types.Position<[line: 9, character: 5]>, __struct__: LXical.Protocol.Requests.GoToDefinition.LSP, text_document: #Protocol.Types.TextDocument.Identifier<[uri: "file:///home/seven/Documents/codes/oss/tv/priv/repo/seeds.exs"]>, method: "textDocument/definition", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}, text_document: nil, method: "textDocument/definition", jsonrpc: "2.0", partial_result_token: nil, work_done_token: nil}}}
+State: %{__struct__: LXical.Server.State, configuration: nil, in_flight_requests: %{}, initialized?: false, shutdown_received?: false}
+19:48:41.021 [error] Process LXical.Server (#PID<0.1598.0>) terminating
+** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+    (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Position<[line: 9, character: 5]>, nil)
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+    (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+    (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+    (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+    (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+    (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+    (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Initial Call: LXical.Server.init/1
+Ancestors: [LXical.Server.Supervisor, #PID<0.1527.0>]
+Message Queue Length: 0
+Messages: []
+Links: [#PID<0.1528.0>]
+Dictionary: []
+Trapping Exits: false
+Status: :running
+Heap Size: 4185
+Stack Size: 29
+Reductions: 10373
+19:48:41.022 [error] Child LXical.Server of Supervisor LXical.Server.Supervisor terminated
+** (exit) an exception was raised:
+    ** (FunctionClauseError) no function clause matching in LXical.Protocol.Conversions.to_elixir/2
+        (lx_protocol 0.5.0) lib/lexical/protocol/conversions.ex:22: LXical.Protocol.Conversions.to_elixir(#Protocol.Types.Position<[line: 9, character: 5]>, nil)
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:52: anonymous fn/4 in LXical.Convertible.Helpers.apply/3
+        (elixir 1.17.2) lib/enum.ex:4858: Enumerable.List.reduce/3
+        (elixir 1.17.2) lib/enum.ex:2585: Enum.reduce_while/3
+        (lx_lexical_shared 0.5.0) lib/lexical/convertible.ex:182: LXical.Convertible.Any.to_native/2
+        (lx_proto 0.5.0) lib/lexical/proto/convert.ex:22: LXical.Proto.Convert.to_native/1
+        (lx_server 0.5.0) lib/lexical/server.ex:134: LXical.Server.handle_message/2
+        (lx_server 0.5.0) lib/lexical/server.ex:59: LXical.Server.handle_cast/2
+Pid: #PID<0.1598.0>
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:41.022 [error] Child LXical.Server of Supervisor LXical.Server.Supervisor caused shutdown
+** (exit) :reached_max_restart_intensity
+Start Call: LXical.Server.start_link([])
+Restart: :permanent
+Shutdown: 5000
+Type: :worker
+19:48:41.025 [info] Application lx_server exited: shutdown
