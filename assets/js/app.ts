@@ -167,7 +167,6 @@ const Hooks = {
         layout: await new window.VidstackPlayerLayout(),
       });
 
-      this.player.muted = true;
       const getVideoProvider = (type: string) => {
         switch (type) {
           case "youtube":
@@ -212,15 +211,12 @@ const Hooks = {
           });
         };
 
-        this.player.onAutoplayFail = async () => {
-          if (!this.player.muted) {
-            try {
-              this.player.mute();
-            } catch (error) {
-              console.error(error);
-            }
+        this.player.subscribe(({ autoPlayError }) => {
+          if (autoPlayError) {
+            this.player.muted = true;
+            this.player.play();
           }
-        };
+        });
 
         this.player.poster = opts.poster;
         this.player.title = opts.title;
