@@ -2,8 +2,7 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket, type ViewHook } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import videojs from "../vendor/video";
-import "../vendor/videojs-youtube";
+import { VidstackPlayer, VidstackPlayerLayout } from "vidstack/global/player";
 
 // TODO: add eslint & biome
 // TODO: enable strict mode
@@ -147,22 +146,27 @@ const Hooks = {
     },
   },
   VideoPlayer: {
-    mounted() {
+    async mounted() {
       const backdrop = document.querySelector("#video-backdrop");
-
       this.playerId = this.el.id;
+      this.attemptedAutoplay = false;
 
-      // TODO: remove this once we have a better way to handle autoplay
-      const autoplay = this.el.id.startsWith("analytics-") ? false : "any";
+      this.player = await VidstackPlayer.create({
+        target: this.el,
+        viewType: "video",
+        streamType: "on-demand",
+        logLevel: "warn",
+        crossOrigin: true,
+        playsInline: true,
+        layout: new VidstackPlayerLayout(),
+      });
 
-      this.player = videojs(this.el, {
-        autoplay: autoplay,
-        liveui: true,
-        html5: {
-          vhs: {
-            llhls: true,
-          },
-        },
+      this.player.subscribe(({ autoPlayError }) => {
+        if (autoPlayError) {
+          this.player.muted = true;
+          this.player.play();
+          this.attemptedAutoplay = true;
+        }
       });
 
       const playVideo = (opts: {
@@ -170,8 +174,10 @@ const Hooks = {
         id: string;
         url: string;
         title: string;
+        poster: string;
+        is_live: boolean;
         player_type: string;
-        current_time?: number;
+        current_time: number;
         channel_name: string;
       }) => {
         if (this.playerId !== opts.player_id) {
@@ -194,28 +200,27 @@ const Hooks = {
           });
         };
 
-        this.player.options({
-          techOrder: [
-            opts.player_type === "video/youtube" ? "youtube" : "html5",
-          ],
-          ...(opts.current_time && opts.player_type === "video/youtube"
-            ? { youtube: { customVars: { start: opts.current_time } } }
-            : {}),
-        });
-        this.player.src({ src: opts.url, type: opts.player_type });
+        const autoplay = (() => {
+          // TODO: remove this once we have a better way to handle autoplay
+          if (this.el.id.startsWith("analytics-")) {
+            return false;
+          }
+
+          if (opts.player_type === "video/youtube") {
+            return navigator.userActivation.isActive;
+          }
+
+          return true;
+        })();
+
+        this.player.autoplay = autoplay;
+        this.player.poster = opts.poster;
+        this.player.title = opts.title;
+        this.player.currentTime = opts.current_time;
+        this.player.streamType = opts.is_live ? "ll-live:dvr" : "on-demand";
+        this.player.src = opts.url;
 
         setMediaSession();
-
-        if (opts.current_time) {
-          if (opts.player_type === "video/youtube") {
-            // HACK: wait for the video to load
-            setTimeout(() => {
-              this.player.currentTime(opts.current_time);
-            }, 2000);
-          } else {
-            this.player.currentTime(opts.current_time);
-          }
-        }
 
         if (backdrop) {
           backdrop.classList.remove("opacity-10");

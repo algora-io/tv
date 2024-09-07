@@ -10,8 +10,9 @@ defmodule AlgoraWeb.PlayerComponent do
     <video
       id={@id}
       phx-hook="VideoPlayer"
-      class="video-js vjs-default-skin aspect-video h-full w-full flex-1 rounded-lg lg:rounded-2xl overflow-hidden"
+      class="h-full w-full flex-1 rounded-lg lg:rounded-2xl overflow-hidden"
       controls
+      data-media-player
     />
     """
   end
@@ -37,15 +38,23 @@ defmodule AlgoraWeb.PlayerComponent do
             id: if(current_user, do: current_user.handle, else: "")
           })
 
+          current_time =
+            case Float.parse(assigns[:current_time] || "0") do
+              {number, _} ->
+                number
+            end
+
           socket
           |> push_event("play_video", %{
+            is_live: video.is_live,
             player_id: assigns.id,
             id: video.id,
             url: video.url,
             title: video.title,
+            poster: video.thumbnail_url,
             player_type: Library.player_type(video),
             channel_name: video.channel_name,
-            current_time: assigns[:current_time]
+            current_time: current_time
           })
       end
 
