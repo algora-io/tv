@@ -57,7 +57,8 @@ defmodule Algora.Admin do
     playlists = Enum.map(videos, &get_playlist/1)
 
     streams = Enum.flat_map(playlists, &Map.get(&1, :items))
-    example_stream = Enum.at(streams, 1)
+    example_stream = Enum.at(streams, 0)
+
 
     if Enum.all?(streams, fn x -> example_stream.resolution == x.resolution && example_stream.codecs == x.codecs end) do
       max_bandwidth = Enum.map(streams, &Map.get(&1, :bandwidth)) |> Enum.max(&Ratio.gte?/2)
@@ -89,15 +90,15 @@ defmodule Algora.Admin do
       |> Video.put_video_url(video.format)
       |> Repo.insert()
 
-    upload_to = fn uuid, track_atom, m3u8_body -> Storage.upload(
-      "#{ExM3U8.serialize(m3u8_body)}#EXT-X-ENDLIST\n",
+    upload_to = fn uuid, track_atom, content -> Storage.upload(
+      content,
       "#{uuid}/#{@tracks[track_atom]}",
       content_type: "application/x-mpegURL"
     ) end
 
     with {:ok, new_video} <- result,
-      {:ok, _} <- upload_to.(new_video.uuid, :manifest, playlist),
-      {:ok, _} <- upload_to.(new_video.uuid, :video, media_playlist) do
+      {:ok, _} <- upload_to.(new_video.uuid, :manifest, ExM3U8.serialize(playlist)),
+      {:ok, _} <- upload_to.(new_video.uuid, :video, "#{ExM3U8.serialize(media_playlist)}#EXT-X-ENDLIST\n") do
         result
     end
   end
