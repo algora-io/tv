@@ -2,6 +2,7 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket, type ViewHook } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
+import { VidstackPlayer, VidstackPlayerLayout } from "vidstack/global/player";
 
 // TODO: add eslint & biome
 // TODO: enable strict mode
@@ -17,8 +18,6 @@ type PhxEventKey = `js:${string}` | `phx:${string}`;
 declare global {
   interface Window {
     liveSocket: LiveSocket;
-    VidstackPlayer: any;
-    VidstackPlayerLayout: any;
     addEventListener<K extends keyof WindowEventMap | PhxEventKey>(
       type: K,
       listener: (
@@ -150,39 +149,25 @@ const Hooks = {
     async mounted() {
       const backdrop = document.querySelector("#video-backdrop");
       this.playerId = this.el.id;
+      this.attemptedAutoplay = false;
 
-      // TODO: remove this once we have a better way to handle autoplay
-      const autoplay = this.el.id.startsWith("analytics-") ? false : "any";
-
-      this.player = await window.VidstackPlayer.create({
+      this.player = await VidstackPlayer.create({
         target: this.el,
-        autoplay,
         viewType: "video",
         streamType: "on-demand",
         logLevel: "warn",
         crossOrigin: true,
         playsInline: true,
-        live: true,
-        seeking: true,
-        layout: await new window.VidstackPlayerLayout(),
+        layout: new VidstackPlayerLayout(),
       });
 
-      const getVideoProvider = (type: string) => {
-        switch (type) {
-          case "youtube":
-          case "youtube/video":
-            return (this.player.type = "youtube/video");
-
-          case "hls":
-            return (this.player.type = "application/x-mpegURL");
-
-          case "dash":
-            return (this.player.type = "application/dash+xml");
-
-          default:
-            return (this.player.type = "video/mp4");
+      this.player.subscribe(({ autoPlayError }) => {
+        if (autoPlayError) {
+          this.player.muted = true;
+          this.player.play();
+          this.attemptedAutoplay = true;
         }
-      };
+      });
 
       const playVideo = (opts: {
         player_id: string;
@@ -192,13 +177,17 @@ const Hooks = {
         poster: string;
         is_live: boolean;
         player_type: string;
-        current_time?: number;
+        current_time: number;
         channel_name: string;
       }) => {
-        if (this.playerId !== opts.player_id) return;
+        if (this.playerId !== opts.player_id) {
+          return;
+        }
 
         const setMediaSession = () => {
-          if (!("mediaSession" in navigator)) return;
+          if (!("mediaSession" in navigator)) {
+            return;
+          }
           navigator.mediaSession.metadata = new MediaMetadata({
             title: opts.title,
             artist: opts.channel_name,
@@ -211,36 +200,27 @@ const Hooks = {
           });
         };
 
-        this.player.subscribe(({ autoPlayError }) => {
-          if (autoPlayError) {
-            this.player.muted = true;
-            this.player.play();
+        const autoplay = (() => {
+          // TODO: remove this once we have a better way to handle autoplay
+          if (this.el.id.startsWith("analytics-")) {
+            return false;
           }
-        });
 
+          if (opts.player_type === "video/youtube") {
+            return navigator.userActivation.isActive;
+          }
+
+          return true;
+        })();
+
+        this.player.autoplay = autoplay;
         this.player.poster = opts.poster;
         this.player.title = opts.title;
-        this.player.src = opts.url;
-        this.player.type = getVideoProvider(opts.player_type);
-        this.player.currentTime =
-          opts.current_time && opts.player_type === "video/youtube"
-            ? opts.current_time
-            : 0; // appending ?t=number to the URL updates the current time.
-
+        this.player.currentTime = opts.current_time;
         this.player.streamType = opts.is_live ? "ll-live:dvr" : "on-demand";
+        this.player.src = opts.url;
 
         setMediaSession();
-
-        if (opts.current_time) {
-          if (opts.player_type === "video/youtube") {
-            // HACK: wait for the video to load
-            setTimeout(() => {
-              this.player.currentTime = opts.current_time;
-            }, 2000);
-          } else {
-            this.player.currentTime = opts.current_time;
-          }
-        }
 
         if (backdrop) {
           backdrop.classList.remove("opacity-10");

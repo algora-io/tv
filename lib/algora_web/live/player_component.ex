@@ -42,7 +42,7 @@ defmodule AlgoraWeb.PlayerComponent do
             case Float.parse(assigns[:current_time] || "0") do
               {number, _} ->
                 number
-          end
+            end
 
           socket
           |> push_event("play_video", %{
@@ -51,6 +51,7 @@ defmodule AlgoraWeb.PlayerComponent do
             id: video.id,
             url: video.url,
             title: video.title,
+            poster: video.thumbnail_url,
             player_type: Library.player_type(video),
             channel_name: video.channel_name,
             current_time: current_time
