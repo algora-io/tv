@@ -2,19 +2,28 @@
 #
 #     env $(cat .env | xargs -L 1) mix run priv/repo/seeds.exs
 
-alias Algora.Repo
+alias Algora.{Repo, Accounts}
 alias Algora.Accounts.User
 alias Algora.Library.Video
 
 user =
-  Repo.insert!(%User{
-    handle: "algora",
-    name: "Algora",
-    avatar_url: "https://fly.storage.tigris.dev/algora/test/algora.png",
-    email: "algora@example.com",
-    visibility: :public,
-    is_live: true
-  })
+  case Accounts.get_user_by!(handle: "algora") do
+    nil ->
+      {:ok, user} =
+        Repo.insert(%User{
+          handle: "algora",
+          name: "Algora",
+          avatar_url: "https://fly.storage.tigris.dev/algora/test/algora.png",
+          email: "algora@example.com",
+          visibility: :public,
+          is_live: true
+        })
+
+      user
+
+    existing_user ->
+      existing_user
+  end
 
 Repo.insert!(%Video{
   user_id: user.id,
@@ -86,6 +95,18 @@ Repo.insert!(%Video{
   format: :hls,
   type: :vod,
   duration: 600,
+  visibility: :public,
+  uuid: Ecto.UUID.generate()
+})
+
+Repo.insert!(%Video{
+  user_id: user.id,
+  url: "https://www.youtube.com/watch?v=_cMxraX_5RE",
+  title: "Sprite Fright (YouTube)",
+  thumbnail_url: "https://i.ytimg.com/vi/_cMxraX_5RE/maxresdefault.jpg",
+  format: :youtube,
+  type: :vod,
+  duration: 629,
   visibility: :public,
   uuid: Ecto.UUID.generate()
 })
