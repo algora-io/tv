@@ -9,7 +9,7 @@
   <p align="center">
     The interactive livestreaming & video sharing service for developers.
     <br />
-    <a href="https://tv.algora.io">Website</a>
+    <a href="https://staging.algora.tv">Website</a>
     ·
     <a href="https://algora.io/discord">Discord</a>
     ·
@@ -32,7 +32,7 @@
 
 ## ✨ New feature: Earn with Livestream Billboards! ✨
 
-Algora Live Billboards allow for in-video ads, helping devs earn money while livestreaming and giving devtools companies a novel channel to reach new audiences. [Learn more](https://tv.algora.io/partner)
+Algora Live Billboards allow for in-video ads, helping devs earn money while livestreaming and giving devtools companies a novel channel to reach new audiences. [Learn more](https://staging.algora.tv/partner)
 
 https://github.com/user-attachments/assets/6f706a4b-210f-4ec8-a817-2a72cea0954a
 

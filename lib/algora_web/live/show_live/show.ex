@@ -223,7 +223,7 @@ defmodule AlgoraWeb.ShowLive.Show do
                       <div>
                         <div class="text-sm font-semibold">Watch live</div>
                         <div class="text-sm">
-                          <%= @show.url || "tv.algora.io/#{@channel.handle}/latest" %>
+                          <%= @show.url || "staging.algora.tv/#{@channel.handle}/latest" %>
                         </div>
                       </div>
                     </div>

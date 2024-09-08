@@ -12,14 +12,14 @@ config :algora, mode: :prod
 # which you should run after static files are built and
 # before starting your production server.
 config :algora, AlgoraWeb.Endpoint,
-  url: [host: "tv.algora.io", port: 80],
+  url: [host: "staging.algora.tv", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 config :algora, AlgoraWeb.Embed.Endpoint,
-  url: [host: "tv.algora.io", port: 81],
+  url: [host: "staging.algora.tv", port: 81],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
-config :algora, :docs, url: "https://docs.tv.algora.io"
+config :algora, :docs, url: "https://docs.staging.algora.tv"
 
 # Do not print debug messages in production
 config :logger, level: :info

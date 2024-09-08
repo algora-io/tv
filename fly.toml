@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for algora-media on 2024-02-08T18:25:10+02:00
+# fly.toml app configuration file generated for algora-media-staging on 2024-02-08T18:25:10+02:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'algora-media'
-primary_region = 'lax'
+app = 'algora-media-staging'
+primary_region = 'otp'
 kill_signal = 'SIGTERM'
 kill_timeout = '5s'
 
@@ -17,13 +17,13 @@ kill_timeout = '5s'
   release_command = '/app/bin/migrate'
 
 [env]
-  DNS_CLUSTER_QUERY = 'algora-media.internal'
-  PRIMARY_REGION = 'lax'
-  PHX_HOST = 'tv.algora.io'
+  DNS_CLUSTER_QUERY = 'algora-media-staging.internal'
+  PRIMARY_REGION = 'otp'
+  PHX_HOST = 'staging.algora.tv'
   PORT = '4000'
 
 [mounts]
-  source="algora_media_tmp"
+  source="algora_media_staging_tmp"
   destination="/data"
 
 [[services]]

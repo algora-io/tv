@@ -39,7 +39,7 @@ defmodule AlgoraWeb.ShowLive.FormComponent do
         </div>
         <div class="relative">
           <div class="absolute text-sm start-0 flex items-center ps-3 top-10 mt-px pointer-events-none text-gray-400">
-            tv.algora.io/shows/
+            staging.algora.tv/shows/
           </div>
           <.input
             field={@form[:slug]}

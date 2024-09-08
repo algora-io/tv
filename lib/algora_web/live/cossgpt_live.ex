@@ -256,7 +256,7 @@ defmodule AlgoraWeb.COSSGPTLive do
     |> assign(
       page_title: "COSSgpt",
       page_description: "Learn how to build a commercial open source software company",
-      page_url: "https://tv.algora.io/cossgpt",
+      page_url: "https://staging.algora.tv/cossgpt",
       page_image: "#{AlgoraWeb.Endpoint.url()}/images/og/cossgpt.png"
     )
   end
