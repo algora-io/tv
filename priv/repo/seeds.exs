@@ -7,7 +7,7 @@ alias Algora.Accounts.User
 alias Algora.Library.Video
 
 user =
-  case Accounts.get_user_by!(handle: "algora") do
+  case Accounts.get_user_by(handle: "algora") do
     nil ->
       {:ok, user} =
         Repo.insert(%User{
