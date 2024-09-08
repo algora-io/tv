@@ -213,10 +213,19 @@ const Hooks = {
           return true;
         })();
 
+        const startTime = (() => {
+          // TODO: remove this once vidstack youtube thumbnails at t=0 are fixed
+          if (opts.player_type === "video/youtube") {
+            return opts.current_time || 1;
+          }
+
+          return opts.current_time;
+        })();
+
         this.player.autoplay = autoplay;
         this.player.poster = opts.poster;
         this.player.title = opts.title;
-        this.player.currentTime = opts.current_time;
+        this.player.currentTime = startTime;
         this.player.streamType = opts.is_live ? "ll-live:dvr" : "on-demand";
         this.player.src = opts.url;
 
