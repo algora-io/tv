@@ -554,6 +554,12 @@ defmodule AlgoraWeb.VideoLive do
 
     video = Library.get_video!(video_id)
 
+    current_time =
+      case Float.parse(params["t"] || "0") do
+        {number, _} ->
+          number
+      end
+
     if connected?(socket) do
       Library.subscribe_to_livestreams()
       Library.subscribe_to_channel(channel)
@@ -565,7 +571,7 @@ defmodule AlgoraWeb.VideoLive do
         id: "video-player",
         video: video,
         current_user: current_user,
-        current_time: params["t"]
+        current_time: current_time
       })
     end
 
