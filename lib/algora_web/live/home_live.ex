@@ -268,46 +268,42 @@ defmodule AlgoraWeb.HomeLive do
       <!-- Static sidebar for desktop -->
       <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-96 lg:flex-col">
         <!-- Sidebar component, swap this element with another sidebar if you like -->
-        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-950 px-6">
+        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-950 px-4">
           <div class="flex h-16 shrink-0 items-center">
             <div class="h-8" />
           </div>
           <nav class="flex flex-1 flex-col">
-            <ul role="list" class="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" class="-mx-2 space-y-2">
-                  <%= for channel <- @channels do %>
-                    <li class="relative col-span-1 flex shadow-sm rounded-md overflow-hidden">
-                      <.link
-                        navigate={channel_path(channel)}
-                        class="flex-1 flex items-center justify-between truncate gap-3"
-                      >
-                        <img
-                          class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-300"
-                          src={channel.avatar_url}
-                          alt={channel.handle}
-                        />
-                        <div class="flex-1 flex items-center justify-between text-gray-50 text-sm hover:text-gray-300 truncate">
-                          <div class="flex-1 py-1 text-sm truncate">
-                            <div class="font-semibold truncate"><%= channel.name %></div>
-                            <div class="font-medium truncate"><%= channel.tagline %></div>
-                          </div>
-                        </div>
-                        <%= if channel.is_live do %>
-                          <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 bg-red-500 rounded-full" aria-hidden="true" />
-                            <span class="text-sm font-medium">Live</span>
-                          </div>
-                        <% else %>
-                          <div class="flex items-center gap-2">
-                            <span class="text-sm font-medium">Offline</span>
-                          </div>
-                        <% end %>
-                      </.link>
-                    </li>
-                  <% end %>
-                </ul>
-              </li>
+            <ul role="list" class="space-y-2">
+              <%= for channel <- @channels do %>
+                <li class="relative col-span-1 flex shadow-sm rounded-md overflow-hidden">
+                  <.link
+                    navigate={channel_path(channel)}
+                    class="flex-1 flex items-center justify-between truncate gap-3"
+                  >
+                    <img
+                      class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-300"
+                      src={channel.avatar_url}
+                      alt={channel.handle}
+                    />
+                    <div class="flex-1 flex items-center justify-between text-gray-50 text-sm hover:text-gray-300 truncate">
+                      <div class="flex-1 py-1 text-sm truncate">
+                        <div class="font-semibold truncate"><%= channel.name %></div>
+                        <div class="font-medium truncate"><%= channel.tagline %></div>
+                      </div>
+                    </div>
+                    <%= if channel.is_live do %>
+                      <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 bg-red-500 rounded-full" aria-hidden="true" />
+                        <span class="text-sm font-medium">Live</span>
+                      </div>
+                    <% else %>
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium">Offline</span>
+                      </div>
+                    <% end %>
+                  </.link>
+                </li>
+              <% end %>
             </ul>
           </nav>
         </div>
