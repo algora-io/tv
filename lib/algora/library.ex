@@ -755,8 +755,7 @@ defmodule Algora.Library do
     from(u in Algora.Accounts.User,
       where: u.is_live and u.visibility == :public,
       limit: ^Keyword.fetch!(opts, :limit),
-      order_by: [desc: u.updated_at],
-      select: struct(u, [:id, :handle, :name, :channel_tagline, :avatar_url, :external_homepage_url])
+      order_by: [desc: u.updated_at]
     )
     |> Repo.all()
     |> Enum.map(&get_channel!/1)
@@ -766,8 +765,7 @@ defmodule Algora.Library do
     from(u in Algora.Accounts.User,
       where: u.visibility == :public,
       limit: ^Keyword.fetch!(opts, :limit),
-      order_by: [desc: u.updated_at],
-      select: struct(u, [:id, :handle, :name, :channel_tagline, :avatar_url, :external_homepage_url])
+      order_by: [desc: u.updated_at]
     )
     |> Repo.all()
     |> Enum.map(&get_channel!/1)
