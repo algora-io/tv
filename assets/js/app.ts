@@ -156,7 +156,7 @@ const Hooks = {
       const autoplay = this.el.id.startsWith("analytics-") ? false : "any";
 
       this.player = videojs(this.el, {
-        // autoplay: autoplay,
+        autoplay: autoplay,
         liveui: true,
         html5: {
           vhs: {
