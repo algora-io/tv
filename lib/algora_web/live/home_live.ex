@@ -61,7 +61,7 @@ defmodule AlgoraWeb.HomeLive do
         <div id="navbar" phx-hook="NavBar" class="h-[56px] fixed z-[100] top-0 left-0 right-0 w-full">
           <div class="flex justify-between items-center my-auto h-full">
             <div class="flex items-center h-full w-[28rem] bg-gray-950">
-              <.logo class="pl-4 w-20 h-auto" />
+              <.logo class="pl-4 mt-1 w-24 h-auto" />
             </div>
             <div class="pr-4 h-full items-center justify-end gap-2 flex">
               <a
