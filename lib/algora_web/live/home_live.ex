@@ -469,7 +469,11 @@ defmodule AlgoraWeb.HomeLive do
             </div>
           </div>
 
-          <div class="pt-12">
+          <div class="pr-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <.video_entry :for={video <- @most_recent_videos} video={video} />
+          </div>
+
+          <div class="pr-8 pt-12">
             <h2 class="text-white text-3xl font-semibold">
               Shows
             </h2>
@@ -604,13 +608,8 @@ defmodule AlgoraWeb.HomeLive do
             </ul>
           </div>
 
-          <div class="pt-12">
-            <h2 class="text-white text-3xl font-semibold">
-              Most recent livestreams
-            </h2>
-            <div class="pt-4 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              <.video_entry :for={video <- @videos} video={video} />
-            </div>
+          <div class="pr-8 pt-4 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <.video_entry :for={video <- @rest_of_videos} video={video} />
           </div>
         </div>
       </main>
@@ -625,6 +624,8 @@ defmodule AlgoraWeb.HomeLive do
     videos = Library.list_videos(150)
     livestream = Library.list_livestreams(1) |> Enum.at(0)
     active_channels = Library.list_active_channels(limit: 20)
+
+    {most_recent_videos, rest_of_videos} = Enum.split(videos, 3)
 
     if connected?(socket) do
       Library.subscribe_to_livestreams()
@@ -641,7 +642,8 @@ defmodule AlgoraWeb.HomeLive do
     {:ok,
      socket
      |> assign(:show_eps, show_eps)
-     |> assign(:videos, videos)
+     |> assign(:most_recent_videos, most_recent_videos)
+     |> assign(:rest_of_videos, rest_of_videos)
      |> assign(:shows, shows)
      |> assign(:livestream, livestream)
      |> assign(:channels, active_channels)}
