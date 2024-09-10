@@ -446,8 +446,8 @@ defmodule AlgoraWeb.HomeLive do
 
         <div class="mx-auto pb-6">
           <.link
-            :if={@livestream}
-            href={~p"/#{@livestream.channel_handle}/#{@livestream.id}"}
+            :if={@hero_video}
+            href={~p"/#{@hero_video.channel_handle}/#{@hero_video.id}"}
             class="relative"
           >
             <div class="w-full relative">
@@ -458,10 +458,10 @@ defmodule AlgoraWeb.HomeLive do
               </div>
               <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2 truncate">
                 <div class="text-7xl font-bold [text-shadow:#020617_1px_0_10px]">
-                  <%= @livestream.channel_name %>
+                  <%= @hero_video.channel_name %>
                 </div>
                 <div class="pt-2 text-xl [text-shadow:#020617_1px_0_10px] font-medium truncate">
-                  <%= @livestream.title %>
+                  <%= @hero_video.title %>
                 </div>
               </div>
             </div>
@@ -524,11 +524,11 @@ defmodule AlgoraWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    videos = Library.list_videos(150)
-    livestream = Library.list_livestreams(1) |> Enum.at(0)
     active_channels = Library.list_active_channels(limit: 20)
+    videos = Library.list_videos(150)
 
-    {most_recent_videos, rest_of_videos} = Enum.split(videos, 3)
+    [hero_video | recent_videos] = videos
+    {most_recent_videos, rest_of_videos} = Enum.split(recent_videos, 3)
 
     shows = [
       %{
@@ -592,10 +592,10 @@ defmodule AlgoraWeb.HomeLive do
     if connected?(socket) do
       Library.subscribe_to_livestreams()
 
-      if livestream do
+      if hero_video do
         send_update(HeroComponent, %{
           id: "home-player",
-          video: livestream,
+          video: hero_video,
           current_user: socket.assigns.current_user
         })
       end
@@ -606,7 +606,7 @@ defmodule AlgoraWeb.HomeLive do
      |> assign(:most_recent_videos, most_recent_videos)
      |> assign(:rest_of_videos, rest_of_videos)
      |> assign(:shows, shows)
-     |> assign(:livestream, livestream)
+     |> assign(:hero_video, hero_video)
      |> assign(:channels, active_channels)}
   end
 

@@ -611,7 +611,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -627,7 +627,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -644,7 +644,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -686,7 +686,7 @@ defmodule Algora.Library do
       where: v.show_id in ^ids
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -706,7 +706,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -726,7 +726,7 @@ defmodule Algora.Library do
           v.user_id == ^channel.user_id
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -747,7 +747,7 @@ defmodule Algora.Library do
           v.user_id == ^channel.user_id
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -825,8 +825,8 @@ defmodule Algora.Library do
     |> Repo.update()
   end
 
-  defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
-    from(s in query, order_by: [{^direction, s.inserted_at}])
+  defp order_by_live(%Ecto.Query{} = query) do
+    from(s in query, order_by: [desc: s.is_live, desc: s.inserted_at, desc: s.id])
   end
 
   defp topic(user_id) when is_integer(user_id), do: "channel:#{user_id}"
