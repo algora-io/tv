@@ -445,7 +445,11 @@ defmodule AlgoraWeb.HomeLive do
         </div>
 
         <div class="mx-auto pb-6">
-          <div :if={@livestream} class="relative">
+          <.link
+            :if={@livestream}
+            href={~p"/#{@livestream.channel_handle}/#{@livestream.id}"}
+            class="relative"
+          >
             <div class="w-full relative">
               <.live_component module={HeroComponent} id="home-player" />
               <div class="absolute inset-0 bg-gradient-to-r from-gray-950/80 to-transparent to-50%">
@@ -459,14 +463,9 @@ defmodule AlgoraWeb.HomeLive do
                 <div class="pt-2 text-xl [text-shadow:#020617_1px_0_10px] font-medium truncate">
                   <%= @livestream.title %>
                 </div>
-                <.button class="mt-4">
-                  <.link href={"/#{@livestream.channel_handle}/#{@livestream.id}"} class="text-lg">
-                    Watch now
-                  </.link>
-                </.button>
               </div>
             </div>
-          </div>
+          </.link>
 
           <div class="pt-8 pr-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <.video_entry :for={video <- @most_recent_videos} video={video} />
