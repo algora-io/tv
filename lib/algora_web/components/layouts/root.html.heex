@@ -176,13 +176,12 @@
               </.simple_dropdown>
             </div>
           <% else %>
-            <.button>
-              <.link navigate="/auth/login">
-                <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
-                </span>
-                <span class="relative font-semibold text-sm">Login</span>
-              </.link>
-            </.button>
+            <.link
+              navigate="/auth/login"
+              class="rounded-lg bg-gray-50 hover:bg-gray-200 py-1 px-2 text-sm font-semibold leading-6 text-gray-950 active:text-gray-950/80"
+            >
+              <span class="relative font-semibold text-sm">Login</span>
+            </.link>
           <% end %>
         </div>
       </div>
