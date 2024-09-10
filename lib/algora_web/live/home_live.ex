@@ -532,13 +532,6 @@ defmodule AlgoraWeb.HomeLive do
 
     shows = [
       %{
-        slug: "buildinpublic",
-        poster: ~p"/images/shows/build-in-public.jpg",
-        channel_name: "Algora",
-        channel_handle: "algora",
-        channel_avatar_url: "https://avatars.githubusercontent.com/u/136125894?v=4"
-      },
-      %{
         slug: "tsperf",
         poster: ~p"/images/shows/coding-challenges.jpg",
         channel_name: "Algora",
@@ -553,18 +546,18 @@ defmodule AlgoraWeb.HomeLive do
         channel_avatar_url: "https://avatars.githubusercontent.com/u/8019099?v=4"
       },
       %{
-        slug: "rfc",
-        poster: ~p"/images/shows/request-for-comments.jpg",
-        channel_name: "Andreas Klinger",
-        channel_handle: "rfc",
-        channel_avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4"
-      },
-      %{
         slug: "the_savefile",
         poster: ~p"/images/shows/the-save-file.jpg",
         channel_name: "Glauber Costa",
         channel_handle: "glommer",
         channel_avatar_url: "https://avatars.githubusercontent.com/u/331197?v=4"
+      },
+      %{
+        slug: "rfc",
+        poster: ~p"/images/shows/request-for-comments.jpg",
+        channel_name: "Andreas Klinger",
+        channel_handle: "rfc",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4"
       },
       %{
         slug: "coss-founder-podcast",
@@ -586,6 +579,13 @@ defmodule AlgoraWeb.HomeLive do
         channel_name: "Andreas Klinger",
         channel_handle: "rfc",
         channel_avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4"
+      },
+      %{
+        slug: "buildinpublic",
+        poster: ~p"/images/shows/build-in-public.jpg",
+        channel_name: "Algora",
+        channel_handle: "algora",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/136125894?v=4"
       }
     ]
 
