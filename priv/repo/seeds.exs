@@ -5,6 +5,7 @@
 alias Algora.{Repo, Accounts}
 alias Algora.Accounts.User
 alias Algora.Library.Video
+alias Algora.Shows.Show
 
 user =
   case Accounts.get_user_by(handle: "algora") do
@@ -202,4 +203,64 @@ Repo.insert!(%Video{
   end
 end)
 
-# ... existing code ...
+[
+  %{
+    title: "Build in public",
+    slug: "buildinpublic",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/7/cover/1717089683"
+  },
+  %{
+    title: "Solving bounties live",
+    slug: "bounties",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/5/cover/1717077107"
+  },
+  %{
+    title: "COSS Founder Podcast",
+    slug: "coss-founder-podcast",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/4/cover/1717076436"
+  },
+  %{
+    title: "eu/acc - Update :)",
+    slug: "eu-acc",
+    scheduled_for: ~N[2024-05-31 16:00:00],
+    image_url: "https://fly.storage.tigris.dev/algora/shows/2/cover/1716648718"
+  },
+  %{
+    title: "The Save File",
+    slug: "the_savefile",
+    scheduled_for: ~N[2024-06-21 17:30:00],
+    image_url: "https://fly.storage.tigris.dev/algora/shows/8/cover/1717155673"
+  },
+  %{
+    title: "RFC 007 - Demos!",
+    slug: "rfc",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/1/cover/1716648933"
+  },
+  %{
+    title: "COSS Office Hours",
+    slug: "coss",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/3/cover/1716657591"
+  },
+  %{
+    title: "The TSPerf Challenge",
+    slug: "tsperf",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/6/cover/1717861791"
+  }
+]
+|> Enum.with_index(1)
+|> Enum.each(fn {show_data, index} ->
+  case Repo.get_by(Show, slug: show_data.slug) do
+    nil ->
+      Repo.insert!(%Show{
+        user_id: user.id,
+        title: show_data.title,
+        slug: show_data.slug,
+        scheduled_for: Map.get(show_data, :scheduled_for),
+        image_url: show_data.image_url,
+        ordering: index
+      })
+
+    existing_show ->
+      existing_show
+  end
+end)

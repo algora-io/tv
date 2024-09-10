@@ -1,7 +1,7 @@
 defmodule AlgoraWeb.HomeLive do
   use AlgoraWeb, :live_view
 
-  alias Algora.{Library, Shows}
+  alias Algora.Library
   alias AlgoraWeb.HeroComponent
 
   @impl true
@@ -445,7 +445,7 @@ defmodule AlgoraWeb.HomeLive do
           </div>
         </div>
 
-        <div class="mx-auto pb-6 space-y-6">
+        <div class="mx-auto pb-6">
           <div :if={@livestream} class="relative">
             <div class="w-full relative">
               <.live_component module={HeroComponent} id="home-player" />
@@ -469,7 +469,7 @@ defmodule AlgoraWeb.HomeLive do
             </div>
           </div>
 
-          <div class="pr-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="pt-8 pr-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <.video_entry :for={video <- @most_recent_videos} video={video} />
           </div>
 
@@ -477,139 +477,46 @@ defmodule AlgoraWeb.HomeLive do
             <h2 class="text-white text-3xl font-semibold">
               Shows
             </h2>
-            <ul role="list" class="pt-4 grid grid-cols-1 gap-12 sm:grid-cols-2">
-              <li :for={show <- @shows} class="col-span-1">
-                <div class="h-full flex flex-col rounded-2xl overflow-hidden bg-[#15112b] ring-1 ring-white/20 text-center shadow-lg relative group">
-                  <img
-                    class="object-cover absolute inset-0 shrink-0 h-[12rem] w-full bg-gray-950"
-                    src={show.image_url}
-                    alt=""
-                  />
-                  <div class="absolute h-[12rem] w-full inset-0 bg-gradient-to-b from-transparent to-[#15112b]" />
-                  <.link
-                    navigate={~p"/shows/#{show.slug}"}
-                    class="absolute h-[10rem] w-full inset-0 z-10"
-                  >
-                  </.link>
-                  <div class="relative text-left h-full">
-                    <div class="flex flex-1 flex-col h-full">
-                      <div class="px-4 mt-[8rem] flex-col sm:flex-row flex sm:items-center gap-4">
-                        <.link
-                          :if={show.channel_handle != "algora"}
-                          navigate={~p"/shows/#{show.slug}"}
-                          class="shrink-0"
-                        >
-                          <img
-                            class="h-[8rem] w-[8rem] rounded-full ring-4 ring-white shrink-0"
-                            src={show.channel_avatar_url}
-                            alt=""
-                          />
-                        </.link>
-                        <div :if={show.channel_handle == "algora"} class="h-[8rem] w-0 -ml-4"></div>
-                        <div>
-                          <.link navigate={~p"/shows/#{show.slug}"}>
-                            <h3 class="mt-auto text-3xl font-semibold text-white [text-shadow:#000_10px_5px_10px] line-clamp-2 hover:underline">
-                              <%= show.title %>
-                            </h3>
-                          </.link>
-                          <div :if={show.channel_handle != "algora"} class="flex items-center gap-2">
-                            <.link navigate={~p"/#{show.channel_handle}"}>
-                              <div class="text-base text-gray-300 font-semibold line-clamp-1 hover:underline">
-                                <%= show.channel_name %>
-                              </div>
-                            </.link>
-                            <.link
-                              :if={show.channel_twitter_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              href={show.channel_twitter_url}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="text-white"
-                              >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 4l11.733 16h4.267l-11.733 -16z" /><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
-                              </svg>
-                            </.link>
-                          </div>
-                          <div :if={show.channel_handle == "algora"} class="h-[24px]"></div>
-                        </div>
-                        <.link
-                          :if={show.scheduled_for}
-                          navigate={~p"/shows/#{show.slug}"}
-                          class="shrink-0 sm:hidden xl:flex bg-gray-900 px-3 py-2 rounded-lg ring-1 ring-green-300 mr-auto sm:mr-0 sm:ml-auto flex items-center space-x-2"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="h-6 w-6 text-green-300 shrink-0"
-                          >
-                            <path d="M8 2v4"></path>
-                            <path d="M16 2v4"></path>
-                            <rect width="18" height="18" x="3" y="4" rx="2"></rect>
-                            <path d="M3 10h18"></path>
-                          </svg>
-                          <div class="shrink-0">
-                            <div class="text-sm font-semibold">
-                              <%= show.scheduled_for
-                              |> Timex.to_datetime("Etc/UTC")
-                              |> Timex.Timezone.convert("America/New_York")
-                              |> Timex.format!("{WDfull}, {Mshort} {D}") %>
-                            </div>
-                            <div class="text-sm">
-                              <%= show.scheduled_for
-                              |> Timex.to_datetime("Etc/UTC")
-                              |> Timex.Timezone.convert("America/New_York")
-                              |> Timex.format!("{h12}:{m} {am}, Eastern Time") %>
-                            </div>
-                          </div>
-                        </.link>
-                      </div>
-
-                      <div
-                        :if={length(Enum.filter(@show_eps, fn v -> v.show_id == show.id end)) > 0}
-                        class="mt-auto pt-[2rem] -mb-2"
-                      >
-                        <div class="flex justify-between items-center gap-2 px-2">
-                          <h3 class="text-sm uppercase text-gray-300 font-semibold">
-                            Past episodes
-                          </h3>
-                        </div>
-                        <div class="p-2 flex gap-4 overflow-x-scroll scrollbar-thin transition-all">
-                          <div
-                            :for={video <- Enum.filter(@show_eps, fn v -> v.show_id == show.id end)}
-                            class="max-w-[12rem] sm:max-w-[16rem] shrink-0 w-full"
-                          >
-                            <.link class="truncate" href={~p"/#{video.channel_handle}/#{video.id}"}>
-                              <.video_thumbnail video={video} class="rounded-xl" />
-                            </.link>
+            <ul role="list" class="pt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <%= for show <- @shows do %>
+                <li class="col-span-1 rounded-lg overflow-hidden">
+                  <div>
+                    <.link
+                      navigate={~p"/shows/#{show.slug}"}
+                      class="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-gray-200 group-hover:opacity-75"
+                    >
+                      <img src={show.poster} alt={show.slug} class="h-full w-full" />
+                    </.link>
+                    <.link
+                      navigate={~p"/#{show.channel_handle}"}
+                      class="bg-gray-900 p-2 flex justify-between"
+                    >
+                      <div class="flex-1 flex items-center justify-between truncate gap-3">
+                        <img
+                          class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-purple-300"
+                          src={show.channel_avatar_url}
+                          alt={show.channel_name}
+                        />
+                        <div class="flex-1 flex items-center justify-between text-gray-50 text-sm hover:text-gray-300 truncate">
+                          <div class="flex-1 py-1 text-sm truncate">
+                            <div class="font-semibold truncate"><%= show.channel_name %></div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </.link>
                   </div>
-                </div>
-              </li>
+                </li>
+              <% end %>
             </ul>
           </div>
 
-          <div class="pr-8 pt-4 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <.video_entry :for={video <- @rest_of_videos} video={video} />
+          <div class="pr-8 pt-12">
+            <h2 class="text-white text-3xl font-semibold">
+              Past livestreams
+            </h2>
+            <div class="pr-8 pt-4 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <.video_entry :for={video <- @rest_of_videos} video={video} />
+            </div>
           </div>
         </div>
       </main>
@@ -619,13 +526,70 @@ defmodule AlgoraWeb.HomeLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    shows = Shows.list_featured_shows()
-    show_eps = shows |> Enum.map(fn s -> s.id end) |> Library.list_videos_by_show_ids()
     videos = Library.list_videos(150)
     livestream = Library.list_livestreams(1) |> Enum.at(0)
     active_channels = Library.list_active_channels(limit: 20)
 
     {most_recent_videos, rest_of_videos} = Enum.split(videos, 3)
+
+    shows = [
+      %{
+        slug: "buildinpublic",
+        poster: ~p"/images/shows/build-in-public.jpg",
+        channel_name: "Algora",
+        channel_handle: "algora",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/136125894?v=4"
+      },
+      %{
+        slug: "tsperf",
+        poster: ~p"/images/shows/coding-challenges.jpg",
+        channel_name: "Algora",
+        channel_handle: "algora",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/136125894?v=4"
+      },
+      %{
+        slug: "coss",
+        poster: ~p"/images/shows/coss-office-hours.jpg",
+        channel_name: "Peer Richelsen",
+        channel_handle: "PeerRich",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/8019099?v=4"
+      },
+      %{
+        slug: "rfc",
+        poster: ~p"/images/shows/request-for-comments.jpg",
+        channel_name: "Andreas Klinger",
+        channel_handle: "rfc",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4"
+      },
+      %{
+        slug: "the_savefile",
+        poster: ~p"/images/shows/the-save-file.jpg",
+        channel_name: "Glauber Costa",
+        channel_handle: "glommer",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/331197?v=4"
+      },
+      %{
+        slug: "coss-founder-podcast",
+        poster: ~p"/images/shows/coss-founder-podcast.jpg",
+        channel_name: "Ioannis R. Florokapis",
+        channel_handle: "algora",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/118012453?v=4"
+      },
+      %{
+        slug: "bounties",
+        poster: ~p"/images/shows/live-bounty-hunting.jpg",
+        channel_name: "Algora",
+        channel_handle: "algora",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/136125894?v=4"
+      },
+      %{
+        slug: "eu-acc",
+        poster: ~p"/images/shows/eu-acc.jpg",
+        channel_name: "Andreas Klinger",
+        channel_handle: "rfc",
+        channel_avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4"
+      }
+    ]
 
     if connected?(socket) do
       Library.subscribe_to_livestreams()
@@ -641,7 +605,6 @@ defmodule AlgoraWeb.HomeLive do
 
     {:ok,
      socket
-     |> assign(:show_eps, show_eps)
      |> assign(:most_recent_videos, most_recent_videos)
      |> assign(:rest_of_videos, rest_of_videos)
      |> assign(:shows, shows)
