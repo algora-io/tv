@@ -7,14 +7,6 @@ defmodule AlgoraWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <!--
-    This example requires updating your template:
-
-    ```
-    <html class="h-full bg-white">
-    <body class="h-full">
-    ```
-    -->
     <div>
       <!-- Static sidebar for desktop -->
       <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-[28rem] lg:flex-col">
