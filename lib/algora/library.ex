@@ -773,7 +773,7 @@ defmodule Algora.Library do
             select: %{user_id: v.user_id, last_video_at: max(v.inserted_at)}
         ),
       on: u.id == v.user_id,
-      where: u.visibility == :public,
+      where: u.visibility == :public and (u.featured == true or u.is_live == true),
       order_by: [desc: u.is_live, desc: v.last_video_at, desc: u.id],
       limit: ^limit
     )
