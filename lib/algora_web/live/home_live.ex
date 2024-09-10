@@ -179,7 +179,7 @@ defmodule AlgoraWeb.HomeLive do
               <.live_component module={HeroComponent} id="home-player" />
               <div class="absolute inset-0 bg-gradient-to-r from-gray-950/80 to-transparent to-50%">
               </div>
-              <div class="absolute inset-0 bg-gradient-to-b from-gray-950 to-transparent to-30%">
+              <div class="hidden sm:block absolute inset-0 bg-gradient-to-b from-gray-950 to-transparent to-30%">
               </div>
               <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2 sm:truncate">
                 <div
