@@ -170,15 +170,15 @@ defmodule AlgoraWeb.HomeLive do
           <.link
             :if={@hero_video}
             href={~p"/#{@hero_video.channel_handle}/#{@hero_video.id}"}
-            class="relative"
+            class="flex h-full min-h-[100svh] sm:min-h-0"
           >
-            <div class="w-full relative">
+            <div class="w-full my-auto relative">
               <.live_component module={HeroComponent} id="home-player" />
               <div class="absolute inset-0 bg-gradient-to-r from-gray-950/80 to-transparent to-50%">
               </div>
               <div class="absolute inset-0 bg-gradient-to-b from-gray-950 to-transparent to-30%">
               </div>
-              <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2 truncate">
+              <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2 sm:truncate">
                 <div
                   :if={@hero_video.is_live}
                   class="pl-2 mb-2 text-white bg-red-500 rounded-xl font-semibold inline-flex items-center py-0.5"
@@ -193,21 +193,21 @@ defmodule AlgoraWeb.HomeLive do
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
                   </svg>
                 </div>
-                <div class="text-7xl font-bold [text-shadow:#020617_1px_0_10px]">
+                <div class="text-4xl sm:text-7xl font-bold [text-shadow:#020617_1px_0_10px]">
                   <%= @hero_video.channel_name %>
                 </div>
-                <div class="pt-2 text-xl [text-shadow:#020617_1px_0_10px] font-medium truncate">
+                <div class="pt-2 text-lg sm:text-xl [text-shadow:#020617_1px_0_10px] font-medium sm:truncate">
                   <%= @hero_video.title %>
                 </div>
               </div>
             </div>
           </.link>
 
-          <div class="pt-8 pr-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="pt-8 px-4 sm:pl-0 sm:pr-8 gap-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <.video_entry :for={video <- @most_recent_videos} video={video} />
           </div>
 
-          <div class="pr-8 pt-12">
+          <div class="px-4 sm:pl-0 sm:pr-8 pt-12">
             <h2 class="text-white text-3xl font-semibold">
               Shows
             </h2>
@@ -244,7 +244,7 @@ defmodule AlgoraWeb.HomeLive do
             </ul>
           </div>
 
-          <div class="pr-8 pt-12">
+          <div class="px-4 sm:pl-0 sm:pr-8 pt-12">
             <h2 class="text-white text-3xl font-semibold">
               Past livestreams
             </h2>
