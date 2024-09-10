@@ -457,6 +457,20 @@ defmodule AlgoraWeb.HomeLive do
               <div class="absolute inset-0 bg-gradient-to-b from-gray-950 to-transparent to-30%">
               </div>
               <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2 truncate">
+                <div
+                  :if={@hero_video.is_live}
+                  class="pl-2 mb-2 text-white bg-red-500 rounded-xl font-semibold inline-flex items-center py-0.5"
+                >
+                  LIVE
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="h-6 w-6"
+                  >
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
+                  </svg>
+                </div>
                 <div class="text-7xl font-bold [text-shadow:#020617_1px_0_10px]">
                   <%= @hero_video.channel_name %>
                 </div>
