@@ -79,6 +79,7 @@ defmodule Algora.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:thumbnex, "~> 0.5.0"},
       {:timex, "~> 3.0"},
+      {:tzdata, "~> 1.1.2"},
       {:websockex, "~> 0.4.3"},
       # ex_aws
       {:ex_aws_s3, "~> 2.3"},
