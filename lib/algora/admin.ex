@@ -54,22 +54,31 @@ defmodule Algora.Admin do
   end
 
   defp merge_playlists(videos) do
-    playlists = Enum.map(videos, &get_playlist/1)
+    example_playlist = videos |> Enum.at(0) |> get_playlist()
 
-    streams = Enum.flat_map(playlists, &Map.get(&1, :items))
-    example_stream = Enum.at(streams, 0)
+    streams = Enum.map(videos, fn v ->
+      [item | _] = get_playlist(v) |> then(&Map.get(&1, :items))
+      count = get_media_playlist(v, @tracks.video)
+      |> then(&Enum.count(&1.timeline, fn
+          %ExM3U8.Tags.Segment{} -> true
+          _ -> false
+        end))
+      {item, count}
+    end)
 
+    {example_stream, _} = streams |> Enum.at(0)
 
-    if Enum.all?(streams, fn x -> example_stream.resolution == x.resolution && example_stream.codecs == x.codecs end) do
-      max_bandwidth = Enum.map(streams, &Map.get(&1, :bandwidth)) |> Enum.max(&Ratio.gte?/2)
+    if Enum.all?(streams, fn {x, _} -> example_stream.resolution == x.resolution && example_stream.codecs == x.codecs end) do
+      max_bandwidth = Enum.map(streams, fn {stream, _} -> Map.get(stream, :bandwidth) end) |> Enum.max(&Ratio.gte?/2)
       avg_bandwidth = streams
-        |> Enum.reduce(0, fn s, sum -> sum + s.average_bandwidth end)
-        |> then(&(&1 / Enum.count(streams)))
+        |> Enum.reduce({0, 0}, fn {s, count}, {avg_sum, count_sum} -> {avg_sum + s.average_bandwidth * count, count_sum + count} end)
+        |> then(fn {avg, count} -> avg / count end )
+        |> Ratio.trunc()
 
-      {:ok, %{ Enum.at(playlists, 0)
+      {:ok, %{ example_playlist
           | items: [
             %{ example_stream
-              | average_bandwidth: Ratio.trunc(avg_bandwidth),
+              | average_bandwidth: avg_bandwidth,
               bandwidth: max_bandwidth
             }
           ]
@@ -107,6 +116,7 @@ defmodule Algora.Admin do
     with {:ok, playlist} <- merge_playlists(videos),
       media_playlist <- Enum.reduce(videos, nil, &merge_media_playlists/2),
       {:ok, new_video} <- insert_merged_video(videos, playlist, media_playlist) do
+
         ids = Enum.map(videos, &(&1.id))
         Repo.update_all(
           from(v in Video, where: v.id in ^ids),
