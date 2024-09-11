@@ -149,7 +149,7 @@
                 <%= for {tech, data} <- @stats.tech_stack_data do %>
                   <tr class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                     <td class="p-4 align-middle [&:has([role=checkbox])]:pr-0 flex items-center gap-2">
-                      <.tech_icon tech={tech} /> <%= tech %>
+                      <.tech_icon tech={tech} class="h-6 w-6" /> <%= tech %>
                     </td>
                     <td class="align-middle [&:has([role=checkbox])]:pr-0">
                       <div class="flex items-center justify-center -space-x-1">
