@@ -62,28 +62,6 @@
     />
   </head>
   <body>
-    <div class="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,_#1d1e3a_0%,_#050217_40%,_#050217_60%,_#1d1e3a_100%)] z-0">
-    </div>
-    <div
-      class="fixed inset-x-0 -top-[69%] z-0 flex transform justify-center overflow-hidden blur-3xl"
-      aria-hidden="true"
-    >
-      <div
-        class="w-screen h-[150vh] flex-none bg-gradient-to-b from-gray-900 to-gray-950 opacity-75 transition-opacity"
-        style="clip-path: polygon(70.71% 100%, 100% 70.71%, 100% 0%, 70.71% 0%, 29.29% 0%, 0% 0%, 0% 70.71%, 29.29% 100%)"
-      >
-      </div>
-    </div>
-    <div
-      class="fixed inset-x-0 -top-[5%] z-0 flex transform justify-center overflow-hidden blur-3xl"
-      aria-hidden="true"
-    >
-      <div
-        class="w-screen h-[100vh] flex-none bg-gradient-to-r from-purple-900 to-violet-950 opacity-10 transition-opacity"
-        style="clip-path: polygon(5.5% 13%, 52.75% 0%, 100% 13%, 100% 100%, 0% 100%)"
-      >
-      </div>
-    </div>
     <div class="relative mt-[64px]">
       <div
         id="navbar"
@@ -200,10 +178,8 @@
           <% else %>
             <.link
               navigate="/auth/login"
-              class="flex rounded px-4 py-2 overflow-hidden group bg-purple-500 relative hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-400 text-white hover:ring-2 hover:ring-offset-2 hover:ring-purple-400 transition-all ease-out duration-300"
+              class="rounded-lg bg-gray-50 hover:bg-gray-200 py-1 px-2 text-sm font-semibold leading-6 text-gray-950 active:text-gray-950/80"
             >
-              <span class="absolute right-0 w-8 h-32 -mt-12 transition-all duration-1000 transform translate-x-12 bg-white opacity-10 rotate-12 group-hover:-translate-x-40 ease">
-              </span>
               <span class="relative font-semibold text-sm">Login</span>
             </.link>
           <% end %>

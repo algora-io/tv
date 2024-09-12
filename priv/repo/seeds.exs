@@ -5,21 +5,19 @@
 alias Algora.{Repo, Accounts}
 alias Algora.Accounts.User
 alias Algora.Library.Video
+alias Algora.Shows.Show
 
 user =
   case Accounts.get_user_by(handle: "algora") do
     nil ->
-      {:ok, user} =
-        Repo.insert(%User{
-          handle: "algora",
-          name: "Algora",
-          avatar_url: "https://fly.storage.tigris.dev/algora/test/algora.png",
-          email: "algora@example.com",
-          visibility: :public,
-          is_live: true
-        })
-
-      user
+      Repo.insert!(%User{
+        handle: "algora",
+        name: "Algora",
+        avatar_url: "https://fly.storage.tigris.dev/algora/test/algora.png",
+        email: "algora@example.com",
+        visibility: :public,
+        is_live: true
+      })
 
     existing_user ->
       existing_user
@@ -110,3 +108,159 @@ Repo.insert!(%Video{
   visibility: :public,
   uuid: Ecto.UUID.generate()
 })
+
+[
+  %{
+    handle: "glommer",
+    name: "Glauber Costa",
+    avatar_url: "https://avatars.githubusercontent.com/u/331197?v=4",
+    channel_tagline: "The Save File Ep. 15"
+  },
+  %{
+    handle: "spirodonfl",
+    name: "Spiro Floropoulos",
+    avatar_url: "https://avatars.githubusercontent.com/u/314869?v=4",
+    channel_tagline:
+      "X_TECH_LEAD-- = Videogame work, content, Laravel/HTMX, so much #zig #webassembly"
+  },
+  %{
+    handle: "heyandras",
+    name: "Andras Bacsai",
+    avatar_url: "https://avatars.githubusercontent.com/u/5845193?v=4",
+    channel_tagline: "Hangout, coding & open-source"
+  },
+  %{
+    handle: "danielroe",
+    name: "Daniel Roe",
+    avatar_url: "https://avatars.githubusercontent.com/u/28706372?v=4",
+    channel_tagline: "🚦 nitro + nuxt ecosystem testing"
+  },
+  %{
+    handle: "cmgriffing",
+    name: "cmgriffing",
+    avatar_url: "https://avatars.githubusercontent.com/u/1195435?v=4",
+    channel_tagline: "🔐 Rolling my own auth: 2FA"
+  },
+  %{
+    handle: "LLCoolChris_",
+    name: "Christopher N. KATOYI",
+    avatar_url: "https://avatars.githubusercontent.com/u/16650656?v=4",
+    channel_tagline:
+      "🥸 [FR/EN] 24H OCaml with Codecrafters & Exercism | Some Wukong Gaming | Stuff"
+  },
+  %{
+    handle: "PeerRich",
+    name: "Peer Richelsen",
+    avatar_url: "https://avatars.githubusercontent.com/u/8019099?v=4",
+    channel_tagline: "COSS Office Hours with @peer_rich from Cal.com"
+  },
+  %{
+    handle: "rfc",
+    name: "Andreas Klinger",
+    avatar_url: "https://avatars.githubusercontent.com/u/245833?v=4",
+    channel_tagline: "🇪🇺 Let's talk eu/acc! 🔴 LIVE - Chat @ rfc.to 🎉"
+  },
+  %{
+    handle: "McPizza0",
+    name: "McPizza",
+    avatar_url: "https://avatars.githubusercontent.com/u/17185737?v=4",
+    channel_tagline: "Working through some business features"
+  },
+  %{
+    handle: "jehrhardt",
+    name: "Jan Ehrhardt",
+    avatar_url: "https://avatars.githubusercontent.com/u/59441?v=4",
+    channel_tagline: "Building Cozy Auth - Elixir Rewrite and going wild on Claude AI 🚀"
+  },
+  %{
+    handle: "zachdaniel",
+    name: "Zach Daniel",
+    avatar_url: "https://avatars.githubusercontent.com/u/5722339?v=4",
+    channel_tagline: "Writing rad Elixir"
+  },
+  %{
+    handle: "midday",
+    name: "Midday",
+    avatar_url: "https://avatars.githubusercontent.com/u/655158?v=4",
+    channel_tagline: "Midday Product Hunt Launch"
+  }
+]
+|> Enum.each(fn user_data ->
+  case Accounts.get_user_by(handle: user_data.handle) do
+    nil ->
+      Repo.insert!(%User{
+        handle: user_data.handle,
+        name: user_data.name,
+        avatar_url: user_data.avatar_url,
+        email: "#{user_data.handle}@example.com",
+        visibility: :public,
+        is_live: false,
+        channel_tagline: user_data.channel_tagline
+      })
+
+    existing_user ->
+      existing_user
+  end
+end)
+
+[
+  %{
+    title: "Build in public",
+    slug: "buildinpublic",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/7/cover/1717089683"
+  },
+  %{
+    title: "Solving bounties live",
+    slug: "bounties",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/5/cover/1717077107"
+  },
+  %{
+    title: "COSS Founder Podcast",
+    slug: "coss-founder-podcast",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/4/cover/1717076436"
+  },
+  %{
+    title: "eu/acc - Update :)",
+    slug: "eu-acc",
+    scheduled_for: ~N[2024-05-31 16:00:00],
+    image_url: "https://fly.storage.tigris.dev/algora/shows/2/cover/1716648718"
+  },
+  %{
+    title: "The Save File",
+    slug: "the_savefile",
+    scheduled_for: ~N[2024-06-21 17:30:00],
+    image_url: "https://fly.storage.tigris.dev/algora/shows/8/cover/1717155673"
+  },
+  %{
+    title: "RFC 007 - Demos!",
+    slug: "rfc",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/1/cover/1716648933"
+  },
+  %{
+    title: "COSS Office Hours",
+    slug: "coss",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/3/cover/1716657591"
+  },
+  %{
+    title: "The TSPerf Challenge",
+    slug: "tsperf",
+    image_url: "https://fly.storage.tigris.dev/algora/shows/6/cover/1717861791"
+  }
+]
+|> Enum.with_index(1)
+|> Enum.each(fn {show_data, index} ->
+  case Repo.get_by(Show, slug: show_data.slug) do
+    nil ->
+      Repo.insert!(%Show{
+        user_id: user.id,
+        title: show_data.title,
+        slug: show_data.slug,
+        scheduled_for: Map.get(show_data, :scheduled_for),
+        image_url: show_data.image_url,
+        ordering: index
+      })
+
+    existing_show ->
+      existing_show
+  end
+end)
