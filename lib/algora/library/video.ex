@@ -35,6 +35,7 @@ defmodule Algora.Library.Video do
     field :remote_path, :string
     field :local_path, :string
     field :deleted_at, :naive_datetime
+    field :tags, {:array, :string}, default: []
 
     belongs_to :user, User
     belongs_to :show, Show
@@ -51,7 +52,7 @@ defmodule Algora.Library.Video do
   @doc false
   def changeset(video, attrs) do
     video
-    |> cast(attrs, [:title])
+    |> cast(attrs, [:title, :tags])
     |> validate_required([:title])
   end
 
