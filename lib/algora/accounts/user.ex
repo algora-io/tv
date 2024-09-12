@@ -20,6 +20,7 @@ defmodule Algora.Accounts.User do
     field :bounties_count, :integer
     field :solving_challenge, :boolean, default: false
     field :featured, :boolean, default: false
+    field :tags, {:array, :string}, default: []
 
     embeds_many :tech, Tech do
       field :name, :string
