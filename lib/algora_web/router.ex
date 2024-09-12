@@ -58,7 +58,9 @@ defmodule AlgoraWeb.Router do
 
     live_session :ads,
       layout: {AlgoraWeb.Layouts, :live_bare},
-      root_layout: {AlgoraWeb.Layouts, :root_embed} do
+      root_layout: {AlgoraWeb.Layouts, :root_embed},
+      on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
+      live "/", HomeLive, :show
       live "/partner", PartnerLive, :show
       live "/:channel_handle/ads", AdOverlayLive, :show
     end
@@ -128,7 +130,6 @@ defmodule AlgoraWeb.Router do
     end
 
     live_session :default, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
-      live "/", HomeLive, :show
       live "/auth/login", SignInLive, :index
       live "/cossgpt", COSSGPTLive, :index
       live "/og/cossgpt", COSSGPTOGLive, :index

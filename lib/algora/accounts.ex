@@ -57,6 +57,8 @@ defmodule Algora.Accounts do
 
   def get_user(id), do: Repo.get(User, id)
 
+  def get_user_by(fields), do: Repo.get_by(User, fields)
+
   def get_user_by!(fields), do: Repo.get_by!(User, fields)
 
   ## User registration

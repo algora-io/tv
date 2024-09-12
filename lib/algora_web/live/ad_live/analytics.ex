@@ -138,6 +138,7 @@ defmodule AlgoraWeb.AdLive.Analytics do
       8 -> "TypeScript"
       109 -> "TypeScript"
       307 -> "PHP"
+      588 -> "Elixir"
       _ -> "Other"
     end
   end

@@ -611,7 +611,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -627,7 +627,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -644,7 +644,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -686,7 +686,7 @@ defmodule Algora.Library do
       where: v.show_id in ^ids
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -706,7 +706,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -726,7 +726,7 @@ defmodule Algora.Library do
           v.user_id == ^channel.user_id
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -747,16 +747,35 @@ defmodule Algora.Library do
           v.user_id == ^channel.user_id
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
-  def list_active_channels(opts) do
+  def list_live_channels(opts) do
     from(u in Algora.Accounts.User,
       where: u.is_live and u.visibility == :public,
       limit: ^Keyword.fetch!(opts, :limit),
-      order_by: [desc: u.updated_at],
-      select: struct(u, [:id, :handle, :channel_tagline, :avatar_url, :external_homepage_url])
+      order_by: [desc: u.updated_at]
+    )
+    |> Repo.all()
+    |> Enum.map(&get_channel!/1)
+  end
+
+  def list_active_channels(opts) do
+    limit = Keyword.fetch!(opts, :limit)
+
+    from(u in Algora.Accounts.User,
+      left_join:
+        v in subquery(
+          from v in Algora.Library.Video,
+            where: is_nil(v.deleted_at),
+            group_by: v.user_id,
+            select: %{user_id: v.user_id, last_video_at: max(v.inserted_at)}
+        ),
+      on: u.id == v.user_id,
+      where: u.visibility == :public and (u.featured == true or u.is_live == true),
+      order_by: [desc: u.is_live, desc: v.last_video_at, desc: u.id],
+      limit: ^limit
     )
     |> Repo.all()
     |> Enum.map(&get_channel!/1)
@@ -816,8 +835,8 @@ defmodule Algora.Library do
     |> Repo.update()
   end
 
-  defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
-    from(s in query, order_by: [{^direction, s.inserted_at}])
+  defp order_by_live(%Ecto.Query{} = query) do
+    from(s in query, order_by: [desc: s.is_live, desc: s.inserted_at, desc: s.id])
   end
 
   defp topic(user_id) when is_integer(user_id), do: "channel:#{user_id}"

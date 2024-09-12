@@ -2,10 +2,16 @@ defmodule Algora.Admin.GenerateBlurbThumbnails do
   import Ecto.Query
   alias Algora.Ads.ProductReview
   alias Algora.{Clipper, Repo}
+  require Logger
 
   def run do
     for product_review <- fetch_product_reviews() do
-      :ok = process_product_review(product_review)
+      try do
+        :ok = process_product_review(product_review)
+      rescue
+        e ->
+          Logger.error(Exception.format(:error, e, __STACKTRACE__))
+      end
     end
   end
 
