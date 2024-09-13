@@ -4,6 +4,7 @@ defmodule Algora.Library.Video do
   import Ecto.Changeset
   import Ecto.Query
 
+  alias Algora.Repo
   alias Algora.Accounts.User
   alias Algora.Library.Video
   alias Algora.Storage
@@ -59,6 +60,19 @@ defmodule Algora.Library.Video do
     video
     |> cast(attrs, [:title, :tags])
     |> validate_required([:title])
+    |> validate_length(:tags, max: 10)
+  end
+
+  def create_video(attrs \\ %{}) do
+    %Video{}
+    |> Video.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_video_tags(video, tags) do
+    video
+    |> Video.changeset(%{tags: tags})
+    |> Repo.update()
   end
 
   def change_thumbnail(video, thumbnail_url \\ "") do

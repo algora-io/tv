@@ -21,6 +21,23 @@ defmodule AlgoraWeb.SettingsLive do
           <.input field={@form[:name]} label="Name" />
           <.input label="Email" name="email" value={@current_user.email} disabled />
           <.input field={@form[:channel_tagline]} label="Stream tagline" />
+          <.live_component
+            module={AlgoraWeb.TagsComponent}
+            id="channel_tags"
+            name="channel_tags"
+            tags={@current_user.tags || []}
+          />
+          <div>
+            <.input
+              label="Stream URL"
+              name="stream_url"
+              value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
+              disabled
+            />
+            <p class="mt-2 text-sm text-gray-400">
+              <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
+            </p>
+          </div>
           <:actions>
             <.button>Save</.button>
           </:actions>
@@ -324,7 +341,10 @@ defmodule AlgoraWeb.SettingsLive do
   end
 
   def handle_event("save", %{"user" => params}, socket) do
-    case Accounts.update_settings(socket.assigns.current_user, params) do
+    current_tags = socket.assigns.current_user.tags
+    params_with_tags = Map.put(params, "tags", current_tags)
+
+    case Accounts.update_settings(socket.assigns.current_user, params_with_tags) do
       {:ok, user} ->
         {:noreply,
          socket
