@@ -16,6 +16,120 @@ defmodule Algora.Admin do
     Finch.build(:get, url) |> Finch.request(Algora.Finch)
   end
 
+  defp get_absolute_media_playlist(video) do
+    %ExM3U8.MediaPlaylist{timeline: timeline, info: info} = get_media_playlist(video, @tracks.video)
+
+    timeline = timeline
+    |> Enum.reduce([], fn x, acc ->
+        case x do
+          %ExM3U8.Tags.MediaInit{uri: uri} -> [
+            %ExM3U8.Tags.MediaInit{uri: Storage.to_absolute(:video, video.uuid, uri)}
+            | acc
+          ]
+          %ExM3U8.Tags.Segment{uri: uri, duration: duration} -> [
+            %ExM3U8.Tags.Segment{uri: Storage.to_absolute(:video, video.uuid, uri), duration: duration}
+            | acc
+          ]
+          others -> [others | acc]
+        end
+      end)
+    |> Enum.reverse()
+
+    %ExM3U8.MediaPlaylist{timeline: timeline, info: info}
+  end
+
+  defp merge_media_playlists(video, nil), do: get_absolute_media_playlist(video)
+
+  defp merge_media_playlists(video, playlist) do
+    new_playlist = video |> get_absolute_media_playlist
+
+    %ExM3U8.MediaPlaylist{
+      playlist
+      | timeline: playlist.timeline ++ [%ExM3U8.Tags.Discontinuity{} | new_playlist.timeline],
+      info: %ExM3U8.MediaPlaylist.Info{
+        playlist.info
+        | target_duration: max(playlist.info.target_duration, new_playlist.info.target_duration)
+      }
+    }
+  end
+
+  defp merge_playlists(videos) do
+    example_playlist = videos |> Enum.at(0) |> get_playlist()
+
+    streams = Enum.map(videos, fn v ->
+      [item | _] = get_playlist(v) |> then(&Map.get(&1, :items))
+      count = get_media_playlist(v, @tracks.video)
+      |> then(&Enum.count(&1.timeline, fn
+          %ExM3U8.Tags.Segment{} -> true
+          _ -> false
+        end))
+      {item, count}
+    end)
+
+    {example_stream, _} = streams |> Enum.at(0)
+
+    if Enum.all?(streams, fn {x, _} -> example_stream.resolution == x.resolution && example_stream.codecs == x.codecs end) do
+      max_bandwidth = Enum.map(streams, fn {stream, _} -> Map.get(stream, :bandwidth) end) |> Enum.max(&Ratio.gte?/2)
+      avg_bandwidth = streams
+        |> Enum.reduce({0, 0}, fn {s, count}, {avg_sum, count_sum} -> {avg_sum + s.average_bandwidth * count, count_sum + count} end)
+        |> then(fn {avg, count} -> avg / count end )
+        |> Ratio.trunc()
+
+      {:ok, %{ example_playlist
+          | items: [
+            %{ example_stream
+              | average_bandwidth: avg_bandwidth,
+              bandwidth: max_bandwidth
+            }
+          ]
+        }
+      }
+    else
+      {:error, "Codecs or resolutions don't match"}
+    end
+  end
+
+  defp insert_merged_video(videos, playlist, media_playlist) do
+    [video | _] = videos
+
+    duration = videos |> Enum.reduce(0, fn v, d -> d + v.duration end)
+
+    result = %{video | duration: duration, id: nil, filename: nil}
+      |> change()
+      |> Video.put_video_url(video.format)
+      |> Repo.insert()
+
+    upload_to = fn uuid, track_atom, content -> Storage.upload(
+      content,
+      "#{uuid}/#{@tracks[track_atom]}",
+      content_type: "application/x-mpegURL"
+    ) end
+
+    with {:ok, new_video} <- result,
+      {:ok, _} <- upload_to.(new_video.uuid, :manifest, ExM3U8.serialize(playlist)),
+      {:ok, _} <- upload_to.(new_video.uuid, :video, "#{ExM3U8.serialize(media_playlist)}#EXT-X-ENDLIST\n") do
+        result
+    end
+  end
+
+  def merge_streams(videos) do
+    with {:ok, playlist} <- merge_playlists(videos),
+      media_playlist <- Enum.reduce(videos, nil, &merge_media_playlists/2),
+      {:ok, new_video} <- insert_merged_video(videos, playlist, media_playlist) do
+
+        ids = Enum.map(videos, &(&1.id))
+        Repo.update_all(
+          from(v in Video, where: v.id in ^ids),
+          set: [
+            visibility: :unlisted,
+            deleted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          ]
+        )
+
+        {:ok, new_video}
+    end
+  end
+
   def get_playlist(video) do
     {:ok, resp} = get(video.url)
     {:ok, playlist} = ExM3U8.deserialize_playlist(resp.body, [])
