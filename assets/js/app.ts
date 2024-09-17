@@ -157,6 +157,8 @@ const Hooks = {
         target: this.el,
         viewType: "video",
         streamType: "on-demand",
+        liveEdgeTolerance: 2,
+        load: "eager",
         logLevel: "warn",
         crossOrigin: true,
         playsInline: true,
