@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@algora/hls.js':
+    specifier: 1.0.0
+    version: 1.0.0
   vidstack:
     specifier: ^1.12.9
     version: 1.12.9
@@ -18,6 +21,10 @@ devDependencies:
     version: 0.18.4
 
 packages:
+
+  /@algora/hls.js@1.0.0:
+    resolution: {integrity: sha512-2Lh/sBnxeyD4gi2F8Isr5CsliQQ6t5Nf0+I9jLkibLmHkryVMis+z0PssPA5iOGZncvSgAwhAlDf2wxwJtsRcw==}
+    dev: false
 
   /@floating-ui/core@1.6.7:
     resolution: {integrity: sha512-yDzVT/Lm101nQ5TCVeK65LtdN7Tj4Qpr9RTXJ2vPFLqtLxwOrpoxAHAJI8J3yYWUc40J0BDBheaitK5SJmno2g==}
