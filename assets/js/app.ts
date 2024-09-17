@@ -3,6 +3,8 @@ import { Socket } from "phoenix";
 import { LiveSocket, type ViewHook } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import { VidstackPlayer, VidstackPlayerLayout } from "vidstack/global/player";
+import { isHLSProvider } from "vidstack";
+import HLS from "@algora/hls.js";
 
 // TODO: add eslint & biome
 // TODO: enable strict mode
@@ -228,6 +230,16 @@ const Hooks = {
         this.player.currentTime = startTime;
         this.player.streamType = opts.is_live ? "ll-live:dvr" : "on-demand";
         this.player.src = opts.url;
+
+        this.player.addEventListener("provider-change", (event) => {
+          const provider = event.detail;
+          if (isHLSProvider(provider)) {
+            provider.library = HLS;
+            provider.config = {
+              targetlatency: 6, // one segment
+            };
+          }
+        });
 
         setMediaSession();
 

@@ -20,6 +20,7 @@
     "@types/phoenix_live_view": "^0.18.4"
   },
   "dependencies": {
+    "@algora/hls.js": "1.0.0",
     "vidstack": "^1.12.9"
   }
 }
