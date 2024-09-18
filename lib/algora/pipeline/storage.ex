@@ -5,9 +5,8 @@ defmodule Algora.Pipeline.Storage do
 
   require Membrane.Logger
   alias Algora.Pipeline.HLS.LLController
+  alias Algora.Pipeline.Storage.Thumbnails
   alias Algora.Library
-
-  @pubsub Algora.PubSub
 
   @enforce_keys [:directory, :video]
   defstruct @enforce_keys ++
@@ -252,17 +251,7 @@ defmodule Algora.Pipeline.Storage do
          %{setup_completed?: false, video: video, video_header: video_header} = state
        ) do
     Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
-      with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents),
-           {:ok, video} <- Library.store_og_image(video) do
-        # HACK: this shouldn't be necessary
-        # atm we need it because initially the video does not have the user field set
-        video = Library.get_video!(video.id)
-
-        broadcast_thumbnails_generated!(video)
-      else
-        _ ->
-          Membrane.Logger.error("Could not generate thumbnails for video #{video.id}")
-      end
+      Thumbnails.store_thumbnail(video, video_header, contents)
     end)
 
     %{state | setup_completed?: true, video_segment: contents}
@@ -281,13 +270,5 @@ defmodule Algora.Pipeline.Storage do
 
   defp process_contents(_parent_id, _name, _contents, _metadata, _ctx, state) do
     state
-  end
-
-  defp broadcast_thumbnails_generated!(video) do
-    Phoenix.PubSub.broadcast!(
-      @pubsub,
-      Library.topic_livestreams(),
-      {__MODULE__, %Library.Events.ThumbnailsGenerated{video: video}}
-    )
   end
 end
