@@ -6,7 +6,8 @@ defmodule Algora.Pipeline do
   alias Algora.{Admin, Library}
   alias Algora.Pipeline.HLS.LLController
 
-  @segment_duration Time.seconds(6)
+  @segment_duration_seconds 6
+  @segment_duration Time.seconds(@segment_duration_seconds)
   @partial_segment_duration Time.milliseconds(200)
 
   @impl true
@@ -94,7 +95,7 @@ defmodule Algora.Pipeline do
   end
 
   def handle_child_notification({:track_playable, :video}, _element, _ctx, state) do
-    Algora.Library.toggle_streamer_live(state.video, true)
+    {:ok, _ref} = :timer.send_after(@segment_duration_seconds * 1000, self(), :go_live)
     {[], state}
   end
 
@@ -164,6 +165,11 @@ defmodule Algora.Pipeline do
       )
     end
 
+    {[], state}
+  end
+
+  def handle_info(:go_live, _ctx, state) do
+    Algora.Library.toggle_streamer_live(state.video, true)
     {[], state}
   end
 
