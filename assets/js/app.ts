@@ -299,6 +299,17 @@ const Hooks = {
       window.addEventListener("scroll", onScroll, { passive: true });
     },
   },
+  CopyToClipboard: {
+    value() { return this.el.dataset.value },
+    notice() { return this.el.dataset.notice },
+    mounted() {
+      this.el.addEventListener("click", () => {
+        navigator.clipboard.writeText(this.value()).then(() => {
+          this.pushEvent("copied_to_clipboard", {notice: this.notice()})
+        })
+      })
+    }
+  },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
 // Accessible focus handling
