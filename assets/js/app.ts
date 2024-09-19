@@ -457,6 +457,58 @@ window.addEventListener("phx:remove-el", (e) =>
   document.getElementById(e.detail.id)?.remove()
 );
 
+const setupPWAInstallPrompt = () => {
+  let deferredPrompt: any;
+  const installPrompt = document.getElementById("pwa-install-prompt");
+  const installButton = document.getElementById("pwa-install-button");
+  const closeButton = document.getElementById("pwa-close-button");
+  const instructionsMobile = document.getElementById("pwa-instructions-mobile");
+  if (!installPrompt || !installButton || !closeButton || !instructionsMobile || localStorage.getItem("pwaPromptShown")) {
+    return;
+  }
+
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installPrompt.classList.remove("hidden");
+    if (isMobile) {
+      instructionsMobile.classList.remove("hidden");
+      installButton.classList.add("hidden");
+    } else {
+      installButton.classList.remove("hidden");
+      instructionsMobile.classList.add("hidden");
+    }
+  });
+
+  installButton.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        console.log("User accepted the install prompt");
+      }
+      deferredPrompt = null;
+    }
+    installPrompt.classList.add("hidden");
+    localStorage.setItem("pwaPromptShown", "true");
+  });
+
+  closeButton.addEventListener("click", () => {
+    installPrompt.classList.add("hidden");
+    localStorage.setItem("pwaPromptShown", "true");
+  });
+
+  window.addEventListener("appinstalled", () => {
+    installPrompt.classList.add("hidden");
+    deferredPrompt = null;
+    localStorage.setItem("pwaPromptShown", "true");
+  });
+};
+
+setupPWAInstallPrompt();
+
 // connect if there are any LiveViews on the page
 liveSocket.getSocket().onOpen(() => execJS("#connection-status", "js-hide"));
 liveSocket.getSocket().onError(() => execJS("#connection-status", "js-show"));

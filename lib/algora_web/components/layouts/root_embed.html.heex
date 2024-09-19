@@ -48,6 +48,8 @@
     <meta property="og:site_name" content="Algora TV" />
     <meta property="og:type" content="website" />
 
+    <link rel="manifest" href="/manifest.json" />
+
     <link rel="stylesheet" href="https://cdn.vidstack.io/player/theme.css@1.12.9" />
     <link rel="stylesheet" href="https://cdn.vidstack.io/player/video.css@1.12.9" />
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
@@ -64,5 +66,6 @@
   </head>
   <body>
     <%= @inner_content %>
+    <.pwa_install_prompt />
   </body>
 </html>
