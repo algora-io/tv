@@ -50,8 +50,8 @@ To get a local copy up and running, follow these steps.
   - Make sure you have at least **Elixir 1.12** installed to run Algora TV.
 - PostgreSQL
 - FFmpeg
-- OBS Studio (recommended for testing livestreaming features)
 - ImageMagick
+- OBS Studio (recommended for testing livestreaming features)
 
 ### Setting up the project
 
@@ -66,6 +66,7 @@ To get a local copy up and running, follow these steps.
    ```sh
    mix deps.get
    ```
+
    **Note:** If you're using an Apple machine with an ARM-based chip, you need to install the Rust compiler and run `mix compile.rambo`
 
 3. Initialize your `.env` file
