@@ -300,15 +300,19 @@ const Hooks = {
     },
   },
   CopyToClipboard: {
-    value() { return this.el.dataset.value },
-    notice() { return this.el.dataset.notice },
+    value() {
+      return this.el.dataset.value;
+    },
+    notice() {
+      return this.el.dataset.notice;
+    },
     mounted() {
       this.el.addEventListener("click", () => {
         navigator.clipboard.writeText(this.value()).then(() => {
-          this.pushEvent("copied_to_clipboard", {notice: this.notice()})
-        })
-      })
-    }
+          this.pushEvent("copied_to_clipboard", { notice: this.notice() });
+        });
+      });
+    },
   },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
@@ -463,11 +467,20 @@ const setupPWAInstallPrompt = () => {
   const installButton = document.getElementById("pwa-install-button");
   const closeButton = document.getElementById("pwa-close-button");
   const instructionsMobile = document.getElementById("pwa-instructions-mobile");
-  if (!installPrompt || !installButton || !closeButton || !instructionsMobile || localStorage.getItem("pwaPromptShown")) {
+  if (
+    !installPrompt ||
+    !installButton ||
+    !closeButton ||
+    !instructionsMobile ||
+    localStorage.getItem("pwaPromptShown")
+  ) {
     return;
   }
 
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
 
   let promptShown = false;
 
