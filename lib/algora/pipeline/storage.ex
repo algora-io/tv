@@ -248,13 +248,18 @@ defmodule Algora.Pipeline.Storage do
          contents,
          %{independent?: true},
          %{type: :partial_segment, mode: :binary},
-         %{setup_completed?: false, video: video, video_header: video_header} = state
+         %{setup_completed?: false, video: video, video_header: video_header, segment_sn: segment_sn} = state
        ) do
-    Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
-      Thumbnails.store_thumbnail(video, video_header, contents)
-    end)
 
-    %{state | setup_completed?: true, video_segment: contents}
+    marker = Thumbnails.find_marker(segment_sn)
+
+    if (marker) do
+      Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
+        Thumbnails.store_thumbnail(video, video_header, contents, marker)
+      end)
+    end
+
+    %{state | setup_completed?: false, video_segment: contents}
   end
 
   defp process_contents(

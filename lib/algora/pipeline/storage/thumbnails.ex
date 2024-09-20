@@ -4,14 +4,20 @@ defmodule Algora.Pipeline.Storage.Thumbnails do
   require Membrane.Logger
   alias Algora.Library
 
-  @thumbnail_intervals [0, 1, 2, 4, 8, 16]
-  @segments_per_minute 30
+  @thumbnail_markers [
+    %{minutes: 0, segment_sn: 0},
+    %{minutes: 1, segment_sn: 6},
+    %{minutes: 2, segment_sn: 14},
+    %{minutes: 4, segment_sn: 28},
+    %{minutes: 8, segment_sn: 57},
+    %{minutes: 16, segment_sn: 120}
+  ]
 
   @pubsub Algora.PubSub
 
-  def store_thumbnail(video, video_header, contents) do
-    with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents),
-         {:ok, video} <- Library.store_og_image(video) do
+  def store_thumbnail(video, video_header, contents, marker) do
+    with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents, marker),
+         {:ok, video} <- Library.store_og_image(video, marker) do
       broadcast_thumbnails_generated!(video)
     else
       _ ->
@@ -19,9 +25,10 @@ defmodule Algora.Pipeline.Storage.Thumbnails do
     end
   end
 
-  def thumbnail_interval_segments() do
-    @thumbnail_intervals
-      |> Enum.map(& &1 * @segments_per_minute)
+  def find_marker(segment_sn) do
+    Enum.find(@thumbnail_markers, fn marker ->
+      marker.segment_sn == segment_sn
+    end)
   end
 
   defp broadcast_thumbnails_generated!(video) do
