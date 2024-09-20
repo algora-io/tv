@@ -469,17 +469,31 @@ const setupPWAInstallPrompt = () => {
 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+  let promptShown = false;
+
+  const showPrompt = () => {
+    if (!promptShown) {
+      installPrompt.classList.remove("hidden");
+      if (isMobile) {
+        instructionsMobile.classList.remove("hidden");
+        installButton.classList.add("hidden");
+      } else {
+        installButton.classList.remove("hidden");
+        instructionsMobile.classList.add("hidden");
+      }
+      promptShown = true;
+    }
+  };
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > window.innerHeight / 1.5 && deferredPrompt) {
+      showPrompt();
+    }
+  });
+
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installPrompt.classList.remove("hidden");
-    if (isMobile) {
-      instructionsMobile.classList.remove("hidden");
-      installButton.classList.add("hidden");
-    } else {
-      installButton.classList.remove("hidden");
-      instructionsMobile.classList.add("hidden");
-    }
   });
 
   installButton.addEventListener("click", async () => {
