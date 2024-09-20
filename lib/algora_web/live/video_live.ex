@@ -21,6 +21,7 @@ defmodule AlgoraWeb.VideoLive do
   def render(assigns) do
     ~H"""
     <div class="lg:mr-[24rem]">
+      <.pwa_install_prompt />
       <div class="px-4" id="video-player-container" phx-update="ignore">
         <.live_component module={PlayerComponent} id="video-player" />
       </div>
