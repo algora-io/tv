@@ -1112,29 +1112,47 @@ defmodule AlgoraWeb.CoreComponents do
 
   def pwa_install_prompt(assigns) do
     ~H"""
-    <div id="pwa-install-prompt" class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[90%] md:max-w-[300px] bg-white rounded-lg shadow-lg p-4 text-center z-50">
+    <div
+      id="pwa-install-prompt"
+      class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[90%] md:max-w-[300px] bg-white rounded-lg shadow-lg p-4 text-center z-50"
+    >
       <div class="mb-3">
         <img class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-2" src="/images/logo-icon.png" />
         <h1 class="text-lg text-gray-800 font-semibold">Algora</h1>
         <p class="text-sm text-gray-600 font-semibold">Never miss a stream again!</p>
       </div>
-      <button id="pwa-install-button" class="hidden bg-indigo-600 text-white py-2 px-4 rounded-md text-sm font-semibold">
+      <button
+        id="pwa-install-button"
+        class="hidden bg-indigo-600 text-white py-2 px-4 rounded-md text-sm font-semibold"
+      >
         Install
       </button>
       <button id="pwa-close-button" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          >
+          </path>
         </svg>
       </button>
-     <div id="pwa-instructions-mobile" class="hidden text-md text-gray-600 mt-2 text-left text-center bg-gray-100 p-2 rounded-md">
-       Tap
-       <Heroicons.arrow_up_on_square class="size-5 mb-1 text-purple-500 inline" />
-       or
-       <Heroicons.ellipsis_vertical class="size-5 mb-1 text-purple-500 inline" />
-       and select "Add to home screen" to install.
-     </div>
+      <div
+        id="pwa-instructions-mobile"
+        class="hidden text-md text-gray-600 mt-2 text-center bg-gray-100 p-2 rounded-md"
+      >
+        Tap <Heroicons.arrow_up_on_square class="size-5 mb-1 text-purple-500 inline" /> or
+        <Heroicons.ellipsis_vertical class="size-5 mb-1 text-purple-500 inline" />
+        and select "Add to home screen" to install.
+      </div>
     </div>
     """
   end
-
 end
