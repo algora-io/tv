@@ -272,6 +272,82 @@ const Hooks = {
       }
     },
   },
+  PWAInstallPrompt: {
+    mounted() {
+      let deferredPrompt: any;
+      const installPrompt = document.getElementById("pwa-install-prompt");
+      const installButton = document.getElementById("pwa-install-button");
+      const closeButton = document.getElementById("pwa-close-button");
+      const instructionsMobile = document.getElementById(
+        "pwa-instructions-mobile"
+      );
+      if (
+        !installPrompt ||
+        !installButton ||
+        !closeButton ||
+        !instructionsMobile ||
+        localStorage.getItem("pwaPromptShown")
+      ) {
+        return;
+      }
+
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+
+      let promptShown = false;
+
+      const showPrompt = () => {
+        if (!promptShown) {
+          installPrompt.classList.remove("hidden");
+          if (isMobile) {
+            instructionsMobile.classList.remove("hidden");
+            installButton.classList.add("hidden");
+          } else {
+            installButton.classList.remove("hidden");
+            instructionsMobile.classList.add("hidden");
+          }
+          promptShown = true;
+        }
+      };
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          if (window.scrollY > window.innerHeight / 1.5 && deferredPrompt) {
+            showPrompt();
+          }
+        },
+        { passive: true }
+      );
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+      });
+
+      installButton.addEventListener("click", async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt = null;
+        }
+        installPrompt.classList.add("hidden");
+        localStorage.setItem("pwaPromptShown", "true");
+      });
+
+      closeButton.addEventListener("click", () => {
+        installPrompt.classList.add("hidden");
+        localStorage.setItem("pwaPromptShown", "true");
+      });
+
+      window.addEventListener("appinstalled", () => {
+        installPrompt.classList.add("hidden");
+        deferredPrompt = null;
+        localStorage.setItem("pwaPromptShown", "true");
+      });
+    },
+  },
   TimezoneDetector: {
     mounted() {
       this.pushEvent("get_timezone", {
@@ -300,15 +376,19 @@ const Hooks = {
     },
   },
   CopyToClipboard: {
-    value() { return this.el.dataset.value },
-    notice() { return this.el.dataset.notice },
+    value() {
+      return this.el.dataset.value;
+    },
+    notice() {
+      return this.el.dataset.notice;
+    },
     mounted() {
       this.el.addEventListener("click", () => {
         navigator.clipboard.writeText(this.value()).then(() => {
-          this.pushEvent("copied_to_clipboard", {notice: this.notice()})
-        })
-      })
-    }
+          this.pushEvent("copied_to_clipboard", { notice: this.notice() });
+        });
+      });
+    },
   },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
