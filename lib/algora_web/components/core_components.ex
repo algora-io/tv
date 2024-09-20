@@ -1114,6 +1114,7 @@ defmodule AlgoraWeb.CoreComponents do
     ~H"""
     <div
       id="pwa-install-prompt"
+      phx-hook="PWAInstallPrompt"
       class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[90%] md:max-w-[300px] bg-white rounded-lg shadow-lg p-4 text-center z-50"
     >
       <div class="mb-3">
