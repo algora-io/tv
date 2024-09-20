@@ -498,11 +498,15 @@ const setupPWAInstallPrompt = () => {
     }
   };
 
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > window.innerHeight / 1.5 && deferredPrompt) {
-      showPrompt();
-    }
-  });
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (window.scrollY > window.innerHeight / 1.5 && deferredPrompt) {
+        showPrompt();
+      }
+    },
+    { passive: true }
+  );
 
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
