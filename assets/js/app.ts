@@ -291,6 +291,10 @@ const Hooks = {
         return;
       }
 
+      const scrollHeight =
+        (document.documentElement.scrollHeight || document.body.scrollHeight) -
+        document.documentElement.clientHeight;
+
       const isMobile =
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
@@ -315,7 +319,10 @@ const Hooks = {
       window.addEventListener(
         "scroll",
         () => {
-          if (window.scrollY > window.innerHeight / 1.5 && deferredPrompt) {
+          const scrollPos =
+            document.documentElement.scrollTop || document.body.scrollTop;
+
+          if (scrollPos > Math.min(500, scrollHeight / 2) && deferredPrompt) {
             showPrompt();
           }
         },

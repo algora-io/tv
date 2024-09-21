@@ -1118,8 +1118,8 @@ defmodule AlgoraWeb.CoreComponents do
       class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[90%] md:max-w-[300px] bg-white rounded-lg shadow-lg p-4 text-center z-50"
     >
       <div class="mb-3">
-        <img class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-2" src="/images/logo-icon.png" />
-        <h1 class="text-lg text-gray-800 font-semibold">Algora</h1>
+        <img class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-2" src="/images/logo-192px.png" />
+        <h1 class="text-lg text-gray-800 font-semibold">Algora TV</h1>
         <p class="text-sm text-gray-600 font-semibold">Never miss a stream again!</p>
       </div>
       <button
