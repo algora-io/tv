@@ -248,6 +248,10 @@ defmodule Algora.Library do
       video
       |> change()
       |> put_change(:duration, duration)
+      |> put_change(:is_live, false)
+      |> put_change(:type, :vod)
+      |> put_change(:url_root, Video.url_root(:vod, video.uuid))
+      |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
       |> Repo.update()
     else
       _missing_manifest ->
@@ -259,8 +263,14 @@ defmodule Algora.Library do
   end
 
   def terminate_interrupted_streams() do
+    live_ids = Algora.Admin.broadcasts()
+
     from(v in Video,
-      where: v.duration == 0 and v.is_live == false and v.format == :hls and v.corrupted == false,
+      where:
+        (v.is_live == false or v.id not in ^live_ids) and
+          v.duration == 0 and
+          v.format == :hls and
+          v.corrupted == false,
       select: v.id
     )
     |> Video.not_deleted()

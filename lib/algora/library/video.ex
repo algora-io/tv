@@ -109,9 +109,9 @@ defmodule Algora.Library.Video do
   defp fileext(:hls), do: ".m3u8"
 
   @spec url_root(type(), uuid()) :: String.t()
-  defp url_root(:livestream, uuid), do: "#{AlgoraWeb.Endpoint.url()}/hls/#{uuid}"
+  def url_root(:livestream, uuid), do: "#{AlgoraWeb.Endpoint.url()}/hls/#{uuid}"
 
-  defp url_root(:vod, uuid),
+  def url_root(:vod, uuid),
     do: "#{Storage.endpoint_url()}/#{Algora.config([:buckets, :media])}/#{uuid}"
 
   @spec url(type(), uuid(), String.t()) :: String.t()
