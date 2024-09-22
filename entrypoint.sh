@@ -5,14 +5,14 @@ set -e
 if [ -f .env ]; then
   export $(cat .env | xargs)
 fi
-export DATABASE_URL="postgresql://dev_user:dev_password@db:5432/dev_db"
+export DATABASE_URL="postgresql://dev_user:dev_password@db:15432/dev_db"
 
 
 echo "Starting entrypoint script..."
 echo "DATABASE_URL: $DATABASE_URL"
 
 # Wait for the database to be ready
-while ! pg_isready -h db -p 5432 -q -U dev_user; do
+while ! pg_isready -h db -p 15432 -q -U dev_user; do
   echo "Waiting for database connection..."
   sleep 2
 done
