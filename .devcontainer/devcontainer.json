@@ -6,12 +6,8 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "jakebecker.elixir-ls",
         "phoenixframework.phoenix",
-        "ms-azuretools.vscode-docker",
-        "eamodio.gitlens",
-        "streetsidesoftware.code-spell-checker",
-        "bierner.markdown-mermaid",
+        "lexical-lsp.lexical",
         "bradlc.vscode-tailwindcss"
       ]
     }
