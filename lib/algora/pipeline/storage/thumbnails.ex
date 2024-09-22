@@ -31,6 +31,10 @@ defmodule Algora.Pipeline.Storage.Thumbnails do
     end)
   end
 
+  def is_last_marker?(marker) do
+    List.last(@thumbnail_markers) == marker
+  end
+
   defp broadcast_thumbnails_generated!(video) do
     # HACK: this shouldn't be necessary
     # atm we need it because initially the video does not have the user field set

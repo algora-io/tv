@@ -259,7 +259,7 @@ defmodule Algora.Pipeline.Storage do
       end)
     end
 
-    %{state | setup_completed?: false, video_segment: contents}
+    %{state | setup_completed?: if(marker, do: Thumbnails.is_last_marker?(marker), else: false), video_segment: contents}
   end
 
   defp process_contents(
