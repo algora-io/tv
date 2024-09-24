@@ -174,7 +174,7 @@ defmodule AlgoraWeb.HomeLive do
               </div>
               <div class="hidden sm:block absolute inset-0 bg-gradient-to-b from-gray-950 to-transparent to-30%">
               </div>
-              <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2 sm:truncate">
+              <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2">
                 <div
                   :if={@hero_video.is_live}
                   class="pl-2 mb-2 text-white bg-red-500 rounded-xl font-semibold inline-flex items-center py-0.5"
@@ -192,7 +192,7 @@ defmodule AlgoraWeb.HomeLive do
                 <div class="text-4xl sm:text-7xl font-bold [text-shadow:#020617_1px_0_10px]">
                   <%= @hero_video.channel_name %>
                 </div>
-                <div class="pt-2 text-lg sm:text-xl [text-shadow:#020617_1px_0_10px] font-medium sm:truncate">
+                <div class="pt-2 text-lg sm:text-xl [text-shadow:#020617_1px_0_10px] font-medium">
                   <%= @hero_video.title %>
                 </div>
               </div>
