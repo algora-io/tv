@@ -2,6 +2,7 @@ defmodule Algora.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Algora.{Repo}
   alias Algora.Accounts.{User, Identity, Entity}
 
   schema "users" do
@@ -47,6 +48,23 @@ defmodule Algora.Accounts.User do
     else
       _ -> :unlisted
     end
+  end
+
+  def create_or_update_youtube_identity(user, auth) do
+    attrs = %{
+      provider: "youtube",
+      uid: auth.uid,
+      token: auth.credentials.token,
+      refresh_token: auth.credentials.refresh_token,
+      expires_at: auth.credentials.expires_at
+    }
+
+    case Repo.get_by(Identity, user_id: user.id, provider: "youtube") do
+      nil -> %Identity{user_id: user.id}
+      identity -> identity
+    end
+    |> Identity.changeset(attrs)
+    |> Repo.insert_or_update()
   end
 
   @doc """

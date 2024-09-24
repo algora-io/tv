@@ -53,6 +53,14 @@ defmodule AlgoraWeb.Router do
     end
   end
 
+  scope "/auth", AlgoraWeb do
+    pipe_through :browser
+
+    get "/:provider", YoutubeAuthController, :request
+    get "/:provider/callback", YoutubeAuthController, :callback
+    # delete "/", YoutubeAuthController, :delete
+  end
+
   scope "/", AlgoraWeb do
     pipe_through [:browser, :embed]
 

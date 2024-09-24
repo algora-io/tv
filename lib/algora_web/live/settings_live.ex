@@ -28,9 +28,9 @@ defmodule AlgoraWeb.SettingsLive do
       </div>
       <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
-          Stream Connection 
+          Stream Connection
           <:subtitle>
-            Connection details for live streaming with RTMP 
+            Connection details for live streaming with RTMP
           </:subtitle>
         </.header>
           <div class="w-full">
@@ -144,6 +144,11 @@ defmodule AlgoraWeb.SettingsLive do
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l5 5l10 -10" />
               </svg>
               <span class="ml-1">Connected with Restream</span>
+            </.link>
+          </.button>
+          <.button>
+            <.link href={"/auth/google"}>
+              Connect with YouTube
             </.link>
           </.button>
         </div>
