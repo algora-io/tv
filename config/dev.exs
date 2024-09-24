@@ -102,7 +102,7 @@ config :algora, AlgoraWeb.Embed.Endpoint,
 config :algora, AlgoraWeb.Endpoint,
   live_reload: [
     patterns: [
-      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg|json)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/algora_web/(live|views)/.*(ex)$",
       ~r"lib/algora_web/templates/.*(eex)$"

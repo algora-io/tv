@@ -1,14 +1,6 @@
 defmodule Algora.Clipper do
   alias Algora.{Storage, Library}
 
-  defp bucket(), do: Algora.config([:buckets, :media])
-
-  def to_absolute(:video, uuid, uri),
-    do: "#{Storage.endpoint_url()}/#{bucket()}/#{uuid}/#{uri}"
-
-  def to_absolute(:clip, uuid, uri),
-    do: "#{Storage.endpoint_url()}/#{bucket()}/clips/#{uuid}/#{uri}"
-
   def clip(video, from, to) do
     playlists = Algora.Admin.get_media_playlists(video)
 
@@ -20,7 +12,7 @@ defmodule Algora.Clipper do
             %{
               acc
               | timeline: [
-                  %ExM3U8.Tags.MediaInit{uri: to_absolute(:video, video.uuid, uri)} | acc.timeline
+                  %ExM3U8.Tags.MediaInit{uri: Storage.to_absolute(:video, video.uuid, uri)} | acc.timeline
                 ]
             }
 
@@ -39,7 +31,7 @@ defmodule Algora.Clipper do
                 timeline: [
                   %ExM3U8.Tags.Segment{
                     duration: duration,
-                    uri: to_absolute(:video, video.uuid, uri)
+                    uri: Storage.to_absolute(:video, video.uuid, uri)
                   }
                   | acc.timeline
                 ]
@@ -52,7 +44,7 @@ defmodule Algora.Clipper do
                 timeline: [
                   %ExM3U8.Tags.Segment{
                     duration: duration,
-                    uri: to_absolute(:video, video.uuid, uri)
+                    uri: Storage.to_absolute(:video, video.uuid, uri)
                   }
                   | acc.timeline
                 ]
@@ -81,14 +73,14 @@ defmodule Algora.Clipper do
 
     {:ok, _} =
       ExAws.S3.put_object_copy(
-        bucket(),
+        Storage.bucket(),
         "clips/#{uuid}/index.m3u8",
-        bucket(),
+        Storage.bucket(),
         "#{video.uuid}/index.m3u8"
       )
       |> ExAws.request()
 
-    url = to_absolute(:clip, uuid, "index.m3u8")
+    url = Storage.to_absolute(:clip, uuid, "index.m3u8")
     filename = Slug.slugify("#{video.title}-#{Library.to_hhmmss(from)}-#{Library.to_hhmmss(to)}")
 
     "ffmpeg -i \"#{url}\" -ss #{ss} -t #{to - from} \"#{filename}.mp4\""

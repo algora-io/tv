@@ -13,7 +13,8 @@ config :algora,
     "Algora TV is an interactive livestreaming & video sharing service for developers.",
   admin_emails: ["zafer@algora.io", "ioannis@algora.io"],
   ecto_repos: [Algora.Repo.Local],
-  rtmp_port: 9006
+  rtmp_port: 9006,
+  rtmp_path: "live"
 
 # Configures the endpoint
 config :algora, AlgoraWeb.Endpoint,

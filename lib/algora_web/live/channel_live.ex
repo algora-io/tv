@@ -37,6 +37,7 @@ defmodule AlgoraWeb.ChannelLive do
       </:actions> --%>
 
     <div>
+      <.pwa_install_prompt />
       <div class="border-b border-gray-700 px-4 py-4">
         <figure :if={@channel.is_live} class="relative isolate -mt-4 pt-4 pb-4">
           <svg

@@ -32,6 +32,10 @@ defmodule AlgoraWeb.Router do
     get "/oauth/login/:provider", OAuthLoginController, :new
   end
 
+  scope "/", AlgoraWeb do
+    get "/hls/:video_uuid/:filename", HLSContentController, :index
+  end
+
   if Mix.env() in [:dev, :test] do
     import Phoenix.LiveDashboard.Router
 

@@ -159,6 +159,10 @@ defmodule Algora.Ads do
     |> Repo.insert()
   end
 
+  def get_current_index([]) do
+    0
+  end
+
   def get_current_index(ads) do
     :os.system_time(:millisecond)
     |> div(rotation_interval())

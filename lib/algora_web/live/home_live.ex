@@ -8,6 +8,7 @@ defmodule AlgoraWeb.HomeLive do
   def render(assigns) do
     ~H"""
     <div>
+      <.pwa_install_prompt />
       <!-- Static sidebar for desktop -->
       <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-[28rem] lg:flex-col">
         <!-- Sidebar component, swap this element with another sidebar if you like -->

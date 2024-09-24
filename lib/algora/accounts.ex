@@ -189,13 +189,10 @@ defmodule Algora.Accounts do
     hashed_token = :crypto.hash(:sha256, token)
     encoded_token = Base.url_encode64(hashed_token, padding: false)
 
-    {:ok, _} =
-      user
-      |> change()
-      |> put_change(:stream_key, encoded_token)
-      |> Repo.update()
-
-    {:ok, user}
+    user
+    |> change()
+    |> put_change(:stream_key, encoded_token)
+    |> Repo.update()
   end
 
   def list_destinations(user_id) do
