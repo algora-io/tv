@@ -9,7 +9,7 @@
 
 <.table id="ads" rows={@streams.ads} row_click={fn {_id, ad} -> JS.navigate(~p"/ads/#{ad}") end}>
   <:col :let={{_id, ad}} label="">
-    <a href={ad.website_url} rel="noopener noreferrer" class="flex mb-3 font-medium">
+    <a href={ad.website_url} rel="noopener" class="flex mb-3 font-medium">
       <div class="grid grid-cols-3 w-[1092px]">
         <div class="text-base text-gray-200">
           <%= String.replace(ad.website_url, ~r/^https?:\/\//, "") %>
