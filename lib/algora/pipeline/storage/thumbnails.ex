@@ -42,6 +42,15 @@ defmodule Algora.Pipeline.Storage.Thumbnails do
     List.last(@thumbnail_markers) == marker
   end
 
+  def mintues_for_video(video) do
+    elapsed_minutes = floor(video.duration / 60)
+    @thumbnail_markers
+    |> Enum.filter(fn marker ->
+        marker.minutes <= elapsed_minutes
+      end)
+    |> Enum.map(& &1.minutes)
+  end
+
   defp broadcast_thumbnails_generated!(video) do
     # HACK: this shouldn't be necessary
     # atm we need it because initially the video does not have the user field set

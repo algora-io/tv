@@ -22,6 +22,22 @@ defmodule AlgoraWeb.VideoLive do
     ~H"""
     <div class="lg:mr-[24rem]">
       <.pwa_install_prompt />
+      <.modal id="choose_thumbnail">
+        <:title>
+          Choose thumbnail
+        </:title>
+        <.simple_form for={assigns.thumbnail_form} phx-submit="save_thumbnail">
+          <div class="mt-4 grid-cols-2 grid gap-4">
+            <label :for={minute <- Algora.Pipeline.Storage.Thumbnails.mintues_for_video(@video)} class="flex items-center">
+              <.input field={assigns.thumbnail_form[:thumbnail_url]} type="radio" value={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))} />
+              <img src={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))} />
+            </label>
+          </div>
+          <:actions>
+            <.button>Save</.button>
+          </:actions>
+        </.simple_form>
+      </.modal>
       <div class="px-4" id="video-player-container" phx-update="ignore">
         <.live_component module={PlayerComponent} id="video-player" />
       </div>
@@ -49,6 +65,9 @@ defmodule AlgoraWeb.VideoLive do
             ]}>
               <p><%= @video.title %></p>
             </blockquote>
+            <.button phx-click={AlgoraWeb.CoreComponents.show_modal("choose_thumbnail")}>
+              Choose thumbnail
+            </.button>
             <.button :if={@current_user} phx-click="toggle_subscription">
               <%= if @subscribed? do %>
                 Unsubscribe
@@ -609,7 +628,8 @@ defmodule AlgoraWeb.VideoLive do
         can_edit: false,
         subscribed?: subscribed?(current_user, video),
         transcript_form: to_form(transcript_changeset, as: :data),
-        chat_form: to_form(Chat.change_message(%Chat.Message{}))
+        chat_form: to_form(Chat.change_message(%Chat.Message{})),
+        thumbnail_form: to_form(Library.Video.change_thumbnail(video))
       )
       |> stream(:videos, videos)
       |> stream(:messages, Chat.list_messages(video))
@@ -785,6 +805,11 @@ defmodule AlgoraWeb.VideoLive do
   def handle_event("toggle_subscription", _params, socket) do
     toggle_subscription_event(socket.assigns.current_user, socket.assigns.video)
     {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
+  end
+
+  def handle_event("save_thumbnail", params, socket) do
+    IO.inspect(params)
+    {:noreply, socket}
   end
 
   # TODO: move into events context
