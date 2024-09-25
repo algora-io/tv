@@ -146,9 +146,31 @@ defmodule AlgoraWeb.SettingsLive do
               <span class="ml-1">Connected with Restream</span>
             </.link>
           </.button>
-          <.button>
+          <.button :if={!@connected_with_google}>
             <.link href={"/auth/google"}>
               Connect with YouTube
+            </.link>
+          </.button>
+          <.button :if={@connected_with_google} class="bg-green-600 hover:bg-green-500 text-white">
+          <.link
+              href={"/auth/google/delete"}
+              class="flex items-center"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-5 w-5 -ml-0.5"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l5 5l10 -10" />
+              </svg>
+              <span class="ml-1">Connected with YouTube</span>
             </.link>
           </.button>
         </div>
@@ -232,6 +254,7 @@ defmodule AlgoraWeb.SettingsLive do
     destinations = Accounts.list_destinations(current_user.id)
     destination_changeset = Accounts.change_destination(%Destination{})
     connected_with_restream = Accounts.has_restream_token?(current_user)
+    connected_with_google = Accounts.has_google_token?(current_user)
     rtmp_host = case URI.parse(AlgoraWeb.Endpoint.url()).host do
       "localhost" -> "127.0.0.1"
       host -> host
@@ -245,7 +268,8 @@ defmodule AlgoraWeb.SettingsLive do
      |> assign(destination_form: to_form(destination_changeset))
      |> assign(show_add_destination_modal: false)
      |> assign(stream_key: current_user.stream_key)
-     |> assign(connected_with_restream: connected_with_restream),
+     |> assign(connected_with_restream: connected_with_restream)
+     |> assign(connected_with_google: connected_with_google),
      temporary_assigns: [
        stream_url: "rtmp://#{rtmp_host}:#{Algora.config([:rtmp_port])}/#{Algora.config([:rtmp_path])}"
      ]

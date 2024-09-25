@@ -52,19 +52,33 @@ defmodule Algora.Accounts.User do
 
   def create_or_update_youtube_identity(user, auth) do
     attrs = %{
-      provider: "youtube",
-      uid: auth.uid,
-      token: auth.credentials.token,
-      refresh_token: auth.credentials.refresh_token,
+      provider: to_string(auth.provider),
+      provider_id: auth.uid,
+      provider_email: auth.info.email,
+      provider_login: auth.info.email,
+      provider_token: auth.credentials.token,
+      provider_refresh_token: auth.credentials.refresh_token,
       expires_at: auth.credentials.expires_at
     }
 
-    case Repo.get_by(Identity, user_id: user.id, provider: "youtube") do
+    case Repo.get_by(Identity, user_id: user.id, provider: "google") do
       nil -> %Identity{user_id: user.id}
       identity -> identity
     end
     |> Identity.changeset(attrs)
     |> Repo.insert_or_update()
+    |> case do
+      {:ok, identity} -> {:ok, identity}
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def delete_youtube_identity(user) do
+   case Repo.get_by(Identity, user_id: user.id, provider: "google") do
+     nil -> {:error, :not_found}
+     identity -> Repo.delete(identity)
+   end
   end
 
   @doc """

@@ -14,18 +14,19 @@ defmodule AlgoraWeb.YoutubeAuthController do
         |> put_flash(:info, "Successfully connected your YouTube account.")
         |> redirect(to: "/channel/settings")
 
-      {:error, _reason} ->
+      {:error, changeset} ->
         conn
         |> put_flash(:error, "Error connecting your YouTube account.")
         |> redirect(to: "/channel/settings")
     end
   end
 
-  def callback(%{assigns: %{ueberauth_failure: _}} = conn, _params) do
+  def callback(%{assigns: %{ueberauth_failure: failure}} = conn, _params) do
     conn
     |> put_flash(:error, "Failed to connect YouTube account.")
     |> redirect(to: "/channel/settings")
   end
+
 
   def delete(conn, _params) do
     user = conn.assigns.current_user
@@ -33,7 +34,7 @@ defmodule AlgoraWeb.YoutubeAuthController do
     case User.delete_youtube_identity(user) do
       {:ok, _} ->
         conn
-        |> put_flash(:info, "Successfully disconnected your YouTube account.")
+        |> put_flash(:info, "YouTube account disconnected.")
         |> redirect(to: "/channel/settings")
 
       {:error, _reason} ->

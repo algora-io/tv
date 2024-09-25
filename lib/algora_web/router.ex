@@ -58,7 +58,7 @@ defmodule AlgoraWeb.Router do
 
     get "/:provider", YoutubeAuthController, :request
     get "/:provider/callback", YoutubeAuthController, :callback
-    # delete "/", YoutubeAuthController, :delete
+    get "/:provider/delete", YoutubeAuthController, :delete
   end
 
   scope "/", AlgoraWeb do
