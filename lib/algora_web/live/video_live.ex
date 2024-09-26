@@ -72,9 +72,11 @@ defmodule AlgoraWeb.VideoLive do
             ]}>
               <p><%= @video.title %></p>
             </blockquote>
-            <.button phx-click={AlgoraWeb.CoreComponents.show_modal("choose_thumbnail")}>
-              Choose thumbnail
-            </.button>
+            <%= if @has_many_thumbnails? do %>
+              <.button phx-click={AlgoraWeb.CoreComponents.show_modal("choose_thumbnail")}>
+                Choose thumbnail
+              </.button>
+            <% end %>
             <.button :if={@current_user} phx-click="toggle_subscription">
               <%= if @subscribed? do %>
                 Unsubscribe
@@ -620,6 +622,7 @@ defmodule AlgoraWeb.VideoLive do
       |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
     tabs = [:chat] |> append_if(length(subtitles) > 0, :transcript)
+    thumbnail_minutes = Algora.Pipeline.Storage.Thumbnails.mintues_for_video(video)
 
     socket =
       socket
@@ -636,7 +639,8 @@ defmodule AlgoraWeb.VideoLive do
         subscribed?: subscribed?(current_user, video),
         transcript_form: to_form(transcript_changeset, as: :data),
         chat_form: to_form(Chat.change_message(%Chat.Message{})),
-        thumbnail_minutes: Algora.Pipeline.Storage.Thumbnails.mintues_for_video(video),
+        thumbnail_minutes: thumbnail_minutes,
+        has_many_thumbnails?: length(thumbnail_minutes) > 1,
         thumbnail_form: to_form(Library.Video.change_thumbnail(video))
       )
       |> stream(:videos, videos)
