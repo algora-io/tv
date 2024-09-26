@@ -41,7 +41,7 @@ defmodule AlgoraWeb.VideoLive do
             </label>
           </div>
           <:actions>
-            <.button>Save</.button>
+            <.button phx-click={AlgoraWeb.CoreComponents.hide_modal("choose_thumbnail")}>Save</.button>
           </:actions>
         </.simple_form>
       </.modal>
