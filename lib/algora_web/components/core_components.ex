@@ -193,13 +193,13 @@ defmodule AlgoraWeb.CoreComponents do
       <img
         src={Enum.at(@ad.composite_asset_urls, 0)}
         alt={@ad.website_url}
-        class="absolute inset-0 box-content h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000"
+        class="absolute inset-0 h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000"
         style={"border-color: #{@ad.border_color || "#fff"}"}
       />
       <img
         src={Enum.at(@ad.composite_asset_urls, 0)}
         alt={@ad.website_url}
-        class="absolute inset-0 box-content h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000 opacity-0"
+        class="absolute inset-0 h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000 opacity-0"
         style={"border-color: #{@ad.border_color || "#fff"}"}
       />
     </div>
