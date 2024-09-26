@@ -780,10 +780,11 @@ defmodule AlgoraWeb.CoreComponents do
           name={@name}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           checked={@checked}
-          class="rounded-full border-gray-600 text-gray-500 focus:ring-gray-50"
+          class="rounded-full border-gray-600 text-gray-500 focus:ring-gray-50 sr-only peer"
           {@rest}
         />
         <%= @label %>
+        <%= render_slot(@inner_block) %>
       </label>
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>

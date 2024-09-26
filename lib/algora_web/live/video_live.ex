@@ -37,8 +37,9 @@ defmodule AlgoraWeb.VideoLive do
                 field={assigns.thumbnail_form[:thumbnail_url]}
                 type="radio"
                 value={video_thumbnail.thumbnail_url}
-              />
-              <img src={video_thumbnail.thumbnail_url} class="ml-2" />
+              >
+                <img src={video_thumbnail.thumbnail_url} class="border-2 rounded-lg opacity-50 peer-checked:opacity-100 peer-checked:border-white" />
+              </.input>
             </label>
           </div>
           <:actions>
