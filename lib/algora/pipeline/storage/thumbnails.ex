@@ -46,8 +46,8 @@ defmodule Algora.Pipeline.Storage.Thumbnails do
     elapsed_minutes = floor(video.duration / 60)
     @thumbnail_markers
     |> Enum.filter(fn marker ->
-        marker.minutes <= elapsed_minutes
-      end)
+      marker.minutes <= elapsed_minutes
+    end)
     |> Enum.map(& &1.minutes)
   end
 

@@ -823,7 +823,6 @@ defmodule AlgoraWeb.VideoLive do
   def handle_event("save_thumbnail", params, socket) do
     Library.Video.change_thumbnail(socket.assigns.video, params["video"]["thumbnail_url"])
     |> Repo.update()
-
     {:noreply, socket}
   end
 
