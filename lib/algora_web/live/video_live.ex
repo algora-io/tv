@@ -27,7 +27,7 @@ defmodule AlgoraWeb.VideoLive do
           Choose thumbnail
         </:title>
         <:subtitle>
-          New thumbnails are added at 1, 2, 4, 8 and 16 minutes
+          New thumbnails are added periodically
         </:subtitle>
         <.simple_form for={assigns.thumbnail_form} phx-submit="save_thumbnail">
           <div class="mt-4 grid-cols-2 grid gap-8">
