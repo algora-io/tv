@@ -815,7 +815,10 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
   end
 
-  def handle_event("save_thumbnail", _params, socket) do
+  def handle_event("save_thumbnail", params, socket) do
+    Library.Video.change_thumbnail(socket.assigns.video, params["video"]["thumbnail_url"])
+    |> Repo.update()
+
     {:noreply, socket}
   end
 

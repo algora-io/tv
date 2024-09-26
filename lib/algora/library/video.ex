@@ -60,8 +60,10 @@ defmodule Algora.Library.Video do
     |> validate_required([:title])
   end
 
-  def change_thumbnail(video, attrs \\ %{}) do
-    video |> changeset(attrs)
+  def change_thumbnail(video, thumbnail_url \\ "") do
+    video
+      |> change()
+      |> put_change(:thumbnail_url, thumbnail_url)
   end
 
   def put_user(%Ecto.Changeset{} = changeset, %User{} = user) do
