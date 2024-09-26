@@ -324,7 +324,8 @@ defmodule AlgoraWeb.SettingsLive do
      |> assign(show_add_destination_modal: false)
      |> assign(stream_key: current_user.stream_key)
      |> assign(connected_with_restream: connected_with_restream)
-     |> assign(connected_with_google: connected_with_google),
+     |> assign(connected_with_google: connected_with_google)
+     |> assign(tags: current_user.tags || []),
      temporary_assigns: [
        stream_url:
          "rtmp://#{rtmp_host}:#{Algora.config([:rtmp_port])}/#{Algora.config([:rtmp_path])}"
@@ -341,7 +342,7 @@ defmodule AlgoraWeb.SettingsLive do
   end
 
   def handle_event("save", %{"user" => params}, socket) do
-    current_tags = socket.assigns.current_user.tags
+    current_tags = socket.assigns.tags
     params_with_tags = Map.put(params, "tags", current_tags)
 
     case Accounts.update_settings(socket.assigns.current_user, params_with_tags) do
@@ -354,6 +355,11 @@ defmodule AlgoraWeb.SettingsLive do
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
+  end
+
+  # to listen for the change event in the tags component
+  def handle_info({:update_tags, updated_tags}, socket) do
+    {:noreply, assign(socket, tags: updated_tags)}
   end
 
   def handle_event("toggle_destination", %{"id" => id}, socket) do

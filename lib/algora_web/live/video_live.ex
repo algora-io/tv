@@ -658,6 +658,7 @@ defmodule AlgoraWeb.VideoLive do
         video: video,
         subtitles: subtitles,
         tabs: tabs,
+        tags: current_user.channel_tags,
         # TODO: reenable once fully implemented
         # associated segments need to be removed from db & vectorstore
         can_edit: false,

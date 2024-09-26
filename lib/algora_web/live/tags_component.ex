@@ -3,19 +3,21 @@ defmodule AlgoraWeb.TagsComponent do
 
   def render(assigns) do
     # to fix the nil issue i faced
-    assigns = assign_new(assigns, :input_value, fn  -> ""  end)
-    ~H"""
-      <div class="tag-input-container">
+    assigns = assign_new(assigns, :input_value, fn -> "" end)
+    # we should set the default tag value to a list if it is nil
+    assigns = assign_new(assigns, :tags, fn -> [] end)
+
+     ~H"""
+    <div class="tag-input-container">
       <div class="flex flex-col">
         <label class="pb-2 font-bold">Channel tags</label>
         <input type="text"
           id={@id}
           name={@name}
           value={@input_value}
-          phx-keydown="add_tag"
-          phx-key="Enter"
+          phx-keydown="key_pressed"
           phx-target={@myself}
-          placeholder="Type a tag and press Enter"
+          placeholder="Type a tag and press the spacebar to add it"
           class="flex-grow px-3 py-2 bg-gray-950 focus:border-gray-600 shadow-sm focus:ring-gray-600 placeholder-slate-100 block w-full rounded-md sm:text-sm focus:ring-1"
         />
       </div>
@@ -37,18 +39,35 @@ defmodule AlgoraWeb.TagsComponent do
     {:ok, assign(socket, assigns)}
   end
 
-  def handle_event("add_tag", %{"key" => "Enter", "value" => value}, socket) do
-    tag = String.trim(value)
-    if tag !== "" and tag not in socket.assigns.tags do
-      updated_tags = socket.assigns.tags ++ [tag]
-      {:noreply, assign(socket, tags: updated_tags, input_value: "")}
-    else
-      {:noreply, socket}
-    end
+  def handle_event("key_pressed", %{"key" => " ", "value" => value}, socket) do
+    add_tag(socket, value)
+  end
+
+  def handle_event("key_pressed", %{"value" => value}, socket) do
+    {:noreply, assign(socket, input_value: value)}
   end
 
   def handle_event("remove_tag", %{"tag" => tag}, socket) do
     updated_tags = List.delete(socket.assigns.tags, tag)
+    send_update_to_parent(socket, updated_tags)
     {:noreply, assign(socket, tags: updated_tags)}
+  end
+
+  defp add_tag(socket, value) do
+    tag = String.trim(value)
+    current_tags = socket.assigns.tags || []
+
+    if tag != "" and tag not in current_tags do
+      updated_tags = current_tags ++ [tag]
+
+      send_update_to_parent(socket, updated_tags)
+      {:noreply, assign(socket, tags: updated_tags, input_value: "")}
+    else
+      {:noreply, assign(socket, input_value: "")}
+    end
+  end
+
+  defp send_update_to_parent(_socket, updated_tags) do
+    send(self(), {:update_tags, updated_tags})
   end
 end
