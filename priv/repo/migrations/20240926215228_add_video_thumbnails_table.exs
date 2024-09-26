@@ -11,5 +11,6 @@ defmodule Algora.Repo.Local.Migrations.AddVideoThumbnailsTable do
     end
 
     create index(:video_thumbnails, [:video_id])
+    create index(:video_thumbnails, [:video_id, :minutes], unique: true)
   end
 end
