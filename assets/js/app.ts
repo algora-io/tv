@@ -398,26 +398,34 @@ let Hooks = {
     },
   },
   AdBanner: {
-    mounted() {
-      const adBanner = this.el;
-      const urls = JSON.parse(adBanner.dataset.urls);
-      const [img1, img2] = adBanner.querySelectorAll('img');
+    setup() {
+      const urls = JSON.parse(this.el.dataset.urls);
+      const [img1, img2] = this.el.querySelectorAll("img");
       let currentIndex = 0;
       let nextIndex = Math.min(1, urls.length - 1);
       img2.src = urls[nextIndex];
 
-      setInterval(() => {
-        const nextImg = (currentIndex % 2 === 0) ? img2 : img1;
-        const currentImg = (currentIndex % 2 === 0) ? img1 : img2;
+      clearInterval(this.interval);
+      if (urls.length > 1) {
+        this.interval = setInterval(() => {
+          const nextImg = currentIndex % 2 === 0 ? img2 : img1;
+          const currentImg = currentIndex % 2 === 0 ? img1 : img2;
 
-        nextImg.src = urls[nextIndex];
-        nextImg.classList.remove('opacity-0');
-        currentImg.classList.add('opacity-0');
+          nextImg.src = urls[nextIndex];
+          nextImg.classList.remove("opacity-0");
+          currentImg.classList.add("opacity-0");
 
-        currentIndex = nextIndex;
-        nextIndex = (nextIndex + 1) % urls.length;
-      }, 5000);
-    }
+          currentIndex = nextIndex;
+          nextIndex = (nextIndex + 1) % urls.length;
+        }, 5000);
+      }
+    },
+    mounted() {
+      this.setup();
+    },
+    updated() {
+      this.setup();
+    },
   },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 

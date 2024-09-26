@@ -180,11 +180,12 @@ defmodule AlgoraWeb.CoreComponents do
 
   attr :ad, :any, required: true
   attr :id, :string, required: true
+  attr :class, :string, default: nil
 
   def ad_banner(assigns) do
     ~H"""
     <div
-      class="relative w-[1092px] h-[135px]"
+      class={["relative w-[1092px] h-[135px] transition-opacity duration-1000", @class]}
       phx-hook="AdBanner"
       data-urls={Jason.encode!(@ad.composite_asset_urls)}
       id={@id}
@@ -192,13 +193,13 @@ defmodule AlgoraWeb.CoreComponents do
       <img
         src={Enum.at(@ad.composite_asset_urls, 0)}
         alt={@ad.website_url}
-        class="absolute top-0 left-0 w-full h-full object-cover border-[4px] rounded-xl transition-opacity duration-1000"
+        class="absolute inset-0 box-content h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000"
         style={"border-color: #{@ad.border_color || "#fff"}"}
       />
       <img
         src={Enum.at(@ad.composite_asset_urls, 0)}
         alt={@ad.website_url}
-        class="absolute top-0 left-0 w-full h-full object-cover border-[4px] rounded-xl transition-opacity duration-1000 opacity-0"
+        class="absolute inset-0 box-content h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000 opacity-0"
         style={"border-color: #{@ad.border_color || "#fff"}"}
       />
     </div>
