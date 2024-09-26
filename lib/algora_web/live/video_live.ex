@@ -26,11 +26,18 @@ defmodule AlgoraWeb.VideoLive do
         <:title>
           Choose thumbnail
         </:title>
+        <:subtitle>
+          New thumbnails are added at 1, 2, 4, 8 and 16 minutes
+        </:subtitle>
         <.simple_form for={assigns.thumbnail_form} phx-submit="save_thumbnail">
-          <div class="mt-4 grid-cols-2 grid gap-4">
-            <label :for={minute <- Algora.Pipeline.Storage.Thumbnails.mintues_for_video(@video)} class="flex items-center">
-              <.input field={assigns.thumbnail_form[:thumbnail_url]} type="radio" value={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))} />
-              <img src={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))} />
+          <div class="mt-4 grid-cols-2 grid gap-8">
+            <label :for={minute <- assigns.thumbnail_minutes} class="flex items-center">
+              <.input
+                field={assigns.thumbnail_form[:thumbnail_url]}
+                type="radio"
+                value={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))}
+              />
+              <img src={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))} class="ml-2" />
             </label>
           </div>
           <:actions>
@@ -629,6 +636,7 @@ defmodule AlgoraWeb.VideoLive do
         subscribed?: subscribed?(current_user, video),
         transcript_form: to_form(transcript_changeset, as: :data),
         chat_form: to_form(Chat.change_message(%Chat.Message{})),
+        thumbnail_minutes: Algora.Pipeline.Storage.Thumbnails.mintues_for_video(video),
         thumbnail_form: to_form(Library.Video.change_thumbnail(video))
       )
       |> stream(:videos, videos)
@@ -807,8 +815,7 @@ defmodule AlgoraWeb.VideoLive do
     {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
   end
 
-  def handle_event("save_thumbnail", params, socket) do
-    IO.inspect(params)
+  def handle_event("save_thumbnail", _params, socket) do
     {:noreply, socket}
   end
 
