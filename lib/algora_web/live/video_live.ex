@@ -9,6 +9,7 @@ defmodule AlgoraWeb.VideoLive do
   alias Algora.Events.Event
 
   alias AlgoraWeb.{
+    CoreComponents,
     LayoutComponent,
     Presence,
     RTMPDestinationIconComponent,
@@ -41,7 +42,7 @@ defmodule AlgoraWeb.VideoLive do
             </label>
           </div>
           <:actions>
-            <.button phx-click={AlgoraWeb.CoreComponents.hide_modal("choose_thumbnail")}>Save</.button>
+            <.button phx-click={CoreComponents.hide_modal("choose_thumbnail")}>Save</.button>
           </:actions>
         </.simple_form>
       </.modal>
@@ -73,7 +74,7 @@ defmodule AlgoraWeb.VideoLive do
               <p><%= @video.title %></p>
             </blockquote>
             <%= if @has_many_thumbnails? do %>
-              <.button phx-click={AlgoraWeb.CoreComponents.show_modal("choose_thumbnail")}>
+              <.button phx-click={CoreComponents.show_modal("choose_thumbnail")}>
                 Choose thumbnail
               </.button>
             <% end %>
