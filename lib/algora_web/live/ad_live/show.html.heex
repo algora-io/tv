@@ -11,7 +11,7 @@
 <.list>
   <:item title="Verified"><%= @ad.verified %></:item>
   <:item title="Website url"><%= @ad.website_url %></:item>
-  <:item title="Composite asset url"><%= @ad.composite_asset_url %></:item>
+  <:item title="Composite asset url"><%= Enum.at(@ad.composite_asset_urls, 0) %></:item>
   <:item title="Asset url"><%= @ad.asset_url %></:item>
   <:item title="Logo url"><%= @ad.logo_url %></:item>
   <:item title="Qrcode url"><%= @ad.qrcode_url %></:item>

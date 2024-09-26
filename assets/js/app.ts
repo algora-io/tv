@@ -40,7 +40,7 @@ let execJS = (selector, attr) => {
     .forEach((el) => liveSocket.execJS(el, el.getAttribute(attr)));
 };
 
-const Hooks = {
+let Hooks = {
   Flash: {
     mounted() {
       let hide = () =>
@@ -396,6 +396,28 @@ const Hooks = {
         });
       });
     },
+  },
+  AdBanner: {
+    mounted() {
+      const adBanner = this.el;
+      const urls = JSON.parse(adBanner.dataset.urls);
+      const [img1, img2] = adBanner.querySelectorAll('img');
+      let currentIndex = 0;
+      let nextIndex = Math.min(1, urls.length - 1);
+      img2.src = urls[nextIndex];
+
+      setInterval(() => {
+        const nextImg = (currentIndex % 2 === 0) ? img2 : img1;
+        const currentImg = (currentIndex % 2 === 0) ? img1 : img2;
+
+        nextImg.src = urls[nextIndex];
+        nextImg.classList.remove('opacity-0');
+        currentImg.classList.add('opacity-0');
+
+        currentIndex = nextIndex;
+        nextIndex = (nextIndex + 1) % urls.length;
+      }, 5000);
+    }
   },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 

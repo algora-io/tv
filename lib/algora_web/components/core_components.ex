@@ -178,6 +178,33 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
+  attr :ad, :any, required: true
+  attr :id, :string, required: true
+
+  def ad_banner(assigns) do
+    ~H"""
+    <div
+      class="relative w-[1092px] h-[135px]"
+      phx-hook="AdBanner"
+      data-urls={Jason.encode!(@ad.composite_asset_urls)}
+      id={@id}
+    >
+      <img
+        src={Enum.at(@ad.composite_asset_urls, 0)}
+        alt={@ad.website_url}
+        class="absolute top-0 left-0 w-full h-full object-cover border-[4px] rounded-xl transition-opacity duration-1000"
+        style={"border-color: #{@ad.border_color || "#fff"}"}
+      />
+      <img
+        src={Enum.at(@ad.composite_asset_urls, 0)}
+        alt={@ad.website_url}
+        class="absolute top-0 left-0 w-full h-full object-cover border-[4px] rounded-xl transition-opacity duration-1000 opacity-0"
+        style={"border-color: #{@ad.border_color || "#fff"}"}
+      />
+    </div>
+    """
+  end
+
   attr :class, :string, default: nil
 
   def logo(assigns) do

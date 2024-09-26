@@ -16,12 +16,7 @@
         </span>
       </a>
     </div>
-    <img
-      src={@ad.composite_asset_url}
-      alt={@ad.website_url}
-      class="box-content max-h-16 max-w-screen aspect-[1092/135] object-cover border-[3px] rounded-md lg:rounded-xl"
-      style={"border-color: #{@ad.border_color || "#fff"}"}
-    />
+    <.ad_banner ad={@ad} id={"ad-banner-#{@ad.id}"} />
     <div class="shrink-0 hidden sm:flex items-center gap-4">
       <div class="flex items-center gap-2">
         <button

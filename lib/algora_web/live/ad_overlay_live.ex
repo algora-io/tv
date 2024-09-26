@@ -9,17 +9,8 @@ defmodule AlgoraWeb.AdOverlayLive do
     ~H"""
     <%= if @ads && length(@ads) > 0 do %>
       <div class="relative">
-        <img
-          src={@current_ad.composite_asset_url}
-          alt={@current_ad.website_url}
-          class={"box-content w-[1092px] h-[135px] object-cover border-[4px] rounded-xl transition-opacity duration-1000 #{if @show_ad, do: "opacity-100", else: "opacity-0"}"}
-          style={"border-color: #{@current_ad.border_color || "#fff"}"}
-        />
-        <img
-          src={@next_ad.composite_asset_url}
-          alt={@next_ad.website_url}
-          class="absolute top-0 left-0 opacity-0 pointer-events-none"
-        />
+        <.ad_banner ad={@current_ad} id={"ad-banner-#{@current_ad.id}"} />
+        <.ad_banner ad={@next_ad} id={"ad-banner-#{@next_ad.id}"} />
       </div>
     <% end %>
     """
