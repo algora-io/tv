@@ -435,6 +435,11 @@ defmodule Algora.Library do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end
 
+  def get_thumbnails_for_video(%Video{} = video) do
+    Repo.all(from vt in VideoThumbnail,
+      where: vt.video_id == ^video.id, order_by: vt.minutes)
+  end
+
   defp create_thumbnail_from_file(%Video{} = video, src_path, marker, opts \\ []) do
     dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-#{marker.minutes}.jpeg")
 

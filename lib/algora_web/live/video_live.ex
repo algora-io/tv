@@ -32,13 +32,13 @@ defmodule AlgoraWeb.VideoLive do
         </:subtitle>
         <.simple_form for={assigns.thumbnail_form} phx-submit="save_thumbnail">
           <div class="mt-4 grid-cols-2 grid gap-8">
-            <label :for={minute <- assigns.thumbnail_minutes} class="flex items-center">
+            <label :for={video_thumbnail <- assigns.video_thumbnails} class="flex items-center">
               <.input
                 field={assigns.thumbnail_form[:thumbnail_url]}
                 type="radio"
-                value={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))}
+                value={video_thumbnail.thumbnail_url}
               />
-              <img src={Library.Video.thumbnail_url(@video, Library.thumbnail_filename(minute))} class="ml-2" />
+              <img src={video_thumbnail.thumbnail_url} class="ml-2" />
             </label>
           </div>
           <:actions>
@@ -623,7 +623,7 @@ defmodule AlgoraWeb.VideoLive do
       |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
     tabs = [:chat] |> append_if(length(subtitles) > 0, :transcript)
-    thumbnail_minutes = Algora.Pipeline.Storage.Thumbnails.mintues_for_video(video)
+    video_thumbnails = Library.get_thumbnails_for_video(video)
 
     socket =
       socket
@@ -640,8 +640,8 @@ defmodule AlgoraWeb.VideoLive do
         subscribed?: subscribed?(current_user, video),
         transcript_form: to_form(transcript_changeset, as: :data),
         chat_form: to_form(Chat.change_message(%Chat.Message{})),
-        thumbnail_minutes: thumbnail_minutes,
-        has_many_thumbnails?: length(thumbnail_minutes) > 1,
+        video_thumbnails: video_thumbnails,
+        has_many_thumbnails?: length(video_thumbnails) > 1,
         thumbnail_form: to_form(Library.Video.change_thumbnail(video))
       )
       |> stream(:videos, videos)
