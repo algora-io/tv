@@ -1,7 +1,7 @@
 defmodule AlgoraWeb.RedirectController do
   use AlgoraWeb, :controller
 
-  import AlgoraWeb.UserAuth, only: [fetch_current_user: 2]
+  import AlgoraWeb.UserAuth, only: [fetch_current_user: 2, maybe_store_return_to: 1]
 
   plug :fetch_current_user
 
@@ -9,7 +9,9 @@ defmodule AlgoraWeb.RedirectController do
     if conn.assigns.current_user do
       AlgoraWeb.UserAuth.redirect_if_user_is_authenticated(conn, [])
     else
-      redirect(conn, to: ~p"/auth/login")
+      conn
+      |> maybe_store_return_to()
+      |> redirect(to: ~p"/auth/login")
     end
   end
 end

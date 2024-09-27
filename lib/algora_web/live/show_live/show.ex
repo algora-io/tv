@@ -1,5 +1,6 @@
 defmodule AlgoraWeb.ShowLive.Show do
   use AlgoraWeb, :live_view
+  import AlgoraWeb.UserAuth, only: [maybe_store_return_to: 1]
 
   alias Algora.{Shows, Library, Events}
   alias Algora.Accounts
@@ -344,9 +345,12 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     show = Shows.get_show_by_fields!(slug: slug)
 
+    conn = Phoenix.LiveView.get_connect_info(socket).conn
+
     cond do
       current_user == nil ->
-        socket
+        conn
+        |> maybe_store_return_to()
         |> redirect(to: ~p"/auth/login")
 
       current_user.id != show.user_id && !Accounts.admin?(current_user) ->
