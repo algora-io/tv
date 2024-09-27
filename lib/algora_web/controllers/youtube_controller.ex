@@ -27,23 +27,6 @@ defmodule AlgoraWeb.YoutubeAuthController do
     |> redirect(to: "/channel/settings")
   end
 
-
-  def delete(conn, _params) do
-    user = conn.assigns.current_user
-
-    case User.delete_youtube_identity(user) do
-      {:ok, _} ->
-        conn
-        |> put_flash(:info, "YouTube account disconnected.")
-        |> redirect(to: "/channel/settings")
-
-      {:error, _reason} ->
-        conn
-        |> put_flash(:error, "Error disconnecting your YouTube account.")
-        |> redirect(to: "/channel/settings")
-    end
-  end
-
   defp ensure_authenticated(conn, _opts) do
     if conn.assigns[:current_user] do
       conn

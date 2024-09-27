@@ -55,6 +55,7 @@ defmodule Algora.Accounts.User do
       provider: to_string(auth.provider),
       provider_id: auth.uid,
       provider_email: auth.info.email,
+      provider_meta: auth.info,
       provider_login: auth.info.email,
       provider_token: auth.credentials.token,
       provider_refresh_token: auth.credentials.refresh_token,

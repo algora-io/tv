@@ -75,7 +75,11 @@ config :nx, default_backend: EXLA.Backend
 # ueberauth config
 config :ueberauth, Ueberauth,
   providers: [
-    google: {Ueberauth.Strategy.Google, [default_scope: "email", scope: "youtube youtube.upload yt-analytics.readonly"]}
+    google: {Ueberauth.Strategy.Google, [
+      prompt: "consent",
+      access_type: "offline",
+      default_scope: "email https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/yt-analytics.readonly"
+    ]}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Google.OAuth,

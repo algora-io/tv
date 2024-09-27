@@ -153,7 +153,7 @@ defmodule AlgoraWeb.SettingsLive do
           </.button>
           <.button :if={@connected_with_google} class="bg-green-600 hover:bg-green-500 text-white">
           <.link
-              href={"/auth/google/delete"}
+              href={"/auth/google"}
               class="flex items-center"
             >
               <svg
