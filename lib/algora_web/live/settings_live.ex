@@ -350,6 +350,7 @@ defmodule AlgoraWeb.SettingsLive do
         {:noreply,
          socket
          |> assign(current_user: user)
+         |> assign(tags: user.tags)
          |> put_flash(:info, "Settings updated!")}
 
       {:error, changeset} ->
