@@ -397,7 +397,7 @@ const Hooks = {
       });
     },
   },
-  AdBanner: {
+  LiveBillboard: {
     setup() {
       const urls = JSON.parse(this.el.dataset.urls);
       const [img1, img2] = this.el.querySelectorAll("img");

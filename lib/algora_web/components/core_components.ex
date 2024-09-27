@@ -182,11 +182,11 @@ defmodule AlgoraWeb.CoreComponents do
   attr :id, :string, required: true
   attr :class, :string, default: nil
 
-  def ad_banner(assigns) do
+  def live_billboard(assigns) do
     ~H"""
     <div
       class={["relative w-[1092px] h-[135px] transition-opacity duration-1000", @class]}
-      phx-hook="AdBanner"
+      phx-hook="LiveBillboard"
       data-urls={Jason.encode!(@ad.composite_asset_urls)}
       id={@id}
     >

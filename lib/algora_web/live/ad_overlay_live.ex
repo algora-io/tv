@@ -9,12 +9,12 @@ defmodule AlgoraWeb.AdOverlayLive do
     ~H"""
     <%= if @ads && length(@ads) > 0 do %>
       <div class="relative">
-        <.ad_banner
+        <.live_billboard
           ad={@current_ad}
           id="ad-banner-0"
           class={if @show_ad, do: "opacity-100", else: "opacity-0"}
         />
-        <.ad_banner ad={@next_ad} id="ad-banner-1" class="opacity-0 pointer-events-none" />
+        <.live_billboard ad={@next_ad} id="ad-banner-1" class="opacity-0 pointer-events-none" />
       </div>
     <% end %>
     """
