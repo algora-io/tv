@@ -40,7 +40,7 @@ let execJS = (selector, attr) => {
     .forEach((el) => liveSocket.execJS(el, el.getAttribute(attr)));
 };
 
-let Hooks = {
+const Hooks = {
   Flash: {
     mounted() {
       let hide = () =>
