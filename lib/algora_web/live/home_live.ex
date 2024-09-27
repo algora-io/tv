@@ -60,7 +60,7 @@ defmodule AlgoraWeb.HomeLive do
               <a
                 class="group outline-none w-fit"
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener"
                 href="https://www.youtube.com/@algora-io"
               >
                 <div class="text-center font-sans justify-center items-center shrink-0 transition duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none bg-transparent hover:bg-slate-850 disabled:opacity-50 h-8 px-2 text-sm font-semibold rounded-[3px] whitespace-nowrap flex">
@@ -101,7 +101,7 @@ defmodule AlgoraWeb.HomeLive do
                 :if={Algora.Stargazer.count()}
                 class="group outline-none w-fit"
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener"
                 href="https://github.com/algora-io/tv"
               >
                 <div class="text-center font-sans justify-center items-center shrink-0 transition duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none bg-transparent hover:bg-slate-850 disabled:opacity-50 h-8 text-sm font-semibold rounded-[3px] whitespace-nowrap p-2 flex">
@@ -174,7 +174,7 @@ defmodule AlgoraWeb.HomeLive do
               </div>
               <div class="hidden sm:block absolute inset-0 bg-gradient-to-b from-gray-950 to-transparent to-30%">
               </div>
-              <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2 sm:truncate">
+              <div class="absolute my-auto top-1/2 -translate-y-1/2 left-8 w-1/2">
                 <div
                   :if={@hero_video.is_live}
                   class="pl-2 mb-2 text-white bg-red-500 rounded-xl font-semibold inline-flex items-center py-0.5"
@@ -192,7 +192,7 @@ defmodule AlgoraWeb.HomeLive do
                 <div class="text-4xl sm:text-7xl font-bold [text-shadow:#020617_1px_0_10px]">
                   <%= @hero_video.channel_name %>
                 </div>
-                <div class="pt-2 text-lg sm:text-xl [text-shadow:#020617_1px_0_10px] font-medium sm:truncate">
+                <div class="pt-2 text-lg sm:text-xl [text-shadow:#020617_1px_0_10px] font-medium">
                   <%= @hero_video.title %>
                 </div>
               </div>

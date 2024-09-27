@@ -178,6 +178,34 @@ defmodule AlgoraWeb.CoreComponents do
     """
   end
 
+  attr :ad, :any, required: true
+  attr :id, :string, required: true
+  attr :class, :string, default: nil
+
+  def live_billboard(assigns) do
+    ~H"""
+    <div
+      class={["relative w-[1092px] h-[135px] transition-opacity duration-1000", @class]}
+      phx-hook="LiveBillboard"
+      data-urls={Jason.encode!(@ad.composite_asset_urls)}
+      id={@id}
+    >
+      <img
+        src={Enum.at(@ad.composite_asset_urls, 0)}
+        alt={@ad.website_url}
+        class="absolute inset-0 h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000"
+        style={"border-color: #{@ad.border_color || "#fff"}"}
+      />
+      <img
+        src={Enum.at(@ad.composite_asset_urls, 0)}
+        alt={@ad.website_url}
+        class="absolute inset-0 h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000 opacity-0"
+        style={"border-color: #{@ad.border_color || "#fff"}"}
+      />
+    </div>
+    """
+  end
+
   attr :class, :string, default: nil
 
   def logo(assigns) do

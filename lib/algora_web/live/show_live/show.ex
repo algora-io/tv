@@ -28,7 +28,7 @@ defmodule AlgoraWeb.ShowLive.Show do
               <.link
                 :if={@channel.twitter_url}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="noopener"
                 href={@channel.twitter_url}
               >
                 <svg

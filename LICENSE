@@ -1,3 +1,19 @@
+Copyright (c) 2024-present Algora, PBC.
+
+Depending on the type of your legal entity, you are granted permission to use Algora for your project. Individuals and small companies are allowed to use and self-host Algora for free under the AGPLv3 license below, while a company license is required for for-profit organizations of a certain size. This two-tier system was designed to ensure funding for this project while still allowing the source code to be available and the program to be free for most. Read below for the exact terms of use.
+
+You are eligible to use Algora under the AGPLv3 license for free if you are:
+
+- an individual
+- a for-profit organization with up to 3 employees
+- a non-profit or not-for-profit organization
+
+Permission is hereby granted, free of charge, to any person eligible for the AGPLv3 license, to use the software non-commercially or commercially as they see fit.
+
+It is not allowed to copy or modify Algora code for the purpose of selling, renting, licensing, relicensing, or sublicensing your own derivate of Algora.
+
+You are required to obtain a company license to use Algora if you are not within the group of entities eligible for a free license by contacting the maintainers at info@algora.io.
+
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 

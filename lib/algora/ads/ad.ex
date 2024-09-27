@@ -8,7 +8,7 @@ defmodule Algora.Ads.Ad do
     field :status, Ecto.Enum, values: [:inactive, :active]
     field :verified, :boolean, default: false
     field :website_url, :string
-    field :composite_asset_url, :string
+    field :composite_asset_urls, {:array, :string}
     field :asset_url, :string
     field :logo_url, :string
     field :qrcode_url, :string
@@ -33,7 +33,7 @@ defmodule Algora.Ads.Ad do
       :name,
       :verified,
       :website_url,
-      :composite_asset_url,
+      :composite_asset_urls,
       :asset_url,
       :logo_url,
       :qrcode_url,
@@ -49,7 +49,6 @@ defmodule Algora.Ads.Ad do
     |> validate_required([
       :slug,
       :website_url,
-      :composite_asset_url,
       :border_color
     ])
     |> validate_format(:border_color, ~r/^#([0-9A-F]{3}){1,2}$/i,

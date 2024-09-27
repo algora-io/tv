@@ -77,7 +77,7 @@ defmodule AlgoraWeb.PartnerLive do
               <.link
                 class="cursor-pointer truncate w-full"
                 href="https://www.youtube.com/watch?v=te6k6EfHjnI"
-                rel="noopener noreferrer"
+                rel="noopener"
                 target="_blank"
               >
                 <div class="relative flex items-center justify-center overflow-hidden aspect-[16/9] bg-gray-800 rounded-sm">
