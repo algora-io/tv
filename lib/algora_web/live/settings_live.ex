@@ -251,19 +251,19 @@ defmodule AlgoraWeb.SettingsLive do
     end
 
     {:ok,
-     socket
-     |> assign(current_user: current_user)
-     |> assign_form(changeset)
-     |> assign(destinations: destinations)
-     |> assign(destination_form: to_form(destination_changeset))
-     |> assign(show_add_destination_modal: false)
-     |> assign(stream_key: current_user.stream_key)
-     |> assign(connected_with_restream: connected_with_restream)
-     |> assign(tags: current_user.tags || []),
-     temporary_assigns: [
-       stream_url: "rtmp://#{rtmp_host}:#{Algora.config([:rtmp_port])}/#{Algora.config([:rtmp_path])}"
-     ]
-    }
+    socket
+    |> assign(current_user: current_user)
+    |> assign_form(changeset)
+    |> assign(destinations: destinations)
+    |> assign(destination_form: to_form(destination_changeset))
+    |> assign(show_add_destination_modal: false)
+    |> assign(stream_key: current_user.stream_key)
+    |> assign(connected_with_restream: connected_with_restream)
+    |> assign(tags: current_user.tags || []),
+    temporary_assigns: [
+      stream_url: "rtmp://#{rtmp_host}:#{Algora.config([:rtmp_port])}/#{Algora.config([:rtmp_path])}"
+    ]
+   }
   end
 
   def handle_event("validate", %{"user" => params}, socket) do
@@ -284,6 +284,7 @@ defmodule AlgoraWeb.SettingsLive do
         {:noreply,
          socket
          |> assign(current_user: user)
+         |> assign(tags: user.tags)
          |> put_flash(:info, "Settings updated!")}
 
       {:error, changeset} ->
