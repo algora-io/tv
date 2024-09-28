@@ -351,11 +351,16 @@ defmodule Algora.Pipeline.HLS do
   defp serialize_regular_segment(%Manifest{} = manifest, segment) do
     time = Ratio.to_float(segment.duration / Time.second())
 
-    Enum.flat_map(segment.attributes, &SegmentAttribute.serialize/1) ++
-      [
-        "#EXTINF:#{time},",
-        "#{storage_base_url()}/#{manifest.video_uuid}/#{segment.name}"
-      ]
+    if time < 0 do
+      IO.puts "SKIPPING SEGMENT #{inspect(segment.duration)}"
+      []
+    else
+      Enum.flat_map(segment.attributes, &SegmentAttribute.serialize/1) ++
+        [
+          "#EXTINF:#{time},",
+          "#{storage_base_url()}/#{manifest.video_uuid}/#{segment.name}"
+        ]
+    end
   end
 
   defp serialize_partial_segments(%Segment{} = segment) do
