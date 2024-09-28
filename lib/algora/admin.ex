@@ -4,11 +4,6 @@ alias Algora.{Accounts, Library, Storage, Repo}
 alias Algora.Library.Video
 
 defmodule Algora.Admin do
-  @tracks %{
-    manifest: "index.m3u8",
-    audio: "g3cFYXVkaW8.m3u8",
-    video: "g3cFdmlkZW8.m3u8"
-  }
 
   def whoami(), do: {System.get_env("FLY_REGION"), Node.self()}
 
@@ -16,9 +11,9 @@ defmodule Algora.Admin do
     Finch.build(:get, url) |> Finch.request(Algora.Finch)
   end
 
-  defp get_absolute_media_playlist(video) do
+  defp get_absolute_media_playlist(video, manifest_name) do
     %ExM3U8.MediaPlaylist{timeline: timeline, info: info} =
-      get_media_playlist(video, @tracks.video)
+      get_media_playlist(video, manifest_name)
 
     timeline =
       timeline
@@ -29,7 +24,6 @@ defmodule Algora.Admin do
               %ExM3U8.Tags.MediaInit{uri: Storage.to_absolute(:video, video.uuid, uri)}
               | acc
             ]
-
           %ExM3U8.Tags.Segment{uri: uri, duration: duration} ->
             [
               %ExM3U8.Tags.Segment{
@@ -48,113 +42,109 @@ defmodule Algora.Admin do
     %ExM3U8.MediaPlaylist{timeline: timeline, info: info}
   end
 
-  defp merge_media_playlists(video, nil), do: get_absolute_media_playlist(video)
+  defp merge_media_playlists(videos, playlist) do
+    manifest_names = Enum.map(playlist.items, &Map.get(&1, :uri))
+    merge_media_playlists(videos, videos, nil, manifest_names, [{"index.m3u8", playlist}])
+  end
 
-  defp merge_media_playlists(video, playlist) do
-    new_playlist = video |> get_absolute_media_playlist
-
-    %ExM3U8.MediaPlaylist{
+  defp merge_media_playlists(_all, _videos, _playlist, [], acc), do: acc
+  defp merge_media_playlists(all, [], playlist, [manifest_name | manifest_names], acc) do
+    merge_media_playlists(all, all, nil, manifest_names, [{manifest_name, playlist}|acc])
+  end
+  defp merge_media_playlists(all, [video|videos], nil, [manifest_name|_] = manifest_names, acc) do
+    new_playlist = video |> get_absolute_media_playlist(manifest_name)
+    merge_media_playlists(all, videos, new_playlist, manifest_names, acc)
+  end
+  defp merge_media_playlists(all, [video|videos], playlist, [manifest_name|_] = manifest_names, acc) do
+    new_playlist = video |> get_absolute_media_playlist(manifest_name)
+    merge_media_playlists(all, videos, %ExM3U8.MediaPlaylist{
       playlist
       | timeline: playlist.timeline ++ [%ExM3U8.Tags.Discontinuity{} | new_playlist.timeline],
         info: %ExM3U8.MediaPlaylist.Info{
           playlist.info
           | target_duration: max(playlist.info.target_duration, new_playlist.info.target_duration)
         }
-    }
+    }, manifest_names, acc)
   end
 
   defp merge_playlists(videos) do
     example_playlist = videos |> Enum.at(0) |> get_playlist()
-
-    streams =
-      Enum.map(videos, fn v ->
-        [item | _] = get_playlist(v) |> then(&Map.get(&1, :items))
-
-        count =
-          get_media_playlist(v, @tracks.video)
-          |> then(
-            &Enum.count(&1.timeline, fn
-              %ExM3U8.Tags.Segment{} -> true
-              _ -> false
-            end)
-          )
-
+    manifest_names = Enum.map(example_playlist.items, &Map.get(&1, :uri))
+    playlists = Enum.reduce(manifest_names, %{items: []}, fn(manifest_name, acc) ->
+      streams = Enum.map(videos, fn v ->
+        item = get_playlist(v)
+        |> Map.get(:items)
+        |> Enum.find(&match?(^manifest_name, &1.uri))
+        count = get_media_playlist(v, manifest_name)
+        |> then(&Enum.count(&1.timeline, fn
+            %ExM3U8.Tags.Segment{} -> true
+            _ -> false
+          end))
         {item, count}
       end)
 
-    {example_stream, _} = streams |> Enum.at(0)
+      {example_stream, _} = streams |> Enum.find(&match?(manifest_name, elem(&1, 0).uri))
 
-    if Enum.all?(streams, fn {x, _} ->
-         example_stream.resolution == x.resolution && example_stream.codecs == x.codecs
-       end) do
-      max_bandwidth =
-        Enum.map(streams, fn {stream, _} -> Map.get(stream, :bandwidth) end)
-        |> Enum.max(&Ratio.gte?/2)
+      if Enum.all?(streams, fn {x, _} -> example_stream.resolution == x.resolution && example_stream.codecs == x.codecs end) do
+        max_bandwidth = Enum.map(streams, fn {stream, _} -> Map.get(stream, :bandwidth) end) |> Enum.max(&Ratio.gte?/2)
+        avg_bandwidth = streams
+          |> Enum.reduce({0, 0}, fn {s, count}, {avg_sum, count_sum} -> {avg_sum + s.average_bandwidth * count, count_sum + count} end)
+          |> then(fn {avg, count} -> avg / count end )
+          |> Ratio.trunc()
 
-      avg_bandwidth =
-        streams
-        |> Enum.reduce({0, 0}, fn {s, count}, {avg_sum, count_sum} ->
-          {avg_sum + s.average_bandwidth * count, count_sum + count}
-        end)
-        |> then(fn {avg, count} -> avg / count end)
-        |> Ratio.trunc()
+        %{example_playlist | items: [
+          %{ example_stream | average_bandwidth: avg_bandwidth,  bandwidth: max_bandwidth }
+          | acc.items
+        ]}
+      else
+        IO.puts("Codecs or resolutions don't match in manifest #{manifest_name}. Skipping.")
+        acc
+      end
+    end)
 
-      {:ok,
-       %{
-         example_playlist
-         | items: [
-             %{example_stream | average_bandwidth: avg_bandwidth, bandwidth: max_bandwidth}
-           ]
-       }}
-    else
-      {:error, "Codecs or resolutions don't match"}
-    end
+    {:ok, playlists}
   end
 
-  defp insert_merged_video(videos, playlist, media_playlist) do
+  defp insert_merged_video(videos) do
     [video | _] = videos
 
     duration = videos |> Enum.reduce(0, fn v, d -> d + v.duration end)
-
-    result =
-      %{video | duration: duration, id: nil, filename: nil}
+    %{video | duration: duration, id: nil, filename: nil}
       |> change()
-      |> Video.put_video_url(video.type, video.format)
+      |> Video.put_video_url(:vod, video.format)
       |> Repo.insert()
+  end
 
-    upload_to = fn uuid, track_atom, content ->
-      Storage.upload(
-        content,
-        "#{uuid}/#{@tracks[track_atom]}",
-        content_type: "application/x-mpegURL"
-      )
-    end
+  def upload_merged_streams(video, playlists) do
+    upload_to = fn uuid, manifest_name, content -> Storage.upload(
+      content,
+      "#{uuid}/#{manifest_name}",
+      content_type: "application/x-mpegURL"
+    ) end
 
-    with {:ok, new_video} <- result,
-         {:ok, _} <- upload_to.(new_video.uuid, :manifest, ExM3U8.serialize(playlist)),
-         {:ok, _} <-
-           upload_to.(
-             new_video.uuid,
-             :video,
-             "#{ExM3U8.serialize(media_playlist)}#EXT-X-ENDLIST\n"
-           ) do
-      result
+    Enum.all? playlists, fn
+      ({"index.m3u8" = manifest_name, playlist}) ->
+        manifest = ExM3U8.serialize(playlist)
+        match?({:ok, _}, upload_to.(video.uuid, manifest_name, manifest))
+      ({manifest_name, playlist}) ->
+        manifest = "#{ExM3U8.serialize(playlist)}#EXT-X-ENDLIST\n"
+        match?({:ok, _}, upload_to.(video.uuid, manifest_name, manifest))
     end
   end
 
   def merge_streams(videos) do
     with {:ok, playlist} <- merge_playlists(videos),
-         media_playlist <- Enum.reduce(videos, nil, &merge_media_playlists/2),
-         {:ok, new_video} <- insert_merged_video(videos, playlist, media_playlist) do
-      ids = Enum.map(videos, & &1.id)
-
-      Repo.update_all(
-        from(v in Video, where: v.id in ^ids),
-        set: [
-          visibility: :unlisted,
-          deleted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-        ]
-      )
+      media_playlists <- merge_media_playlists(videos, playlist),
+      {:ok, new_video} <- insert_merged_video(videos),
+      true <- upload_merged_streams(new_video, media_playlists) do
+        ids = Enum.map(videos, &(&1.id))
+        Repo.update_all(
+          from(v in Video, where: v.id in ^ids),
+          set: [
+            visibility: :unlisted,
+            deleted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          ]
+        )
 
       {:ok, new_video}
     end
@@ -167,9 +157,7 @@ defmodule Algora.Admin do
   end
 
   def get_media_playlist(video, uri) do
-    url = "#{video.url_root}/#{uri}"
-
-    with {:ok, resp} <- get(url),
+    with {:ok, resp} <- get(get_playlist_url(video, uri)),
          {:ok, playlist} <- ExM3U8.deserialize_media_playlist(resp.body, []) do
       playlist
     else
@@ -177,11 +165,19 @@ defmodule Algora.Admin do
     end
   end
 
+  def get_playlist_url(video, %ExM3U8.Tags.Stream{ uri: uri }), do:
+    get_playlist_url(video, uri)
+  def get_playlist_url(video, uri) do
+    String.replace_suffix(video.url, "index.m3u8", uri )
+  end
+
   def get_media_playlists(video) do
-    %{
-      video: get_media_playlist(video, @tracks.video),
-      audio: get_media_playlist(video, @tracks.audio)
-    }
+    with {:ok, master_resp} <- get(video.url),
+         {:ok, master_playlist} <- ExM3U8.deserialize_multivariant_playlist(master_resp.body, []) do
+      Enum.reduce(master_playlist.items, %{}, fn(tag, acc) ->
+        Map.put(acc, tag.uri, get_media_playlist(video, tag))
+      end)
+    end
   end
 
   def set_thumbnail!(id, path \\ nil) do
@@ -218,12 +214,11 @@ defmodule Algora.Admin do
       Enum.with_index(chunks),
       fn {chunk, i} ->
         IO.puts("#{rounded(100 * i / length(chunks))}%")
-
-        dl_path = "#{dir}/#{chunk}"
-
+        name = URI.parse(chunk).path |> String.split("/") |> List.last()
+        dl_path = "#{dir}/#{i}-#{name}"
         if not File.exists?(dl_path) do
           {:ok, :saved_to_file} =
-            :httpc.request(:get, {~c"#{video.url_root}/#{chunk}", []}, [],
+            :httpc.request(:get, {chunk, []}, [],
               stream: ~c"#{dl_path}.part"
             )
 
@@ -239,26 +234,20 @@ defmodule Algora.Admin do
 
   def download_video(video, dir) do
     playlists = get_media_playlists(video)
-
+    timeline = playlists |> Map.values() |> List.first() |> Map.get(:timeline)
     video_chunks =
-      for n <- playlists.video.timeline,
+      for n <- timeline,
           Map.has_key?(n, :uri),
-          do: n.uri
+      do: n.uri
 
-    audio_chunks =
-      for n <- playlists.audio.timeline,
-          Map.has_key?(n, :uri),
-          do: n.uri
-
-    {time, _} = :timer.tc(&download_chunks/3, [video, video_chunks ++ audio_chunks, dir])
+    {time, _} = :timer.tc(&download_chunks/3, [video, video_chunks, dir])
 
     video_chunks
-    |> Enum.map(fn chunk -> "#{dir}/#{chunk}" end)
+    |> Enum.with_index() |> Enum.map(fn {chunk, i} ->
+        name = URI.parse(chunk).path |> String.split("/") |> List.last()
+      "#{dir}/#{i}-#{name}"
+    end)
     |> concatenate_files("#{dir}/video.mp4")
-
-    audio_chunks
-    |> Enum.map(fn chunk -> "#{dir}/#{chunk}" end)
-    |> concatenate_files("#{dir}/audio.mp4")
 
     {_, 0} =
       System.cmd(
@@ -267,8 +256,6 @@ defmodule Algora.Admin do
           "-y",
           "-i",
           "#{dir}/video.mp4",
-          "-i",
-          "#{dir}/audio.mp4",
           "-c",
           "copy",
           "#{dir}/output.mp4"
@@ -278,7 +265,7 @@ defmodule Algora.Admin do
     %File.Stat{size: size} = File.stat!("#{dir}/output.mp4")
 
     IO.puts(
-      "Downloaded #{rounded(size / 1_000_000)} MB in #{rounded(time / 1_000_000)} s (#{rounded(size / time)} MB/s)"
+      "Downloaded #{dir}/output.mp4 (#{rounded(size / 1_000_000)} MB) in #{rounded(time / 1_000_000)} s (#{rounded(size / time)} MB/s)"
     )
   end
 
