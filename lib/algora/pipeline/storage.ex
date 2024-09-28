@@ -54,6 +54,7 @@ defmodule Algora.Pipeline.Storage do
         cache_partial_segment(parent_id, name, content, metadata, context, state)
 
       %{mode: :binary, type: :header} ->
+        cache_header(name, content, state)
         store_content(parent_id, name, content, metadata, context, state)
 
       %{mode: :text, type: :manifest} ->
@@ -99,6 +100,17 @@ defmodule Algora.Pipeline.Storage do
       add_manifest_to_ets(filename, content, state)
       send_update(filename, state)
     end
+
+    {:ok, state}
+  end
+
+  defp cache_header(
+         filename,
+         content,
+         %__MODULE__{video: video} = state
+       ) do
+
+    broadcast!(video.uuid, [LLController, :write_to_file, [video.uuid, filename, content]])
 
     {:ok, state}
   end

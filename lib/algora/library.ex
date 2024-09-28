@@ -295,19 +295,27 @@ defmodule Algora.Library do
 
     video = get_video!(video.id)
 
-    video =
-      with false <- is_live,
-           {:ok, duration} <- get_duration(video),
+    video = if is_live do
+      with {:ok, duration} <- get_duration(video),
            {:ok, video} <-
              video
              |> change()
              |> put_change(:duration, duration)
              |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
              |> Repo.update() do
+      video
+    else
+      if {:ok, video} =
+            video
+            |> change()
+            |> put_change(:duration, 0)
+            |> put_change(:url, Video.url(:livestream, video.uuid, video.filename))
+            |> Repo.update() do
         video
       else
-        _ -> video
+        video
       end
+    end
 
     msg =
       case is_live do
