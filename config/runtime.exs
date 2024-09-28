@@ -13,7 +13,8 @@ if System.get_env("PHX_SERVER") && System.get_env("RELEASE_NAME") do
 end
 
 config :algora,
-  hf_token: System.get_env("HF_TOKEN")
+  hf_token: System.get_env("HF_TOKEN"),
+  resume_rtmp: true
 
 config :replicate,
   replicate_api_token: System.get_env("REPLICATE_API_TOKEN")
