@@ -24,6 +24,8 @@ defmodule Algora.Application do
       Algora.Env,
       {Cluster.Supervisor, [topologies, [name: Algora.ClusterSupervisor]]},
       {Task.Supervisor, name: Algora.TaskSupervisor},
+      # Start the supervisor for tracking manifest uploads
+      {DynamicSupervisor, strategy: :one_for_one, name: Algora.Pipeline.Storage.ManifestSupervisor},
       # Start the RPC server
       {Fly.RPC, []},
       # Start the Ecto repository

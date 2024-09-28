@@ -1,7 +1,9 @@
 defmodule Algora.Pipeline do
   use Membrane.Pipeline
+  require Membrane.Logger
 
   alias Membrane.Time
+  alias Membrane.RTMP.Messages
 
   alias Algora.{Admin, Library}
   alias Algora.Pipeline.HLS.LLController
@@ -13,6 +15,7 @@ defmodule Algora.Pipeline do
   @app "live"
   @terminate_after 60_000 * 60
   @reconnect_inactivity_timeout 12_000
+  @frame_devisor 1
 
   defstruct [
     client_ref: nil,
@@ -22,7 +25,8 @@ defmodule Algora.Pipeline do
     dir: nil,
     reconnect: 0,
     terminate_timer: nil,
-    waiting_activity: true
+    waiting_activity: true,
+    data_frame: nil
   ]
 
   def segment_duration(), do: @segment_duration_seconds
@@ -38,7 +42,7 @@ defmodule Algora.Pipeline do
       video_uuid: nil
     }
 
-    {:ok, _pid} = with true <- Algora.config([:resume_rtmp]),
+    {:ok, pid} = with true <- Algora.config([:resume_rtmp]),
        [{pid, {:pipeline, video_uuid}}] <- Registry.lookup(Algora.Pipeline.Registry, stream_key) do
          Algora.Pipeline.resume_rtmp(pid, %{params | video_uuid: video_uuid})
          {:ok, pid}
@@ -46,10 +50,12 @@ defmodule Algora.Pipeline do
       _ ->
         {:ok, _sup, pid} =
           Membrane.Pipeline.start_link(Algora.Pipeline, params)
+          Process.unlink(pid)
+          Process.flag(:trap_exit, true)
         {:ok, pid}
     end
 
-    {Algora.Pipeline.ClientHandler, %{}}
+    {Algora.Pipeline.ClientHandler, %{}, pid}
   end
 
   def resume_rtmp(pipeline, params) when is_pid(pipeline) do
@@ -160,9 +166,17 @@ defmodule Algora.Pipeline do
     state = terminate_later(state)
     {[notify_child: {:sink, :disconnected}], state}
   end
+  
+  def handle_child_notification(:start_of_stream, _element, _ctx, state) do
+    {[], state}
+  end
+
+  def handle_child_notification(:start_of_stream, _element, _ctx, state) do
+    {[], state}
+  end
 
   def handle_child_notification(message, _element, _ctx, state) do
-    Membrane.Logger.debug("Unhandled child notificaiton #{inspect(message)}")
+    Membrane.Logger.info("Unhandled child notification #{inspect(message)}")
     {[], state}
   end
 
@@ -211,8 +225,6 @@ defmodule Algora.Pipeline do
     }
   end
 
-
-  @impl true
   def handle_info(:setup_output, _ctx, %{video: video, dir: dir, reconnect: reconnect} = state) do
     structure = [
       #
@@ -274,7 +286,59 @@ defmodule Algora.Pipeline do
   def handle_info(:stream_interupted, _ctx, state) do
     Membrane.Logger.info("Stream interupted #{inspect(state)}")
     Algora.Library.toggle_streamer_live(state.video, false, true)
+  end
+
+  def handle_info(%Membrane.RTMP.Messages.SetDataFrame{} = _message, _ctx, %{playing: true} = state) do
     {[], state}
+  end
+
+  def handle_info(%Membrane.RTMP.Messages.SetDataFrame{} = message, _ctx, state) do
+    %{ height: source_height, width: source_width, framerate: source_framerate } = message
+
+    if transcode_slug = Algora.config([:transcode]) do
+      structure = transcode_slug
+      |> String.split("|")
+      |> Enum.map(&String.split(&1, "p"))
+      |> Enum.map(fn([h, f]) -> {String.to_integer(h), String.to_integer(f)} end)
+      |> Enum.filter(fn({target_height, framerate}) ->
+        target_height <= source_height and framerate <= source_framerate
+      end)
+      |> Enum.map(fn({target_height, framerate}) ->
+        height = normalize_scale(target_height)
+        width = normalize_scale(source_width / (source_height / target_height))
+        track_name = "video_#{width}x#{height}p#{framerate}"
+        #
+        get_child(:tee_video)
+        |> child(%Membrane.H264.Parser{
+          output_stream_structure: :annexb,
+          generate_best_effort_timestamps: %{framerate: {trunc(source_framerate), @frame_devisor}}
+        })
+        |> child(Membrane.H264.FFmpeg.Decoder)
+        |> child(%Membrane.FramerateConverter{framerate: {trunc(framerate), @frame_devisor}})
+        |> child(%Membrane.FFmpeg.SWScale.Scaler{
+          output_height: height,
+          output_width: width
+        })
+        |> child(%Membrane.H264.FFmpeg.Encoder{
+          preset: :ultrafast,
+          gop_size: trunc(framerate * 2),
+        })
+        |> via_in(Pad.ref(:input, track_name),
+          options: [
+            track_name: track_name,
+            encoding: :H264,
+            segment_duration: @segment_duration,
+            partial_segment_duration: @partial_segment_duration
+          ]
+        )
+        |> get_child(:sink)
+      end)
+
+      spec = {structure, group: :hls_adaptive}
+      {[spec: spec], state}
+    else
+      {[], state}
+    end
   end
 
   def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
@@ -328,12 +392,15 @@ defmodule Algora.Pipeline do
 
   def handle_info(:reconnect_inactivity, _ctx, %{ waiting_activity: true } = state) do
     Membrane.Logger.error("Tried to reconnect but failed #{inspect(state)}")
-
     send(self(), :terminate)
-
     {[], state}
   end
+  
   def handle_info(:reconnect_inactivity, _ctx, state) do
+    {[], state}
+  end
+
+  def handle_info(:stream_interupted, _ctx, state) do
     {[], state}
   end
 
@@ -342,6 +409,10 @@ defmodule Algora.Pipeline do
     {[terminate: :normal], state}
   end
 
+  def handle_info(message, _ctx, state) do
+    Membrane.Logger.info("Unhandled notification #{inspect(message)}")
+    {[], state}
+  end
 
   defp terminate_later(%{terminate_timer: nil} = state) do
     time = if Algora.config([:resume_rtmp]), do: @terminate_after, else: 0
@@ -357,4 +428,11 @@ defmodule Algora.Pipeline do
     :timer.cancel(timer)
     %{ state | terminate_timer: nil }
   end
+
+  defp normalize_scale(scale) when is_float(scale), do:
+    scale |> trunc() |> normalize_scale()
+  defp normalize_scale(scale) when is_integer(scale) and scale > 0 do
+    if rem(scale, 2) == 1, do: scale - 1, else: scale
+  end
+
 end

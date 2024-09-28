@@ -1,6 +1,9 @@
 import Config
 
-config :algora, mode: :dev, resume_rtmp: true
+config :algora,
+  mode: :dev,
+  resume_rtmp: true,
+  transcode: System.get_env("TRANSCODE")
 
 config :algora, :buckets,
   media: System.get_env("BUCKET_MEDIA"),
