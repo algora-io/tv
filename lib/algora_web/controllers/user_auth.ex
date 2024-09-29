@@ -54,10 +54,13 @@ defmodule AlgoraWeb.UserAuth do
   end
 
   defp redirect_require_login(socket) do
+  conn = Phoenix.LiveView.get_connect_info(socket)[:conn]
+  %{request_path: request_path, query_string: query_string} = conn
   
-  case LiveView.get_connect_info(socket).conn
-    %{conn: conn} ->
-      conn
+  return_to = if query_string == "", do: request_path, else: request_path <> "?" <> query_string
+  socket = Phoenix.LiveView.put_session(socket, :user_return_to, return_to)
+
+  socket
   |> maybe_store_return_to()
   |> LiveView.put_flash(:error, "Please sign in")
   |> LiveView.redirect(to: ~p"/auth/login")
