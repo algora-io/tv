@@ -37,6 +37,7 @@ defmodule AlgoraWeb.VideoLive do
                 field={assigns.thumbnail_form[:thumbnail_url]}
                 type="radio"
                 value={video_thumbnail.thumbnail_url}
+                checked={assigns.thumbnail_form[:thumbnail_url].value == video_thumbnail.thumbnail_url}
               >
                 <img src={video_thumbnail.thumbnail_url} class="border-2 rounded-lg opacity-50 peer-checked:opacity-100 peer-checked:border-white" />
               </.input>
@@ -643,7 +644,7 @@ defmodule AlgoraWeb.VideoLive do
         chat_form: to_form(Chat.change_message(%Chat.Message{})),
         video_thumbnails: video_thumbnails,
         has_many_thumbnails?: length(video_thumbnails) > 1,
-        thumbnail_form: to_form(Library.Video.change_thumbnail(video))
+        thumbnail_form: to_form(Library.Video.change_thumbnail(video, video.thumbnail_url))
       )
       |> stream(:videos, videos)
       |> stream(:messages, Chat.list_messages(video))
