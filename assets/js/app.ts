@@ -2,8 +2,9 @@ import "phoenix_html";
 import { Socket } from "phoenix";
 import { LiveSocket, type ViewHook } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
-import videojs from "../vendor/video";
-import "../vendor/videojs-youtube";
+import { VidstackPlayer, VidstackPlayerLayout } from "vidstack/global/player";
+import { isHLSProvider } from "vidstack";
+import HLS from "@algora/hls.js";
 
 // TODO: add eslint & biome
 // TODO: enable strict mode
@@ -147,22 +148,29 @@ const Hooks = {
     },
   },
   VideoPlayer: {
-    mounted() {
+    async mounted() {
       const backdrop = document.querySelector("#video-backdrop");
-
       this.playerId = this.el.id;
+      this.attemptedAutoplay = false;
 
-      // TODO: remove this once we have a better way to handle autoplay
-      const autoplay = this.el.id.startsWith("analytics-") ? false : "any";
+      this.player = await VidstackPlayer.create({
+        target: this.el,
+        viewType: "video",
+        streamType: "on-demand",
+        liveEdgeTolerance: 2,
+        load: "eager",
+        logLevel: "warn",
+        crossOrigin: true,
+        playsInline: true,
+        layout: new VidstackPlayerLayout(),
+      });
 
-      this.player = videojs(this.el, {
-        autoplay: autoplay,
-        liveui: true,
-        html5: {
-          vhs: {
-            llhls: true,
-          },
-        },
+      this.player.subscribe(({ autoPlayError }) => {
+        if (autoPlayError) {
+          this.player.muted = true;
+          this.player.play();
+          this.attemptedAutoplay = true;
+        }
       });
 
       const playVideo = (opts: {
@@ -170,8 +178,10 @@ const Hooks = {
         id: string;
         url: string;
         title: string;
+        poster: string;
+        is_live: boolean;
         player_type: string;
-        current_time?: number;
+        current_time: number;
         channel_name: string;
       }) => {
         if (this.playerId !== opts.player_id) {
@@ -194,28 +204,46 @@ const Hooks = {
           });
         };
 
-        this.player.options({
-          techOrder: [
-            opts.player_type === "video/youtube" ? "youtube" : "html5",
-          ],
-          ...(opts.current_time && opts.player_type === "video/youtube"
-            ? { youtube: { customVars: { start: opts.current_time } } }
-            : {}),
+        const autoplay = (() => {
+          // TODO: remove this once we have a better way to handle autoplay
+          if (this.el.id.startsWith("analytics-")) {
+            return false;
+          }
+
+          if (opts.player_type === "video/youtube") {
+            return navigator.userActivation.isActive;
+          }
+
+          return true;
+        })();
+
+        const startTime = (() => {
+          // TODO: remove this once vidstack youtube thumbnails at t=0 are fixed
+          if (opts.player_type === "video/youtube") {
+            return opts.current_time || 1;
+          }
+
+          return opts.current_time;
+        })();
+
+        this.player.autoplay = autoplay;
+        this.player.poster = opts.poster;
+        this.player.title = opts.title;
+        this.player.currentTime = startTime;
+        this.player.streamType = opts.is_live ? "ll-live:dvr" : "on-demand";
+        this.player.src = opts.url;
+
+        this.player.addEventListener("provider-change", (event) => {
+          const provider = event.detail;
+          if (isHLSProvider(provider)) {
+            provider.library = HLS;
+            provider.config = {
+              targetlatency: 6, // one segment
+            };
+          }
         });
-        this.player.src({ src: opts.url, type: opts.player_type });
 
         setMediaSession();
-
-        if (opts.current_time) {
-          if (opts.player_type === "video/youtube") {
-            // HACK: wait for the video to load
-            setTimeout(() => {
-              this.player.currentTime(opts.current_time);
-            }, 2000);
-          } else {
-            this.player.currentTime(opts.current_time);
-          }
-        }
 
         if (backdrop) {
           backdrop.classList.remove("opacity-10");
@@ -244,6 +272,89 @@ const Hooks = {
       }
     },
   },
+  PWAInstallPrompt: {
+    mounted() {
+      let deferredPrompt: any;
+      const installPrompt = document.getElementById("pwa-install-prompt");
+      const installButton = document.getElementById("pwa-install-button");
+      const closeButton = document.getElementById("pwa-close-button");
+      const instructionsMobile = document.getElementById(
+        "pwa-instructions-mobile"
+      );
+      if (
+        !installPrompt ||
+        !installButton ||
+        !closeButton ||
+        !instructionsMobile ||
+        localStorage.getItem("pwaPromptShown")
+      ) {
+        return;
+      }
+
+      const scrollHeight =
+        (document.documentElement.scrollHeight || document.body.scrollHeight) -
+        document.documentElement.clientHeight;
+
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+
+      let promptShown = false;
+
+      const showPrompt = () => {
+        if (!promptShown) {
+          installPrompt.classList.remove("hidden");
+          if (isMobile) {
+            instructionsMobile.classList.remove("hidden");
+            installButton.classList.add("hidden");
+          } else {
+            installButton.classList.remove("hidden");
+            instructionsMobile.classList.add("hidden");
+          }
+          promptShown = true;
+        }
+      };
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          const scrollPos =
+            document.documentElement.scrollTop || document.body.scrollTop;
+
+          if (scrollPos > Math.min(500, scrollHeight / 2) && deferredPrompt) {
+            showPrompt();
+          }
+        },
+        { passive: true }
+      );
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+      });
+
+      installButton.addEventListener("click", async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt = null;
+        }
+        installPrompt.classList.add("hidden");
+        localStorage.setItem("pwaPromptShown", "true");
+      });
+
+      closeButton.addEventListener("click", () => {
+        installPrompt.classList.add("hidden");
+        localStorage.setItem("pwaPromptShown", "true");
+      });
+
+      window.addEventListener("appinstalled", () => {
+        installPrompt.classList.add("hidden");
+        deferredPrompt = null;
+        localStorage.setItem("pwaPromptShown", "true");
+      });
+    },
+  },
   TimezoneDetector: {
     mounted() {
       this.pushEvent("get_timezone", {
@@ -269,6 +380,51 @@ const Hooks = {
       };
 
       window.addEventListener("scroll", onScroll, { passive: true });
+    },
+  },
+  CopyToClipboard: {
+    value() {
+      return this.el.dataset.value;
+    },
+    notice() {
+      return this.el.dataset.notice;
+    },
+    mounted() {
+      this.el.addEventListener("click", () => {
+        navigator.clipboard.writeText(this.value()).then(() => {
+          this.pushEvent("copied_to_clipboard", { notice: this.notice() });
+        });
+      });
+    },
+  },
+  LiveBillboard: {
+    setup() {
+      const urls = JSON.parse(this.el.dataset.urls);
+      const [img1, img2] = this.el.querySelectorAll("img");
+      let currentIndex = 0;
+      let nextIndex = Math.min(1, urls.length - 1);
+      img2.src = urls[nextIndex];
+
+      clearInterval(this.interval);
+      if (urls.length > 1) {
+        this.interval = setInterval(() => {
+          const nextImg = currentIndex % 2 === 0 ? img2 : img1;
+          const currentImg = currentIndex % 2 === 0 ? img1 : img2;
+
+          nextImg.src = urls[nextIndex];
+          nextImg.classList.remove("opacity-0");
+          currentImg.classList.add("opacity-0");
+
+          currentIndex = nextIndex;
+          nextIndex = (nextIndex + 1) % urls.length;
+        }, 5000);
+      }
+    },
+    mounted() {
+      this.setup();
+    },
+    updated() {
+      this.setup();
     },
   },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;

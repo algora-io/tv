@@ -4,6 +4,22 @@ defmodule Algora.Storage do
     "#{scheme}#{host}"
   end
 
+  def bucket(), do: Algora.config([:buckets, :media])
+
+  def to_absolute(type, uuid, uri) do
+    if URI.parse(uri).scheme do
+      uri
+    else
+      to_absolute_uri(type, uuid, uri)
+    end
+  end
+
+  defp to_absolute_uri(:video, uuid, uri),
+    do: "#{endpoint_url()}/#{bucket()}/#{uuid}/#{uri}"
+
+  defp to_absolute_uri(:clip, uuid, uri),
+    do: "#{endpoint_url()}/#{bucket()}/clips/#{uuid}/#{uri}"
+
   def upload_to_bucket(contents, remote_path, bucket, opts \\ []) do
     op = Algora.config([:buckets, bucket]) |> ExAws.S3.put_object(remote_path, contents, opts)
     ExAws.request(op, [])

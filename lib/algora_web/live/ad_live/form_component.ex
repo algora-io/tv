@@ -26,7 +26,6 @@ defmodule AlgoraWeb.AdLive.FormComponent do
           <.input field={@form[:slug]} type="text" label="QR Code URL" class="ps-[6.75rem]" />
         </div>
         <.input field={@form[:website_url]} type="text" label="Website URL" />
-        <.input field={@form[:composite_asset_url]} type="text" label="Asset URL" />
         <.input
           field={@form[:border_color]}
           type="text"

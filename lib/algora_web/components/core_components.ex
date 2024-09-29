@@ -136,7 +136,7 @@ defmodule AlgoraWeb.CoreComponents do
     <%!-- HACK: should use navigate instead of href here --%>
     <%!-- but it breaks navigating from youtube video to another video --%>
     <.link class="cursor-pointer truncate" href={~p"/#{@video.channel_handle}/#{@video.id}"}>
-      <.short_thumbnail video={@video} class="rounded-2xl" />
+      <.short_thumbnail video={@video} class="rounded-lg" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
       <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
@@ -151,7 +151,7 @@ defmodule AlgoraWeb.CoreComponents do
     <%!-- HACK: should use navigate instead of href here --%>
     <%!-- but it breaks navigating from youtube video to another video --%>
     <.link class="cursor-pointer truncate" href={~p"/#{@video.channel_handle}/#{@video.id}"}>
-      <.video_thumbnail video={@video} class="rounded-2xl" />
+      <.video_thumbnail video={@video} class="rounded-lg" />
       <div class="pt-2 text-base font-semibold truncate"><%= @video.title %></div>
       <div class="text-gray-300 text-sm font-medium"><%= @video.channel_name %></div>
       <div class="text-gray-300 text-sm"><%= Timex.from_now(@video.inserted_at) %></div>
@@ -174,6 +174,34 @@ defmodule AlgoraWeb.CoreComponents do
           </div>
         </div>
       </div>
+    </div>
+    """
+  end
+
+  attr :ad, :any, required: true
+  attr :id, :string, required: true
+  attr :class, :string, default: nil
+
+  def live_billboard(assigns) do
+    ~H"""
+    <div
+      class={["relative w-[1092px] h-[135px] transition-opacity duration-1000", @class]}
+      phx-hook="LiveBillboard"
+      data-urls={Jason.encode!(@ad.composite_asset_urls)}
+      id={@id}
+    >
+      <img
+        src={Enum.at(@ad.composite_asset_urls, 0)}
+        alt={@ad.website_url}
+        class="absolute inset-0 h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000"
+        style={"border-color: #{@ad.border_color || "#fff"}"}
+      />
+      <img
+        src={Enum.at(@ad.composite_asset_urls, 0)}
+        alt={@ad.website_url}
+        class="absolute inset-0 h-full w-full object-cover border-[4px] rounded-xl transition-opacity duration-1000 opacity-0"
+        style={"border-color: #{@ad.border_color || "#fff"}"}
+      />
     </div>
     """
   end
@@ -1108,5 +1136,52 @@ defmodule AlgoraWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  def pwa_install_prompt(assigns) do
+    ~H"""
+    <div
+      id="pwa-install-prompt"
+      phx-hook="PWAInstallPrompt"
+      class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 w-[90%] md:max-w-[300px] bg-white rounded-lg shadow-lg p-4 text-center z-50"
+    >
+      <div class="mb-3">
+        <img class="w-16 h-16 bg-gray-200 rounded-lg mx-auto mb-2" src="/images/logo-192px.png" />
+        <h1 class="text-lg text-gray-800 font-semibold">Algora TV</h1>
+        <p class="text-sm text-gray-600 font-semibold">Never miss a stream again!</p>
+      </div>
+      <button
+        id="pwa-install-button"
+        class="hidden bg-indigo-600 text-white py-2 px-4 rounded-md text-sm font-semibold"
+      >
+        Install
+      </button>
+      <button id="pwa-close-button" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          >
+          </path>
+        </svg>
+      </button>
+      <div
+        id="pwa-instructions-mobile"
+        class="hidden text-md text-gray-600 mt-2 text-center bg-gray-100 p-2 rounded-md"
+      >
+        Tap <Heroicons.arrow_up_on_square class="size-5 mb-1 text-purple-500 inline" /> or
+        <Heroicons.ellipsis_vertical class="size-5 mb-1 text-purple-500 inline" />
+        and select "Add to home screen" to install.
+      </div>
+    </div>
+    """
   end
 end

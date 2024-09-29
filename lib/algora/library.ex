@@ -12,6 +12,8 @@ defmodule Algora.Library do
 
   @pubsub Algora.PubSub
 
+  @thumbnail_filename "index.jpeg"
+
   def subscribe_to_studio() do
     Phoenix.PubSub.subscribe(@pubsub, topic_studio())
   end
@@ -34,7 +36,7 @@ defmodule Algora.Library do
       visibility: :unlisted
     }
     |> change()
-    |> Video.put_video_url(:hls)
+    |> Video.put_video_url(:livestream, :hls)
     |> Repo.insert!()
   end
 
@@ -56,7 +58,7 @@ defmodule Algora.Library do
         channel_name: user.name
       }
       |> change()
-      |> Video.put_video_meta(:mp4, basename)
+      |> Video.put_video_meta(:vod, :mp4, basename)
 
     dir = Path.join("/data", video.changes.uuid)
     File.mkdir_p!(dir)
@@ -84,7 +86,7 @@ defmodule Algora.Library do
         thumbnail_url: video.thumbnail_url
       }
       |> change()
-      |> Video.put_video_url(:mp4, mp4_basename)
+      |> Video.put_video_url(:vod, :mp4, mp4_basename)
 
     %{uuid: mp4_uuid, filename: mp4_filename, remote_path: mp4_remote_path} = mp4_video.changes
 
@@ -122,7 +124,7 @@ defmodule Algora.Library do
         user_id: video.user_id
       }
       |> change()
-      |> Video.put_video_url(:hls)
+      |> Video.put_video_url(:vod, :hls)
 
     %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
 
@@ -246,6 +248,10 @@ defmodule Algora.Library do
       video
       |> change()
       |> put_change(:duration, duration)
+      |> put_change(:is_live, false)
+      |> put_change(:type, :vod)
+      |> put_change(:url_root, Video.url_root(:vod, video.uuid))
+      |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
       |> Repo.update()
     else
       _missing_manifest ->
@@ -257,8 +263,14 @@ defmodule Algora.Library do
   end
 
   def terminate_interrupted_streams() do
+    live_ids = Algora.Admin.broadcasts()
+
     from(v in Video,
-      where: v.duration == 0 and v.is_live == false and v.format == :hls and v.corrupted == false,
+      where:
+        (v.is_live == false or v.id not in ^live_ids) and
+          v.duration == 0 and
+          v.format == :hls and
+          v.corrupted == false,
       select: v.id
     )
     |> Video.not_deleted()
@@ -286,7 +298,12 @@ defmodule Algora.Library do
     video =
       with false <- is_live,
            {:ok, duration} <- get_duration(video),
-           {:ok, video} <- video |> change() |> put_change(:duration, duration) |> Repo.update() do
+           {:ok, video} <-
+             video
+             |> change()
+             |> put_change(:duration, duration)
+             |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
+             |> Repo.update() do
         video
       else
         _ -> video
@@ -435,10 +452,12 @@ defmodule Algora.Library do
   def store_thumbnail_from_file(%Video{} = video, src_path, opts \\ []) do
     with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, opts),
          {:ok, _} <-
-           Storage.upload(thumbnail, "#{video.uuid}/index.jpeg", content_type: "image/jpeg") do
+           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}",
+             content_type: "image/jpeg"
+           ) do
       video
       |> change()
-      |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
+      |> put_change(:thumbnail_url, Video.thumbnail_url(video, @thumbnail_filename))
       |> Repo.update()
     end
   end
@@ -446,10 +465,12 @@ defmodule Algora.Library do
   def store_thumbnail(%Video{} = video, contents) do
     with {:ok, thumbnail} <- create_thumbnail(video, contents),
          {:ok, _} <-
-           Storage.upload(thumbnail, "#{video.uuid}/index.jpeg", content_type: "image/jpeg") do
+           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}",
+             content_type: "image/jpeg"
+           ) do
       video
       |> change()
-      |> put_change(:thumbnail_url, "#{video.url_root}/index.jpeg")
+      |> put_change(:thumbnail_url, Video.thumbnail_url(video, @thumbnail_filename))
       |> Repo.update()
     end
   end
@@ -611,7 +632,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -627,7 +648,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -644,7 +665,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -686,7 +707,7 @@ defmodule Algora.Library do
       where: v.show_id in ^ids
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -706,7 +727,7 @@ defmodule Algora.Library do
       }
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -726,7 +747,7 @@ defmodule Algora.Library do
           v.user_id == ^channel.user_id
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
@@ -747,16 +768,35 @@ defmodule Algora.Library do
           v.user_id == ^channel.user_id
     )
     |> Video.not_deleted()
-    |> order_by_inserted(:desc)
+    |> order_by_live()
     |> Repo.all()
   end
 
-  def list_active_channels(opts) do
+  def list_live_channels(opts) do
     from(u in Algora.Accounts.User,
       where: u.is_live and u.visibility == :public,
       limit: ^Keyword.fetch!(opts, :limit),
-      order_by: [desc: u.updated_at],
-      select: struct(u, [:id, :handle, :channel_tagline, :avatar_url, :external_homepage_url])
+      order_by: [desc: u.updated_at]
+    )
+    |> Repo.all()
+    |> Enum.map(&get_channel!/1)
+  end
+
+  def list_active_channels(opts) do
+    limit = Keyword.fetch!(opts, :limit)
+
+    from(u in Algora.Accounts.User,
+      left_join:
+        v in subquery(
+          from v in Algora.Library.Video,
+            where: is_nil(v.deleted_at),
+            group_by: v.user_id,
+            select: %{user_id: v.user_id, last_video_at: max(v.inserted_at)}
+        ),
+      on: u.id == v.user_id,
+      where: u.visibility == :public and (u.featured == true or u.is_live == true),
+      order_by: [desc: u.is_live, desc: v.last_video_at, desc: u.id],
+      limit: ^limit
     )
     |> Repo.all()
     |> Enum.map(&get_channel!/1)
@@ -816,8 +856,8 @@ defmodule Algora.Library do
     |> Repo.update()
   end
 
-  defp order_by_inserted(%Ecto.Query{} = query, direction) when direction in [:asc, :desc] do
-    from(s in query, order_by: [{^direction, s.inserted_at}])
+  defp order_by_live(%Ecto.Query{} = query) do
+    from(s in query, order_by: [desc: s.is_live, desc: s.inserted_at, desc: s.id])
   end
 
   defp topic(user_id) when is_integer(user_id), do: "channel:#{user_id}"

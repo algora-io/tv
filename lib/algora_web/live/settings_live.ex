@@ -21,22 +21,96 @@ defmodule AlgoraWeb.SettingsLive do
           <.input field={@form[:name]} label="Name" />
           <.input label="Email" name="email" value={@current_user.email} disabled />
           <.input field={@form[:channel_tagline]} label="Stream tagline" />
-          <div>
-            <.input
-              label="Stream URL"
-              name="stream_url"
-              value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
-              disabled
-            />
-            <p class="mt-2 text-sm text-gray-400">
-              <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
-            </p>
-          </div>
           <:actions>
             <.button>Save</.button>
           </:actions>
         </.simple_form>
       </div>
+      <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
+        <.header>
+          Stream Connection 
+          <:subtitle>
+            Connection details for live streaming with RTMP 
+          </:subtitle>
+        </.header>
+          <div class="w-full">
+            <div class="flex justify-between items-center">
+              <label class="block text-sm font-semibold leading-6 text-gray-100 mb-2">Stream URL</label>
+            </div>
+            <div class="flex items-center">
+              <div class="relative w-full">
+                <.input
+                  class="w-full p-2.5 test-sm mr-16 py-1 px-2 leading-tight block ext-sm"
+                  name="stream_url"
+                  value={@stream_url}
+                  disabled
+                />
+              </div>
+              <button
+                 id="copy_stream_url"
+                 class="flex-shrink-0 z-10 inline-flex items-center py-3 px-4 ml-2 text-sm font-medium text-center rounded bg-gray-700 hover:bg-gray-600"
+                 phx-hook="CopyToClipboard"
+                 data-value={@stream_url}
+                 data-notice="Copied Stream Url">
+                <span id="default-icon">
+                  <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
+                    <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z"/>
+                  </svg>
+                </span>
+                <span id="success-icon" class="hidden inline-flex items-center">
+                  <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 12">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5.917 5.724 10.5 15 1.5"/>
+                  </svg>
+                </span>
+              </button>
+            </div>
+            <p class="mt-2 text-sm text-gray-400">
+              <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
+            </p>
+          </div>
+
+          <div class="w-full">
+            <div class="flex justify-between items-center">
+              <label class="block text-sm font-semibold leading-6 text-gray-100 mb-2">Stream Key</label>
+            </div>
+            <div class="flex items-center">
+              <button
+                phx-click="regenerate_stream_key"
+                class="flex-shrink-0 z-10 inline-flex items-center py-2 px-4 mr-2 text-sm font-medium text-center rounded bg-gray-700 hover:bg-gray-600">
+                  Generate
+              </button>
+              <div class="relative w-full">
+                <.input
+                  id="stream_key"
+                  name="stream_key"
+                  class="w-full p-2.5 test-sm mr-16 py-1 px-2 leading-tight block ext-sm"
+                  value={@stream_key}
+                  disabled
+                />
+              </div>
+              <button
+                id="copy_stream_key"
+                class="flex-shrink-0 z-10 inline-flex items-center py-3 px-4 ml-2 text-sm font-medium text-center rounded bg-gray-700 hover:bg-gray-600"
+                phx-hook="CopyToClipboard"
+                data-value={@stream_key}
+                data-notice="Copied Stream Key">
+                <span id="default-icon">
+                  <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
+                    <path d="M16 1h-3.278A1.992 1.992 0 0 0 11 0H7a1.993 1.993 0 0 0-1.722 1H2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm-3 14H5a1 1 0 0 1 0-2h8a1 1 0 0 1 0 2Zm0-4H5a1 1 0 0 1 0-2h8a1 1 0 1 1 0 2Zm0-5H5a1 1 0 0 1 0-2h2V2h4v2h2a1 1 0 1 1 0 2Z"/>
+                  </svg>
+                </span>
+                <span id="success-icon" class="hidden inline-flex items-center">
+                  <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 12">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5.917 5.724 10.5 15 1.5"/>
+                  </svg>
+                </span>
+              </button>
+            </div>
+            <p class="mt-2 text-sm text-gray-400">
+              <%= "Paste into OBS Studio > File > Settings > Stream > Stream Key" %>
+            </p>
+          </div>
+        </div>
       <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
           Integrations
@@ -153,6 +227,10 @@ defmodule AlgoraWeb.SettingsLive do
     destinations = Accounts.list_destinations(current_user.id)
     destination_changeset = Accounts.change_destination(%Destination{})
     connected_with_restream = Accounts.has_restream_token?(current_user)
+    rtmp_host = case URI.parse(AlgoraWeb.Endpoint.url()).host do
+      "localhost" -> "127.0.0.1"
+      host -> host
+    end
 
     {:ok,
      socket
@@ -161,7 +239,12 @@ defmodule AlgoraWeb.SettingsLive do
      |> assign(destinations: destinations)
      |> assign(destination_form: to_form(destination_changeset))
      |> assign(show_add_destination_modal: false)
-     |> assign(connected_with_restream: connected_with_restream)}
+     |> assign(stream_key: current_user.stream_key)
+     |> assign(connected_with_restream: connected_with_restream),
+     temporary_assigns: [
+       stream_url: "rtmp://#{rtmp_host}:#{Algora.config([:rtmp_port])}/#{Algora.config([:rtmp_path])}"
+     ]
+    }
   end
 
   def handle_event("validate", %{"user" => params}, socket) do
@@ -210,6 +293,24 @@ defmodule AlgoraWeb.SettingsLive do
       {:error, changeset} ->
         {:noreply, assign(socket, destination_form: to_form(changeset))}
     end
+  end
+
+  def handle_event("regenerate_stream_key", _params, socket) do
+    case Accounts.gen_stream_key(socket.assigns.current_user) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(stream_key: user.stream_key)
+         |> put_flash(:info, "Stream key regenerated!")}
+      {:error, _changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to regenerate stream key!")}
+    end
+  end
+
+  def handle_event("copied_to_clipboard", %{ "notice" => notice }, socket) do
+    {:noreply, socket |> put_flash(:info, notice)}
   end
 
   def handle_params(params, _url, socket) do

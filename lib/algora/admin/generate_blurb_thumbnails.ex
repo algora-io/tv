@@ -1,11 +1,17 @@
 defmodule Algora.Admin.GenerateBlurbThumbnails do
   import Ecto.Query
   alias Algora.Ads.ProductReview
-  alias Algora.{Clipper, Repo}
+  alias Algora.{Clipper, Repo, Storage}
+  require Logger
 
   def run do
     for product_review <- fetch_product_reviews() do
-      :ok = process_product_review(product_review)
+      try do
+        :ok = process_product_review(product_review)
+      rescue
+        e ->
+          Logger.error(Exception.format(:error, e, __STACKTRACE__))
+      end
     end
   end
 
@@ -105,8 +111,8 @@ defmodule Algora.Admin.GenerateBlurbThumbnails do
 
     output_path = Path.join(temp_dir, "output.mp4")
 
-    init_url = maybe_to_absolute(init_tag.uri, video)
-    segment_url = maybe_to_absolute(segment_tag.uri, video)
+    init_url = Storage.to_absolute(:video, video.uuid, init_tag.uri)
+    segment_url = Storage.to_absolute(:video, video.uuid, segment_tag.uri)
 
     init_path = download_file(init_url, Path.join(temp_dir, "init.mp4"))
     segment_path = download_file(segment_url, Path.join(temp_dir, "segment.m4s"))
@@ -121,13 +127,5 @@ defmodule Algora.Admin.GenerateBlurbThumbnails do
     {:ok, %{body: body}} = HTTPoison.get(url)
     File.write!(path, body)
     path
-  end
-
-  defp maybe_to_absolute(uri, video) do
-    if URI.parse(uri).scheme do
-      uri
-    else
-      Algora.Clipper.to_absolute(:video, video.uuid, uri)
-    end
   end
 end
