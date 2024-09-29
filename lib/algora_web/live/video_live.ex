@@ -75,7 +75,7 @@ defmodule AlgoraWeb.VideoLive do
             ]}>
               <p><%= @video.title %></p>
             </blockquote>
-            <%= if @has_many_thumbnails? do %>
+            <%= if @current_user && (@video.user_id == @current_user.id || Accounts.admin?(@current_user)) && @has_many_thumbnails? do %>
               <.button phx-click={CoreComponents.show_modal("choose_thumbnail")}>
                 Choose thumbnail
               </.button>
