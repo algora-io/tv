@@ -58,7 +58,7 @@ defmodule AlgoraWeb.UserAuth do
   %{request_path: request_path, query_string: query_string} = conn
 
   return_to = if query_string == "", do: request_path, else: request_path <> "?" <> query_string
-  socket = put_session(socket, :user_return_to, return_to)
+  socket = LiveView.put_session(socket, :user_return_to, return_to)
 
   socket
   |> LiveView.put_flash(:error, "Please sign in")
