@@ -465,7 +465,7 @@ defmodule Algora.Library do
       }
       |> change()
       |> VideoThumbnail.put_video(video)
-      |> Repo.insert()
+      |> Repo.insert(on_conflict: :nothing)
 
       video
       |> change()
@@ -487,7 +487,7 @@ defmodule Algora.Library do
       }
       |> change()
       |> VideoThumbnail.put_video(video)
-      |> Repo.insert()
+      |> Repo.insert(on_conflict: :nothing)
 
       video
       |> change()
