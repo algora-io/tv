@@ -55,10 +55,10 @@ defmodule AlgoraWeb.UserAuth do
 
   defp redirect_require_login(socket) do
   
-  conn = Phoenix.LiveView.get_connect_info(socket).conn
-
-  conn
-  |> maybe_store_return_to()  # Store the return path before flashing the message
+  case LiveView.get_connect_info(socket).conn
+    %{conn: conn} ->
+      conn
+  |> maybe_store_return_to()
   |> LiveView.put_flash(:error, "Please sign in")
   |> LiveView.redirect(to: ~p"/auth/login")
 end
