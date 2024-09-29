@@ -345,7 +345,7 @@ defmodule AlgoraWeb.ShowLive.Show do
 
     show = Shows.get_show_by_fields!(slug: slug)
 
-    conn = Phoenix.LiveView.get_connect_info(socket).conn
+    conn = get_connect_info(socket, :conn)
 
     cond do
       current_user == nil ->
