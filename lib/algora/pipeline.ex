@@ -64,6 +64,7 @@ defmodule Algora.Pipeline do
 
   def handle_init(_context, %{app: @app, stream_key: stream_key, client_ref: client_ref}) do
     Membrane.Logger.info("Starting pipeline #{@app}")
+    true = Process.link(client_ref)
     if user = Algora.Accounts.get_user_by(stream_key: stream_key) do
       video = Library.init_livestream!()
       {:ok, _} = Registry.register(Algora.Pipeline.Registry, stream_key, {:pipeline, video.uuid})
@@ -147,7 +148,7 @@ defmodule Algora.Pipeline do
 
   def handle_child_notification({:track_activity, track}, _element, _ctx,  %{waiting_activity: true} = state) do
     Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
-    Algora.Library.toggle_streamer_live(state.video, true)
+    Algora.Library.toggle_streamer_live(state.video, true, true)
     {[], %{ state | waiting_activity: false }}
   end
   def handle_child_notification({:track_activity, _track}, _element, _ctx, state) do
@@ -155,8 +156,8 @@ defmodule Algora.Pipeline do
   end
 
   def handle_child_notification(:end_of_stream, :funnel_video, _ctx, state) do
+    Algora.Library.toggle_streamer_live(state.video, false, true)
     state = terminate_later(state)
-    Algora.Library.toggle_streamer_live(state.video, false)
     {[notify_child: {:sink, :disconnected}], state}
   end
 
@@ -272,7 +273,7 @@ defmodule Algora.Pipeline do
 
   def handle_info(:stream_interupted, _ctx, state) do
     Membrane.Logger.info("Stream interupted #{inspect(state)}")
-    Algora.Library.toggle_streamer_live(state.video, false)
+    Algora.Library.toggle_streamer_live(state.video, false, true)
     {[], state}
   end
 
