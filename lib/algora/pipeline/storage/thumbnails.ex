@@ -16,8 +16,11 @@ defmodule Algora.Pipeline.Storage.Thumbnails do
   @pubsub Algora.PubSub
 
   def store_thumbnail(video, video_header, contents, marker) do
-    with {:ok, video} <- Library.store_thumbnail(video, video_header <> contents, marker),
+    with {:ok, video_thumbnail} <- Library.store_thumbnail(video, video_header <> contents, marker),
          {:ok, video} <- Library.store_og_image(video, marker) do
+      if (is_first_marker?(marker)) do
+        Library.update_thumbnail_url(video, video_thumbnail)
+      end
       broadcast_thumbnails_generated!(video)
     else
       _ ->
@@ -29,6 +32,10 @@ defmodule Algora.Pipeline.Storage.Thumbnails do
     Enum.find(@thumbnail_markers, fn marker ->
       marker.segment_sn == segment_sn
     end)
+  end
+
+  def is_first_marker?(marker) do
+    List.first(@thumbnail_markers) == marker
   end
 
   def is_last_marker?(marker) do

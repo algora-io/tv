@@ -467,10 +467,7 @@ defmodule Algora.Library do
       |> VideoThumbnail.put_video(video)
       |> Repo.insert(on_conflict: :nothing)
 
-      video
-      |> change()
-      |> put_change(:thumbnail_url, video_thumbnail.thumbnail_url)
-      |> Repo.update()
+      update_thumbnail_url(video, video_thumbnail)
     end
   end
 
@@ -481,18 +478,13 @@ defmodule Algora.Library do
              content_type: "image/jpeg"
            ) do
 
-      {:ok, video_thumbnail} = %VideoThumbnail{
+      %VideoThumbnail{
         thumbnail_url: Video.thumbnail_url(video, thumbnail_filename(marker.minutes)),
         minutes: marker.minutes
       }
       |> change()
       |> VideoThumbnail.put_video(video)
       |> Repo.insert(on_conflict: :nothing)
-
-      video
-      |> change()
-      |> put_change(:thumbnail_url, video_thumbnail.thumbnail_url)
-      |> Repo.update()
     end
   end
 
@@ -590,6 +582,13 @@ defmodule Algora.Library do
       |> put_change(:og_image_url, "#{video.url_root}/og-#{marker.minutes}.png")
       |> Repo.update()
     end
+  end
+
+  def update_thumbnail_url(%Video{} = video, %VideoThumbnail{} = video_thumbnail) do
+    video
+    |> change()
+    |> put_change(:thumbnail_url, video_thumbnail.thumbnail_url)
+    |> Repo.update()
   end
 
   def get_thumbnail_url(%Video{} = video) do
