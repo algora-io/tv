@@ -75,6 +75,13 @@ defmodule AlgoraWeb.Router do
       live "/:channel_handle/chat", ChatLive, :show
       live "/:channel_handle/:video_id/chat", ChatLive, :show
     end
+
+    live_session :chat_popout,
+      layout: {AlgoraWeb.Layouts, :live_chat},
+      root_layout: {AlgoraWeb.Layouts, :root_embed},
+      on_mount: [{AlgoraWeb.UserAuth, :ensure_authenticated}, AlgoraWeb.Nav] do
+      live "/:channel_handle/:video_id/chat_popout", ChatPopoutLive, :show
+    end
   end
 
   scope "/docs" do
