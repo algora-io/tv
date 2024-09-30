@@ -4,7 +4,7 @@ defmodule AlgoraWeb.ChatPopoutLive do
 
   import AlgoraWeb.Components.Avatar
 
-  alias Algora.{Accounts, Library, Chat}
+  alias Algora.{Accounts, Library, Chat, Repo}
   alias AlgoraWeb.RTMPDestinationIconComponent
 
   def render(assigns) do
@@ -22,7 +22,7 @@ defmodule AlgoraWeb.ChatPopoutLive do
               <div
                 :for={{id, message} <- @streams.messages}
                 id={id}
-                class="px-4 flex items-start gap-2"
+                class="group hover:bg-white/5 relative px-4 flex items-start gap-2"
               >
                 <div class="relative h-6 w-6 shrink-0">
                   <.user_avatar
@@ -44,6 +44,16 @@ defmodule AlgoraWeb.ChatPopoutLive do
                     <%= message.body %>
                   </span>
                 </div>
+                <button
+                    :if={@current_user && Chat.can_delete?(@current_user, message)}
+                    phx-click="delete"
+                    phx-value-id={message.id}
+                    class="absolute top-0.5 right-0.5 opacity-0 group-hover:opacity-100"
+                  >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -146,12 +156,29 @@ defmodule AlgoraWeb.ChatPopoutLive do
     end
   end
 
+  def handle_event("delete", %{"id" => id}, socket) do
+    %{current_user: current_user} = socket.assigns
+    message = Chat.get_message!(id)
+
+    if current_user && Chat.can_delete?(current_user, message) do
+      {:ok, message} = Chat.delete_message(message)
+      Chat.broadcast_message_deleted!(message)
+      {:noreply, socket}
+    else
+      {:noreply, socket |> put_flash(:error, "You can't do that")}
+    end
+  end
+
   def handle_info({Chat, %Chat.Events.MessageDeleted{message: message}}, socket) do
     {:noreply, stream_delete(socket, :messages, message)}
   end
 
   def handle_info({Chat, %Chat.Events.MessageSent{message: message}}, socket) do
     {:noreply, stream_insert(socket, :messages, message)}
+  end
+
+  def handle_info({Chat, %Chat.Events.MessageDeleted{message: message}}, socket) do
+    {:noreply, stream_delete(socket, :messages, message)}
   end
 
   defp system_message?(%Chat.Message{} = message) do
