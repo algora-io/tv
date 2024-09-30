@@ -321,8 +321,7 @@ defmodule AlgoraWeb.VideoLive do
             <ul class="pt-4 pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
               <li :for={{tab, i} <- Enum.with_index(@tabs)}>
               <a href="./chat" id="popout-chat-button" onclick="window.open(window.location.href+'/chat_popout' ,
-              'newwindow',
-              'width=400,height=400');
+              'newwindow');
    return false;"/>
                 <button
                   id={"side-panel-tab-#{tab}"}
