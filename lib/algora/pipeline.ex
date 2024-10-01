@@ -368,6 +368,11 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
+  def handle_info(%Messages.DeleteStream{} = _message, _ctx, state) do
+    :timer.send_after(5000, self(), :terminate)
+    {[], state}
+  end
+
   def handle_info(:terminate, _ctx, state) do
     Algora.Library.toggle_streamer_live(state.video, false)
     Membrane.Pipeline.terminate(self(), asynchronous?: true)
