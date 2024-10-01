@@ -49,7 +49,7 @@ FROM ${RUNNER_IMAGE}
 
 # Install runtime dependencies
 RUN apt-get update -y && \
-    apt-get install -y libstdc++6 openssl libncurses5 locales ffmpeg imagemagick postgresql-client inotify-tools git && \
+    apt-get install -y libstdc++6 curl sudo openssl libncurses5 locales ffmpeg imagemagick postgresql-client inotify-tools git && \
     apt-get clean && \
     rm -f /var/lib/apt/lists/*_*
 
