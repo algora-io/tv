@@ -199,6 +199,10 @@ defmodule Algora.Admin do
     nodes() |> Enum.flat_map(&Membrane.Pipeline.list_pipelines/1)
   end
 
+  def terminate_pipelines!() do
+    pipelines() |> Enum.map(&send(&1, :terminate))
+  end
+
   def broadcasts() do
     pipelines() |> Enum.map(fn pid -> GenServer.call(pid, :get_video_id) end)
   end
