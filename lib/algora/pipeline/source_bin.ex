@@ -112,12 +112,6 @@ defmodule Algora.Pipeline.SourceBin do
     {[notify_parent: notification], state}
   end
 
-  @impl true
-  def handle_parent_notification(:kill, _ctx, state) do
-    Process.exit(state.client_ref, :kill)
-    {[], state}
-  end
-
   @doc """
   Passes the control of the socket to the `source`.
 
