@@ -2,8 +2,7 @@ import Config
 
 config :algora,
   mode: :dev,
-  resume_rtmp: true,
-  transcode: System.get_env("TRANSCODE")
+  resume_rtmp: true
 
 config :algora, :buckets,
   media: System.get_env("BUCKET_MEDIA"),
