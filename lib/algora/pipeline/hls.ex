@@ -251,6 +251,9 @@ defmodule Algora.Pipeline.HLS do
 
   defp serialize_codec({:mp4a, %{aot_id: aot_id}}), do: String.downcase("mp4a.40.#{aot_id}")
 
+  defp serialize_codec({:hvc1, %{profile: profile, level: level}}),
+    do: "hvc1.#{profile}.4.L#{level}.B0"
+
   defp serialize_codec(_other), do: ""
 
   defp build_master_playlist(tracks) do

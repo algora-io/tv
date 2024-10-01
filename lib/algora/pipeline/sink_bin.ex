@@ -4,7 +4,7 @@ defmodule Algora.Pipeline.SinkBin do
   to eventually store them using provided storage configuration.
 
   ## Input streams
-  Parsed H264 or AAC video or audio streams are expected to be connected via the `:input` pad.
+  Parsed H264, H265 or AAC video or audio streams are expected to be connected via the `:input` pad.
   The type of stream has to be specified via the pad's `:encoding` option.
 
   ## Output
@@ -12,7 +12,7 @@ defmodule Algora.Pipeline.SinkBin do
   """
   use Membrane.Bin
 
-  alias Membrane.{AAC, H264, MP4, Time}
+  alias Membrane.{AAC, H264, H265, MP4, Time}
   alias Membrane.HTTPAdaptiveStream.Storage
   alias Membrane.HTTPAdaptiveStream.Manifest.Track
   alias Algora.Pipeline.Sink
@@ -112,12 +112,13 @@ defmodule Algora.Pipeline.SinkBin do
     accepted_format:
       any_of(
         Membrane.AAC,
-        Membrane.H264
+        Membrane.H264,
+        Membrane.H265
       ),
     availability: :on_request,
     options: [
       encoding: [
-        spec: :AAC | :H264,
+        spec: :AAC | :H264 | :H265,
         description: """
         Encoding type determining which parser will be used for the given stream.
         """
@@ -208,10 +209,15 @@ defmodule Algora.Pipeline.SinkBin do
     {[spec: spec], state}
   end
 
-  defp do_handle_pad_added(pad, %{encoding: :H264} = pad_options, ctx, %{mode: :muxed_av} = state)
-       when is_map_key(ctx.children, :audio_tee) do
+ defp do_handle_pad_added(
+         pad,
+         %{encoding: encoding} = pad_options,
+         ctx,
+         %{mode: :muxed_av} = state
+       )
+       when encoding in [:H264, :H265] and is_map_key(ctx.children, :audio_tee) do
     Pad.ref(:input, ref) = pad
-    parser = get_parser(:H264, state)
+    parser = get_parser(encoding, state)
     muxer = cmaf_child_definiton(pad_options)
 
     spec = [
@@ -228,7 +234,8 @@ defmodule Algora.Pipeline.SinkBin do
     {[spec: spec], state}
   end
 
-  defp do_handle_pad_added(_pad, %{encoding: :H264}, _ctx, %{mode: :muxed_av} = state) do
+  defp do_handle_pad_added(_pad, %{encoding: encoding}, _ctx, %{mode: :muxed_av} = state)
+       when encoding in [:H264, :H265] do
     state = increment_streams_counters(state)
     {[], state}
   end
@@ -239,7 +246,7 @@ defmodule Algora.Pipeline.SinkBin do
 
     postponed_cmaf_muxers =
       Map.values(ctx.pads)
-      |> Enum.filter(&(&1.direction == :input and &1.options[:encoding] == :H264))
+      |> Enum.filter(&(&1.direction == :input and &1.options[:encoding] in [:H264, :H265]))
       |> Enum.map(fn pad_data ->
         Pad.ref(:input, cmaf_ref) = pad_data.ref
         muxer = cmaf_child_definiton(pad_options)
@@ -377,11 +384,15 @@ defmodule Algora.Pipeline.SinkBin do
         metadata.options.encoding == :AAC
       end)
 
-  defp get_parser(encoding, state) do
-    if encoding == :AAC,
-      do: %AAC.Parser{output_config: :esds, out_encapsulation: :none},
-      else: %H264.Parser{
-        output_stream_structure: if(state.mp4_parameters_in_band?, do: :avc3, else: :avc1)
-      }
-  end
+  defp get_parser(:AAC, _state), do: %AAC.Parser{output_config: :esds, out_encapsulation: :none}
+
+  defp get_parser(:H264, state),
+    do: %H264.Parser{
+      output_stream_structure: if(state.mp4_parameters_in_band?, do: :avc3, else: :avc1)
+    }
+
+  defp get_parser(:H265, state),
+    do: %H265.Parser{
+      output_stream_structure: if(state.mp4_parameters_in_band?, do: :hev1, else: :hvc1)
+    }
 end
