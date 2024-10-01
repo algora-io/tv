@@ -169,6 +169,10 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
+  def handle_child_notification(:finalized, :sink, _ctx, state) do
+    {[terminate: :normal], state}
+  end
+
   def handle_child_notification(message, _element, _ctx, state) do
     Membrane.Logger.info("Unhandled child notification #{inspect(message)}")
     {[], state}
@@ -220,9 +224,65 @@ defmodule Algora.Pipeline do
   end
 
   def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
+    %{ framerate: source_framerate } = state.data_frame
     structure = if transcode = transcode_formats(state.data_frame) do
-      %{ framerate: source_framerate } = state.data_frame
-      Enum.map(transcode, fn(%{ framerate: framerate, height: height, width: width, track_name: track_name }) ->
+      Enum.flat_map(transcode, fn(%{ framerate: framerate, height: height, width: width, track_name: track_name }) ->
+        [
+          #
+          get_child(:tee_video)
+          |> child(%Membrane.H264.Parser{
+            output_stream_structure: :annexb,
+            generate_best_effort_timestamps: %{framerate: {trunc(source_framerate), @frame_devisor}}
+          })
+          |> child(Membrane.H264.FFmpeg.Decoder)
+          |> child(%Membrane.FramerateConverter{framerate: {trunc(framerate), @frame_devisor}})
+          |> child(%Membrane.FFmpeg.SWScale.Scaler{
+            output_height: height,
+            output_width: width
+          })
+          |> child({:tee_video_transcoder,  "#{track_name}-#{reconnect}"}, Membrane.Tee.Parallel),
+
+          #
+          get_child({:tee_video_transcoder,  "#{track_name}-#{reconnect}"})
+          |> child(%Membrane.H264.FFmpeg.Encoder{
+            preset: :fast,
+            crf: 30,
+          })
+          |> child({:video_reconnect, "#{track_name}-#{reconnect}-h264"}, Membrane.Tee.Parallel)
+          |> via_in(Pad.ref(:input, "#{track_name}-h264"),
+            options: [
+              track_name: "#{track_name}-h264",
+              encoding: :H264,
+              segment_duration: @segment_duration,
+              partial_segment_duration: @partial_segment_duration
+            ]
+          )
+          |> get_child(:sink),
+        ] ++ if Algora.config([:supports_h265]) do
+          [
+            #
+            get_child({:tee_video_transcoder,  "#{track_name}-#{reconnect}"})
+            |> child(%Membrane.H265.FFmpeg.Encoder{
+              preset: :fast,
+              crf: 30,
+            })
+            |> child({:video_reconnect, "#{track_name}-#{reconnect}-h265"}, Membrane.Tee.Parallel)
+            |> via_in(Pad.ref(:input, "#{track_name}-h265"),
+              options: [
+                track_name: "#{track_name}-h265",
+                encoding: :H265,
+                segment_duration: @segment_duration,
+                partial_segment_duration: @partial_segment_duration
+              ]
+            )
+            |> get_child(:sink),
+          ]
+        else
+          []
+        end
+      end)
+    else
+      [
         #
         get_child(:tee_video)
         |> child(%Membrane.H264.Parser{
@@ -230,30 +290,10 @@ defmodule Algora.Pipeline do
           generate_best_effort_timestamps: %{framerate: {trunc(source_framerate), @frame_devisor}}
         })
         |> child(Membrane.H264.FFmpeg.Decoder)
-        |> child(%Membrane.FramerateConverter{framerate: {trunc(framerate), @frame_devisor}})
-        |> child(%Membrane.FFmpeg.SWScale.Scaler{
-          output_height: height,
-          output_width: width
+        |> child(%Membrane.H265.FFmpeg.Encoder{
+          preset: :fast,
+          crf: 30,
         })
-        |> child(%Membrane.H264.FFmpeg.Encoder{
-          preset: :ultrafast,
-          gop_size: trunc(framerate * 2),
-        })
-        |> child({:video_reconnect, "#{track_name}-#{reconnect}"}, Membrane.Tee.Parallel)
-        |> via_in(Pad.ref(:input, track_name),
-          options: [
-            track_name: track_name,
-            encoding: :H264,
-            segment_duration: @segment_duration,
-            partial_segment_duration: @partial_segment_duration
-          ]
-        )
-        |> get_child(:sink)
-      end)
-    else
-      [
-        #
-        get_child(:tee_video)
         |> via_in(Pad.ref(:input, "video_master"),
           options: [
             track_name: "video_master",
@@ -289,8 +329,11 @@ defmodule Algora.Pipeline do
       remove_link: {:funnel_audio, Pad.ref(:input, reconnect)},
       remove_link: {:sink, Pad.ref(:input, "audio_master")},
     ] ++ if Algora.config([:transcode]) do
-      Enum.map(transcode_formats(state.data_frame), fn(%{track_name: track_name}) ->
-        {:remove_link, {:sink, Pad.ref(:input, track_name)}}
+      Enum.flat_map(transcode_formats(state.data_frame), fn(%{track_name: track_name}) ->
+        [
+          {:remove_link, {:sink, Pad.ref(:input, "#{track_name}-h265")}},
+          {:remove_link, {:sink, Pad.ref(:input, "#{track_name}-h264")}}
+        ]
       end)
     else
       [
@@ -375,7 +418,6 @@ defmodule Algora.Pipeline do
 
   def handle_info(:terminate, _ctx, state) do
     Algora.Library.toggle_streamer_live(state.video, false)
-    Membrane.Pipeline.terminate(self(), asynchronous?: true)
     {[notify_child: {:sink, :finalize}], state}
   end
 

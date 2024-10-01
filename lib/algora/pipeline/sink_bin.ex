@@ -247,7 +247,7 @@ defmodule Algora.Pipeline.SinkBin do
     postponed_cmaf_muxers =
       Map.values(ctx.pads)
       |> Enum.filter(&(&1.direction == :input and &1.options[:encoding] in [:H264, :H265]))
-      |> Enum.map(fn pad_data ->
+      |> Enum.flat_map(fn pad_data ->
         Pad.ref(:input, cmaf_ref) = pad_data.ref
         muxer = cmaf_child_definiton(pad_options)
         # membraneframework/membrane_http_adaptive_stream_plugin#106
@@ -366,6 +366,10 @@ defmodule Algora.Pipeline.SinkBin do
       ) do
     # notify when track is discontinued
     {[notify_parent: {:track_discontinued, track_info}], state}
+  end
+
+  def handle_child_notification(:finalized, :sink, _ctx, state) do
+    {[notify_parent: :finalized], state}
   end
 
   def handle_parent_notification(:finalize, _ctx, state) do

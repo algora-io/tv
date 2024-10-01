@@ -188,7 +188,7 @@ defmodule Algora.Pipeline.Sink do
       {:ok, storage} ->
         state = %{state | manifest: manifest, storage: storage}
         :ok = maybe_schedule_cleanup_task(state)
-        {[], state}
+        {[notify_parent: :finalized], state}
 
       {{:error, reason}, _storage} ->
         raise "Failed to persist the manifest due to #{inspect(reason)}"
