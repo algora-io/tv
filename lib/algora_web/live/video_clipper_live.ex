@@ -298,6 +298,7 @@ defmodule AlgoraWeb.VideoProducerLive do
         current_time: start,
         end_time: end_time,
         title: "Previewing Clip #{index + 1}",
+        current_user: socket.assigns.current_user
       )
 
       {:noreply, assign(socket, preview_clip: %{start: start, end: end_time})}
