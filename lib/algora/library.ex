@@ -7,7 +7,7 @@ defmodule Algora.Library do
   import Ecto.Query, warn: false
   import Ecto.Changeset
   alias Algora.Accounts.User
-  alias Algora.{Repo, Accounts, Storage, Cache, ML}
+  alias Algora.{Repo, Accounts, Storage, Cache, ML, Admin}
   alias Algora.Library.{Channel, Video, Events, Subtitle, Segment}
 
   @pubsub Algora.PubSub
@@ -60,7 +60,7 @@ defmodule Algora.Library do
       |> change()
       |> Video.put_video_meta(:vod, :mp4, basename)
 
-    dir = Path.join("/data", video.changes.uuid)
+    dir = Path.join(Admin.tmp_dir(), video.changes.uuid)
     File.mkdir_p!(dir)
     local_path = Path.join(dir, video.changes.filename)
     File.cp!(tmp_path, local_path)
@@ -90,7 +90,7 @@ defmodule Algora.Library do
 
     %{uuid: mp4_uuid, filename: mp4_filename, remote_path: mp4_remote_path} = mp4_video.changes
 
-    dir = Path.join("/data", mp4_uuid)
+    dir = Path.join(Admin.tmp_dir(), mp4_uuid)
     File.mkdir_p!(dir)
     mp4_local_path = Path.join(dir, mp4_filename)
 
@@ -121,14 +121,17 @@ defmodule Algora.Library do
         format: :hls,
         is_live: false,
         visibility: video.visibility,
-        user_id: video.user_id
+        user_id: video.user_id,
+        channel_handle: video.channel_handle,
+        channel_name: video.channel_name,
+        description: video.description
       }
       |> change()
       |> Video.put_video_url(:vod, :hls)
 
     %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
 
-    dir = Path.join("/data", hls_uuid)
+    dir = Path.join(Admin.tmp_dir(), hls_uuid)
     File.mkdir_p!(dir)
     hls_local_path = Path.join(dir, hls_filename)
 

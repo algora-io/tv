@@ -183,6 +183,8 @@ const Hooks = {
         player_type: string;
         current_time: number;
         channel_name: string;
+        clip_start_time: number | undefined;
+        clip_end_time: number | undefined;
       }) => {
         if (this.playerId !== opts.player_id) {
           return;
@@ -232,6 +234,14 @@ const Hooks = {
         this.player.currentTime = startTime;
         this.player.streamType = opts.is_live ? "ll-live:dvr" : "on-demand";
         this.player.src = opts.url;
+
+        if (typeof(opts.clip_end_time) === "number"){
+          this.player.clipEndTime = opts.clip_end_time;
+        }
+        if (typeof(opts.clip_start_time) === "number"){
+          this.player.clipStartTime = opts.clip_start_time;
+          this.player.play();
+        }
 
         this.player.addEventListener("provider-change", (event) => {
           const provider = event.detail;
