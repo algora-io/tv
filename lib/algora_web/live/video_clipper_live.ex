@@ -8,84 +8,97 @@ defmodule AlgoraWeb.VideoProducerLive do
   @impl true
   def render(assigns) do
       ~H"""
-      <div class="max-w-3xl mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
-        <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
-          <.header>
-            Clip Editor
-            <:subtitle>
-              Create clips from your livestreams
-            </:subtitle>
-          </.header>
-
-          <.simple_form for={@form} phx-change="update_form" phx-submit="create_video">
-            <.input
-              field={@form[:livestream_id]}
-              type="select"
-              label="Select Livestream"
-              options={Enum.map(@livestreams, &{&1.title, &1.id})}
-              value={@selected_livestream && @selected_livestream.id}
-              prompt="Choose a livestream"
-            />
-            <.input field={@form[:title]} type="text" label="Title" />
-            <.input field={@form[:description]} type="textarea" label="Description" />
-
-            <.button type="button" phx-click="add_clip">Add New Clip</.button>
-
-            <div class="space-y-4">
-              <%= for {clip, index} <- Enum.with_index(@clips) do %>
-                <div class="bg-white/5 rounded-lg p-4 ring-1 ring-white/15">
-                  <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-lg font-semibold">Clip <%= index + 1 %></h3>
-                    <.button type="button" phx-click="remove_clip" phx-value-index={index} class="text-red-500">
-                      <Heroicons.x_mark solid class="h-5 w-5" />
-                    </.button>
+      <div class="min-h-screen">
+          <div class="max-w-6xl mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
+            <h1 class="text-lg font-semibold leading-8 text-gray-100 focus:outline-none">Clip editor</h1>
+            <.simple_form for={@form} phx-change="update_form" phx-submit="create_video">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div class="relative">
+                    <.input
+                      field={@form[:livestream_id]}
+                      type="select"
+                      options={Enum.map(@livestreams, &{&1.title, &1.id})}
+                      value={@selected_livestream && @selected_livestream.id}
+                      prompt="Select livestream"
+                      class="w-full bg-white/5 border border-white/15 rounded p-2 appearance-none"
+                    />
                   </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <.input type="text" name={"video_production[clips][#{index}][clip_from]"} value={clip.clip_from} label="Start Time" placeholder="HH:MM:SS" phx-debounce="300"/>
-                    <.input type="text" name={"video_production[clips][#{index}][clip_to]"} value={clip.clip_to} label="End Time" placeholder="HH:MM:SS" phx-debounce="300"/>
+                  <div class="aspect-video bg-white/5 rounded flex items-center justify-center">
+                    <%= if @selected_livestream do %>
+                      <div id="preview-player-container" phx-update="ignore">
+                        <.live_component
+                          module={PlayerComponent}
+                          id="preview-player"
+                          video={@selected_livestream}
+                          current_time={@preview_clip && @preview_clip.start || 0}
+                          end_time={@preview_clip && @preview_clip.end || nil}
+                          current_user={@current_user}
+                        />
+                      </div>
+                    <% else %>
+                      <Heroicons.play solid class="w-16 h-16" />
+                    <% end %>
                   </div>
-                  <div class="flex justify-between mt-4">
-                    <.button type="button" phx-click="move_clip_up" phx-value-index={index} disabled={index == 0}>Move Up</.button>
-                    <.button type="button" phx-click="move_clip_down" phx-value-index={index} disabled={index == length(@clips) - 1}>Move Down</.button>
-                    <.button type="button" phx-click="preview_clip" phx-value-index={index}>Preview Clip</.button>
-                  </div>
+                  <.input field={@form[:title]} type="text" label="Title" class="w-full bg-white/5 border border-white/15 rounded p-2" />
+                  <.input field={@form[:description]} type="textarea" label="Description" class="w-full bg-white/5 border border-white/15 rounded p-2 h-24" />
                 </div>
-              <% end %>
-            </div>
-
-            <:actions>
-              <.button type="submit" disabled={@processing}>Create Video</.button>
-            </:actions>
-          </.simple_form>
-
-          <%= if @selected_livestream do %>
-            <div class="mt-4 p-4 bg-white/5 rounded-lg ring-1 ring-white/15">
-              <h3 class="text-lg font-semibold mb-2">Video Preview</h3>
-              <div id="preview-player-container" phx-update="ignore">
-                <.live_component
-                  module={PlayerComponent}
-                  id="preview-player"
-                  video={@selected_livestream}
-                  current_time={@preview_clip && @preview_clip.start || 0}
-                  end_time={@preview_clip && @preview_clip.end || nil}
-                  current_user={@current_user}
-                />
+                <div class="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto p-2">
+                  <%= for {clip, index} <- Enum.with_index(@clips) do %>
+                    <div class="bg-white/5 rounded-lg p-4 space-y-2 ring-1 ring-white/15">
+                      <div class="flex justify-between items-center">
+                        <h3 class="font-semibold">Clip <%= index + 1 %></h3>
+                        <button phx-click="remove_clip" phx-value-index={index}>
+                          <Heroicons.x_mark solid class="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <label class="block text-xs mb-1">From</label>
+                          <.input type="text" name={"video_production[clips][#{index}][clip_from]"} value={clip.clip_from} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                        </div>
+                        <div>
+                          <label class="block text-xs mb-1">To</label>
+                          <.input type="text" name={"video_production[clips][#{index}][clip_to]"} value={clip.clip_to} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                        </div>
+                      </div>
+                      <.button type="button" phx-click="preview_clip" phx-value-index={index} class="w-full">Preview Clip</.button>
+                    </div>
+                  <% end %>
+                  <.button type="button" phx-click="add_clip" class="w-full">+ Add new clip</.button>
+                </div>
               </div>
-            </div>
-          <% end %>
-
-          <%= if @processing do %>
-            <div class="mt-4 p-4 bg-white/5 rounded-lg ring-1 ring-white/15">
-              <p class="font-semibold"><%= @progress.stage %></p>
-              <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2">
+              <:actions>
+                <.button type="submit" disabled={@processing} class="w-full rounded-xl p-3 font-semibold" disabled={@processing}>
+                  <%= if @processing, do: "Processing...", else: "Create video (#{total_duration(@clips)})" %>
+                </.button>
+              </:actions>
+            </.simple_form>
+            <%= if @processing do %>
+              <div class="mt-4 text-center text-sm text-gray-400"><%= @progress.stage %>...</div>
+              <div class="w-full bg-white/5 rounded-full h-2.5 mt-2">
                 <div class="bg-blue-600 h-2.5 rounded-full" style={"width: #{@progress.progress * 100}%"}></div>
               </div>
+            <% end %>
             </div>
-          <% end %>
         </div>
-      </div>
       """
     end
+
+  defp total_duration(clips) do
+    total_seconds = Enum.reduce(clips, 0, fn clip, acc ->
+      case {clip.clip_from, clip.clip_to} do
+        {"", ""} -> acc
+        {from, to} when from != "" and to != "" ->
+          from = Library.from_hhmmss(from)
+          to = Library.from_hhmmss(to)
+          acc + (to - from)
+        _ -> acc
+      end
+    end)
+
+    Library.to_hhmmss(total_seconds)
+  end
 
   @impl true
   def mount(_params, _session, socket) do
@@ -333,21 +346,37 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   @impl true
-  def handle_info({PlayerComponent, {:time_update, current_time}}, socket) do
-    if socket.assigns.preview_clip && current_time >= socket.assigns.preview_clip.end do
-      send_update(PlayerComponent, id: "preview-player", command: :pause)
+  def handle_info({:progress_update, progress}, socket) do
+    # Convert the progress to a value between 0 and 1
+    normalized_progress = case progress do
+      %{stage: :transmuxing, done: done, total: total} ->
+        0.6 + (done / total) * 0.3
+      %{stage: :persisting, done: done, total: total} ->
+        0.9 + (done / total) * 0.05
+      %{stage: :generating_thumbnail, done: _, total: _} ->
+        0.95
+      _ ->
+        socket.assigns.progress.progress
     end
-    {:noreply, socket}
+
+    updated_progress = %{
+      stage: progress.stage,
+      progress: normalized_progress
+    }
+
+    {:noreply, assign(socket, progress: updated_progress)}
   end
 
   @impl true
   def handle_event("create_video", %{"video_production" => params}, socket) do
+    socket = assign(socket, processing: true)
     case create_video(params, socket) do
       {:ok, video, updated_socket} ->
         if video.channel_handle && video.id do
           {:noreply,
            updated_socket
            |> assign(processing: false)
+           |> put_flash(:info, "Video created successfully!")
            |> push_redirect(to: ~p"/#{video.channel_handle}/#{video.id}")}
         else
           Logger.error("Invalid video data: channel_handle or id is nil. Video: #{inspect(video)}")
@@ -358,7 +387,7 @@ defmodule AlgoraWeb.VideoProducerLive do
         end
 
       {:error, %Ecto.Changeset{} = changeset, _socket} ->
-        {:noreply, assign_form(socket, changeset)}
+        {:noreply, socket |> assign(processing: false) |> assign_form(changeset)}
 
       {:error, reason, updated_socket} ->
         Logger.error("Error creating video: #{inspect(reason)}")
@@ -374,13 +403,11 @@ defmodule AlgoraWeb.VideoProducerLive do
     video = socket.assigns.selected_livestream
     current_user = socket.assigns.current_user
 
-    socket = put_flash(socket, :info, "Creating combined clip")
-    Process.sleep(100) # Give time for the flash to be rendered
+    socket = assign(socket, processing: true, progress: %{stage: "Initializing", progress: 0})
 
     case Clipper.create_combined_local_clips(video, clips) do
       {:ok, combined_clip_path} ->
-        socket = put_flash(socket, :info, "Initializing video")
-        Process.sleep(100) # Give time for the flash to be rendered
+        socket = assign(socket, progress: %{stage: "Creating combined clip", progress: 0.2})
 
         # Create a Phoenix.LiveView.UploadEntry struct
         upload_entry = %Phoenix.LiveView.UploadEntry{
@@ -392,6 +419,8 @@ defmodule AlgoraWeb.VideoProducerLive do
         # Initialize the new video using init_mp4!
         new_video = Library.init_mp4!(upload_entry, combined_clip_path, current_user)
 
+        socket = assign(socket, progress: %{stage: "Initializing video", progress: 0.4})
+
         # Update the video with additional information
         {:ok, updated_video} = Library.update_video(new_video, %{
           title: params["title"] || "New Video",
@@ -399,8 +428,7 @@ defmodule AlgoraWeb.VideoProducerLive do
           visibility: :unlisted
         })
 
-        socket = put_flash(socket, :info, "Processing video")
-        Process.sleep(100) # Give time for the flash to be rendered
+        socket = assign(socket, progress: %{stage: "Processing video", progress: 0.6})
 
         # Use transmux_to_hls to upload, process, and generate thumbnail
         processed_video = Library.transmux_to_hls(updated_video, fn progress ->
@@ -410,12 +438,12 @@ defmodule AlgoraWeb.VideoProducerLive do
         # Clean up temporary file
         File.rm(combined_clip_path)
 
-        socket = put_flash(socket, :info, "Video created successfully!")
+        socket = assign(socket, progress: %{stage: "Completed", progress: 1.0})
         {:ok, processed_video, socket}
 
       {:error, reason} ->
         Logger.error("Failed to create combined clip: #{inspect(reason)}")
-        socket = put_flash(socket, :error, "Failed to create combined clip: #{inspect(reason)}")
+        socket = assign(socket, processing: false, progress: nil)
         {:error, reason, socket}
     end
   end
