@@ -44,27 +44,37 @@ defmodule AlgoraWeb.VideoProducerLive do
                   <.input field={@form[:description]} type="textarea" label="Description" class="w-full bg-white/5 border border-white/15 rounded p-2 h-24" />
                 </div>
                 <div class="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto p-2">
-                  <%= for {clip, index} <- Enum.with_index(@clips) do %>
-                    <div class="bg-white/5 rounded-lg p-4 space-y-2 ring-1 ring-white/15">
-                      <div class="flex justify-between items-center">
-                        <h3 class="font-semibold">Clip <%= index + 1 %></h3>
-                        <button phx-click="remove_clip" phx-value-index={index}>
-                          <Heroicons.x_mark solid class="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div class="grid grid-cols-2 gap-2">
-                        <div>
-                          <label class="block text-xs mb-1">From</label>
-                          <.input type="text" name={"video_production[clips][#{index}][clip_from]"} value={clip.clip_from} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
-                        </div>
-                        <div>
-                          <label class="block text-xs mb-1">To</label>
-                          <.input type="text" name={"video_production[clips][#{index}][clip_to]"} value={clip.clip_to} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
-                        </div>
-                      </div>
-                      <.button type="button" phx-click="preview_clip" phx-value-index={index} class="w-full">Preview Clip</.button>
+                <%= for {clip, index} <- Enum.with_index(@clips) do %>
+                  <div class="bg-white/5 rounded-lg p-4 space-y-2 ring-1 ring-white/15 relative">
+                    <div class="flex justify-between items-center">
+                      <h3 class="font-semibold">Clip <%= index + 1 %></h3>
+                      <button type="button" phx-click="remove_clip" phx-value-index={index} class="absolute top-2 right-2 text-gray-400 hover:text-gray-200">
+                        <Heroicons.x_mark solid class="w-5 h-5" />
+                      </button>
                     </div>
-                  <% end %>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="block text-xs mb-1">From</label>
+                        <.input type="text" name={"video_production[clips][#{index}][clip_from]"} value={clip.clip_from} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                      </div>
+                      <div>
+                        <label class="block text-xs mb-1">To</label>
+                        <.input type="text" name={"video_production[clips][#{index}][clip_to]"} value={clip.clip_to} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                      </div>
+                    </div>
+                    <div class="flex py-2 space-x-2">
+                      <.button type="button" phx-click="preview_clip" phx-value-index={index} class="flex-grow">Preview Clip</.button>
+                      <div class="flex gap-2">
+                        <.button type="button" phx-click="move_clip_up" phx-value-index={index}>
+                          <Heroicons.chevron_up solid class="w-4 h-4" />
+                        </.button>
+                        <.button type="button" phx-click="move_clip_down" phx-value-index={index}>
+                          <Heroicons.chevron_down solid class="w-4 h-4" />
+                        </.button>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
                   <.button type="button" phx-click="add_clip" class="w-full">+ Add new clip</.button>
                 </div>
               </div>
