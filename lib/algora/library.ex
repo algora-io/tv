@@ -459,7 +459,7 @@ defmodule Algora.Library do
   end
 
   def store_thumbnail_from_file(%Video{} = video, src_path, marker \\ %{ minutes: 0 }, opts \\ []) do
-    with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, opts),
+    with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, marker, opts),
          {:ok, _} <-
            Storage.upload(thumbnail, "#{video.uuid}/#{thumbnail_filename(marker.minutes)}",
              content_type: "image/jpeg"
