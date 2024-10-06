@@ -75,23 +75,25 @@ defmodule AlgoraWeb.VideoLive do
             ]}>
               <p><%= @video.title %></p>
             </blockquote>
-            <%= if @current_user && (@video.user_id == @current_user.id || Accounts.admin?(@current_user)) && @has_many_thumbnails? do %>
-              <.button phx-click={CoreComponents.show_modal("choose_thumbnail")}>
-                Choose thumbnail
-              </.button>
-            <% end %>
-            <.button :if={@current_user} phx-click="toggle_subscription">
-              <%= if @subscribed? do %>
-                Unsubscribe
-              <% else %>
-                Subscribe
+            <div class="flex items-center gap-2 whitespace-nowrap">
+              <%= if @current_user && (@video.user_id == @current_user.id || Accounts.admin?(@current_user)) && @has_many_thumbnails? do %>
+                <.button phx-click={CoreComponents.show_modal("choose_thumbnail")}>
+                  Choose thumbnail
+                </.button>
               <% end %>
-            </.button>
-            <.button :if={!@current_user && @authorize_url}>
-              <.link navigate={@authorize_url}>
-                Subscribe
-              </.link>
-            </.button>
+              <.button :if={@current_user} phx-click="toggle_subscription">
+                <%= if @subscribed? do %>
+                  Unsubscribe
+                <% else %>
+                  Subscribe
+                <% end %>
+              </.button>
+              <.button :if={!@current_user && @authorize_url}>
+                <.link navigate={@authorize_url}>
+                  Subscribe
+                </.link>
+              </.button>
+            </div>
           </div>
           <div
             :if={@channel.solving_challenge}
