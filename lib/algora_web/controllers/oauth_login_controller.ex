@@ -1,6 +1,7 @@
 defmodule AlgoraWeb.OAuthLoginController do
   use AlgoraWeb, :controller
   require Logger
+  import AlgoraWeb.UserAuth, only: [maybe_store_return_to: 1]
 
   def new(conn, %{"provider" => "restream"} = params) do
     if conn.assigns.current_user do
@@ -11,7 +12,9 @@ defmodule AlgoraWeb.OAuthLoginController do
       |> put_session(:restream_state, state)
       |> redirect(external: Algora.Restream.authorize_url(state))
     else
-      conn |> redirect(to: ~p"/auth/login")
+      conn 
+      |> maybe_store_return_to()
+      |> redirect(to: ~p"/auth/login")
     end
   end
 end
