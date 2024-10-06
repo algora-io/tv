@@ -21,6 +21,24 @@ defmodule AlgoraWeb.SettingsLive do
           <.input field={@form[:name]} label="Name" />
           <.input label="Email" name="email" value={@current_user.email} disabled />
           <.input field={@form[:channel_tagline]} label="Stream tagline" />
+
+          <.live_component
+            module={AlgoraWeb.TagsComponent}
+            id="channel_tags"
+            name="channel_tags"
+            tags={@current_user.tags || []}
+          />
+          <div>
+            <.input
+              label="Stream URL"
+              name="stream_url"
+              value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
+              disabled
+            />
+            <p class="mt-2 text-sm text-gray-400">
+              <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
+            </p>
+          </div>
           <:actions>
             <.button>Save</.button>
           </:actions>
@@ -28,9 +46,9 @@ defmodule AlgoraWeb.SettingsLive do
       </div>
       <div class="space-y-6 bg-white/5 rounded-lg p-6 ring-1 ring-white/15">
         <.header>
-          Stream Connection 
+          Stream Connection
           <:subtitle>
-            Connection details for live streaming with RTMP 
+            Connection details for live streaming with RTMP
           </:subtitle>
         </.header>
           <div class="w-full">
@@ -233,18 +251,19 @@ defmodule AlgoraWeb.SettingsLive do
     end
 
     {:ok,
-     socket
-     |> assign(current_user: current_user)
-     |> assign_form(changeset)
-     |> assign(destinations: destinations)
-     |> assign(destination_form: to_form(destination_changeset))
-     |> assign(show_add_destination_modal: false)
-     |> assign(stream_key: current_user.stream_key)
-     |> assign(connected_with_restream: connected_with_restream),
-     temporary_assigns: [
-       stream_url: "rtmp://#{rtmp_host}:#{Algora.config([:rtmp_port])}/#{Algora.config([:rtmp_path])}"
-     ]
-    }
+    socket
+    |> assign(current_user: current_user)
+    |> assign_form(changeset)
+    |> assign(destinations: destinations)
+    |> assign(destination_form: to_form(destination_changeset))
+    |> assign(show_add_destination_modal: false)
+    |> assign(stream_key: current_user.stream_key)
+    |> assign(connected_with_restream: connected_with_restream)
+    |> assign(tags: current_user.tags || []),
+    temporary_assigns: [
+      stream_url: "rtmp://#{rtmp_host}:#{Algora.config([:rtmp_port])}/#{Algora.config([:rtmp_path])}"
+    ]
+   }
   end
 
   def handle_event("validate", %{"user" => params}, socket) do
@@ -257,16 +276,25 @@ defmodule AlgoraWeb.SettingsLive do
   end
 
   def handle_event("save", %{"user" => params}, socket) do
-    case Accounts.update_settings(socket.assigns.current_user, params) do
+    current_tags = socket.assigns.tags
+    params_with_tags = Map.put(params, "tags", current_tags)
+
+    case Accounts.update_settings(socket.assigns.current_user, params_with_tags) do
       {:ok, user} ->
         {:noreply,
          socket
          |> assign(current_user: user)
+         |> assign(tags: user.tags)
          |> put_flash(:info, "Settings updated!")}
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
     end
+  end
+
+  # to listen for the change event in the tags component
+  def handle_info({:update_tags, updated_tags}, socket) do
+    {:noreply, assign(socket, tags: updated_tags)}
   end
 
   def handle_event("toggle_destination", %{"id" => id}, socket) do
