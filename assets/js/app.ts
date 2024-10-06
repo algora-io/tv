@@ -397,6 +397,36 @@ const Hooks = {
       });
     },
   },
+  LiveBillboard: {
+    setup() {
+      const urls = JSON.parse(this.el.dataset.urls);
+      const [img1, img2] = this.el.querySelectorAll("img");
+      let currentIndex = 0;
+      let nextIndex = Math.min(1, urls.length - 1);
+      img2.src = urls[nextIndex];
+
+      clearInterval(this.interval);
+      if (urls.length > 1) {
+        this.interval = setInterval(() => {
+          const nextImg = currentIndex % 2 === 0 ? img2 : img1;
+          const currentImg = currentIndex % 2 === 0 ? img1 : img2;
+
+          nextImg.src = urls[nextIndex];
+          nextImg.classList.remove("opacity-0");
+          currentImg.classList.add("opacity-0");
+
+          currentIndex = nextIndex;
+          nextIndex = (nextIndex + 1) % urls.length;
+        }, 5000);
+      }
+    },
+    mounted() {
+      this.setup();
+    },
+    updated() {
+      this.setup();
+    },
+  },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
 // Accessible focus handling

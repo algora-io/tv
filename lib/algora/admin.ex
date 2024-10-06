@@ -10,6 +10,49 @@ defmodule Algora.Admin do
     video: "g3cFdmlkZW8.m3u8"
   }
 
+  def kill_ad_overlay_processes do
+    find_ad_overlay_processes() |> Enum.each(&Process.exit(&1, :kill))
+  end
+
+  def find_ad_overlay_processes do
+    nodes()
+    |> Enum.flat_map(fn node ->
+      :rpc.call(node, __MODULE__, :find_local_ad_overlay_processes, [])
+    end)
+  end
+
+  def kill_local_ad_overlay_processes do
+    find_local_ad_overlay_processes() |> Enum.each(&Process.exit(&1, :kill))
+  end
+
+  def find_liveview_processes(module, function \\ :mount, arity \\ 3) do
+    nodes()
+    |> Enum.flat_map(fn node ->
+      :rpc.call(node, __MODULE__, :find_local_liveview_processes, [module, function, arity])
+    end)
+  end
+
+  def find_local_liveview_processes(module, function \\ :mount, arity \\ 3) do
+    :erlang.processes()
+    |> Enum.filter(&local_process_matches?(&1, [{module, function, arity}]))
+  end
+
+  def find_local_ad_overlay_processes do
+    find_local_liveview_processes(AlgoraWeb.AdOverlayLive)
+  end
+
+  defp local_process_matches?(pid, match_patterns) do
+    case Process.info(pid, [:dictionary]) do
+      [dictionary: dict] ->
+        dict
+        |> Keyword.get(:"$initial_call")
+        |> then(&Enum.any?(match_patterns, fn pattern -> pattern == &1 end))
+
+      _ ->
+        false
+    end
+  end
+
   def whoami(), do: {System.get_env("FLY_REGION"), Node.self()}
 
   defp get(url) do
@@ -197,7 +240,7 @@ defmodule Algora.Admin do
     {:ok, _} = Accounts.update_settings(user, %{channel_tagline: title})
   end
 
-  def nodes(), do: [Node.self() | Node.list()]
+  def nodes(), do: Node.list([:this, :visible])
 
   def pipelines() do
     nodes() |> Enum.flat_map(&Membrane.Pipeline.list_pipelines/1)
