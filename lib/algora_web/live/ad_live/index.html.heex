@@ -36,12 +36,7 @@
         </div>
       </div>
     </a>
-    <img
-      src={ad.composite_asset_url}
-      alt={ad.website_url}
-      class="box-content w-[1092px] h-[135px] object-cover border-[4px] rounded-xl transition-opacity duration-1000"
-      style={"border-color: #{ad.border_color || "#fff"}"}
-    />
+    <.live_billboard ad={ad} id={"ad-banner-#{ad.id}"} />
   </:col>
   <:action :let={{_id, ad}}>
     <div class="sr-only">
