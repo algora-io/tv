@@ -151,6 +151,17 @@ defmodule Algora.Accounts do
     {:ok, Repo.preload(user, :identities, force: true)}
   end
 
+  def update_google_token(%User{} = user, new_token) do
+    identity = Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "google"))
+
+    {:ok, _} =
+      identity
+      |> change()
+      |> put_change(:provider_token, new_token)
+      |> Repo.update()
+    {:ok, Repo.preload(user, :identities, force: true)}
+  end
+
   def refresh_restream_tokens(%User{} = user) do
     identity =
       Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream"))
@@ -163,6 +174,11 @@ defmodule Algora.Accounts do
 
   def has_restream_token?(%User{} = user) do
     query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream")
+    Repo.one(query) != nil
+  end
+
+  def has_google_token?(%User{} = user) do
+    query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "google")
     Repo.one(query) != nil
   end
 
