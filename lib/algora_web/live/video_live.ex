@@ -353,6 +353,9 @@ defmodule AlgoraWeb.VideoLive do
           <div>
             <ul class="pt-4 pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
               <li :for={{tab, i} <- Enum.with_index(@tabs)}>
+              <a href="./chat" id="popout-chat-button" onclick="window.open(window.location.href+'/chat_popout' ,
+              'newwindow');
+   return false;"/>
                 <button
                   id={"side-panel-tab-#{tab}"}
                   class={[
@@ -626,7 +629,7 @@ defmodule AlgoraWeb.VideoLive do
       {data, types}
       |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
-    tabs = [:chat] |> append_if(length(subtitles) > 0, :transcript)
+    tabs = [:chat, :popout] |> append_if(length(subtitles) > 0, :transcript)
     video_thumbnails = Library.get_thumbnails_for_video(video)
 
     socket =
@@ -885,6 +888,15 @@ defmodule AlgoraWeb.VideoLive do
       to: "#side-panel .active-tab"
     )
     |> JS.add_class("active-tab text-white pointer-events-none", to: tab)
+    |> open_popout(tab)
+  end
+
+  defp open_popout(js, "#side-panel-tab-popout") do
+    JS.dispatch(js, "click", to: "#popout-chat-button")
+  end
+
+  defp open_popout(js, _tab) do
+    js
   end
 
   defp system_message?(%Chat.Message{} = message) do
