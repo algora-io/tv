@@ -1,10 +1,17 @@
 import Config
 
+transcode_backend = case System.get_env("MIX_TARGET") do
+  "nvidia" -> Membrane.ABRTranscoder.Backends.Nvidia
+  "xilinx" -> Membrane.ABRTranscoder.Backends.U30
+   _ -> nil
+end
+
 config :algora,
   mode: :dev,
-  resume_rtmp: true,
+  resume_rtmp: !System.get_env("RESUME_RTMP"),
+  supports_h265: !System.get_env("SUPPORTS_H265"),
   transcode: System.get_env("TRANSCODE"),
-  supports_h265: true
+  transcode_backend: transcode_backend
 
 config :algora, :buckets,
   media: System.get_env("BUCKET_MEDIA"),
