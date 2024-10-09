@@ -3,7 +3,6 @@ defmodule Algora.Pipeline do
   require Membrane.Logger
 
   alias Membrane.Time
-  alias Membrane.RTMP.Messages
 
   alias Algora.{Admin, Library}
   alias Algora.Pipeline.HLS.LLController
@@ -44,8 +43,8 @@ defmodule Algora.Pipeline do
     }
 
     {:ok, pid} = with true <- Algora.config([:resume_rtmp]),
-       [{pid, {:pipeline, video_uuid}}] <- Registry.lookup(Algora.Pipeline.Registry, stream_key) do
-         Algora.Pipeline.resume_rtmp(pid, %{params | video_uuid: video_uuid})
+       {pid, metadata} when is_pid(pid) <- :syn.lookup(:pipelines, stream_key) do
+         Algora.Pipeline.resume_rtmp(pid, %{ params | video_uuid: metadata[:video_uuid] })
          {:ok, pid}
      else
       _ ->
@@ -73,7 +72,7 @@ defmodule Algora.Pipeline do
       video = Library.init_livestream!()
       dir = Path.join(Admin.tmp_dir(), video.uuid)
 
-      {:ok, _} = Registry.register(Algora.Pipeline.Registry, stream_key, {:pipeline, video.uuid})
+      :ok = :syn.register(:pipelines, stream_key, self(), [video_uuid: video.uuid])
       :rpc.multicall(LLController, :start, [video.uuid, dir])
 
       {:ok, video} =
