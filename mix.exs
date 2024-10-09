@@ -65,6 +65,7 @@ defmodule Algora.MixProject do
       {:syn, "~> 3.3"},
       {:membrane_raw_video_parser_plugin, "~> 0.12.1"},
       {:membrane_abr_transcoder_plugin, "~> 0.1.1"},
+      {:syn, "~> 3.3"},
       {:mint, "~> 1.0"},
       {:oban, "~> 2.16"},
       {:open_api_spex, "~> 3.16"},

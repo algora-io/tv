@@ -8,10 +8,11 @@ end
 
 config :algora,
   mode: :dev,
-  resume_rtmp: !System.get_env("RESUME_RTMP"),
-  supports_h265: !System.get_env("SUPPORTS_H265"),
+  resume_rtmp: System.get_env("RESUME_RTMP") == "true",
+  supports_h265: System.get_env("SUPPORTS_H265") == "true",
   transcode: System.get_env("TRANSCODE"),
-  transcode_backend: transcode_backend
+  transcode_backend: transcode_backend,
+  rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
 
 config :algora, :buckets,
   media: System.get_env("BUCKET_MEDIA"),
