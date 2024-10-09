@@ -62,7 +62,7 @@ config :algora, Algora.Repo.Local,
 config :algora, AlgoraWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {0, 0, 0, 0}, port: 4000],
+  http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("PORT") || "4000") ],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -74,7 +74,7 @@ config :algora, AlgoraWeb.Endpoint,
 config :algora, AlgoraWeb.Embed.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {0, 0, 0, 0}, port: 4001]
+  http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("EMBED_PORT") || "4001")]
 
 # ## SSL Support
 #
