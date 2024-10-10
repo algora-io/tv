@@ -152,6 +152,8 @@ const Hooks = {
       const backdrop = document.querySelector("#video-backdrop");
       this.playerId = this.el.id;
       this.attemptedAutoplay = false;
+      this.muted = true;
+      this.showMutedOverlay = true;
 
       this.player = await VidstackPlayer.create({
         target: this.el,
@@ -162,6 +164,7 @@ const Hooks = {
         logLevel: "warn",
         crossOrigin: true,
         playsInline: true,
+        muted: this.muted,
         layout: new VidstackPlayerLayout(),
       });
 
@@ -253,9 +256,22 @@ const Hooks = {
         if (this.playerId === "video-player") {
           this.pushEventTo("#clipper", "video_loaded", { id: opts.id });
         }
+
+        this.el.addEventListener("click", (e) => {
+          if (e.target.closest(".muted-overlay")) {
+            this.handleMuteToggle();
+          }
+        });
       };
 
       this.handleEvent("play_video", playVideo);
+    },
+
+    handleMuteToggle() {
+      this.muted = !this.muted;
+      this.showMutedOverlay = false;
+      this.player.muted = this.muted;
+      this.pushEventTo(this.el, "mute_toggled", { muted: this.muted });
     },
   },
   Chat: {
