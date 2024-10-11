@@ -392,11 +392,13 @@ defmodule Algora.Pipeline.SinkBin do
 
   defp get_parser(:H264, state),
     do: %H264.Parser{
-      output_stream_structure: if(state.mp4_parameters_in_band?, do: :avc3, else: :avc1)
+      output_stream_structure: if(state.mp4_parameters_in_band?, do: :avc3, else: :avc1),
+      repeat_parameter_sets: true
     }
 
   defp get_parser(:H265, state),
     do: %H265.Parser{
-      output_stream_structure: if(state.mp4_parameters_in_band?, do: :hev1, else: :hvc1)
+      output_stream_structure: if(state.mp4_parameters_in_band?, do: :hev1, else: :hvc1),
+      repeat_parameter_sets: true
     }
 end
