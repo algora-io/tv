@@ -54,7 +54,7 @@ defmodule Algora.Pipeline.Storage.Manifest do
   def terminate(reason, state) do
     Membrane.Logger.info("#{__MODULE__} terminating because of #{inspect(reason)}")
     Enum.all?(state.manifests, fn({name, {_timer, {contents, upload_opts}}}) ->
-      {:ok, state} = upload!(name, contents, upload_opts, state)
+      {:ok, _state} = upload!(name, contents, upload_opts, state)
       true
     end) && :ok
   end

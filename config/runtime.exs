@@ -25,10 +25,15 @@ end
 
 config :algora,
   hf_token: System.get_env("HF_TOKEN"),
-  resume_rtmp: true,
+  resume_rtmp: System.get_env("RESUME_RTMP") == "true",
+  resume_rtmp_on_unpublish: System.get_env("RESUME_RTMP_ON_UNPUBLUSH") == "true",
+  resume_rtmp_timeout: System.get_env("RESUME_RTMP_TIMEOUT", "3200"),
+  resume_rtmp_reconnect_timeout: System.get_env("RESUME_RTMP_RECONNECT_TIMEOUT", "12"),
+  supports_h265: System.get_env("SUPPORTS_H265") == "true",
   transcode: System.get_env("TRANSCODE"),
   transcode_backend: transcode_backend,
-  flame_backend: flame_backend
+  flame_backend: flame_backend,
+  rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
 
 config :replicate,
   replicate_api_token: System.get_env("REPLICATE_API_TOKEN")

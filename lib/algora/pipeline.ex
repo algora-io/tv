@@ -12,8 +12,9 @@ defmodule Algora.Pipeline do
   @partial_segment_duration_milliseconds 200
   @partial_segment_duration Time.milliseconds(@partial_segment_duration_milliseconds)
   @app "live"
-  @terminate_after 60_000 * 60
-  @reconnect_inactivity_timeout 12_000
+  @terminate_after String.to_integer(Algora.config([:resume_rtmp_timeout])) * 1000
+  @reconnect_inactivity_timeout String.to_integer(Algora.config([:resume_rtmp_reconnect_timeout])) * 1000
+  @frame_devisor 1
 
   defstruct [
     client_ref: nil,
@@ -230,8 +231,7 @@ defmodule Algora.Pipeline do
   def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
     supports_h265 = Algora.config([:supports_h265])
     structure = if transcode = transcode_formats(state.data_frame) do
-      %{ framerate: source_framerate } = state.data_frame
-      Enum.flat_map(transcode, fn(%{ framerate: framerate, track_name: track_name } = opts) ->
+      Enum.flat_map(transcode, fn(opts) ->
         transcode_track_h264(reconnect, opts)
         ++ transcode_track_h265(reconnect, opts, supports_h265)
       end)
@@ -378,7 +378,7 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def transcode_track_h264(reconnect, %{track_name: track_name, framerate: framerate} = opts) do
+  def transcode_track_h264(reconnect, %{track_name: track_name} = opts) do
     [
       #
       get_child(:tee_video)
@@ -400,7 +400,7 @@ defmodule Algora.Pipeline do
     ]
   end
 
-  def transcode_track_h265(reconnect, %{track_name: track_name} = opts, true) do
+  def transcode_track_h265(reconnect, %{track_name: track_name}, true) do
     [
       #
       get_child({:tee_video_transcoder,  "#{track_name}-#{reconnect}"})
@@ -531,7 +531,7 @@ defmodule Algora.Pipeline do
   defp transcode_formats(%{height: source_height, width: source_width, framerate: source_framerate}) do
     if transcode_config = get_transcode_config() do
       transcode_config
-      |> Enum.filter(fn({target_height, framerate, bitrate}) ->
+      |> Enum.filter(fn({target_height, framerate, _bitrate}) ->
           target_height <= source_height and framerate <= source_framerate
         end)
       |> Enum.map(fn({target_height, target_framerate, bitrate}) ->
@@ -550,7 +550,7 @@ defmodule Algora.Pipeline do
       |> String.split("|")
       |> Enum.map(&String.split(&1, "p"))
       |> Enum.map(fn([height, framerate_bitrate]) ->
-        [framerate, bitrate] = String.split(framerate_bitrate, "~")
+        [framerate, bitrate] = String.split(framerate_bitrate, "@")
         {
           String.to_integer(height),
           String.to_integer(framerate),
