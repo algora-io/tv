@@ -13,7 +13,6 @@ defmodule Algora.Pipeline do
   @partial_segment_duration Time.milliseconds(@partial_segment_duration_milliseconds)
   @app "live"
   @terminate_after String.to_integer(Algora.config([:resume_rtmp_timeout])) * 1000
-  @reconnect_inactivity_timeout String.to_integer(Algora.config([:resume_rtmp_reconnect_timeout])) * 1000
   @frame_devisor 1
 
   defstruct [
@@ -24,7 +23,6 @@ defmodule Algora.Pipeline do
     dir: nil,
     reconnect: 0,
     terminate_timer: nil,
-    waiting_activity: true,
     data_frame: nil,
     playing: false,
     finalized: false,
@@ -147,21 +145,6 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_child_notification({:track_activity, track}, _element, _ctx,  %{playing: false, waiting_activity: true} = state) do
-    Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
-    Algora.Library.toggle_streamer_live(state.video, true)
-    {[], %{ state | waiting_activity: false, playing: true }}
-  end
-
-  def handle_child_notification({:track_activity, track}, _element, _ctx,  %{waiting_activity: true} = state) do
-    Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
-    {[], %{ state | waiting_activity: false }}
-  end
-
-  def handle_child_notification({:track_activity, _track}, _element, _ctx, state) do
-    {[], state}
-  end
-
   def handle_child_notification(:end_of_stream, :funnel_video, _ctx, %{finalized: true} = state) do
     {[], state}
   end
@@ -217,14 +200,12 @@ defmodule Algora.Pipeline do
 
     send(self(), :link_tracks)
 
-    :timer.send_after(@reconnect_inactivity_timeout, :reconnect_inactivity)
-
     {
       [
         spec: {structure, group: :rtmp_input, crash_group_mode: :temporary},
         reply: :ok,
       ],
-      %{state | reconnect: reconnect, waiting_activity: true }
+      %{ state | reconnect: reconnect }
     }
   end
 
@@ -339,14 +320,6 @@ defmodule Algora.Pipeline do
 
     {[], state}
   end
-
-  def handle_info(:reconnect_inactivity, _ctx, %{ waiting_activity: true } = state) do
-    Membrane.Logger.error("Tried to reconnect but failed #{inspect(state)}")
-    send(self(), :terminate)
-    {[], state}
-  end
-
-  def handle_info(:reconnect_inactivity, _ctx, state), do: {[], state}
 
   def handle_info(%Messages.SetDataFrame{} = message, _ctx, %{data_frame: nil} = state) do
     send(self(), :link_tracks)

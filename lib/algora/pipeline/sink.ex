@@ -360,7 +360,7 @@ defmodule Algora.Pipeline.Sink do
 
   defp maybe_notify_playable(track_id, %{playlist_playable_sent: playlist_playable_sent} = state) do
     if MapSet.member?(playlist_playable_sent, track_id) do
-      {[notify_parent: {:track_activity, track_id}], state}
+      {[], state}
     else
       {[notify_parent: {:track_playable, track_id}],
        %{state | playlist_playable_sent: MapSet.put(playlist_playable_sent, track_id)}}
