@@ -8,6 +8,7 @@ defmodule Algora.Application do
   @impl true
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies) || []
+    flame_parent = FLAME.Parent.get()
 
     tcp_server_options = %{
       port: Algora.config([:rtmp_port]),
@@ -17,7 +18,7 @@ defmodule Algora.Application do
         active: false,
         ip: {0, 0, 0, 0}
       ],
-      handle_new_client: &Algora.Pipeline.handle_new_client/3
+      handle_new_client: &Algora.Pipeline.Manager.handle_new_client/3
     }
 
     :ok = :syn.add_node_to_scopes([:pipelines])
@@ -38,8 +39,16 @@ defmodule Algora.Application do
       {Oban, Application.fetch_env!(:algora, Oban)},
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
-      # Pipeline Registry
-      {Registry, keys: :unique, name: Algora.Pipeline.Registry},
+      # Pipeline flame pool
+      {FLAME.Pool,
+        name: Algora.Pipeline.Pool,
+        backend: Algora.config([:flame_backend]),
+        min: 0,
+        max: String.to_integer(System.get_env("FLAME_MAX", "1")),
+        max_concurrency: String.to_integer(System.get_env("FLAME_MAX_CONCURRENCY", "10")),
+        idle_shutdown_after: String.to_integer(System.get_env("FLAME_IDLE_SHUTDOWN_AFTER", "30")),
+        log: :debug,
+      },
       # Start the PubSub system
       {Phoenix.PubSub, name: Algora.PubSub},
       # Start presence
@@ -48,8 +57,8 @@ defmodule Algora.Application do
       # Clustering setup
       {DNSCluster, query: Application.get_env(:algora, :dns_cluster_query) || :ignore},
       # Start the Endpoints (http/https)
-      AlgoraWeb.Endpoint,
-      AlgoraWeb.Embed.Endpoint,
+      !flame_parent && AlgoraWeb.Endpoint,
+      !flame_parent && AlgoraWeb.Embed.Endpoint,
       # Start the LL-HLS controller registry
       {Registry, keys: :unique, name: Algora.LLControllerRegistry},
       # Start the RTMP server
@@ -57,13 +66,13 @@ defmodule Algora.Application do
         id: Membrane.RTMPServer,
         start: {Membrane.RTMPServer, :start_link, [tcp_server_options]}
       },
-      Algora.Stargazer,
+      !flame_parent && Algora.Stargazer,
       Algora.Terminate,
       ExMarcel.TableWrapper,
       Algora.Youtube.Chat.Supervisor
       # Start a worker by calling: Algora.Worker.start_link(arg)
       # {Algora.Worker, arg}
-    ]
+    ] |> Enum.filter(& &1)
 
     :ets.new(:videos_to_tables, [:public, :set, :named_table])
     :ets.new(:videos_to_folder_paths, [:public, :set, :named_table])

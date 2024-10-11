@@ -6,12 +6,19 @@ transcode_backend = case System.get_env("MIX_TARGET") do
    _ -> nil
 end
 
+flame_backend = case System.get_env("FLAME_BACKEND") do
+  "fly" -> FLAME.FlyBackend
+  _ -> FLAME.LocalBackend
+end
+
 config :algora,
   mode: :dev,
   resume_rtmp: System.get_env("RESUME_RTMP") == "true",
+  resume_rtmp_on_unpublish: System.get_env("RESUME_RTMP_ON_UNPUBLUSH") == "true",
   supports_h265: System.get_env("SUPPORTS_H265") == "true",
   transcode: System.get_env("TRANSCODE"),
   transcode_backend: transcode_backend,
+  flame_backend: flame_backend,
   rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
 
 config :algora, :buckets,

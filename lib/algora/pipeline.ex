@@ -26,6 +26,7 @@ defmodule Algora.Pipeline do
     waiting_activity: true,
     data_frame: nil,
     playing: false,
+    finalized: false,
   ]
 
   def segment_duration(), do: @segment_duration_seconds
@@ -129,8 +130,6 @@ defmodule Algora.Pipeline do
         }),
       ]
 
-      unless Algora.config([:transcode]), do: send(self(), :link_tracks)
-
       {[spec: spec], state}
     else
       Membrane.Logger.debug("Invalid stream_key")
@@ -162,6 +161,10 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
+  def handle_child_notification(:end_of_stream, :funnel_video, _ctx, %{finalized: true} = state) do
+    {[], state}
+  end
+
   def handle_child_notification(:end_of_stream, :funnel_video, _ctx, state) do
     state = terminate_later(state)
     # unlink next tick
@@ -169,7 +172,8 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_child_notification(:finalized, :sink, _ctx, state) do
+  def handle_child_notification(:finalized, _element, _ctx, state) do
+    Membrane.Logger.info("Finalized manifests for video #{inspect(state.video.uuid)}")
     {[terminate: :normal], state}
   end
 
@@ -269,8 +273,8 @@ defmodule Algora.Pipeline do
       remove_link: {:funnel_video, Pad.ref(:input, reconnect)},
       remove_link: {:funnel_audio, Pad.ref(:input, reconnect)},
       remove_link: {:sink, Pad.ref(:input, "audio_master")},
-    ] ++ if Algora.config([:transcode]) do
-      Enum.flat_map(transcode_formats(state.data_frame), fn(%{track_name: track_name}) ->
+    ] ++ if transcode_formats = transcode_formats(state.data_frame) do
+      Enum.flat_map(transcode_formats, fn(%{track_name: track_name}) ->
         [
           {:remove_link, {:sink, Pad.ref(:input, "#{track_name}")}},
           if Algora.config([:supports_h265]) do
@@ -282,7 +286,7 @@ defmodule Algora.Pipeline do
       [
         {:remove_link, {:sink, Pad.ref(:input, "video_master")}}
       ]
-    end
+    end |> Enum.filter(& &1)
 
     {actions, state}
   end
@@ -345,7 +349,7 @@ defmodule Algora.Pipeline do
   def handle_info(:reconnect_inactivity, _ctx, state), do: {[], state}
 
   def handle_info(%Messages.SetDataFrame{} = message, _ctx, %{data_frame: nil} = state) do
-    if Algora.config([:transcode]), do: send(self(), :link_tracks)
+    send(self(), :link_tracks)
     {[], %{ state | data_frame: message }}
   end
 
@@ -353,14 +357,20 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_info(%Messages.DeleteStream{} = _message, _ctx, state) do
-    :timer.send_after(5000, self(), :terminate)
+  def handle_info(%Messages.Anonymous{name: "FCUnpublish"}, _ctx, state) do
+    unless Algora.config([:resume_rtmp_on_unpublish]), do: send(self(), :terminate)
+    {[], state}
+  end
+
+  def handle_info(%Messages.DeleteStream{}, _ctx, state) do
+    unless Algora.config([:resume_rtmp_on_unpublish]), do: send(self(), :terminate)
     {[], state}
   end
 
   def handle_info(:terminate, _ctx, state) do
+    Membrane.Logger.info "Terminating pipeline for video #{state.video.uuid}"
     Algora.Library.toggle_streamer_live(state.video, false)
-    {[notify_child: {:sink, :finalize}], state}
+    {[terminate: :normal, notify_child: {:sink, :finalize}], %{ state | finalized: true }}
   end
 
   def handle_info(message, _ctx, state) do
@@ -494,14 +504,16 @@ defmodule Algora.Pipeline do
     {:ok, state}
   end
 
-  defp terminate_later(%{terminate_timer: nil} = state) do
-    time = if Algora.config([:resume_rtmp]), do: @terminate_after, else: 0
-    {:ok, timer} = :timer.send_after(time, self(), time)
+  defp terminate_later(state), do: terminate_later(state, @terminate_after)
+
+  defp terminate_later(%{terminate_timer: nil} = state, time) do
+    time = if Algora.config([:resume_rtmp]), do: time, else: 0
+    {:ok, timer} = :timer.send_after(time, self(), :terminate)
     %{ state | terminate_timer: timer }
   end
 
-  defp terminate_later(state) do
-    state |> cancel_terminate() |> terminate_later()
+  defp terminate_later(state, time) do
+    state |> cancel_terminate() |> terminate_later(time)
   end
 
   defp cancel_terminate(%{terminate_timer: timer} = state) do
