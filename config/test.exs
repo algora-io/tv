@@ -1,5 +1,17 @@
 import Config
 
+config :algora,
+  mode: :dev,
+  resume_rtmp: System.get_env("RESUME_RTMP", "false") == "true",
+  resume_rtmp_on_unpublish: System.get_env("RESUME_RTMP_ON_UNPUBLUSH", "false") == "true",
+  resume_rtmp_timeout: System.get_env("RESUME_RTMP_TIMEOUT", "3200"),
+  resume_rtmp_reconnect_timeout: System.get_env("RESUME_RTMP_RECONNECT_TIMEOUT", "12"),
+  supports_h265: System.get_env("SUPPORTS_H265", "false") == "true",
+  transcode: System.get_env("TRANSCODE"),
+  transcode_backend: nil,
+  flame_backend: FLAME.LocalBackend,
+  rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
