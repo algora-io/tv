@@ -350,7 +350,7 @@ defmodule AlgoraWeb.VideoLive do
               </a>
             </div>
           </div>
-          <div>
+          <div class="relative">
             <ul class="pt-4 pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
               <li :for={{tab, i} <- Enum.with_index(@tabs)}>
                 <button
@@ -368,6 +368,26 @@ defmodule AlgoraWeb.VideoLive do
                 </button>
               </li>
             </ul>
+            <button
+              id="popout-chat-button"
+              phx-hook="PopoutChat"
+              class="absolute top-2 right-2 p-2 group"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-6 w-6 text-gray-400 group-hover:text-gray-100"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" /><path d="M11 13l9 -9" /><path d="M15 4h5v5" />
+              </svg>
+            </button>
           </div>
           <div>
             <div
@@ -827,6 +847,7 @@ defmodule AlgoraWeb.VideoLive do
   def handle_event("save_thumbnail", params, socket) do
     Library.Video.change_thumbnail(socket.assigns.video, params["video"]["thumbnail_url"])
     |> Repo.update()
+
     {:noreply, socket}
   end
 
