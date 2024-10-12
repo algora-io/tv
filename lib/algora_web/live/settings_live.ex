@@ -2,6 +2,7 @@ defmodule AlgoraWeb.SettingsLive do
   use AlgoraWeb, :live_view
 
   alias Algora.Accounts
+  alias Algora.Library.{Video}
   alias Algora.Accounts.Destination
   alias AlgoraWeb.RTMPDestinationIconComponent
 
@@ -355,6 +356,28 @@ defmodule AlgoraWeb.SettingsLive do
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
+    end
+  end
+
+  def handle_event("save", %{"user" => params}, socket) do
+    current_tags = socket.assigns.tags
+    params_with_tags = Map.put(params, "tags", current_tags)
+
+    case Accounts.update_settings(socket.assigns.current_user, params_with_tags) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(current_user: user)
+         |> assign(tags: user.tags)
+         |> put_flash(:info, "Settings updated!")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign_form(socket, changeset)}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Error updating settings: #{reason}")}
     end
   end
 
