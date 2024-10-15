@@ -493,7 +493,7 @@ defmodule AlgoraWeb.CoreComponents do
       id={@id}
       phx-mounted={@show && show_modal(@id)}
       phx-remove={hide_modal(@id)}
-      class="relative z-50 hidden"
+      class="relative z-[1001] hidden"
     >
       <div
         id={"#{@id}-bg"}
@@ -789,6 +789,30 @@ defmodule AlgoraWeb.CoreComponents do
           {@rest}
         />
         <%= @label %>
+      </label>
+      <.error :for={msg <- @errors}><%= msg %></.error>
+    </div>
+    """
+  end
+
+  def input(%{type: "radio", value: value} = assigns) do
+    assigns =
+      assign_new(assigns, :checked, fn -> Phoenix.HTML.Form.normalize_value("radio", value) end)
+
+    ~H"""
+    <div phx-feedback-for={@name}>
+      <label class="flex items-center gap-4 text-sm leading-6 text-gray-300">
+        <input
+          type="radio"
+          id={@id || @name}
+          name={@name}
+          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+          checked={@checked}
+          class="rounded-full border-gray-600 text-gray-500 focus:ring-gray-50 sr-only peer"
+          {@rest}
+        />
+        <%= @label %>
+        <%= render_slot(@inner_block) %>
       </label>
       <.error :for={msg <- @errors}><%= msg %></.error>
     </div>

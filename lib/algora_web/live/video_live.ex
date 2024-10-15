@@ -9,6 +9,7 @@ defmodule AlgoraWeb.VideoLive do
   alias Algora.Events.Event
 
   alias AlgoraWeb.{
+    CoreComponents,
     LayoutComponent,
     Presence,
     RTMPDestinationIconComponent,
@@ -22,6 +23,31 @@ defmodule AlgoraWeb.VideoLive do
     ~H"""
     <div class="lg:mr-[24rem]">
       <.pwa_install_prompt />
+      <.modal id="choose_thumbnail">
+        <:title>
+          Choose thumbnail
+        </:title>
+        <:subtitle>
+          New thumbnails are added periodically
+        </:subtitle>
+        <.simple_form for={assigns.thumbnail_form} phx-submit="save_thumbnail">
+          <div class="mt-4 grid-cols-2 grid gap-8">
+            <label :for={video_thumbnail <- assigns.video_thumbnails} class="flex items-center">
+              <.input
+                field={assigns.thumbnail_form[:thumbnail_url]}
+                type="radio"
+                value={video_thumbnail.thumbnail_url}
+                checked={assigns.thumbnail_form[:thumbnail_url].value == video_thumbnail.thumbnail_url}
+              >
+                <img src={video_thumbnail.thumbnail_url} class="border-2 rounded-lg opacity-50 peer-checked:opacity-100 peer-checked:border-white" />
+              </.input>
+            </label>
+          </div>
+          <:actions>
+            <.button phx-click={CoreComponents.hide_modal("choose_thumbnail")}>Save</.button>
+          </:actions>
+        </.simple_form>
+      </.modal>
       <div class="px-4" id="video-player-container" phx-update="ignore">
         <.live_component module={PlayerComponent} id="video-player" />
       </div>
@@ -49,18 +75,25 @@ defmodule AlgoraWeb.VideoLive do
             ]}>
               <p><%= @video.title %></p>
             </blockquote>
-            <.button :if={@current_user} phx-click="toggle_subscription">
-              <%= if @subscribed? do %>
-                Unsubscribe
-              <% else %>
-                Subscribe
+            <div class="flex items-center gap-2 whitespace-nowrap">
+              <%= if @current_user && (@video.user_id == @current_user.id || Accounts.admin?(@current_user)) && @has_many_thumbnails? do %>
+                <.button phx-click={CoreComponents.show_modal("choose_thumbnail")}>
+                  Choose thumbnail
+                </.button>
               <% end %>
-            </.button>
-            <.button :if={!@current_user && @authorize_url}>
-              <.link navigate={@authorize_url}>
-                Subscribe
-              </.link>
-            </.button>
+              <.button :if={@current_user} phx-click="toggle_subscription">
+                <%= if @subscribed? do %>
+                  Unsubscribe
+                <% else %>
+                  Subscribe
+                <% end %>
+              </.button>
+              <.button :if={!@current_user && @authorize_url}>
+                <.link navigate={@authorize_url}>
+                  Subscribe
+                </.link>
+              </.button>
+            </div>
           </div>
           <div
             :if={@channel.solving_challenge}
@@ -317,7 +350,7 @@ defmodule AlgoraWeb.VideoLive do
               </a>
             </div>
           </div>
-          <div>
+          <div class="relative">
             <ul class="pt-4 pb-2 flex items-center justify-center gap-2 mx-auto text-gray-400">
               <li :for={{tab, i} <- Enum.with_index(@tabs)}>
                 <button
@@ -335,6 +368,26 @@ defmodule AlgoraWeb.VideoLive do
                 </button>
               </li>
             </ul>
+            <button
+              id="popout-chat-button"
+              phx-hook="PopoutChat"
+              class="absolute top-2 right-2 p-2 group"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-6 w-6 text-gray-400 group-hover:text-gray-100"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" /><path d="M11 13l9 -9" /><path d="M15 4h5v5" />
+              </svg>
+            </button>
           </div>
           <div>
             <div
@@ -594,6 +647,7 @@ defmodule AlgoraWeb.VideoLive do
       |> Ecto.Changeset.cast(%{subtitles: encoded_subtitles}, Map.keys(types))
 
     tabs = [:chat] |> append_if(length(subtitles) > 0, :transcript)
+    video_thumbnails = Library.get_thumbnails_for_video(video)
 
     socket =
       socket
@@ -609,7 +663,10 @@ defmodule AlgoraWeb.VideoLive do
         can_edit: false,
         subscribed?: subscribed?(current_user, video),
         transcript_form: to_form(transcript_changeset, as: :data),
-        chat_form: to_form(Chat.change_message(%Chat.Message{}))
+        chat_form: to_form(Chat.change_message(%Chat.Message{})),
+        video_thumbnails: video_thumbnails,
+        has_many_thumbnails?: length(video_thumbnails) > 1,
+        thumbnail_form: to_form(Library.Video.change_thumbnail(video, video.thumbnail_url))
       )
       |> stream(:videos, videos)
       |> stream(:messages, Chat.list_messages(video))
@@ -785,6 +842,13 @@ defmodule AlgoraWeb.VideoLive do
   def handle_event("toggle_subscription", _params, socket) do
     toggle_subscription_event(socket.assigns.current_user, socket.assigns.video)
     {:noreply, socket |> assign(subscribed?: !socket.assigns.subscribed?)}
+  end
+
+  def handle_event("save_thumbnail", params, socket) do
+    Library.Video.change_thumbnail(socket.assigns.video, params["video"]["thumbnail_url"])
+    |> Repo.update()
+
+    {:noreply, socket}
   end
 
   # TODO: move into events context

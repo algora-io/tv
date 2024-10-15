@@ -372,6 +372,21 @@ const Hooks = {
       });
     },
   },
+  PopoutChat: {
+    mounted() {
+      this.el.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.open(
+          window.location.href + "/chat_popout",
+          "newwindow",
+          "width=400,height=600"
+        );
+      });
+    },
+    destroyed() {
+      this.el.removeEventListener("click", this.handleClick);
+    },
+  },
   NavBar: {
     mounted() {
       const offset = 16;
