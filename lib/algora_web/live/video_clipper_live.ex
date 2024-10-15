@@ -8,7 +8,7 @@ defmodule AlgoraWeb.VideoProducerLive do
   @impl true
   def render(assigns) do
       ~H"""
-      <div class="min-h-screen">
+      <div class="min-h-[90vh]">
           <div class="max-w-6xl mx-auto pt-2 pb-6 px-4 sm:px-6 space-y-6">
             <h1 class="text-lg font-semibold leading-8 text-gray-100 focus:outline-none">Clip editor</h1>
             <.simple_form for={@form} phx-change="update_form" phx-submit="create_video">
@@ -56,10 +56,16 @@ defmodule AlgoraWeb.VideoProducerLive do
                       <div>
                         <label class="block text-xs mb-1">From</label>
                         <.input type="text" name={"video_production[clips][#{index}][clip_from]"} value={clip.clip_from} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                        <%= if clip.errors[:clip_from] do %>
+                          <span class="text-red-500 text-xs"><%= clip.errors[:clip_from] %></span>
+                        <% end %>
                       </div>
                       <div>
                         <label class="block text-xs mb-1">To</label>
                         <.input type="text" name={"video_production[clips][#{index}][clip_to]"} value={clip.clip_to} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                        <%= if clip.errors[:clip_to] do %>
+                          <span class="text-red-500 text-xs"><%= clip.errors[:clip_to] %></span>
+                        <% end %>
                       </div>
                     </div>
                     <div class="flex py-2 space-x-2">
@@ -100,9 +106,17 @@ defmodule AlgoraWeb.VideoProducerLive do
       case {clip.clip_from, clip.clip_to} do
         {"", ""} -> acc
         {from, to} when from != "" and to != "" ->
-          from = Library.from_hhmmss(from)
-          to = Library.from_hhmmss(to)
-          acc + (to - from)
+          try do
+            from_seconds = Library.from_hhmmss(from)
+            to_seconds = Library.from_hhmmss(to)
+            if from_seconds < to_seconds do
+              acc + (to_seconds - from_seconds)
+            else
+              acc
+            end
+          rescue
+            ArgumentError -> acc
+          end
         _ -> acc
       end
     end)
@@ -128,7 +142,7 @@ defmodule AlgoraWeb.VideoProducerLive do
      |> assign(
        livestreams: livestreams,
        selected_livestream: default_video,
-       clips: [],
+       clips: [%{clip_from: "", clip_to: "", errors: %{}}],
        processing: false,
        progress: %{stage: nil, current: 0, total: 0},
        preview_clip: nil
@@ -184,12 +198,19 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   defp update_clips_from_params(clips_params) do
-      IO.puts("update_clips_from_params clips_params: #{inspect(clips_params)}")
-      clips_params
-      |> Enum.sort_by(fn {key, _} -> key end)
-      |> Enum.map(fn {_, clip} ->
-        %{clip_from: clip["clip_from"], clip_to: clip["clip_to"]}
-      end)
+    IO.puts("update_clips_from_params clips_params: #{inspect(clips_params)}")
+    clips_params
+    |> Enum.sort_by(fn {key, _} -> key end)
+    |> Enum.map(fn {_, clip} ->
+      from = clip["clip_from"] || ""
+      to = clip["clip_to"] || ""
+
+      %{
+        clip_from: from,
+        clip_to: to,
+        errors: validate_clip_times(from, to)
+      }
+    end)
   end
 
   defp change_video_production(attrs \\ %{}) do
@@ -224,21 +245,50 @@ defmodule AlgoraWeb.VideoProducerLive do
       end)
     end
 
-  defp validate_clip_times(changeset, field) do
-      clip = Ecto.Changeset.get_field(changeset, field)
+  defp validate_clip_times(from, to) do
+    errors = %{}
 
-      with {:ok, start_time} <- parse_time(clip["start"]),
-           {:ok, end_time} <- parse_time(clip["end"]) do
-        if Time.compare(start_time, end_time) == :lt do
-          changeset
-        else
-          Ecto.Changeset.add_error(changeset, field, "End time must be after start time")
-        end
-      else
-        :error ->
-          Ecto.Changeset.add_error(changeset, field, "Invalid time format. Use HH:MM:SS")
+    errors = if from == "" do
+      Map.put(errors, :clip_from, "Start time is required")
+    else
+      try do
+        Library.from_hhmmss(from)
+        errors
+      rescue
+        ArgumentError -> Map.put(errors, :clip_from, "Invalid time format. Use HH:MM:SS")
       end
     end
+
+    errors = if to == "" do
+      Map.put(errors, :clip_to, "End time is required")
+    else
+      try do
+        Library.from_hhmmss(to)
+        errors
+      rescue
+        ArgumentError -> Map.put(errors, :clip_to, "Invalid time format. Use HH:MM:SS")
+      end
+    end
+
+    case {safe_from_hhmmss(from), safe_from_hhmmss(to)} do
+      {{:ok, from_time}, {:ok, to_time}} ->
+        if from_time >= to_time do
+          Map.put(errors, :clip_to, "End time must be after start time")
+        else
+          errors
+        end
+      _ ->
+        errors
+    end
+  end
+
+  defp safe_from_hhmmss(time_string) do
+    try do
+      {:ok, Library.from_hhmmss(time_string)}
+    rescue
+      ArgumentError -> :error
+    end
+  end
 
   defp parse_time(time_string) do
     with [hours, minutes, seconds] <- String.split(time_string, ":", parts: 3),
@@ -263,7 +313,8 @@ defmodule AlgoraWeb.VideoProducerLive do
 
   @impl true
   def handle_event("add_clip", _, socket) do
-    clips = socket.assigns.clips ++ [%{clip_from: "", clip_to: ""}]
+    new_clip = %{clip_from: "", clip_to: "", errors: %{}}
+    clips = socket.assigns.clips ++ [new_clip]
     {:noreply, assign(socket, clips: clips)}
   end
 
@@ -413,48 +464,60 @@ defmodule AlgoraWeb.VideoProducerLive do
     video = socket.assigns.selected_livestream
     current_user = socket.assigns.current_user
 
-    socket = assign(socket, processing: true, progress: %{stage: "Initializing", progress: 0})
+    # Check for clip errors
+    clip_errors = clips
+    |> update_clips_from_params()
+    |> Enum.flat_map(fn clip -> Map.to_list(clip.errors) end)
 
-    case Clipper.create_combined_local_clips(video, clips) do
-      {:ok, combined_clip_path} ->
-        socket = assign(socket, progress: %{stage: "Creating combined clip", progress: 0.2})
+    if Enum.empty?(clip_errors) do
+      socket = assign(socket, processing: true, progress: %{stage: "Initializing", progress: 0})
 
-        # Create a Phoenix.LiveView.UploadEntry struct
-        upload_entry = %Phoenix.LiveView.UploadEntry{
-          client_name: Path.basename(combined_clip_path),
-          client_size: File.stat!(combined_clip_path).size,
-          client_type: "video/mp4"
-        }
+      case Clipper.create_combined_local_clips(video, clips) do
+        {:ok, combined_clip_path} ->
+          socket = assign(socket, progress: %{stage: "Creating combined clip", progress: 0.2})
 
-        # Initialize the new video using init_mp4!
-        new_video = Library.init_mp4!(upload_entry, combined_clip_path, current_user)
+          # Create a Phoenix.LiveView.UploadEntry struct
+          upload_entry = %Phoenix.LiveView.UploadEntry{
+            client_name: Path.basename(combined_clip_path),
+            client_size: File.stat!(combined_clip_path).size,
+            client_type: "video/mp4"
+          }
 
-        socket = assign(socket, progress: %{stage: "Initializing video", progress: 0.4})
+          # Initialize the new video using init_mp4!
+          new_video = Library.init_mp4!(upload_entry, combined_clip_path, current_user)
 
-        # Update the video with additional information
-        {:ok, updated_video} = Library.update_video(new_video, %{
-          title: params["title"] || "New Video",
-          description: params["description"],
-          visibility: :unlisted
-        })
+          socket = assign(socket, progress: %{stage: "Initializing video", progress: 0.4})
 
-        socket = assign(socket, progress: %{stage: "Processing video", progress: 0.6})
+          # Update the video with additional information
+          {:ok, updated_video} = Library.update_video(new_video, %{
+            title: params["title"] || "New Video",
+            description: params["description"],
+            visibility: :unlisted
+          })
 
-        # Use transmux_to_hls to upload, process, and generate thumbnail
-        processed_video = Library.transmux_to_hls(updated_video, fn progress ->
-          send(self(), {:progress_update, progress})
-        end)
+          socket = assign(socket, progress: %{stage: "Processing video", progress: 0.6})
 
-        # Clean up temporary file
-        File.rm(combined_clip_path)
+          # Use transmux_to_hls to upload, process, and generate thumbnail
+          processed_video = Library.transmux_to_hls(updated_video, fn progress ->
+            send(self(), {:progress_update, progress})
+          end)
 
-        socket = assign(socket, progress: %{stage: "Completed", progress: 1.0})
-        {:ok, processed_video, socket}
+          # Clean up temporary file
+          File.rm(combined_clip_path)
 
-      {:error, reason} ->
-        Logger.error("Failed to create combined clip: #{inspect(reason)}")
-        socket = assign(socket, processing: false, progress: nil)
-        {:error, reason, socket}
+          socket = assign(socket, progress: %{stage: "Completed", progress: 1.0})
+          {:ok, processed_video, socket}
+
+        {:error, reason} ->
+          Logger.error("Failed to create combined clip: #{inspect(reason)}")
+          socket = assign(socket, processing: false, progress: nil)
+          {:error, reason, socket}
+      end
+    else
+      error_messages = Enum.map(clip_errors, fn {_, msg} -> msg end)
+      |> Enum.join(", ")
+      socket = assign(socket, processing: false, progress: nil)
+      {:error, "Invalid clips: #{error_messages}", socket}
     end
   end
 
