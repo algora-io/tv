@@ -5,6 +5,8 @@ defmodule AlgoraWeb.VideoProducerLive do
   alias AlgoraWeb.PlayerComponent
   require Logger
 
+  @invalid_time_format "Invalid time. Use HH:MM:SS"
+
   @impl true
   def render(assigns) do
       ~H"""
@@ -48,7 +50,7 @@ defmodule AlgoraWeb.VideoProducerLive do
                   <div class="bg-white/5 rounded-lg p-4 space-y-2 ring-1 ring-white/15 relative">
                     <div class="flex justify-between items-center">
                       <h3 class="font-semibold">Clip <%= index + 1 %></h3>
-                      <button type="button" phx-click="remove_clip" phx-value-index={index} class="absolute top-2 right-2 text-gray-400 hover:text-gray-200">
+                      <button type="button" phx-click="clip_action" phx-value-action="remove"phx-value-index={index} class="absolute top-2 right-2 text-gray-400 hover:text-gray-200">
                         <Heroicons.x_mark solid class="w-5 h-5" />
                       </button>
                     </div>
@@ -69,19 +71,19 @@ defmodule AlgoraWeb.VideoProducerLive do
                       </div>
                     </div>
                     <div class="flex py-2 space-x-2">
-                      <.button type="button" phx-click="preview_clip" phx-value-index={index} class="flex-grow">Preview Clip</.button>
+                      <.button type="button" phx-click="preview_clip" phx-value-index={index} class="flex-grow" disabled={clip.errors != %{}}>Preview Clip <%= index + 1 %></.button>
                       <div class="flex gap-2">
-                        <.button type="button" phx-click="move_clip_up" phx-value-index={index}>
+                        <.button type="button" phx-click="clip_action" phx-value-action="move_up"phx-value-index={index}>
                           <Heroicons.chevron_up solid class="w-4 h-4" />
                         </.button>
-                        <.button type="button" phx-click="move_clip_down" phx-value-index={index}>
+                        <.button type="button" phx-click="clip_action" phx-value-action="move_down" phx-value-index={index}>
                           <Heroicons.chevron_down solid class="w-4 h-4" />
                         </.button>
                       </div>
                     </div>
                   </div>
                 <% end %>
-                  <.button type="button" phx-click="add_clip" class="w-full">+ Add new clip</.button>
+                  <.button type="button" phx-click="clip_action" phx-value-action="add" phx-value-index={-1} class="w-full">+ Add new clip</.button>
                 </div>
               </div>
               <:actions>
@@ -128,14 +130,10 @@ defmodule AlgoraWeb.VideoProducerLive do
   def mount(_params, _session, socket) do
     channel = Library.get_channel!(socket.assigns.current_user)
     livestreams = Library.list_channel_videos(channel)
-    # livestreams = Library.list_videos()
     changeset = change_video_production()
     default_video = List.first(livestreams)
-    send_update(PlayerComponent,
-      id: "preview-player",
-      video: default_video,
-      current_time: 0,
-    )
+
+    update_player(socket, default_video, 0)
 
     {:ok,
      socket
@@ -198,7 +196,6 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   defp update_clips_from_params(clips_params) do
-    IO.puts("update_clips_from_params clips_params: #{inspect(clips_params)}")
     clips_params
     |> Enum.sort_by(fn {key, _} -> key end)
     |> Enum.map(fn {_, clip} ->
@@ -208,7 +205,7 @@ defmodule AlgoraWeb.VideoProducerLive do
       %{
         clip_from: from,
         clip_to: to,
-        errors: validate_clip_times(from, to)
+        errors: validate_clip_times(from, to),
       }
     end)
   end
@@ -246,60 +243,49 @@ defmodule AlgoraWeb.VideoProducerLive do
     end
 
   defp validate_clip_times(from, to) do
-    errors = %{}
-
-    errors = if from == "" do
-      Map.put(errors, :clip_from, "Start time is required")
-    else
-      try do
-        Library.from_hhmmss(from)
-        errors
-      rescue
-        ArgumentError -> Map.put(errors, :clip_from, "Invalid time format. Use HH:MM:SS")
-      end
-    end
-
-    errors = if to == "" do
-      Map.put(errors, :clip_to, "End time is required")
-    else
-      try do
-        Library.from_hhmmss(to)
-        errors
-      rescue
-        ArgumentError -> Map.put(errors, :clip_to, "Invalid time format. Use HH:MM:SS")
-      end
-    end
-
-    case {safe_from_hhmmss(from), safe_from_hhmmss(to)} do
-      {{:ok, from_time}, {:ok, to_time}} ->
-        if from_time >= to_time do
-          Map.put(errors, :clip_to, "End time must be after start time")
+    case {parse_seconds(from), parse_seconds(to)} do
+      {{:ok, from_seconds}, {:ok, to_seconds}} ->
+        if from_seconds < to_seconds do
+          %{}
         else
-          errors
+          %{clip_to: "End time must be after start time"}
         end
+      {{:error, :invalid_format}, _} ->
+        %{clip_from: @invalid_time_format}
+      {_, {:error, :invalid_format}} ->
+        %{clip_to: @invalid_time_format}
       _ ->
-        errors
+        %{clip_from: @invalid_time_format, clip_to: @invalid_time_format}
     end
   end
 
-  defp safe_from_hhmmss(time_string) do
-    try do
-      {:ok, Library.from_hhmmss(time_string)}
-    rescue
-      ArgumentError -> :error
+  defp parse_seconds(time_string) do
+    time_string
+    |> String.split(":")
+    |> Enum.map(&String.to_integer/1)
+    |> case do
+      [ss] -> {:ok, ss}
+      [mm, ss] -> {:ok, mm * 60 + ss}
+      [hh, mm, ss] -> {:ok, hh * 3600 + mm * 60 + ss}
+      _ -> {:error, :invalid_format}
     end
+  rescue
+    _ -> {:error, :invalid_format}
   end
 
-  defp parse_time(time_string) do
-    with [hours, minutes, seconds] <- String.split(time_string, ":", parts: 3),
-          {hours, ""} <- Integer.parse(hours),
-          {minutes, ""} <- Integer.parse(minutes),
-          {seconds, ""} <- Integer.parse(seconds) do
-      Time.new(hours, minutes, seconds)
-    else
-      _ -> :error
+  defp update_progress(progress) do
+      normalized_progress = case progress do
+        %{stage: :transmuxing, done: done, total: total} ->
+          0.6 + (done / total) * 0.3
+        %{stage: :persisting, done: done, total: total} ->
+          0.9 + (done / total) * 0.05
+        %{stage: :generating_thumbnail, done: _, total: _} ->
+          0.95
+        _ -> 0
+      end
+
+      %{stage: progress.stage, progress: normalized_progress}
     end
-  end
 
   @impl true
   def handle_event("validate", %{"video_production" => params}, socket) do
@@ -312,72 +298,41 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   @impl true
-  def handle_event("add_clip", _, socket) do
-    new_clip = %{clip_from: "", clip_to: "", errors: %{}}
-    clips = socket.assigns.clips ++ [new_clip]
-    {:noreply, assign(socket, clips: clips)}
-  end
-
-  @impl true
-  def handle_event("remove_clip", %{"index" => index}, socket) do
-    index = String.to_integer(index)
-    clips = List.delete_at(socket.assigns.clips, index)
-    {:noreply, assign(socket, clips: clips)}
-  end
-
-  @impl true
-  def handle_event("move_clip_up", %{"index" => index}, socket) do
+  def handle_event("clip_action", %{"action" => action, "index" => index}, socket) do
     index = String.to_integer(index)
     clips = socket.assigns.clips
 
-    if index > 0 do
-      updated_clips = List.update_at(clips, index - 1, fn _ -> Enum.at(clips, index) end)
-      updated_clips = List.update_at(updated_clips, index, fn _ -> Enum.at(clips, index - 1) end)
-      {:noreply, assign(socket, clips: updated_clips)}
-    else
-      {:noreply, socket}
+    updated_clips = case action do
+      "add" -> clips ++ [%{clip_from: "", clip_to: "", errors: %{}}]
+      "remove" -> List.delete_at(clips, index)
+      "move_up" when index > 0 ->
+        {clip, clips} = List.pop_at(clips, index)
+        List.insert_at(clips, index - 1, clip)
+      "move_down" when index < length(clips) - 1 ->
+        {clip, clips} = List.pop_at(clips, index)
+        List.insert_at(clips, index + 1, clip)
+      _ -> clips
     end
-  end
 
-  @impl true
-  def handle_event("move_clip_down", %{"index" => index}, socket) do
-    index = String.to_integer(index)
-    clips = socket.assigns.clips
-
-    if index < length(clips) - 1 do
-      updated_clips = List.update_at(clips, index + 1, fn _ -> Enum.at(clips, index) end)
-      updated_clips = List.update_at(updated_clips, index, fn _ -> Enum.at(clips, index + 1) end)
-      {:noreply, assign(socket, clips: updated_clips)}
-    else
-      {:noreply, socket}
-    end
+    {:noreply, assign(socket, clips: updated_clips)}
   end
 
   @impl true
   def handle_event("preview_clip", %{"index" => index}, socket) do
     index = String.to_integer(index)
-    video = socket.assigns.selected_livestream
-    IO.puts("preview_clip selected_video title:#{video.title} id: #{video.id}")
     clip = Enum.at(socket.assigns.clips, index)
-    IO.puts("clip: #{inspect(clip)}")
 
-    if clip && clip.clip_from != "" && clip.clip_to != "" && video do
-      start = Library.from_hhmmss(clip.clip_from)
-      end_time = Library.from_hhmmss(clip.clip_to)
-
-      IO.puts("current_time: #{start} end_time: #{end_time}")
-      send_update(PlayerComponent,
-        id: "preview-player",
-        video: video,
-        current_time: start,
-        end_time: end_time,
-        title: "Previewing Clip #{index + 1}",
-        current_user: socket.assigns.current_user
-      )
-
-      {:noreply, assign(socket, preview_clip: %{start: start, end: end_time})}
+    if clip.errors == %{} && clip.clip_to != "" && clip.clip_from != "" do
+      case {parse_seconds(clip.clip_from), parse_seconds(clip.clip_to)} do
+        {{:ok, start}, {:ok, end_time}} when end_time > start ->
+          video = socket.assigns.selected_livestream
+          update_player(socket, video, start, end_time, "Previewing Clip #{index + 1}")
+          {:noreply, assign(socket, preview_clip: %{start: start, end: end_time})}
+        _ ->
+          {:noreply, put_flash(socket, :error, "An unexpected error occurred while previewing the clip")}
+      end
     else
-      {:noreply, socket}
+      {:noreply, put_flash(socket, :error, "Cannot preview an invalid clip")}
     end
   end
 
@@ -395,7 +350,7 @@ defmodule AlgoraWeb.VideoProducerLive do
 
   @impl true
   def handle_info({:progress_update, progress}, socket) do
-    {:noreply, assign(socket, progress: progress)}
+    {:noreply, assign(socket, progress: update_progress(progress))}
   end
 
   @impl true
@@ -404,28 +359,6 @@ defmodule AlgoraWeb.VideoProducerLive do
       |> put_flash(:info, "Video created successfully!")
       |> assign(processing: false, progress: nil)
       |> push_redirect(to: ~p"/#{video.channel_handle}/#{video.id}")}
-  end
-
-  @impl true
-  def handle_info({:progress_update, progress}, socket) do
-    # Convert the progress to a value between 0 and 1
-    normalized_progress = case progress do
-      %{stage: :transmuxing, done: done, total: total} ->
-        0.6 + (done / total) * 0.3
-      %{stage: :persisting, done: done, total: total} ->
-        0.9 + (done / total) * 0.05
-      %{stage: :generating_thumbnail, done: _, total: _} ->
-        0.95
-      _ ->
-        socket.assigns.progress.progress
-    end
-
-    updated_progress = %{
-      stage: progress.stage,
-      progress: normalized_progress
-    }
-
-    {:noreply, assign(socket, progress: updated_progress)}
   end
 
   @impl true
@@ -524,4 +457,15 @@ defmodule AlgoraWeb.VideoProducerLive do
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset, as: "video_production"))
   end
+
+  defp update_player(socket, video, current_time, end_time \\ nil, title \\ nil) do
+     send_update(PlayerComponent,
+       id: "preview-player",
+       video: video,
+       current_time: current_time,
+       end_time: end_time,
+       title: title,
+       current_user: socket.assigns.current_user
+     )
+   end
 end
