@@ -8,7 +8,7 @@ defmodule Algora.Library do
   import Ecto.Changeset
   alias Algora.Accounts.User
   alias Algora.{Repo, Accounts, Storage, Cache, ML, Admin}
-  alias Algora.Library.{Channel, Video, Events, Subtitle, Segment}
+  alias Algora.Library.{Channel, Video, VideoThumbnail, Events, Subtitle, Segment}
 
   @pubsub Algora.PubSub
 
