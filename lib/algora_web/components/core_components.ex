@@ -185,7 +185,10 @@ defmodule AlgoraWeb.CoreComponents do
   def live_billboard(assigns) do
     ~H"""
     <div
-      class={["relative w-[1092px] h-[135px] transition-opacity duration-1000", @class]}
+      class={[
+        "relative aspect-[1092/135] max-h-[135px] max-w-[1092px] h-full w-full transition-opacity duration-1000",
+        @class
+      ]}
       phx-hook="LiveBillboard"
       data-urls={Jason.encode!(@ad.composite_asset_urls)}
       id={@id}
