@@ -412,6 +412,18 @@ const Hooks = {
       });
     },
   },
+
+  ChannelTagInput: {
+    mounted() {
+      this.handleEvent("tag_added", () => {
+        const input = this.el.querySelector("input");
+
+        if (input) {
+          input.value = "";
+        }
+      });
+    },
+  },
   LiveBillboard: {
     setup() {
       const urls = JSON.parse(this.el.dataset.urls);
