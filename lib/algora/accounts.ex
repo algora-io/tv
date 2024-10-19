@@ -2,7 +2,7 @@ defmodule Algora.Accounts do
   import Ecto.Query
   import Ecto.Changeset
 
-  alias Algora.{Repo, Restream}
+  alias Algora.{Repo, Restream, Google}
   alias Algora.Accounts.{User, Identity, Destination, Entity}
 
   def list_users(opts) do
@@ -163,6 +163,35 @@ defmodule Algora.Accounts do
 
   def has_restream_token?(%User{} = user) do
     query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream")
+    Repo.one(query) != nil
+  end
+
+  def update_google_token(user, %{token: access_token, refresh_token: refresh_token}) do
+    identity = Repo.get_by!(Identity, user_id: user.id, provider: "google")
+
+    Identity.changeset(identity, %{
+      provider_token: access_token,
+      provider_refresh_token: refresh_token
+    })
+    |> Repo.update()
+  end
+
+  def refresh_google_tokens(%User{} = user) do
+    identity =
+      Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "google"))
+
+    case Google.refresh_access_token(identity.provider_refresh_token) do
+      {:ok, tokens} ->
+        update_google_token(user, tokens)
+        {:ok, tokens}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  def has_google_token?(%User{} = user) do
+    query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "google")
     Repo.one(query) != nil
   end
 

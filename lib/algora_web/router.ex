@@ -53,6 +53,17 @@ defmodule AlgoraWeb.Router do
     end
   end
 
+  scope "/auth", AlgoraWeb do
+    pipe_through :browser
+
+    live_session :auth_login, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
+      live "/login", SignInLive, :index
+    end
+
+    get "/:provider", YoutubeAuthController, :request
+    get "/:provider/callback", YoutubeAuthController, :callback
+  end
+
   scope "/", AlgoraWeb do
     pipe_through [:browser, :embed]
 
@@ -136,7 +147,6 @@ defmodule AlgoraWeb.Router do
     end
 
     live_session :default, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
-      live "/auth/login", SignInLive, :index
       live "/cossgpt", COSSGPTLive, :index
       live "/og/cossgpt", COSSGPTOGLive, :index
 

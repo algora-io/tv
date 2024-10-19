@@ -25,6 +25,17 @@ defmodule Algora.Accounts.Identity do
   end
 
   @doc """
+  sets up a changeset for oauth.
+  for now, its just Google. Perhaps, more providers in the future?
+  """
+  def changeset(identity, attrs) do
+    identity
+    |> cast(attrs, [:provider, :provider_id, :provider_token, :provider_email, :provider_login, :provider_refresh_token])
+    |> validate_required([:provider, :provider_token, :provider_id, :provider_email])
+    |> validate_length(:provider, min: 1)
+  end
+
+  @doc """
   A user changeset for github registration.
   """
   def github_registration_changeset(info, primary_email, emails, token) do
