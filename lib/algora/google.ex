@@ -11,22 +11,23 @@ defmodule Algora.Google do
         client_id: client_id(),
         client_secret: client_secret(),
         refresh_token: refresh_token,
-        grant_type: "refresh_token",
+        grant_type: "refresh_token"
       })
 
     headers = [
       {"Content-Type", "application/x-www-form-urlencoded"}
     ]
 
-      res = HTTPoison.post("https://oauth2.googleapis.com/token", body, headers)
+    res = HTTPoison.post("https://oauth2.googleapis.com/token", body, headers)
 
-      with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- res,
-           %{"access_token" => token, "refresh_token" => refresh_token} <- Jason.decode!(body) do
-        {:ok, %{token: token, refresh_token: refresh_token}}
-      else
-        {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
-        %{} = res -> {:error, {:bad_response, res}}
-      end
+    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- res,
+         %{"access_token" => token} = decoded_body <- Jason.decode!(body) do
+      new_refresh_token = Map.get(decoded_body, "refresh_token", refresh_token)
+      {:ok, %{token: token, refresh_token: new_refresh_token}}
+    else
+      {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
+      %{} = res -> {:error, {:bad_response, res}}
+    end
   end
 
   defp client_id,
