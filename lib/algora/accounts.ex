@@ -195,6 +195,17 @@ defmodule Algora.Accounts do
     Repo.one(query) != nil
   end
 
+  def get_google_token(%User{} = user) do
+    query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "google")
+
+    with identity when identity != nil <- Repo.one(query),
+         {:ok, %{token: token}} <- refresh_google_tokens(user) do
+      token
+    else
+      _ -> nil
+    end
+  end
+
   def get_restream_token(%User{} = user) do
     query = from(i in Identity, where: i.user_id == ^user.id and i.provider == "restream")
 

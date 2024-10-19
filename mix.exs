@@ -91,6 +91,7 @@ defmodule Algora.MixProject do
       {:ueberauth, "~> 0.10"},
       {:ueberauth_google, "~> 0.10"},
       {:oauth2, "~> 2.0", override: true},
+      {:google_api_you_tube, "~> 0.49"}
     ]
   end
 

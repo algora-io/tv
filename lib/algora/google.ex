@@ -5,6 +5,10 @@ defmodule Algora.Google do
   Perhaps, as time goes on, it'll contain more.
   """
 
+  alias GoogleApi.YouTube.V3, as: YouTube
+  alias Algora.Accounts
+  alias Algora.Accounts.User
+
   def refresh_access_token(refresh_token) do
     body =
       URI.encode_query(%{
@@ -28,6 +32,30 @@ defmodule Algora.Google do
       {:error, %HTTPoison.Error{reason: reason}} -> {:error, reason}
       %{} = res -> {:error, {:bad_response, res}}
     end
+  end
+
+  def upload_video(user = %User{}, path, %{
+        title: title,
+        description: description,
+        privacy_status: privacy_status
+      }) do
+    conn = Accounts.get_google_token(user) |> YouTube.Connection.new()
+
+    YouTube.Api.Videos.youtube_videos_insert_simple(
+      conn,
+      ["snippet", "status"],
+      "multipart",
+      %YouTube.Model.Video{
+        snippet: %YouTube.Model.VideoSnippet{
+          title: title,
+          description: description
+        },
+        status: %YouTube.Model.VideoStatus{
+          privacyStatus: privacy_status
+        }
+      },
+      path
+    )
   end
 
   defp client_id,
