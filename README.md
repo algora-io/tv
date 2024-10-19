@@ -75,7 +75,7 @@ To get a local copy up and running, follow these steps.
    cp .env.example .env
    ```
 
-4. Create your database
+4. Create the database user that will manage the database
 
    ```sh
    sudo -u postgres psql
@@ -83,23 +83,19 @@ To get a local copy up and running, follow these steps.
 
    ```sql
    CREATE USER algora WITH PASSWORD 'password';
-   CREATE DATABASE tv;
-   GRANT ALL PRIVILEGES ON DATABASE tv TO algora;
+   ALTER USER algora WITH CREATEDB;
+   \q
    ```
 
-5. Paste your connection string into your `.env` file
+   Update the `.env` file as needed with the username and password you used.
 
-   ```env
-   DATABASE_URL="postgresql://algora:password@localhost:5432/tv"
-   ```
-
-6. Run migrations and seed your database
+5. Set up and seed your database
 
    ```sh
    env $(cat .env | xargs -L 1) mix ecto.setup
    ```
 
-7. Start your development server
+6. Start your development server
 
    ```sh
    env $(cat .env | xargs -L 1) iex -S mix phx.server
