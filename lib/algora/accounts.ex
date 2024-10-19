@@ -166,26 +166,28 @@ defmodule Algora.Accounts do
     Repo.one(query) != nil
   end
 
-  def update_google_token(%User{} = user, new_token) do
-    identity =
-      Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "google"))
+  def update_google_token(user, %{token: access_token, refresh_token: refresh_token}) do
+    identity = Repo.get_by!(Identity, user_id: user.id, provider: "google")
 
-    {:ok, _} =
-      identity
-      |> change()
-      |> put_change(:provider_token, new_token)
-      |> Repo.update()
-    {:ok, Repo.preload(user, :identities, force: true)}
+    Identity.changeset(identity, %{
+      provider_token: access_token,
+      provider_refresh_token: refresh_token
+    })
+    |> Repo.update()
   end
 
   def refresh_google_tokens(%User{} = user) do
     identity =
       Repo.one!(from(i in Identity, where: i.user_id == ^user.id and i.provider == "google"))
 
-     {:ok, tokens} = Google.refresh_access_token(identity.provider_refresh_token)
-     update_google_token(user, tokens)
+    case Google.refresh_access_token(identity.provider_refresh_token) do
+      {:ok, tokens} ->
+        update_google_token(user, tokens)
+        {:ok, tokens}
 
-     {:ok, tokens}
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   def has_google_token?(%User{} = user) do

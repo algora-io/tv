@@ -14,10 +14,9 @@ defmodule Algora.Google do
         grant_type: "refresh_token",
       })
 
-      headers = [
-        {"Content-Type", "application/x-www-form-urlencoded"},
-        {"Authorization", "Basic " <> Base.encode64("#{client_id()}:#{client_secret()}")}
-      ]
+    headers = [
+      {"Content-Type", "application/x-www-form-urlencoded"}
+    ]
 
       res = HTTPoison.post("https://oauth2.googleapis.com/token", body, headers)
 
@@ -30,6 +29,9 @@ defmodule Algora.Google do
       end
   end
 
-  defp client_id, do: Algora.config([:ueberauth, :client_id])
-  defp client_secret, do: Algora.config([:ueberauth, :client_secret])
+  defp client_id,
+    do: Application.fetch_env!(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id]
+
+  defp client_secret,
+    do: Application.fetch_env!(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_secret]
 end
