@@ -91,6 +91,8 @@ defmodule Algora.Pipeline.Storage do
          content,
          %__MODULE__{video: video, segment_sn: segment_sn, partial_sn: partial_sn} = state
        ) do
+    # TODO: calculate & send diff
+    # TODO: apply diff iff new(ssn,psn) > old(ssn,psn)
     broadcast!(video.uuid, [
       LLController,
       :cache_manifest,
