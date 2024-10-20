@@ -8,6 +8,8 @@ defmodule Algora.Pipeline.HLS.LLController do
   alias Algora.Library.Video
   alias Algora.Admin
 
+  @delta_manifest_suffix "_delta.m3u8"
+
   @enforce_keys [:video_uuid, :directory, :video_pid]
   defstruct @enforce_keys ++
               [
@@ -146,6 +148,13 @@ defmodule Algora.Pipeline.HLS.LLController do
     GenServer.cast(registry_id(video_uuid), {:write_to_file, filename, content})
   end
 
+  def cache_manifest(video_uuid, filename, content, {segment_sn, partial_sn}) do
+    GenServer.cast(
+      registry_id(video_uuid),
+      {:cache_manifest, filename, content, {segment_sn, partial_sn}}
+    )
+  end
+
   ###
   ### MANAGEMENT API
   ###
@@ -257,6 +266,28 @@ defmodule Algora.Pipeline.HLS.LLController do
     directory
     |> Path.join(filename)
     |> File.write(content)
+
+    {:noreply, state}
+  end
+
+  def handle_cast({:cache_manifest, filename, content, {segment_sn, partial_sn}}, state) do
+    manifest_type =
+      if String.ends_with?(filename, @delta_manifest_suffix) do
+        :delta_manifest
+      else
+        :manifest
+      end
+
+    write_to_file(state.video_uuid, filename, content)
+
+    unless filename == "index.m3u8" do
+      case manifest_type do
+        :delta_manifest -> update_delta_manifest(state.video_uuid, content)
+        _ -> update_manifest(state.video_uuid, content)
+      end
+
+      update_recent_partial(state.video_uuid, {segment_sn, partial_sn}, manifest_type)
+    end
 
     {:noreply, state}
   end
