@@ -573,7 +573,7 @@ defmodule Algora.Library do
            Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png", content_type: "image/png") do
       video
       |> change()
-      |> put_change(:og_image_url, "#{video.url_root}/og-#{marker.minutes}.png")
+      |> put_change(:og_image_url, Video.og_image_url(video, "og-#{marker.minutes}.png"))
       |> Repo.update()
     end
   end
@@ -584,7 +584,7 @@ defmodule Algora.Library do
            Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png", content_type: "image/png") do
       video
       |> change()
-      |> put_change(:og_image_url, "#{video.url_root}/og-#{marker.minutes}.png")
+      |> put_change(:og_image_url, Video.og_image_url(video, "og-#{marker.minutes}.png"))
       |> Repo.update()
     end
   end

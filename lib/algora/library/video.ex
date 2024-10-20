@@ -127,6 +127,10 @@ defmodule Algora.Library.Video do
   def thumbnail_url(video, filename \\ "index.jpeg"),
     do: "#{Storage.endpoint_url()}/#{Algora.config([:buckets, :media])}/#{video.uuid}/#{filename}"
 
+  @spec og_image_url(Video.t(), String.t()) :: String.t()
+  def og_image_url(video, filename \\ "og.png"),
+    do: "#{Storage.endpoint_url()}/#{Algora.config([:buckets, :media])}/#{video.uuid}/#{filename}"
+
   def slug(%Video{} = video), do: Slug.slugify("#{video.id}-#{video.title}")
 
   def id_from_slug(slug), do: slug |> String.split("-") |> Enum.at(0)
