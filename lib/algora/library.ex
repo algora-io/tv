@@ -436,14 +436,13 @@ defmodule Algora.Library do
   end
 
   def get_thumbnails_for_video(%Video{} = video) do
-    Repo.all(from vt in VideoThumbnail,
-      where: vt.video_id == ^video.id, order_by: vt.minutes)
+    Repo.all(from vt in VideoThumbnail, where: vt.video_id == ^video.id, order_by: vt.minutes)
   end
 
   defp create_thumbnail_from_file(%Video{} = video, src_path, marker, opts \\ []) do
     dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-#{marker.minutes}.jpeg")
 
-    if not(File.exists?(dst_path)) do
+    if not File.exists?(dst_path) do
       :ok = Thumbnex.create_thumbnail(src_path, dst_path, opts)
     end
 
@@ -458,19 +457,20 @@ defmodule Algora.Library do
     end
   end
 
-  def store_thumbnail_from_file(%Video{} = video, src_path, marker \\ %{ minutes: 0 }, opts \\ []) do
+  def store_thumbnail_from_file(%Video{} = video, src_path, marker \\ %{minutes: 0}, opts \\ []) do
     with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, marker, opts),
          {:ok, _} <-
            Storage.upload(thumbnail, "#{video.uuid}/#{thumbnail_filename(marker.minutes)}",
              content_type: "image/jpeg"
            ) do
-      {:ok, video_thumbnail} = %VideoThumbnail{
-        thumbnail_url: Video.thumbnail_url(video, thumbnail_filename(marker.minutes)),
-        minutes: marker.minutes
-      }
-      |> change()
-      |> VideoThumbnail.put_video(video)
-      |> Repo.insert(on_conflict: :nothing)
+      {:ok, video_thumbnail} =
+        %VideoThumbnail{
+          thumbnail_url: Video.thumbnail_url(video, thumbnail_filename(marker.minutes)),
+          minutes: marker.minutes
+        }
+        |> change()
+        |> VideoThumbnail.put_video(video)
+        |> Repo.insert(on_conflict: :nothing)
 
       update_thumbnail_url(video, video_thumbnail)
     end
@@ -482,7 +482,6 @@ defmodule Algora.Library do
            Storage.upload(thumbnail, "#{video.uuid}/#{thumbnail_filename(marker.minutes)}",
              content_type: "image/jpeg"
            ) do
-
       %VideoThumbnail{
         thumbnail_url: Video.thumbnail_url(video, thumbnail_filename(marker.minutes)),
         minutes: marker.minutes
@@ -555,7 +554,7 @@ defmodule Algora.Library do
   defp create_og_image_from_file(%Video{} = video, src_path, marker, opts) do
     dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-og-#{marker.minutes}.png")
 
-    if not(File.exists?(dst_path)) do
+    if not File.exists?(dst_path) do
       :ok = create_og(src_path, dst_path, opts)
     end
 
@@ -567,10 +566,12 @@ defmodule Algora.Library do
     create_og_image_from_file(video, src_path, marker, opts)
   end
 
-  def store_og_image_from_file(%Video{} = video, src_path, marker \\ %{ minutes: 0 }, opts \\ []) do
+  def store_og_image_from_file(%Video{} = video, src_path, marker \\ %{minutes: 0}, opts \\ []) do
     with {:ok, og_image} <- create_og_image_from_file(video, src_path, marker, opts),
          {:ok, _} <-
-           Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png", content_type: "image/png") do
+           Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png",
+             content_type: "image/png"
+           ) do
       video
       |> change()
       |> put_change(:og_image_url, Video.og_image_url(video, "og-#{marker.minutes}.png"))
@@ -581,7 +582,9 @@ defmodule Algora.Library do
   def store_og_image(%Video{} = video, marker) do
     with {:ok, og_image} <- create_og_image(video, marker, time_offset: 0),
          {:ok, _} <-
-           Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png", content_type: "image/png") do
+           Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png",
+             content_type: "image/png"
+           ) do
       video
       |> change()
       |> put_change(:og_image_url, Video.og_image_url(video, "og-#{marker.minutes}.png"))
