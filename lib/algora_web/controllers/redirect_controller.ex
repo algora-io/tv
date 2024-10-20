@@ -12,4 +12,8 @@ defmodule AlgoraWeb.RedirectController do
       redirect(conn, to: ~p"/auth/login")
     end
   end
+
+  def redirect_tembo(conn, _params) do
+    redirect(conn, to: "/algora/10745")
+  end
 end

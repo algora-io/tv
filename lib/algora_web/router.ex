@@ -102,6 +102,7 @@ defmodule AlgoraWeb.Router do
     pipe_through :browser
 
     get "/go/:slug", AdRedirectController, :go
+    get "/tembo", RedirectController, :redirect_tembo
 
     delete "/auth/logout", OAuthCallbackController, :sign_out
 
