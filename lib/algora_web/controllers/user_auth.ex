@@ -54,10 +54,15 @@ defmodule AlgoraWeb.UserAuth do
   end
 
   defp redirect_require_login(socket) do
-    socket
-    |> LiveView.put_flash(:error, "Please sign in")
-    |> LiveView.redirect(to: ~p"/auth/login")
-  end
+  conn = LiveView.get_connect_info(socket, :conn)
+  %{request_path: request_path, query_string: query_string} = conn
+
+  return_to = if query_string == "", do: request_path, else: request_path <> "?" <> query_string
+
+  socket
+  |> LiveView.put_flash(:error, "Please sign in")
+  |> LiveView.redirect(to: ~p"/auth/login?return_to=#{URI.encode_www_form(return_to)}")
+end
 
   @doc """
   Logs the user in.
@@ -157,13 +162,13 @@ defmodule AlgoraWeb.UserAuth do
     end
   end
 
-  defp maybe_store_return_to(%{method: "GET"} = conn) do
+  def maybe_store_return_to(%{method: "GET"} = conn) do
     %{request_path: request_path, query_string: query_string} = conn
     return_to = if query_string == "", do: request_path, else: request_path <> "?" <> query_string
     put_session(conn, :user_return_to, return_to)
   end
 
-  defp maybe_store_return_to(conn), do: conn
+  def maybe_store_return_to(conn), do: conn
 
   def signed_in_path(_conn), do: "/"
 end
