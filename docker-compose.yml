@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: dev_db
+    ports:
+      - "15432:15432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: -p 15432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U dev_user -d dev_db -p 15432" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    environment:
+      MIX_ENV: dev
+      DATABASE_URL: "postgres://dev_user:dev_password@db:15432/dev_db"
+      SEED_DB: "true"
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: [ "phx.server" ]
+    volumes:
+      - .:/app
+      - deps:/app/deps
+      - _build:/app/_build
+
+volumes:
+  postgres_data:
+  deps:
+  _build:
