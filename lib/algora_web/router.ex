@@ -102,7 +102,10 @@ defmodule AlgoraWeb.Router do
     pipe_through :browser
 
     get "/go/:slug", AdRedirectController, :go
-    get "/tembo", RedirectController, :redirect_tembo
+
+    for {guest, video_id} <- AlgoraWeb.RedirectController.guests() do
+      get "/#{guest}", RedirectController, :redirect_guest, assigns: %{video_id: video_id}
+    end
 
     delete "/auth/logout", OAuthCallbackController, :sign_out
 
