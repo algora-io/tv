@@ -1,4 +1,4 @@
-defmodule AlgoraWeb.VideoProducerLive do
+defmodule AlgoraWeb.VideoClipperLive do
   use AlgoraWeb, :live_view
   alias Algora.{Repo, Admin, Library, Clipper}
   alias Algora.Library.Video
@@ -58,14 +58,14 @@ defmodule AlgoraWeb.VideoProducerLive do
                   <div class="grid grid-cols-2 gap-2">
                     <div>
                       <label class="block text-xs mb-1">From</label>
-                      <.input type="text" name={"video_production[clips][#{index}][clip_from]"} value={clip.clip_from} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                      <.input type="text" name={"video_clipper[clips][#{index}][clip_from]"} value={clip.clip_from} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
                       <%= for error <- (clip.errors[:clip_from] || []) do %>
                         <.error><%= error %></.error>
                       <% end %>
                     </div>
                     <div>
                       <label class="block text-xs mb-1">To</label>
-                      <.input type="text" name={"video_production[clips][#{index}][clip_to]"} value={clip.clip_to} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
+                      <.input type="text" name={"video_clipper[clips][#{index}][clip_to]"} value={clip.clip_to} class="w-full bg-white/5 border border-white/15 rounded p-1 text-sm" phx-debounce="300" />
                       <%= for error <- (clip.errors[:clip_to] || []) do %>
                         <.error><%= error %></.error>
                       <% end %>
@@ -113,7 +113,7 @@ defmodule AlgoraWeb.VideoProducerLive do
   def mount(_params, _session, socket) do
     channel = Library.get_channel!(socket.assigns.current_user)
     livestreams = Library.list_channel_videos(channel)
-    changeset = change_video_production()
+    changeset = change_video_clipper()
     default_video = List.first(livestreams)
 
     update_player(socket, default_video, 0)
@@ -131,7 +131,7 @@ defmodule AlgoraWeb.VideoProducerLive do
      |> assign_form(changeset)}
   end
 
-  def handle_event("update_form", %{"video_production" => params}, socket) do
+  def handle_event("update_form", %{"video_clipper" => params}, socket) do
 
     socket = if params["livestream_id"] && params["livestream_id"] != to_string(socket.assigns.selected_livestream.id) do
       new_livestream = Enum.find(socket.assigns.livestreams, &(&1.id == String.to_integer(params["livestream_id"])))
@@ -163,7 +163,7 @@ defmodule AlgoraWeb.VideoProducerLive do
       []
     end
 
-    changeset = params |> change_video_production() |> Map.put(:action, :validate)
+    changeset = params |> change_video_clipper() |> Map.put(:action, :validate)
 
     socket = socket
       |> assign(clips: updated_clips)
@@ -185,7 +185,7 @@ defmodule AlgoraWeb.VideoProducerLive do
     end)
   end
 
-  defp change_video_production(attrs \\ %{}) do
+  defp change_video_clipper(attrs \\ %{}) do
     types = %{
       livestream_id: :integer,
       title: :string,
@@ -245,10 +245,10 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   @impl true
-  def handle_event("validate", %{"video_production" => params}, socket) do
+  def handle_event("validate", %{"video_clipper" => params}, socket) do
     changeset =
       params
-      |> change_video_production()
+      |> change_video_clipper()
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
@@ -307,8 +307,8 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   @impl true
-  def handle_event("create_video", %{"video_production" => params}, socket) do
-    changeset = params |> change_video_production() |> Map.put(:action, :validate)
+  def handle_event("create_video", %{"video_clipper" => params}, socket) do
+    changeset = params |> change_video_clipper() |> Map.put(:action, :validate)
 
     if changeset.valid? do
       # Set initial processing state
@@ -402,7 +402,7 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    assign(socket, :form, to_form(changeset, as: "video_production"))
+    assign(socket, :form, to_form(changeset, as: "video_clipper"))
   end
 
   defp update_player(socket, video, current_time, end_time \\ nil, title \\ nil) do
