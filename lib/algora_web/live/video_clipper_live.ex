@@ -132,11 +132,9 @@ defmodule AlgoraWeb.VideoProducerLive do
   end
 
   def handle_event("update_form", %{"video_production" => params}, socket) do
-    IO.puts("update_form params: #{inspect(params)}")
 
     socket = if params["livestream_id"] && params["livestream_id"] != to_string(socket.assigns.selected_livestream.id) do
       new_livestream = Enum.find(socket.assigns.livestreams, &(&1.id == String.to_integer(params["livestream_id"])))
-      IO.puts("new_livestream: title: #{new_livestream.title} id: #{new_livestream.id}")
 
       if new_livestream do
         send_update(PlayerComponent,
@@ -165,15 +163,11 @@ defmodule AlgoraWeb.VideoProducerLive do
       []
     end
 
-    IO.puts("updated clips: #{inspect(updated_clips)}")
-
     changeset = params |> change_video_production() |> Map.put(:action, :validate)
 
     socket = socket
       |> assign(clips: updated_clips)
       |> assign_form(changeset)
-
-    IO.puts("update_form AFTER selected_video title:#{socket.assigns.selected_livestream.title} id: #{socket.assigns.selected_livestream.id}")
 
     {:noreply, socket}
   end
