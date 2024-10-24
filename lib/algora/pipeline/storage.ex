@@ -92,7 +92,7 @@ defmodule Algora.Pipeline.Storage do
          content,
          %__MODULE__{video: video} = state
        ) do
-    broadcast!(video.uuid, [LLController, :write_to_file, [video.uuid, filename, content]])
+    LLController.cast(video.uuid, [:write_to_file, [video.uuid, filename, content]])
 
     unless filename == "index.m3u8" do
       add_manifest_to_ets(filename, content, state)
@@ -103,14 +103,13 @@ defmodule Algora.Pipeline.Storage do
   end
 
   defp add_manifest_to_ets(filename, manifest, %{video: video}) do
-    broadcast!(video.uuid, [
-      LLController,
+    manifest_type =
       if(String.ends_with?(filename, @delta_manifest_suffix),
         do: :update_delta_manifest,
         else: :update_manifest
-      ),
-      [video.uuid, manifest]
-    ])
+      )
+
+    LLController.cast(video.uuid, [manifest_type, [video.uuid, manifest]])
   end
 
   defp add_partial_to_ets(
@@ -123,7 +122,7 @@ defmodule Algora.Pipeline.Storage do
          partial_name,
          content
        ) do
-    broadcast!(video.uuid, [LLController, :add_partial, [video.uuid, content, partial_name]])
+    LLController.cast(video.uuid, [:add_partial, [video.uuid, content, partial_name]])
 
     partial = {segment_sn, partial_sn}
     %{state | partials_in_ets: [{partial, partial_name} | partials_in_ets]}
@@ -142,13 +141,11 @@ defmodule Algora.Pipeline.Storage do
       end)
 
     Enum.each(partial_to_be_removed, fn {_sn, partial_name} ->
-      broadcast!(video.uuid, [LLController, :delete_partial, [video.uuid, partial_name]])
+      LLController.cast(video.uuid, [:delete_partial, [video.uuid, partial_name]])
     end)
 
     %{state | partials_in_ets: partials_in_ets}
   end
-
-  defp broadcast!(video_uuid, msg), do: LLController.broadcast!(video_uuid, msg)
 
   defp send_update(filename, %{
          video: video,
@@ -163,7 +160,7 @@ defmodule Algora.Pipeline.Storage do
 
     partial = {segment_sn, partial_sn}
 
-    broadcast!(video.uuid, [LLController, :update_recent_partial, [video.uuid, partial, manifest]])
+    LLController.cast(video.uuid, [:update_recent_partial, [video.uuid, partial, manifest]])
   end
 
   defp update_sequence_numbers(
@@ -248,18 +245,26 @@ defmodule Algora.Pipeline.Storage do
          contents,
          %{independent?: true},
          %{type: :partial_segment, mode: :binary},
-         %{setup_completed?: false, video: video, video_header: video_header, segment_sn: segment_sn} = state
+         %{
+           setup_completed?: false,
+           video: video,
+           video_header: video_header,
+           segment_sn: segment_sn
+         } = state
        ) do
-
     marker = Thumbnails.find_marker(segment_sn)
 
-    if (marker) do
+    if marker do
       Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
         Thumbnails.store_thumbnail(video, video_header, contents, marker)
       end)
     end
 
-    %{state | setup_completed?: if(marker, do: Thumbnails.is_last_marker?(marker), else: false), video_segment: contents}
+    %{
+      state
+      | setup_completed?: if(marker, do: Thumbnails.is_last_marker?(marker), else: false),
+        video_segment: contents
+    }
   end
 
   defp process_contents(

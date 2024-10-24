@@ -148,7 +148,8 @@ defmodule Algora.Pipeline do
 
       dir = Path.join(Admin.tmp_dir(), video.uuid)
 
-      :rpc.multicall(LLController, :start, [video.uuid, dir])
+      LLController.start(video.uuid, dir)
+      # :rpc.multicall(LLController, :start, [video.uuid, dir])
 
       {:ok, video} =
         Algora.Library.reconcile_livestream(

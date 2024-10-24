@@ -50,7 +50,7 @@ defmodule Algora.Application do
       AlgoraWeb.Endpoint,
       AlgoraWeb.Embed.Endpoint,
       # Start the LL-HLS controller registry
-      {Registry, keys: :unique, name: Algora.LLControllerRegistry},
+      # {Registry, keys: :unique, name: Algora.LLControllerRegistry},
       # Start the RTMP server
       %{
         id: Membrane.RTMP.Source.TcpServer,

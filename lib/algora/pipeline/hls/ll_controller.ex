@@ -6,7 +6,6 @@ defmodule Algora.Pipeline.HLS.LLController do
 
   alias Algora.Pipeline.HLS.EtsHelper
   alias Algora.Library.Video
-  alias Algora.Admin
 
   @enforce_keys [:video_uuid, :directory, :video_pid]
   defstruct @enforce_keys ++
@@ -262,14 +261,20 @@ defmodule Algora.Pipeline.HLS.LLController do
   end
 
   @impl true
-  def handle_cast({:apply, [module, function, args]}, state) do
-    apply(module, function, args)
+  def handle_cast({:cast, [function, args]}, state) do
+    apply(__MODULE__, function, args)
     {:noreply, state}
   end
 
   @impl true
   def handle_cast(:shutdown, state) do
     {:stop, :normal, state}
+  end
+
+  @impl true
+  def handle_call({:call, [function, args]}, _from, state) do
+    result = apply(__MODULE__, function, args)
+    {:reply, result, state}
   end
 
   @impl true
@@ -371,7 +376,8 @@ defmodule Algora.Pipeline.HLS.LLController do
     |> List.to_tuple()
   end
 
-  def registry_id(video_uuid), do: {:via, Registry, {Algora.LLControllerRegistry, video_uuid}}
+  def registry_id(video_uuid), do: {:global, {:ll_controller, video_uuid}}
+  # def registry_id(video_uuid), do: {:via, Registry, {Algora.LLControllerRegistry, video_uuid}}
 
   defp send_partial_ready(waiting_pids) do
     Enum.each(waiting_pids, fn pid -> send(pid, :manifest_ready) end)
@@ -398,13 +404,11 @@ defmodule Algora.Pipeline.HLS.LLController do
     relative_path != path and relative_path != "."
   end
 
-  def broadcast!(video_uuid, [_module, _function, _args] = msg) do
-    for node <- Admin.nodes() do
-      :rpc.cast(node, Algora.Pipeline.HLS.LLController, :apply, [video_uuid, msg])
-    end
+  def cast(video_uuid, [function, args]) do
+    GenServer.cast(registry_id(video_uuid), {:cast, [function, args]})
   end
 
-  def apply(video_uuid, msg) do
-    GenServer.cast(registry_id(video_uuid), {:apply, msg})
+  def call(video_uuid, [function, args]) do
+    GenServer.call(registry_id(video_uuid), {:call, [function, args]})
   end
 end
