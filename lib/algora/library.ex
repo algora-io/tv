@@ -117,6 +117,7 @@ defmodule Algora.Library do
 
     hls_video =
       %Video{
+        id: video.id,
         title: video.title,
         duration: duration,
         type: :vod,
@@ -126,16 +127,16 @@ defmodule Algora.Library do
         user_id: video.user_id,
         channel_handle: video.channel_handle,
         channel_name: video.channel_name,
-        description: video.description,
-        transmuxed_from_id: video.id  # Keep reference to original
+        description: video.description
       }
       |> change()
       |> Video.put_video_url(:vod, :hls)
-      |> Repo.insert!()
 
-    dir = Path.join(Admin.tmp_dir(), hls_video.uuid)
+    %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
+
+    dir = Path.join(Admin.tmp_dir(), hls_uuid)
     File.mkdir_p!(dir)
-    hls_local_path = Path.join(dir, hls_video.filename)
+    hls_local_path = Path.join(dir, hls_filename)
 
     cb.(%{stage: :transmuxing, done: 1, total: 1})
 
@@ -165,18 +166,21 @@ defmodule Algora.Library do
     |> Enum.each(fn hls_local_path ->
       Storage.upload_from_filename(
         hls_local_path,
-        "#{hls_video.uuid}/#{Path.basename(hls_local_path)}"
+        "#{hls_uuid}/#{Path.basename(hls_local_path)}"
       )
     end)
 
+    Repo.delete!(video)
+    hls_video = Repo.insert!(hls_video)
+
     cb.(%{stage: :generating_thumbnail, done: 1, total: 1})
-    {:ok, video_with_thumbnail} = store_thumbnail_from_file(hls_video, video.local_path)
+    {:ok, hls_video} = store_thumbnail_from_file(hls_video, video.local_path)
 
     # TODO: should probably keep the file around for a while for any additional processing
     # requests from user?
     File.rm!(video.local_path)
 
-    video_with_thumbnail
+    hls_video
   end
 
   def get_latest_video(%User{} = user) do
