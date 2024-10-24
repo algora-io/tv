@@ -90,7 +90,7 @@ defmodule AlgoraWeb.VideoProducerLive do
               <:actions>
                 <div class="w-full">
                   <.button type="submit" disabled={@processing} class="w-full rounded-xl p-3 font-semibold">
-                    <%= if @processing, do: "Processing... #{@progress.stage}", else: "Create video" %>
+                    <%= if @processing, do: "Creating video..", else: "Create video" %>
                   </.button>
 
                   <%= if @processing do %>
@@ -336,8 +336,6 @@ defmodule AlgoraWeb.VideoProducerLive do
 
   @impl true
   def handle_info({:progress_update, progress}, socket) do
-    IO.inspect(progress, label: "Received progress update")
-    IO.inspect(socket.assigns, label: "Current assigns")
     {:noreply, assign(socket, processing: true, progress: progress)}
   end
 
@@ -397,11 +395,11 @@ defmodule AlgoraWeb.VideoProducerLive do
 
     if Enum.empty?(clip_errors) do
       # Send initial progress update
-      send(lv, {:progress_update, %{stage: "Initializing", current: 0, total: 100}})
+      send(lv, {:progress_update, %{stage: "Initializing", current: 0, total: 6}})
 
       case Clipper.create_combined_local_clips(video, clips) do
         {:ok, combined_clip_path} ->
-          send(lv, {:progress_update, %{stage: "Creating combined clip", current: 20, total: 100}})
+          send(lv, {:progress_update, %{stage: "Creating combined clip", current: 1, total: 6}})
 
           upload_entry = %Phoenix.LiveView.UploadEntry{
             client_name: Path.basename(combined_clip_path),
@@ -409,18 +407,34 @@ defmodule AlgoraWeb.VideoProducerLive do
             client_type: "video/mp4"
           }
 
-          send(lv, {:progress_update, %{stage: "Initializing video", current: 40, total: 100}})
+          send(lv, {:progress_update, %{stage: "Initializing video", current: 2, total: 6}})
           new_video = Library.init_mp4!(upload_entry, combined_clip_path, current_user)
 
-          send(lv, {:progress_update, %{stage: "Updating video", current: 60, total: 100}})
+          send(lv, {:progress_update, %{stage: "Updating video", current: 3, total: 6}})
           {:ok, updated_video} = Library.update_video(new_video, %{
             title: params["title"] || "New Video",
             description: params["description"],
             visibility: :unlisted
           })
 
-          send(lv, {:progress_update, %{stage: "Processing video", current: 80, total: 100}})
-          processed_video = Library.transmux_to_hls(updated_video, fn progress ->
+          # Handle transmux progress updates with all three stages
+          processed_video = Library.transmux_to_hls(updated_video, fn progress_info ->
+            progress = case progress_info do
+              %{stage: :transmuxing, done: done, total: total} ->
+                # Transmuxing is stage 4
+                current = 3 + (done / total)
+                %{stage: "Transmuxing", current: trunc(current), total: 6}
+
+              %{stage: :persisting, done: done, total: total} ->
+                # Persisting is stage 5
+                current = 4 + (done / total)
+                %{stage: "Persisting", current: trunc(current), total: 6}
+
+              %{stage: :generating_thumbnail, done: done, total: total} ->
+                # Generating thumbnail is stage 6
+                current = 5 + (done / total)
+                %{stage: "Generating thumbnail", current: trunc(current), total: 6}
+            end
             send(lv, {:progress_update, progress})
           end)
 
