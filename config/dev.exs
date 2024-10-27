@@ -2,7 +2,7 @@ import Config
 
 config :algora,
   mode: :dev,
-  resume_rtmp: true
+  resume_rtmp: System.get_env("RESUME_RTMP", "false") == "true"
 
 config :algora, :buckets,
   media: System.get_env("BUCKET_MEDIA"),
