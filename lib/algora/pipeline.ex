@@ -3,6 +3,7 @@ defmodule Algora.Pipeline do
   require Membrane.Logger
 
   alias Membrane.Time
+  alias Membrane.RTMP.Messages
 
   alias Algora.{Admin, Library}
   alias Algora.Pipeline.HLS.LLController
