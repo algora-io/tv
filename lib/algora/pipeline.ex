@@ -155,7 +155,6 @@ defmodule Algora.Pipeline do
   end
 
   def handle_child_notification({:track_activity, track}, _element, _ctx, state) do
-    Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
     {[], state}
   end
 
