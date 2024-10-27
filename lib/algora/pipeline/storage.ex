@@ -275,7 +275,7 @@ defmodule Algora.Pipeline.Storage do
   defp upload_opts(_ctx), do: []
 
   defp process_contents(
-         :video,
+         "video_master",
          _name,
          contents,
          _metadata,
@@ -286,7 +286,7 @@ defmodule Algora.Pipeline.Storage do
   end
 
   defp process_contents(
-         :video,
+         "video_master",
          _name,
          contents,
          %{independent?: true},
@@ -311,7 +311,7 @@ defmodule Algora.Pipeline.Storage do
   end
 
   defp process_contents(
-         :video,
+         "video_master",
          _name,
          contents,
          _metadata,
