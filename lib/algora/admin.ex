@@ -175,7 +175,24 @@ defmodule Algora.Admin do
     with {:ok, master_resp} <- get(video.url),
          {:ok, master_playlist} <- ExM3U8.deserialize_multivariant_playlist(master_resp.body, []) do
       Enum.reduce(master_playlist.items, %{}, fn(tag, acc) ->
-        Map.put(acc, tag.uri, get_media_playlist(video, tag))
+        case tag.uri do
+          "video_master.m3u8" -> # separate_av video track
+            acc = Map.put(acc, :video, get_media_playlist(video, tag))
+            # HACK ExM3U8.Tags.Stream doesn't expose EXT-X-MEDIA:TYPE=AUDIO URI
+            Map.put(acc, :audio, get_media_playlist(video, %ExM3U8.Tags.Stream{
+              uri: "audio_master.m3u8",
+              codecs: "",
+              bandwidth: 0,
+            }))
+
+          "g3cFdmlkZW8.m3u8" -> # old video track name
+            Map.put(acc, :video, get_media_playlist(video, tag))
+
+          "g3cFYXVkaW8.m3u8" -> # old audio track name
+            Map.put(acc, :audio, get_media_playlist(video, tag))
+          _ ->
+            acc
+        end
       end)
     end
   end
@@ -238,20 +255,26 @@ defmodule Algora.Admin do
 
   def download_video(video, dir) do
     playlists = get_media_playlists(video)
-    timeline = playlists |> Map.values() |> List.first() |> Map.get(:timeline)
-    video_chunks =
-      for n <- timeline,
-          Map.has_key?(n, :uri),
-      do: n.uri
 
-    {time, _} = :timer.tc(&download_chunks/3, [video, video_chunks, dir])
+    video_chunks =
+      for n <- playlists.video.timeline,
+          Map.has_key?(n, :uri),
+          do: n.uri
+
+    audio_chunks =
+      for n <- playlists.audio.timeline,
+          Map.has_key?(n, :uri),
+          do: n.uri
+
+    {time, _} = :timer.tc(&download_chunks/3, [video, video_chunks ++ audio_chunks, dir])
 
     video_chunks
-    |> Enum.with_index() |> Enum.map(fn {chunk, i} ->
-        name = URI.parse(chunk).path |> String.split("/") |> List.last()
-      "#{dir}/#{i}-#{name}"
-    end)
+    |> Enum.map(fn chunk -> "#{dir}/#{chunk}" end)
     |> concatenate_files("#{dir}/video.mp4")
+
+    audio_chunks
+    |> Enum.map(fn chunk -> "#{dir}/#{chunk}" end)
+    |> concatenate_files("#{dir}/audio.mp4")
 
     {_, 0} =
       System.cmd(
@@ -260,6 +283,8 @@ defmodule Algora.Admin do
           "-y",
           "-i",
           "#{dir}/video.mp4",
+          "-i",
+          "#{dir}/audio.mp4",
           "-c",
           "copy",
           "#{dir}/output.mp4"
