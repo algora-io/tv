@@ -136,7 +136,6 @@ defmodule Algora.Library do
 
     dir = Path.join(Admin.tmp_dir(), hls_uuid)
     File.mkdir_p!(dir)
-    hls_local_path = Path.join(dir, hls_filename)
 
     cb.(%{stage: :transmuxing, done: 1, total: 1})
 
@@ -145,6 +144,8 @@ defmodule Algora.Library do
       video.local_path,
       "-c",
       "copy",
+      "-master_pl_name",
+      hls_filename,
       "-start_number",
       "0",
       "-hls_time",
@@ -153,7 +154,9 @@ defmodule Algora.Library do
       "0",
       "-f",
       "hls",
-      hls_local_path
+      "-hls_segment_filename",
+      "#{dir}/muxed_segment_%d_g3cFdmlkZW8.ts",
+      "#{dir}/g3cFdmlkZW8.m3u8"
     ])
 
     files = Path.wildcard("#{dir}/*")
