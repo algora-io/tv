@@ -31,18 +31,13 @@ defmodule AlgoraWeb.PlayerComponent do
           socket
 
         video ->
-          current_user = Map.get(assigns, :current_user)
+          %{current_user: current_user} = assigns
 
-          if current_user do
-            Events.log_watched(current_user, video)
+          Events.log_watched(current_user, video)
 
-            Presence.track_user(video.channel_handle, %{
-              id: if(current_user, do: current_user.handle, else: "")
-            })
-          else
-
-            Logger.warn("No current user for video #{video.id}")
-          end
+          Presence.track_user(video.channel_handle, %{
+            id: if(current_user, do: current_user.handle, else: "")
+          })
 
           socket
           |> push_event("play_video", %{
