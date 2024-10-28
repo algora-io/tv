@@ -60,7 +60,7 @@ defmodule Algora.Clipper do
     %{playlist: %{playlists.video | timeline: timeline}, ss: ss}
   end
 
-  def create_clip(video, from, to) do
+  def trim_manifest(video, from, to) do
     uuid = Ecto.UUID.generate()
 
     %{playlist: playlist, ss: ss} = clip(video, from, to)
@@ -81,48 +81,93 @@ defmodule Algora.Clipper do
       )
       |> ExAws.request()
 
-    url = Storage.to_absolute(:clip, uuid, "index.m3u8")
+    %{url: Storage.to_absolute(:clip, uuid, "index.m3u8"), ss: ss}
+  end
+
+  def create_clip(video, from, to) do
+    %{url: url, ss: ss} = trim_manifest(video, from, to)
     filename = Slug.slugify("#{video.title}-#{Library.to_hhmmss(from)}-#{Library.to_hhmmss(to)}")
 
     "ffmpeg -i \"#{url}\" -ss #{ss} -t #{to - from} \"#{filename}.mp4\""
   end
 
   def create_combined_local_clips(video, clips_params) do
-    # Generate a unique filename for the combined clip
+    # Generate base filename for the combined clip
     filename = generate_combined_clip_filename(video, clips_params)
-    output_path = Path.join(System.tmp_dir(), "#{filename}.mp4")
+    final_output_path = Path.join(System.tmp_dir(), "#{filename}.mp4")
 
-    # Create a temporary file for the complex filter
-    filter_path = Path.join(System.tmp_dir(), "#{filename}_filter.txt")
-    File.write!(filter_path, create_filter_complex(clips_params))
+    # Download individual clips
+    clip_paths =
+      clips_params
+      |> Enum.sort_by(fn {key, _} -> key end)
+      |> Enum.map(fn {_, clip} ->
+        from = Library.from_hhmmss(clip["clip_from"])
+        to = Library.from_hhmmss(clip["clip_to"])
 
-    # Construct the FFmpeg command
-    ffmpeg_cmd = [
-      "-y",
-      "-i",
-      video.url,
-      "-filter_complex_script",
-      filter_path,
-      "-map",
-      "[v]",
-      "-map",
-      "[a]",
-      "-c:v",
-      "libx264",
-      "-c:a",
-      "aac",
-      output_path
-    ]
+        # Get trimmed manifest for this clip
+        %{url: url, ss: ss} = trim_manifest(video, from, to)
+        temp_path = Path.join(System.tmp_dir(), "#{filename}_part#{System.unique_integer()}.mp4")
 
-    # Execute the FFmpeg command
-    case System.cmd("ffmpeg", ffmpeg_cmd, stderr_to_stdout: true) do
-      {_, 0} ->
-        File.rm(filter_path)
-        {:ok, output_path}
+        # Download this clip segment
+        ffmpeg_cmd = [
+          "-y",
+          "-i",
+          url,
+          # TODO: Use -ss in input position, see https://superuser.com/a/1845442
+          "-ss",
+          "#{ss}",
+          "-t",
+          "#{to - from}",
+          temp_path
+        ]
 
-      {error, _} ->
-        File.rm(filter_path)
-        {:error, "FFmpeg error: #{error}"}
+        case System.cmd("ffmpeg", ffmpeg_cmd, stderr_to_stdout: true) do
+          {_, 0} -> {:ok, temp_path}
+          {error, _} -> {:error, "FFmpeg error downloading clip: #{error}"}
+        end
+      end)
+
+    # Check if all clips downloaded successfully
+    case Enum.all?(clip_paths, &match?({:ok, _}, &1)) do
+      true ->
+        clip_paths = Enum.map(clip_paths, fn {:ok, path} -> path end)
+
+        # Create concat file
+        concat_file = Path.join(System.tmp_dir(), "#{filename}_concat.txt")
+        concat_content = Enum.map_join(clip_paths, "\n", &"file '#{&1}'")
+        File.write!(concat_file, concat_content)
+
+        # Concatenate all clips
+        concat_cmd = [
+          "-y",
+          "-f",
+          "concat",
+          "-safe",
+          "0",
+          "-i",
+          concat_file,
+          "-c",
+          "copy",
+          final_output_path
+        ]
+
+        case System.cmd("ffmpeg", concat_cmd, stderr_to_stdout: true) do
+          {_, 0} ->
+            # Cleanup temporary files
+            File.rm(concat_file)
+            Enum.each(clip_paths, &File.rm/1)
+            {:ok, final_output_path}
+
+          {error, _} ->
+            # Cleanup on error
+            File.rm(concat_file)
+            Enum.each(clip_paths, &File.rm/1)
+            {:error, "FFmpeg error concatenating: #{error}"}
+        end
+
+      false ->
+        # If any clip failed to download, return the first error
+        {:error, Enum.find(clip_paths, &match?({:error, _}, &1))}
     end
   end
 
@@ -137,33 +182,5 @@ defmodule Algora.Clipper do
       )
 
     Slug.slugify("#{video.title}-#{clip_count}clips-#{total_duration}s")
-  end
-
-  defp create_filter_complex(clips_params) do
-    {filter_complex, _} =
-      clips_params
-      |> Enum.sort_by(fn {key, _} -> key end)
-      |> Enum.reduce({"", 0}, fn {_, clip}, {acc, index} ->
-        from = Library.from_hhmmss(clip["clip_from"])
-        to = Library.from_hhmmss(clip["clip_to"])
-
-        clip_filter =
-          "[0:v]trim=start=#{from}:end=#{to},setpts=PTS-STARTPTS[v#{index}]; " <>
-            "[0:a]atrim=start=#{from}:end=#{to},asetpts=PTS-STARTPTS[a#{index}];\n"
-
-        {acc <> clip_filter, index + 1}
-      end)
-
-    clip_count = map_size(clips_params)
-
-    video_concat =
-      Enum.map_join(0..(clip_count - 1), "", fn i -> "[v#{i}]" end) <>
-        "concat=n=#{clip_count}:v=1:a=0[v];\n"
-
-    audio_concat =
-      Enum.map_join(0..(clip_count - 1), "", fn i -> "[a#{i}]" end) <>
-        "concat=n=#{clip_count}:v=0:a=1[a]"
-
-    filter_complex <> video_concat <> audio_concat
   end
 end
