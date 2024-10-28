@@ -14,7 +14,6 @@ defmodule Algora.Pipeline do
   @app "live"
   @terminate_after 60_000 * 60
   @reconnect_inactivity_timeout 12_000
-  @frame_devisor 1
 
   defstruct [
     client_ref: nil,
@@ -42,7 +41,7 @@ defmodule Algora.Pipeline do
       video_uuid: nil
     }
 
-    {:ok, pid} = with true <- Algora.config([:resume_rtmp]),
+    {:ok, _pid} = with true <- Algora.config([:resume_rtmp]),
        {pid, metadata} when is_pid(pid) <- :syn.lookup(:pipelines, stream_key) do
          Algora.Pipeline.resume_rtmp(pid, %{ params | video_uuid: metadata[:video_uuid] })
          {:ok, pid}
@@ -154,7 +153,7 @@ defmodule Algora.Pipeline do
     {[], %{ state | waiting_activity: false }}
   end
 
-  def handle_child_notification({:track_activity, track}, _element, _ctx, state) do
+  def handle_child_notification({:track_activity, _track}, _element, _ctx, state) do
     {[], state}
   end
 
@@ -215,7 +214,7 @@ defmodule Algora.Pipeline do
     }
   end
 
-  def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
+  def handle_info(:link_tracks, _ctx, state) do
     spec = [
       #
       get_child(:tee_video)
