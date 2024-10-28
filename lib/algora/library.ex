@@ -136,7 +136,6 @@ defmodule Algora.Library do
 
     dir = Path.join(Admin.tmp_dir(), hls_uuid)
     File.mkdir_p!(dir)
-    hls_local_path = Path.join(dir, hls_filename)
 
     cb.(%{stage: :transmuxing, done: 1, total: 1})
 
@@ -145,6 +144,8 @@ defmodule Algora.Library do
       video.local_path,
       "-c",
       "copy",
+      "-master_pl_name",
+      hls_filename,
       "-start_number",
       "0",
       "-hls_time",
@@ -153,7 +154,9 @@ defmodule Algora.Library do
       "0",
       "-f",
       "hls",
-      hls_local_path
+      "-hls_segment_filename",
+      "#{dir}/muxed_segment_%d_g3cFdmlkZW8.ts",
+      "#{dir}/g3cFdmlkZW8.m3u8"
     ])
 
     files = Path.wildcard("#{dir}/*")
@@ -166,7 +169,13 @@ defmodule Algora.Library do
     |> Enum.each(fn hls_local_path ->
       Storage.upload_from_filename(
         hls_local_path,
-        "#{hls_uuid}/#{Path.basename(hls_local_path)}"
+        "#{hls_uuid}/#{Path.basename(hls_local_path)}",
+        cb,
+        content_type:
+          if(String.ends_with?(hls_local_path, ".m3u8"),
+            do: "application/x-mpegURL",
+            else: "video/mp4"
+          )
       )
     end)
 
