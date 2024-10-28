@@ -3,7 +3,6 @@ defmodule AlgoraWeb.PlayerComponent do
 
   alias Algora.{Library, Events}
   alias AlgoraWeb.Presence
-  require Logger
 
   @impl true
   def render(assigns) do
