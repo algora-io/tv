@@ -169,7 +169,13 @@ defmodule Algora.Library do
     |> Enum.each(fn hls_local_path ->
       Storage.upload_from_filename(
         hls_local_path,
-        "#{hls_uuid}/#{Path.basename(hls_local_path)}"
+        "#{hls_uuid}/#{Path.basename(hls_local_path)}",
+        cb,
+        content_type:
+          if(String.ends_with?(hls_local_path, ".m3u8"),
+            do: "application/x-mpegURL",
+            else: "video/mp4"
+          )
       )
     end)
 
