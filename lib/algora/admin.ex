@@ -126,7 +126,7 @@ defmodule Algora.Admin do
         {item, count}
       end)
 
-      {example_stream, _} = streams |> Enum.find(&match?(manifest_name, elem(&1, 0).uri))
+      {example_stream, _} = streams |> Enum.find(&match?(^manifest_name, elem(&1, 0).uri))
 
       if Enum.all?(streams, fn {x, _} -> example_stream.resolution == x.resolution && example_stream.codecs == x.codecs end) do
         max_bandwidth = Enum.map(streams, fn {stream, _} -> Map.get(stream, :bandwidth) end) |> Enum.max(&Ratio.gte?/2)
@@ -273,7 +273,7 @@ defmodule Algora.Admin do
     |> send(:multicast_algora)
   end
 
-  def download_chunks(video, chunks, dir) do
+  def download_chunks(chunks, dir) do
     Task.async_stream(
       Enum.with_index(chunks),
       fn {chunk, i} ->
@@ -309,7 +309,7 @@ defmodule Algora.Admin do
           Map.has_key?(n, :uri),
           do: n.uri
 
-    {time, _} = :timer.tc(&download_chunks/3, [video, video_chunks ++ audio_chunks, dir])
+    {time, _} = :timer.tc(&download_chunks/2, [video_chunks ++ audio_chunks, dir])
 
     video_chunks
     |> Enum.map(fn chunk -> "#{dir}/#{chunk}" end)
