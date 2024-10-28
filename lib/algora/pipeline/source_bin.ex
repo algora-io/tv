@@ -112,6 +112,10 @@ defmodule Algora.Pipeline.SourceBin do
     {[notify_parent: notification], state}
   end
 
+  def handle_child_notification(:stream_deleted, :src, _ctx, state) do
+    {[notify_parent: :stream_deleted], state}
+  end
+
   @doc """
   Passes the control of the socket to the `source`.
 

@@ -42,7 +42,7 @@ defmodule Algora.Pipeline do
       video_uuid: nil
     }
 
-    {:ok, _pid} = with true <- Algora.config([:resume_rtmp]),
+    {:ok, pid} = with true <- Algora.config([:resume_rtmp]),
        {pid, metadata} when is_pid(pid) <- :syn.lookup(:pipelines, stream_key) do
          Algora.Pipeline.resume_rtmp(pid, %{ params | video_uuid: metadata[:video_uuid] })
          {:ok, pid}
