@@ -182,32 +182,4 @@ defmodule Algora.Clipper do
 
     Slug.slugify("#{video.title}-#{clip_count}clips-#{total_duration}s")
   end
-
-  defp create_filter_complex(clips_params) do
-    {filter_complex, _} =
-      clips_params
-      |> Enum.sort_by(fn {key, _} -> key end)
-      |> Enum.reduce({"", 0}, fn {_, clip}, {acc, index} ->
-        from = Library.from_hhmmss(clip["clip_from"])
-        to = Library.from_hhmmss(clip["clip_to"])
-
-        clip_filter =
-          "[0:v]trim=start=#{from}:end=#{to},setpts=PTS-STARTPTS[v#{index}]; " <>
-            "[0:a]atrim=start=#{from}:end=#{to},asetpts=PTS-STARTPTS[a#{index}];\n"
-
-        {acc <> clip_filter, index + 1}
-      end)
-
-    clip_count = map_size(clips_params)
-
-    video_concat =
-      Enum.map_join(0..(clip_count - 1), "", fn i -> "[v#{i}]" end) <>
-        "concat=n=#{clip_count}:v=1:a=0[v];\n"
-
-    audio_concat =
-      Enum.map_join(0..(clip_count - 1), "", fn i -> "[a#{i}]" end) <>
-        "concat=n=#{clip_count}:v=0:a=1[a]"
-
-    filter_complex <> video_concat <> audio_concat
-  end
 end
