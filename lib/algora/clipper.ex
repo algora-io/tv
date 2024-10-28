@@ -60,7 +60,7 @@ defmodule Algora.Clipper do
     %{playlist: %{playlists.video | timeline: timeline}, ss: ss}
   end
 
-  def clip_manifest(video, from, to) do
+  def trim_manifest(video, from, to) do
     uuid = Ecto.UUID.generate()
 
     %{playlist: playlist, ss: ss} = clip(video, from, to)
@@ -85,7 +85,7 @@ defmodule Algora.Clipper do
   end
 
   def create_clip(video, from, to) do
-    %{url: url, ss: ss} = clip_manifest(video, from, to)
+    %{url: url, ss: ss} = trim_manifest(video, from, to)
     filename = Slug.slugify("#{video.title}-#{Library.to_hhmmss(from)}-#{Library.to_hhmmss(to)}")
 
     "ffmpeg -i \"#{url}\" -ss #{ss} -t #{to - from} \"#{filename}.mp4\""
@@ -105,7 +105,7 @@ defmodule Algora.Clipper do
         to = Library.from_hhmmss(clip["clip_to"])
 
         # Get trimmed manifest for this clip
-        %{url: url, ss: ss} = clip_manifest(video, from, to)
+        %{url: url, ss: ss} = trim_manifest(video, from, to)
         temp_path = Path.join(System.tmp_dir(), "#{filename}_part#{System.unique_integer()}.mp4")
 
         # Download this clip segment
@@ -117,8 +117,6 @@ defmodule Algora.Clipper do
           "#{ss}",
           "-t",
           "#{to - from}",
-          "-c",
-          "copy",
           temp_path
         ]
 
