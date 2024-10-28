@@ -113,6 +113,7 @@ defmodule Algora.Clipper do
           "-y",
           "-i",
           url,
+          # TODO: Use -ss in input position, see https://superuser.com/a/1845442
           "-ss",
           "#{ss}",
           "-t",
