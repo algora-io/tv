@@ -4,6 +4,8 @@ alias Algora.{Accounts, Library, Storage, Repo}
 alias Algora.Library.Video
 
 defmodule Algora.Admin do
+  @audio_track "g3cFYXVkaW8.m3u8"
+  @video_track "g3cFdmlkZW8.m3u8"
 
   def kill_ad_overlay_processes do
     find_ad_overlay_processes() |> Enum.each(&Process.exit(&1, :kill))
@@ -218,24 +220,13 @@ defmodule Algora.Admin do
     with {:ok, master_resp} <- get(video.url),
          {:ok, master_playlist} <- ExM3U8.deserialize_multivariant_playlist(master_resp.body, []) do
       Enum.reduce(master_playlist.items, %{}, fn(tag, acc) ->
-        case tag.uri do
-          "video_master.m3u8" -> # separate_av video track
-            acc = Map.put(acc, :video, get_media_playlist(video, tag))
-            # HACK ExM3U8.Tags.Stream doesn't expose EXT-X-MEDIA:TYPE=AUDIO URI
-            Map.put(acc, :audio, get_media_playlist(video, %ExM3U8.Tags.Stream{
-              uri: "audio_master.m3u8",
-              codecs: "",
-              bandwidth: 0,
-            }))
-
-          "g3cFdmlkZW8.m3u8" -> # old video track name
-            Map.put(acc, :video, get_media_playlist(video, tag))
-
-          "g3cFYXVkaW8.m3u8" -> # old audio track name
-            Map.put(acc, :audio, get_media_playlist(video, tag))
-          _ ->
-            acc
-        end
+        acc = Map.put(acc, tag.uri, get_media_playlist(video, tag))
+        # HACK ExM3U8.Tags.Stream doesn't expose EXT-X-MEDIA:TYPE=AUDIO URI
+        Map.put(acc, "audio_master.m3u8", get_media_playlist(video, %ExM3U8.Tags.Stream{
+          uri: "audio_master.m3u8",
+          codecs: "",
+          bandwidth: 0,
+        }))
       end)
     end
   end
@@ -273,16 +264,20 @@ defmodule Algora.Admin do
     |> send(:multicast_algora)
   end
 
-  def download_chunks(chunks, dir) do
+  def download_chunks(chunks, dir, url_root) do
     Task.async_stream(
       Enum.with_index(chunks),
       fn {chunk, i} ->
         IO.puts("#{rounded(100 * i / length(chunks))}%")
-        name = URI.parse(chunk).path |> String.split("/") |> List.last()
+        chunk_uri = case URI.parse(chunk) do
+          %URI{host: nil} -> URI.parse("#{url_root}/#{chunk}")
+          %URI{} = uri -> uri
+        end
+        name = chunk_uri.path |> String.split("/") |> List.last()
         dl_path = "#{dir}/#{i}-#{name}"
         if not File.exists?(dl_path) do
           {:ok, :saved_to_file} =
-            :httpc.request(:get, {chunk, []}, [],
+            :httpc.request(:get, {URI.to_string(chunk_uri), []}, [],
               stream: ~c"#{dl_path}.part"
             )
 
@@ -298,18 +293,32 @@ defmodule Algora.Admin do
 
   def download_video(video, dir) do
     playlists = get_media_playlists(video)
+    video_playlist = case playlists do
+      %{@video_track => playlist} -> playlist
+      %{"video_master.m3u8" => playlist} -> playlist
+    end
 
     video_chunks =
-      for n <- playlists.video.timeline,
+      for n <- video_playlist.timeline,
           Map.has_key?(n, :uri),
           do: n.uri
+
+    audio_playlist = case playlists do
+      %{@video_track => playlist} -> nil
+      %{@audio_track => playlist} -> playlist
+      %{"audio_master.m3u8" => playlist} -> playlist
+    end
 
     audio_chunks =
-      for n <- playlists.audio.timeline,
-          Map.has_key?(n, :uri),
-          do: n.uri
+      if audio_playlist do
+        for n <- audio_playlist.timeline,
+            Map.has_key?(n, :uri),
+            do: n.uri
+      else
+        []
+      end
 
-    {time, _} = :timer.tc(&download_chunks/2, [video_chunks ++ audio_chunks, dir])
+    {time, _} = :timer.tc(&download_chunks/3, [video_chunks ++ audio_chunks, dir, video.url_root])
 
     video_chunks
     |> Enum.map(fn chunk -> "#{dir}/#{chunk}" end)
@@ -326,12 +335,12 @@ defmodule Algora.Admin do
           "-y",
           "-i",
           "#{dir}/video.mp4",
-          "-i",
-          "#{dir}/audio.mp4",
+          (if audio_playlist, do: "-i"),
+          (if audio_playlist, do: "#{dir}/audio.mp4"),
           "-c",
           "copy",
           "#{dir}/output.mp4"
-        ]
+        ] |> Enum.reject(&is_nil/1)
       )
 
     %File.Stat{size: size} = File.stat!("#{dir}/output.mp4")
