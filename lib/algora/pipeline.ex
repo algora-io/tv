@@ -136,7 +136,7 @@ defmodule Algora.Pipeline do
   end
 
   def handle_child_notification(message, element, _ctx, state) do
-    Membrane.Logger.info(
+    Membrane.Logger.debug(
       "Unhandled child notification #{inspect(message)} from element #{inspect(element)}"
     )
 
@@ -152,7 +152,7 @@ defmodule Algora.Pipeline do
     state = cancel_terminate(state)
     reconnect = state.reconnect + 1
 
-    Membrane.Logger.debug("Attempting reconnection for video #{state.video.uuid}")
+    Membrane.Logger.info("Attempting reconnection for video #{state.video.uuid}")
 
     structure = [
       #
