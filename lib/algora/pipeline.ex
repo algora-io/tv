@@ -16,19 +16,17 @@ defmodule Algora.Pipeline do
   @terminate_after String.to_integer(Algora.config([:resume_rtmp_timeout])) * 1000
   @frame_devisor 1
 
-  defstruct [
-    client_ref: nil,
-    stream_key: nil,
-    user: nil,
-    video: nil,
-    dir: nil,
-    reconnect: 0,
-    terminate_timer: nil,
-    data_frame: nil,
-    playing: false,
-    finalized: false,
-    forwarding: [],
-  ]
+  defstruct client_ref: nil,
+            stream_key: nil,
+            user: nil,
+            video: nil,
+            dir: nil,
+            reconnect: 0,
+            terminate_timer: nil,
+            data_frame: nil,
+            playing: false,
+            finalized: false,
+            forwarding: []
 
   def segment_duration(), do: @segment_duration_seconds
 
@@ -46,11 +44,12 @@ defmodule Algora.Pipeline do
 
   def handle_init(_context, %{app: @app, stream_key: stream_key, client_ref: client_ref}) do
     Membrane.Logger.info("Starting pipeline #{@app}")
+
     if user = Algora.Accounts.get_user_by(stream_key: stream_key) do
       video = Library.init_livestream!()
       dir = Path.join(Admin.tmp_dir(), video.uuid)
 
-      :ok = :syn.register(:pipelines, stream_key, self(), [video_uuid: video.uuid])
+      :ok = :syn.register(:pipelines, stream_key, self(), video_uuid: video.uuid)
       :rpc.multicall(LLController, :start, [video.uuid, dir])
 
       {:ok, video} =
@@ -60,6 +59,7 @@ defmodule Algora.Pipeline do
         )
 
       reconnect = 0
+
       state = %__MODULE__{
         video: video,
         user: user,
@@ -74,9 +74,8 @@ defmodule Algora.Pipeline do
       spec = [
         #
         child({:src, reconnect}, %Algora.Pipeline.SourceBin{
-          client_ref: client_ref,
+          client_ref: client_ref
         }),
-
         get_child({:src, reconnect})
         |> via_out(:video)
         |> child({:video_reconnect, reconnect}, Membrane.Tee.Parallel)
@@ -101,7 +100,7 @@ defmodule Algora.Pipeline do
           target_window_duration: :infinity,
           persist?: true,
           storage: %Algora.Pipeline.Storage{video: video, directory: dir}
-        }),
+        })
       ]
 
       {[spec: spec], state}
@@ -137,7 +136,10 @@ defmodule Algora.Pipeline do
   end
 
   def handle_child_notification(message, element, _ctx, state) do
-    Membrane.Logger.info("Unhandled child notification #{inspect(message)} from element #{inspect(element)}")
+    Membrane.Logger.info(
+      "Unhandled child notification #{inspect(message)} from element #{inspect(element)}"
+    )
+
     {[], state}
   end
 
@@ -146,7 +148,7 @@ defmodule Algora.Pipeline do
     {[{:reply, state.video.id}], state}
   end
 
-  def handle_call({:resume_rtmp, %{ client_ref: client_ref }}, _ctx, state) do
+  def handle_call({:resume_rtmp, %{client_ref: client_ref}}, _ctx, state) do
     state = cancel_terminate(state)
     reconnect = state.reconnect + 1
 
@@ -155,7 +157,7 @@ defmodule Algora.Pipeline do
     structure = [
       #
       child({:src, reconnect}, %Algora.Pipeline.SourceBin{
-        client_ref: client_ref,
+        client_ref: client_ref
       }),
 
       #
@@ -170,7 +172,7 @@ defmodule Algora.Pipeline do
       |> via_out(:audio)
       |> child({:audio_reconnect, reconnect}, Membrane.Tee.Parallel)
       |> via_in(Pad.ref(:input, reconnect))
-      |> get_child(:funnel_audio),
+      |> get_child(:funnel_audio)
     ]
 
     send(self(), :link_tracks)
@@ -179,72 +181,78 @@ defmodule Algora.Pipeline do
     {
       [
         spec: {structure, group: :rtmp_input, crash_group_mode: :temporary},
-        reply: :ok,
+        reply: :ok
       ],
-      %{ state | reconnect: reconnect }
+      %{state | reconnect: reconnect}
     }
   end
 
   def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
     supports_h265 = Algora.config([:supports_h265])
-    structure = if transcode = transcode_formats(state.data_frame) do
-      Enum.flat_map(transcode, fn(opts) ->
-        transcode_track_h264(reconnect, opts)
-        ++ transcode_track_h265(reconnect, opts, supports_h265)
-      end)
-    else
+
+    structure =
+      if transcode = transcode_formats(state.data_frame) do
+        Enum.flat_map(transcode, fn opts ->
+          transcode_track_h264(reconnect, opts) ++
+            transcode_track_h265(reconnect, opts, supports_h265)
+        end)
+      else
+        [
+          #
+          get_child(:tee_video)
+          |> via_in(Pad.ref(:input, "video_master"),
+            options: [
+              track_name: "video_master",
+              encoding: :H264,
+              segment_duration: @segment_duration,
+              partial_segment_duration: @partial_segment_duration
+            ]
+          )
+          |> get_child(:sink)
+        ]
+      end
+
+    structure =
       [
-        #
-        get_child(:tee_video)
-        |> via_in(Pad.ref(:input, "video_master"),
+        get_child(:tee_audio)
+        |> via_in(Pad.ref(:input, "audio_master"),
           options: [
-            track_name: "video_master",
-            encoding: :H264,
+            track_name: "audio_master",
+            encoding: :AAC,
             segment_duration: @segment_duration,
             partial_segment_duration: @partial_segment_duration
           ]
         )
         |> get_child(:sink)
-      ]
-    end
-
-    structure = [
-      get_child(:tee_audio)
-      |> via_in(Pad.ref(:input, "audio_master"),
-        options: [
-          track_name: "audio_master",
-          encoding: :AAC,
-          segment_duration: @segment_duration,
-          partial_segment_duration: @partial_segment_duration
-        ]
-      )
-      |> get_child(:sink)
-    ] ++ structure
+      ] ++ structure
 
     spec = {structure, group: :hls_adaptive}
     {[spec: spec], state}
   end
 
   def handle_info(:unlink_all, _ctx, %{reconnect: reconnect} = state) do
-    actions = [
-      remove_link: {:funnel_video, Pad.ref(:input, reconnect)},
-      remove_link: {:funnel_audio, Pad.ref(:input, reconnect)},
-      remove_link: {:sink, Pad.ref(:input, "audio_master")},
-      remove_children: state.forwarding,
-    ] ++ if transcode_formats = transcode_formats(state.data_frame) do
-      Enum.flat_map(transcode_formats, fn(%{track_name: track_name}) ->
-        [
-          {:remove_link, {:sink, Pad.ref(:input, "#{track_name}")}},
-          if Algora.config([:supports_h265]) do
-            {:remove_link, {:sink, Pad.ref(:input, "#{track_name}_h265")}}
-          end
-        ]
-      end)
-    else
-      [
-        {:remove_link, {:sink, Pad.ref(:input, "video_master")}}
-      ]
-    end |> Enum.filter(& &1)
+    actions =
+      ([
+         remove_link: {:funnel_video, Pad.ref(:input, reconnect)},
+         remove_link: {:funnel_audio, Pad.ref(:input, reconnect)},
+         remove_link: {:sink, Pad.ref(:input, "audio_master")},
+         remove_children: state.forwarding
+       ] ++
+         if transcode_formats = transcode_formats(state.data_frame) do
+           Enum.flat_map(transcode_formats, fn %{track_name: track_name} ->
+             [
+               {:remove_link, {:sink, Pad.ref(:input, "#{track_name}")}},
+               if Algora.config([:supports_h265]) do
+                 {:remove_link, {:sink, Pad.ref(:input, "#{track_name}_h265")}}
+               end
+             ]
+           end)
+         else
+           [
+             {:remove_link, {:sink, Pad.ref(:input, "video_master")}}
+           ]
+         end)
+      |> Enum.filter(& &1)
 
     {actions, %{state | forwarding: []}}
   end
@@ -302,10 +310,13 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-
-  def handle_info({:metadata_message, %Messages.SetDataFrame{} = message}, _ctx, %{data_frame: nil} = state) do
+  def handle_info(
+        {:metadata_message, %Messages.SetDataFrame{} = message},
+        _ctx,
+        %{data_frame: nil} = state
+      ) do
     send(self(), :link_tracks)
-    {[], %{ state | data_frame: message }}
+    {[], %{state | data_frame: message}}
   end
 
   def handle_info({:metadata_message, _message}, _ctx, state) do
@@ -323,9 +334,9 @@ defmodule Algora.Pipeline do
   end
 
   def handle_info(:terminate, _ctx, state) do
-    Membrane.Logger.info "Terminating pipeline for video #{state.video.uuid}"
+    Membrane.Logger.info("Terminating pipeline for video #{state.video.uuid}")
     Algora.Library.toggle_streamer_live(state.video, false)
-    {[terminate: :normal, notify_child: {:sink, :finalize}], %{ state | finalized: true }}
+    {[terminate: :normal, notify_child: {:sink, :finalize}], %{state | finalized: true}}
   end
 
   def handle_info(message, _ctx, state) do
@@ -338,7 +349,7 @@ defmodule Algora.Pipeline do
       #
       get_child(:tee_video)
       |> do_transcode_track_h264(opts, Algora.config([:transcode_backend]))
-      |> child({:tee_video_transcoder,"#{track_name}-#{reconnect}"}, Membrane.Tee.Parallel),
+      |> child({:tee_video_transcoder, "#{track_name}-#{reconnect}"}, Membrane.Tee.Parallel),
 
       #
       get_child({:tee_video_transcoder, "#{track_name}-#{reconnect}"})
@@ -358,7 +369,7 @@ defmodule Algora.Pipeline do
   def transcode_track_h265(reconnect, %{track_name: track_name}, true) do
     [
       #
-      get_child({:tee_video_transcoder,  "#{track_name}-#{reconnect}"})
+      get_child({:tee_video_transcoder, "#{track_name}-#{reconnect}"})
       |> child(%Membrane.H264.Parser{
         output_stream_structure: :annexb,
         generate_best_effort_timestamps: %{framerate: {-1, @frame_devisor}}
@@ -367,7 +378,7 @@ defmodule Algora.Pipeline do
       |> child(%Membrane.H265.FFmpeg.Encoder{
         preset: :veryfast,
         tune: :zerolatency,
-        crf: 40,
+        crf: 40
       })
       |> child({:video_reconnect, "#{track_name}-#{reconnect}_h265"}, Membrane.Tee.Parallel)
       |> via_in(Pad.ref(:input, "#{track_name}_h265"),
@@ -378,13 +389,17 @@ defmodule Algora.Pipeline do
           partial_segment_duration: @partial_segment_duration
         ]
       )
-      |> get_child(:sink),
+      |> get_child(:sink)
     ]
   end
 
   def transcode_track_h265(_reconnect, _opts, _enabled), do: []
 
-  defp do_transcode_track_h264(from_child, %{ framerate: framerate, height: height, width: width, bitrate: bitrate }, nil) do
+  defp do_transcode_track_h264(
+         from_child,
+         %{framerate: framerate, height: height, width: width, bitrate: bitrate},
+         nil
+       ) do
     from_child
     |> child(%Membrane.H264.Parser{
       output_stream_structure: :annexb,
@@ -400,7 +415,7 @@ defmodule Algora.Pipeline do
       ffmpeg_params: %{"b" => "#{bitrate}"},
       preset: :veryfast,
       tune: :zerolatency,
-      crf: 26,
+      crf: 26
     })
   end
 
@@ -411,15 +426,17 @@ defmodule Algora.Pipeline do
       generate_best_effort_timestamps: %{framerate: {opts[:framerate], @frame_devisor}}
     })
     |> child(%Membrane.ABRTranscoder{
-      backend: backend,
-      #min_inter_frame_delay: opts[:min_inter_frame_delay]
+      backend: backend
+      # min_inter_frame_delay: opts[:min_inter_frame_delay]
     })
-    |> via_out(:output, options: [
+    |> via_out(:output,
+      options: [
         width: opts[:width],
         height: opts[:height],
         framerate: :full,
         bitrate: opts[:bitrate]
-    ])
+      ]
+    )
   end
 
   defp setup_forwarding!(%{video: video} = state) do
@@ -464,7 +481,7 @@ defmodule Algora.Pipeline do
   defp terminate_later(%{terminate_timer: nil} = state, time) do
     time = if Algora.config([:resume_rtmp]), do: time, else: 0
     {:ok, timer} = :timer.send_after(time, self(), :terminate)
-    %{ state | terminate_timer: timer }
+    %{state | terminate_timer: timer}
   end
 
   defp terminate_later(state, time) do
@@ -473,28 +490,40 @@ defmodule Algora.Pipeline do
 
   defp cancel_terminate(%{terminate_timer: timer} = state) do
     :timer.cancel(timer)
-    %{ state | terminate_timer: nil }
+    %{state | terminate_timer: nil}
   end
 
-  defp normalize_scale(scale) when is_float(scale), do:
-    scale |> trunc() |> normalize_scale()
+  defp normalize_scale(scale) when is_float(scale), do: scale |> trunc() |> normalize_scale()
+
   defp normalize_scale(scale) when is_integer(scale) and scale > 0 do
     if rem(scale, 2) == 1, do: scale - 1, else: scale
   end
 
   defp transcode_formats(nil), do: nil
-  defp transcode_formats(%{height: source_height, width: source_width, framerate: source_framerate}) do
+
+  defp transcode_formats(%{
+         height: source_height,
+         width: source_width,
+         framerate: source_framerate
+       }) do
     if transcode_config = get_transcode_config() do
       transcode_config
-      |> Enum.filter(fn({target_height, framerate, _bitrate}) ->
-          target_height <= source_height and framerate <= source_framerate
-        end)
-      |> Enum.map(fn({target_height, target_framerate, bitrate}) ->
+      |> Enum.filter(fn {target_height, framerate, _bitrate} ->
+        target_height <= source_height and framerate <= source_framerate
+      end)
+      |> Enum.map(fn {target_height, target_framerate, bitrate} ->
         height = normalize_scale(target_height)
         width = normalize_scale(source_width / (source_height / target_height))
         framerate = trunc(target_framerate)
         track_name = "video_#{width}x#{height}p#{framerate}"
-        %{ height: height, width: width, framerate: framerate, track_name: track_name, bitrate: bitrate }
+
+        %{
+          height: height,
+          width: width,
+          framerate: framerate,
+          track_name: track_name,
+          bitrate: bitrate
+        }
       end)
     end
   end
@@ -504,8 +533,9 @@ defmodule Algora.Pipeline do
       transcode_slug
       |> String.split("|")
       |> Enum.map(&String.split(&1, "p"))
-      |> Enum.map(fn([height, framerate_bitrate]) ->
+      |> Enum.map(fn [height, framerate_bitrate] ->
         [framerate, bitrate] = String.split(framerate_bitrate, "@")
+
         {
           String.to_integer(height),
           String.to_integer(framerate),
@@ -514,5 +544,4 @@ defmodule Algora.Pipeline do
       end)
     end
   end
-
 end
