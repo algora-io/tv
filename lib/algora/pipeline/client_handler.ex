@@ -9,10 +9,11 @@ defmodule Algora.Pipeline.ClientHandler do
   defstruct []
 
   @impl true
-  def handle_init(_opts) do
+  def handle_init(%{pipeline: pid}) do
     %{
       source_pid: nil,
-      buffered: []
+      buffered: [],
+      pipeline: pid
     }
   end
 
@@ -48,6 +49,12 @@ defmodule Algora.Pipeline.ClientHandler do
   @impl true
   def handle_delete_stream(state) do
     if state.source_pid != nil, do: send(state.source_pid, :delete_stream)
+    state
+  end
+
+  @impl true
+  def handle_metadata(message, state) do
+    send(state.pipeline, message)
     state
   end
 

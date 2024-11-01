@@ -34,34 +34,6 @@ defmodule Algora.Pipeline do
 
   def partial_segment_duration(), do: @partial_segment_duration_milliseconds
 
-  def handle_new_client(client_ref, app, stream_key) do
-    Membrane.Logger.info("Handling new client for pipeline #{app}")
-    params = %{
-      client_ref: client_ref,
-      app: app,
-      stream_key: stream_key,
-      video_uuid: nil
-    }
-
-    {:ok, pid} = with true <- Algora.config([:resume_rtmp]),
-       {pid, metadata} when is_pid(pid) <- :syn.lookup(:pipelines, stream_key) do
-         Algora.Pipeline.resume_rtmp(pid, %{ params | video_uuid: metadata[:video_uuid] })
-         {:ok, pid}
-     else
-      _ ->
-        {:ok, _sup, pid} =
-          Membrane.Pipeline.start_link(Algora.Pipeline, params)
-        {:ok, pid}
-    end
-
-    if Algora.config([:transcode]) do
-      # will send SetDataFrame message to pid
-      {Algora.Pipeline.ClientHandler, %{}, pid}
-    else
-      {Algora.Pipeline.ClientHandler, %{}}
-    end
-  end
-
   def resume_rtmp(pipeline, params) when is_pid(pipeline) do
     Membrane.Logger.info("Resuming pipeline #{inspect(params)}")
     GenServer.call(pipeline, {:resume_rtmp, params})
@@ -330,12 +302,13 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_info(%Messages.SetDataFrame{} = message, _ctx, %{data_frame: nil} = state) do
+
+  def handle_info({:metadata_message, %Messages.SetDataFrame{} = message}, _ctx, %{data_frame: nil} = state) do
     send(self(), :link_tracks)
     {[], %{ state | data_frame: message }}
   end
 
-  def handle_info(%Messages.SetDataFrame{} = _message, _ctx, state) do
+  def handle_info({:metadata_message, _message}, _ctx, state) do
     {[], state}
   end
 

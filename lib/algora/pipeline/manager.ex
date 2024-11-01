@@ -19,7 +19,7 @@ defmodule Algora.Pipeline.Manager do
           FLAME.place_child(Algora.Pipeline.Pool, {__MODULE__, [self(), params]})
       end
 
-    {Algora.Pipeline.ClientHandler, %{}, pid}
+    {Algora.Pipeline.ClientHandler, %{pipeline: pid}}
   end
 
   def resume_rtmp(pipeline, params) when is_pid(pipeline) do
