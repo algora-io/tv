@@ -19,7 +19,6 @@ config :algora,
   supports_h265: System.get_env("SUPPORTS_H265", "false") == "true",
   transcode: System.get_env("TRANSCODE"),
   transcode_backend: transcode_backend,
-  flame_backend: flame_backend,
   rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
 
 config :algora, :buckets,
@@ -35,6 +34,14 @@ config :algora, :restream,
   client_secret: System.get_env("RESTREAM_CLIENT_SECRET")
 
 config :algora, :event_sink, url: System.get_env("EVENT_SINK_URL")
+
+config :algora, :flame,
+  backend: flame_backend,
+  min: String.to_integer(System.get_env("FLAME_MAX", "1")),
+  max: String.to_integer(System.get_env("FLAME_MAX", "1")),
+  max_concurrency: String.to_integer(System.get_env("FLAME_MAX_CONCURRENCY", "10")),
+  idle_shutdown_after: String.to_integer(System.get_env("FLAME_IDLE_SHUTDOWN_AFTER", "30")),
+  log: String.to_atom(System.get_env("FLAME_LOG", "debug"))
 
 config :ex_aws,
   # debug_requests: true,

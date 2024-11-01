@@ -8,8 +8,15 @@ config :algora,
   supports_h265: System.get_env("SUPPORTS_H265", "false") == "true",
   transcode: System.get_env("TRANSCODE"),
   transcode_backend: nil,
-  flame_backend: FLAME.LocalBackend,
   rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
+
+config :algora, :flame,
+  flame_backend: FLAME.LocalBackend,
+  min: String.to_integer(System.get_env("FLAME_MAX", "1")),
+  max: String.to_integer(System.get_env("FLAME_MAX", "1")),
+  max_concurrency: String.to_integer(System.get_env("FLAME_MAX_CONCURRENCY", "10")),
+  idle_shutdown_after: String.to_integer(System.get_env("FLAME_IDLE_SHUTDOWN_AFTER", "30")),
+  log: System.get_env("FLAME_LOG", "debug")
 
 # Configure your database
 #
