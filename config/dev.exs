@@ -18,6 +18,7 @@ config :algora,
   resume_rtmp_timeout: System.get_env("RESUME_RTMP_TIMEOUT", "3200"),
   supports_h265: System.get_env("SUPPORTS_H265", "false") == "true",
   transcode: System.get_env("TRANSCODE"),
+  transcode_include_master: System.get_env("TRANSCODE_INCLUDE_MASTER", "false") == "true",
   transcode_backend: transcode_backend,
   rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
 

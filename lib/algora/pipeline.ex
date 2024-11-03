@@ -189,42 +189,21 @@ defmodule Algora.Pipeline do
 
   def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
     supports_h265 = Algora.config([:supports_h265])
+    include_master = Algora.config([:transcode_include_master])
 
     structure =
       if transcode = transcode_formats(state.data_frame) do
-        Enum.flat_map(transcode, fn opts ->
-          transcode_track_h264(reconnect, opts) ++
-            transcode_track_h265(reconnect, opts, supports_h265)
-        end)
+        master_video_track(include_master) ++
+          Enum.flat_map(transcode, fn opts ->
+            transcode_track_h264(reconnect, opts) ++
+              transcode_track_h265(reconnect, opts, supports_h265)
+          end)
       else
-        [
-          #
-          get_child(:tee_video)
-          |> via_in(Pad.ref(:input, "video_master"),
-            options: [
-              track_name: "video_master",
-              encoding: :H264,
-              segment_duration: @segment_duration,
-              partial_segment_duration: @partial_segment_duration
-            ]
-          )
-          |> get_child(:sink)
-        ]
+        master_video_track(true)
       end
 
     structure =
-      [
-        get_child(:tee_audio)
-        |> via_in(Pad.ref(:input, "audio_master"),
-          options: [
-            track_name: "audio_master",
-            encoding: :AAC,
-            segment_duration: @segment_duration,
-            partial_segment_duration: @partial_segment_duration
-          ]
-        )
-        |> get_child(:sink)
-      ] ++ structure
+      master_audio_track() ++ structure
 
     spec = {structure, group: :hls_adaptive}
     {[spec: spec], state}
@@ -232,14 +211,16 @@ defmodule Algora.Pipeline do
 
   def handle_info(:unlink_all, _ctx, %{reconnect: reconnect} = state) do
     actions =
-      ([
-         remove_link: {:funnel_video, Pad.ref(:input, reconnect)},
-         remove_link: {:funnel_audio, Pad.ref(:input, reconnect)},
-         remove_link: {:sink, Pad.ref(:input, "audio_master")},
-         remove_children: state.forwarding
-       ] ++
+      [
+        remove_link: {:funnel_video, Pad.ref(:input, reconnect)},
+        remove_link: {:funnel_audio, Pad.ref(:input, reconnect)},
+        remove_link: {:sink, Pad.ref(:input, "audio_master")},
+        remove_children: state.forwarding
+      ]
+
+      actions =
          if transcode_formats = transcode_formats(state.data_frame) do
-           Enum.flat_map(transcode_formats, fn %{track_name: track_name} ->
+           actions ++ Enum.flat_map(transcode_formats, fn %{track_name: track_name} ->
              [
                {:remove_link, {:sink, Pad.ref(:input, "#{track_name}")}},
                if Algora.config([:supports_h265]) do
@@ -248,13 +229,17 @@ defmodule Algora.Pipeline do
              ]
            end)
          else
-           [
-             {:remove_link, {:sink, Pad.ref(:input, "video_master")}}
-           ]
-         end)
-      |> Enum.filter(& &1)
+           actions
+         end
 
-    {actions, %{state | forwarding: []}}
+      actions =
+         if Algora.config([:transcode]) do
+           actions ++ [{:remove_link, {:sink, Pad.ref(:input, "video_master")}}]
+         else
+           actions
+         end
+
+    {Enum.filter(actions, & &1), %{state | forwarding: []}}
   end
 
   def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
@@ -342,6 +327,39 @@ defmodule Algora.Pipeline do
   def handle_info(message, _ctx, state) do
     Membrane.Logger.info("Unhandled notification #{inspect(message)}")
     {[], state}
+  end
+
+  def master_video_track(false), do: []
+  def master_video_track(true) do
+    [
+      #
+      get_child(:tee_video)
+      |> via_in(Pad.ref(:input, "video_master"),
+        options: [
+          track_name: "video_master",
+          encoding: :H264,
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
+        ]
+      )
+      |> get_child(:sink)
+    ]
+  end
+
+  defp master_audio_track() do
+    [
+      #
+      get_child(:tee_audio)
+      |> via_in(Pad.ref(:input, "audio_master"),
+        options: [
+          track_name: "audio_master",
+          encoding: :AAC,
+          segment_duration: @segment_duration,
+          partial_segment_duration: @partial_segment_duration
+        ]
+      )
+      |> get_child(:sink)
+    ]
   end
 
   def transcode_track_h264(reconnect, %{track_name: track_name} = opts) do
