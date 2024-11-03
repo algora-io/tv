@@ -243,6 +243,7 @@ defmodule Algora.Pipeline do
   end
 
   def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
+    ref = {ref, state.reconnect}
     if Enum.member?(state.forwarding, ref) do
       {[], state}
     else
