@@ -783,7 +783,8 @@ defmodule Algora.Library do
       where:
         not is_nil(v.url) and
           is_nil(v.transmuxed_from_id) and
-          v.user_id == ^channel.user_id
+          v.user_id == ^channel.user_id and
+          v.visibility == :public
     )
     |> Video.not_deleted()
     |> order_by_live()
