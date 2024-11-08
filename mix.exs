@@ -57,7 +57,7 @@ defmodule Algora.MixProject do
       {:jason, "~> 1.2"},
       {:libcluster, "~> 3.3.1"},
       {:membrane_core, "~> 1.0"},
-      {:membrane_h265_plugin, "~> 0.4.0"},
+      {:membrane_h26x_plugin, "~> 0.10.2"},
       {:membrane_h264_ffmpeg_plugin, "~> 0.32.3"},
       {:membrane_h265_ffmpeg_plugin, "~> 0.4.1"},
       {:membrane_http_adaptive_stream_plugin, "~> 0.18.5"},
