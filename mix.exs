@@ -61,7 +61,7 @@ defmodule Algora.MixProject do
       {:membrane_h264_ffmpeg_plugin, "~> 0.32.3"},
       {:membrane_h265_ffmpeg_plugin, "~> 0.4.1"},
       {:membrane_http_adaptive_stream_plugin, "~> 0.18.5"},
-      {:membrane_rtmp_plugin, github: "lastcanal/membrane_rtmp_plugin", branch: "v0.27.2"},
+      {:membrane_rtmp_plugin, "~> 0.27.3"},
       {:membrane_tee_plugin, "~> 0.12.0"},
       {:membrane_file_plugin, "~> 0.17.2"},
       {:membrane_mp4_plugin, "~> 0.35.2"},
