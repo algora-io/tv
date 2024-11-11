@@ -233,7 +233,7 @@ defmodule Algora.Pipeline do
          end
 
       actions =
-         if Algora.config([:transcode]) do
+         if is_nil(Algora.config([:transcode])) or Algora.config([:transcode_include_master]) do
            actions ++ [{:remove_link, {:sink, Pad.ref(:input, "video_master")}}]
          else
            actions
