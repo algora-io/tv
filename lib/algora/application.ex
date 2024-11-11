@@ -8,7 +8,6 @@ defmodule Algora.Application do
   @impl true
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies) || []
-    flame_parent = FLAME.Parent.get()
 
     tcp_server_options = %{
       port: Algora.config([:rtmp_port]),
@@ -57,8 +56,8 @@ defmodule Algora.Application do
       # Clustering setup
       {DNSCluster, query: Application.get_env(:algora, :dns_cluster_query) || :ignore},
       # Start the Endpoints (http/https)
-      !flame_parent && AlgoraWeb.Endpoint,
-      !flame_parent && AlgoraWeb.Embed.Endpoint,
+      AlgoraWeb.Endpoint,
+      AlgoraWeb.Embed.Endpoint,
       # Start the LL-HLS controller registry
       {Registry, keys: :unique, name: Algora.LLControllerRegistry},
       # Start the RTMP server
@@ -66,7 +65,7 @@ defmodule Algora.Application do
         id: Membrane.RTMPServer,
         start: {Membrane.RTMPServer, :start_link, [tcp_server_options]}
       },
-      !flame_parent && Algora.Stargazer,
+      Algora.Stargazer,
       Algora.Terminate,
       ExMarcel.TableWrapper,
       Algora.Youtube.Chat.Supervisor
