@@ -98,6 +98,10 @@ defmodule AlgoraWeb.HLSContentController do
 
         Conn.send_resp(conn, 200, file)
 
+      {:redirect, partial_name} ->
+        redirect(conn,
+          external: Algora.Storage.to_absolute(:video, video_uuid, partial_name))
+
       {:error, :invalid_path} ->
         {:error, :bad_request, "Invalid filename, got #{filename}"}
 

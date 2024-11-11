@@ -10,7 +10,7 @@ defmodule Algora.Pipeline do
 
   @segment_duration_seconds 6
   @segment_duration Time.seconds(@segment_duration_seconds)
-  @partial_segment_duration_milliseconds 200
+  @partial_segment_duration_milliseconds 1000
   @partial_segment_duration Time.milliseconds(@partial_segment_duration_milliseconds)
   @app "live"
   @terminate_after String.to_integer(Algora.config([:resume_rtmp_timeout])) * 1000

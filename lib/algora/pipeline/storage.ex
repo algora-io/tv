@@ -16,7 +16,8 @@ defmodule Algora.Pipeline.Storage do
                 video_header: <<>>,
                 video_segment: <<>>,
                 setup_completed?: false,
-                manifest_uploader: nil
+                manifest_uploader: nil,
+                partial_uploaders: %{}
               ]
 
   @type partial_ets_key :: String.t()
@@ -33,11 +34,13 @@ defmodule Algora.Pipeline.Storage do
           video_header: <<>>,
           video_segment: <<>>,
           setup_completed?: boolean(),
-          manifest_uploader: pid()
+          manifest_uploader: pid(),
+          partial_uploaders: %{ manifest_name() => pid() }
         }
 
   @ets_cached_duration_in_segments 4
   @delta_manifest_suffix "_delta.m3u8"
+  @partial_uploader_send_update_timeout 1000
 
   @impl true
   def init(state) do
@@ -86,7 +89,7 @@ defmodule Algora.Pipeline.Storage do
     state =
       process_contents(parent_id, name, contents, metadata, ctx, state)
       |> update_sequence_numbers(sequence_number, manifest_name)
-      |> add_partial_to_ets(name, partial_name, contents, manifest_name)
+      |> add_partial(name, ctx, partial_name, contents, manifest_name)
 
     {:ok, state}
   end
@@ -101,12 +104,12 @@ defmodule Algora.Pipeline.Storage do
 
     :ok = GenServer.cast(uploader, {:upload, filename, content, upload_opts(context)})
 
-    unless filename == "index.m3u8" do
+    if filename == "index.m3u8" do
+      {:ok, state}
+    else
       add_manifest_to_ets(filename, content, state)
       send_update(filename, state)
     end
-
-    {:ok, state}
   end
 
   defp cache_header(
@@ -131,35 +134,34 @@ defmodule Algora.Pipeline.Storage do
     ])
   end
 
-  defp add_partial_to_ets(
+  defp add_partial(
          %{
            partials_in_ets: partials_in_ets,
            sequences: sequences,
-           video: video
+           partial_uploaders: partial_uploaders
          } = state,
+         ctx,
          segment_name,
          partial_name,
          content,
          manifest_name
        ) do
-    broadcast!(video.uuid, [LLController, :add_partial, [
-      video.uuid, content, segment_name, partial_name
-    ]])
-
+    {:ok, pid} = upload_partial(state, ctx, segment_name, partial_name, content, manifest_name)
     if partial = sequences[manifest_name] do
       partials = Map.get(partials_in_ets, manifest_name, [])
       partials_in_ets = Map.put(partials_in_ets, manifest_name, [{partial, partial_name} | partials])
-      %{state | partials_in_ets: partials_in_ets}
+      partial_uploaders = Map.put(partial_uploaders, manifest_name, pid)
+
+      %{state | partials_in_ets: partials_in_ets, partial_uploaders: partial_uploaders}
     else
       state
     end
   end
 
-  defp remove_partials_from_ets(
+  defp remove_partials(
          %{
            partials_in_ets: partials_in_ets,
-           sequences: sequences,
-           video: video,
+           sequences: sequences
          } = state,
          manifest_name
        ) do
@@ -169,8 +171,9 @@ defmodule Algora.Pipeline.Storage do
           segment_sn + (@ets_cached_duration_in_segments) > curr_segment_sn
         end)
 
-      Enum.each(partial_to_be_removed, fn {_sn, partial_name} ->
-        broadcast!(video.uuid, [LLController, :delete_partial, [video.uuid, partial_name]])
+      Enum.reduce(partial_to_be_removed, state, fn {_sn, partial_name}, state ->
+        {:ok, _pid} = remove_uploaded_partial(state, partial_name)
+        state
       end)
 
       partials_in_ets = Map.put(partials_in_ets, manifest_name, partials)
@@ -180,17 +183,66 @@ defmodule Algora.Pipeline.Storage do
     end
   end
 
+  defp upload_partial(state, ctx, segment_name, partial_name, content, _manifest_name) do
+    Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
+      path = "#{state.video.uuid}/#{partial_name}"
+      with {:ok, _} <- Algora.Storage.upload(content, path, upload_opts(ctx)) do
+        broadcast!(state.video.uuid, [LLController, :add_partial, [
+          state.video.uuid, :ready, segment_name, partial_name
+        ]])
+      else
+        err ->
+          Membrane.Logger.error("Failed to upload partial #{path} #{inspect(err)}")
+      end
+    end)
+  end
+
+  defp remove_uploaded_partial(state, partial_name) do
+    path = "#{state.video.uuid}/#{partial_name}"
+    Task.Supervisor.start_child(Algora.TaskSupervisor, fn ->
+      with {:ok, _resp} <- Algora.Storage.remove(path) do
+        broadcast!(state.video.uuid, [LLController, :delete_partial, [state.video.uuid, partial_name]])
+      else
+        err ->
+          Membrane.Logger.error("Failed to remove uploaded partial #{path}: #{inspect(err)}")
+      end
+    end)
+  end
+
   defp broadcast!(video_uuid, msg), do: LLController.broadcast!(video_uuid, msg)
 
   defp send_update(filename, %{
          video: video,
-         sequences: sequences
-       }) do
+         sequences: sequences,
+         partial_uploaders: partial_uploaders
+       } = state) do
     manifest =
       if(String.ends_with?(filename, @delta_manifest_suffix),
         do: :delta_manifest,
         else: :manifest
       )
+
+    partial_uploader = partial_uploaders[filename]
+    state = with true <- is_pid(partial_uploader),
+                 true <- Process.alive?(partial_uploader),
+                 ref <- Process.monitor(partial_uploader) do
+      partial_uploaders = receive do
+        {:DOWN, ^ref, :process, ^partial_uploader, :normal} ->
+          Map.delete(partial_uploaders, partial_uploader)
+        {:DOWN, ^ref, :process, ^partial_uploader, reason} ->
+          Membrane.Logger.error(
+            "Partial uploader for #{video.uuid}/#{filename} exited with with reason #{inspect(reason)}"
+          )
+          Map.delete(partial_uploaders, partial_uploader)
+      after
+        @partial_uploader_send_update_timeout ->
+          partial_uploaders
+      end
+
+      %{state | partial_uploaders: Map.put(partial_uploaders, filename, nil)}
+    else
+       _other -> state
+    end
 
     manifest_name = String.replace(filename, @delta_manifest_suffix, ".m3u8")
     if partial = sequences[manifest_name] do
@@ -198,6 +250,8 @@ defmodule Algora.Pipeline.Storage do
         video.uuid, partial, manifest, filename
       ]])
     end
+
+    {:ok, state}
   end
 
   defp update_sequence_numbers(
@@ -217,7 +271,7 @@ defmodule Algora.Pipeline.Storage do
       |> then(&Map.put(state, :sequences, &1))
       # If there is a new segment we want to remove partials that are too old from ets
     if new_segment? do
-      remove_partials_from_ets(state, manifest_name)
+      remove_partials(state, manifest_name)
     else
       state
     end
