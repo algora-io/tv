@@ -344,6 +344,11 @@ defmodule Algora.Pipeline.Sink do
     end
   end
 
+  @impl true
+  def handle_info({:DOWN, _rev, :process, _pid, _reason}, _ctx, state) do
+    {[], state}
+  end
+
   defp serialize_track_name(track_id) when is_binary(track_id) do
     valid_filename_regex = ~r/^[^\/:*?"<>|]+$/
 

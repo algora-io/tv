@@ -154,9 +154,15 @@ defmodule Algora.Pipeline.HLS.EtsHelper do
   end
 
   defp lookup_helper(table, key, error) do
-    case :ets.lookup(table, key) do
-      [{^key, val}] -> {:ok, val}
-      [] -> {:error, error}
+    try do
+      case :ets.lookup(table, key) do
+        [{^key, val}] -> {:ok, val}
+        [] -> {:error, error}
+      end
+    rescue
+      error in ArgumentError ->
+        # table not found
+        {:error, error}
     end
   end
 

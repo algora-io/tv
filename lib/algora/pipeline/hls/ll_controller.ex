@@ -69,18 +69,17 @@ defmodule Algora.Pipeline.HLS.LLController do
   @spec handle_partial_request(Video.uuid(), String.t()) ::
           {:ok, binary()} | {:error, atom()}
   def handle_partial_request(video_uuid, filename) do
-    with {:ok, partial} <- EtsHelper.get_partial(video_uuid, filename) do
-      {:ok, partial}
+    with {:ok, :ready}  <- EtsHelper.get_partial(video_uuid, filename) do
+      {:redirect, filename}
     else
       {:error, :file_not_found} ->
-        case preload_hint?(video_uuid, filename) do
-          {:ok, true} ->
-            wait_for_partial_ready(video_uuid, filename)
-
+        with {:ok, true} <- preload_hint?(video_uuid, filename),
+             {:ok, :ready} <- wait_for_partial_ready(video_uuid, filename) do
+          {:redirect, filename}
+        else
           _other ->
             {:error, :file_not_found}
         end
-
       error ->
         error
     end
