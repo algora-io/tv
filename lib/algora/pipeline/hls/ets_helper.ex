@@ -54,24 +54,24 @@ defmodule Algora.Pipeline.HLS.EtsHelper do
   ### ETS CONTENT MANAGMENT
   ###
 
-  @spec update_manifest(:ets.table(), String.t(), String.t()) :: true
-  def update_manifest(table, manifest, manifest_name) do
-    :ets.insert(table, {manifest_key(manifest_name), manifest})
+  @spec update_manifest(:ets.table(), String.t()) :: true
+  def update_manifest(table, manifest) do
+    :ets.insert(table, {@manifest_key, manifest})
   end
 
-  @spec update_delta_manifest(:ets.table(), String.t(), String.t()) :: true
-  def update_delta_manifest(table, delta_manifest, manifest_name) do
-    :ets.insert(table, {delta_manifest_key(manifest_name), delta_manifest})
+  @spec update_delta_manifest(:ets.table(), String.t()) :: true
+  def update_delta_manifest(table, delta_manifest) do
+    :ets.insert(table, {@delta_manifest_key, delta_manifest})
   end
 
-  @spec update_recent_partial(:ets.table(), partial(), String.t()) :: true
-  def update_recent_partial(table, partial, manifest_name) do
-    :ets.insert(table, {recent_partial_key(manifest_name), partial})
+  @spec update_recent_partial(:ets.table(), partial()) :: true
+  def update_recent_partial(table, partial) do
+    :ets.insert(table, {@recent_partial_key, partial})
   end
 
-  @spec update_delta_recent_partial(:ets.table(), partial(), String.t()) :: true
-  def update_delta_recent_partial(table, partial, manifest_name) do
-    :ets.insert(table, {delta_recent_partial_key(manifest_name), partial})
+  @spec update_delta_recent_partial(:ets.table(), partial()) :: true
+  def update_delta_recent_partial(table, partial) do
+    :ets.insert(table, {@delta_recent_partial_key, partial})
   end
 
   @spec add_partial(:ets.table(), binary(), String.t()) :: true
@@ -104,26 +104,26 @@ defmodule Algora.Pipeline.HLS.EtsHelper do
     get_from_ets(video_uuid, filename)
   end
 
-  @spec get_recent_partial(Video.uuid(), String.t()) ::
+  @spec get_recent_partial(Video.uuid()) ::
           {:ok, {non_neg_integer(), non_neg_integer()}} | {:error, atom()}
-  def get_recent_partial(video_uuid, manifest_name) do
-    get_from_ets(video_uuid, recent_partial_key(manifest_name))
+  def get_recent_partial(video_uuid) do
+    get_from_ets(video_uuid, @recent_partial_key)
   end
 
-  @spec get_delta_recent_partial(Video.uuid(), String.t()) ::
+  @spec get_delta_recent_partial(Video.uuid()) ::
           {:ok, {non_neg_integer(), non_neg_integer()}} | {:error, atom()}
-  def get_delta_recent_partial(video_uuid, manifest_name) do
-    get_from_ets(video_uuid, delta_recent_partial_key(manifest_name))
+  def get_delta_recent_partial(video_uuid) do
+    get_from_ets(video_uuid, @delta_recent_partial_key)
   end
 
-  @spec get_manifest(Video.uuid(), String.t()) :: {:ok, String.t()} | {:error, atom()}
-  def get_manifest(video_uuid, manifest_name) do
-    get_from_ets(video_uuid, manifest_key(manifest_name))
+  @spec get_manifest(Video.uuid()) :: {:ok, String.t()} | {:error, atom()}
+  def get_manifest(video_uuid) do
+    get_from_ets(video_uuid, @manifest_key)
   end
 
-  @spec get_delta_manifest(Video.uuid(), String.t()) :: {:ok, String.t()} | {:error, atom()}
-  def get_delta_manifest(video_uuid, manifest_name) do
-    get_from_ets(video_uuid, delta_manifest_key(manifest_name))
+  @spec get_delta_manifest(Video.uuid()) :: {:ok, String.t()} | {:error, atom()}
+  def get_delta_manifest(video_uuid) do
+    get_from_ets(video_uuid, @delta_manifest_key)
   end
 
   @spec get_hls_folder_path(Video.uuid()) :: {:ok, String.t()} | {:error, :video_not_found}
@@ -162,21 +162,5 @@ defmodule Algora.Pipeline.HLS.EtsHelper do
 
   defp video_exists?(video_uuid) do
     :ets.lookup(@videos_to_tables, video_uuid) != []
-  end
-
-  defp manifest_key(manifest_name) when is_binary(manifest_name) do
-    "#{@manifest_key}_#{manifest_name}"
-  end
-
-  defp delta_manifest_key(manifest_name) when is_binary(manifest_name) do
-    "#{@delta_manifest_key}_#{manifest_name}"
-  end
-
-  defp recent_partial_key(manifest_name) when is_binary(manifest_name) do
-    "#{@recent_partial_key}_#{manifest_name}"
-  end
-
-  defp delta_recent_partial_key(manifest_name) when is_binary(manifest_name) do
-    "#{@delta_recent_partial_key}_#{manifest_name}"
   end
 end

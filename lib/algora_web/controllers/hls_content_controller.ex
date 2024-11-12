@@ -64,9 +64,9 @@ defmodule AlgoraWeb.HLSContentController do
 
     result =
       if String.ends_with?(filename, "_delta.m3u8") do
-        LLController.handle_delta_manifest_request(video_uuid, partial, filename)
+        LLController.handle_delta_manifest_request(video_uuid, partial)
       else
-        LLController.handle_manifest_request(video_uuid, partial, filename)
+        LLController.handle_manifest_request(video_uuid, partial)
       end
 
     case result do
@@ -101,10 +101,8 @@ defmodule AlgoraWeb.HLSContentController do
       {:error, :invalid_path} ->
         {:error, :bad_request, "Invalid filename, got #{filename}"}
 
-      {:error, reason} ->
-        Logger.error("Error handling request, reason: #{inspect(reason)}")
+      {:error, _reason} ->
         {:error, :not_found, "File not found"}
     end
   end
-
 end

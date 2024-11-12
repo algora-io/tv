@@ -314,7 +314,7 @@ defmodule Algora.Pipeline.Sink do
       if any_track_persisted? do
         # reconfigure tracks to disable partial segments on final manifest
         tracks = Enum.reduce(manifest.tracks, %{}, fn({name, track}, acc) ->
-          Map.put(acc, name, %Track{ track | mode: :vod, partial_segment_duration: nil })
+          Map.put(acc, name, %Track{ track | partial_segment_duration: nil })
         end)
 
         {result, storage} =

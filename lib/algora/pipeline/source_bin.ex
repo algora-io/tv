@@ -115,7 +115,7 @@ defmodule Algora.Pipeline.SourceBin do
   @impl true
   def handle_parent_notification(:kill, _ctx, state) do
     Process.exit(state.client_ref, :kill)
-    {[], state}
+    {[terminate: :kill], state}
   end
 
   @doc """

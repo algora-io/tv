@@ -12,9 +12,9 @@ defmodule Algora.Pipeline.HLS.LLController do
   defstruct @enforce_keys ++
               [
                 table: nil,
-                preload_hints: %{},
-                manifest: %{},
-                delta_manifest: %{}
+                preload_hints: [],
+                manifest: %{waiting_pids: %{}, last_partial: nil},
+                delta_manifest: %{waiting_pids: %{}, last_partial: nil}
               ]
 
   @type segment_sn :: non_neg_integer()
@@ -27,13 +27,10 @@ defmodule Algora.Pipeline.HLS.LLController do
           directory: Path.t(),
           video_pid: pid(),
           table: :ets.table() | nil,
-          manifest: %{ String.t() => status() },
-          delta_manifest: %{ String.t() => status() },
-          preload_hints: %{String.t() => [pid()]}
+          manifest: status(),
+          delta_manifest: status(),
+          preload_hints: [pid()]
         }
-
-  @default_status %{waiting_pids: %{}, last_partial: nil}
-  @segment_suffix_regex ~r/(_\d*_part)?\.m4s$/
 
   ###
   ### HLS Controller API
@@ -89,30 +86,30 @@ defmodule Algora.Pipeline.HLS.LLController do
   @doc """
   Handles manifest requests with specific partial requested (ll-hls)
   """
-  @spec handle_manifest_request(Video.uuid(), partial(), String.t()) ::
+  @spec handle_manifest_request(Video.uuid(), partial()) ::
           {:ok, String.t()} | {:error, atom()}
-  def handle_manifest_request(video_uuid, partial, filename) do
-    with {:ok, last_partial} <- EtsHelper.get_recent_partial(video_uuid, filename) do
+  def handle_manifest_request(video_uuid, partial) do
+    with {:ok, last_partial} <- EtsHelper.get_recent_partial(video_uuid) do
       unless partial_ready?(partial, last_partial) do
-        wait_for_manifest_ready(video_uuid, partial, :manifest, filename)
+        wait_for_manifest_ready(video_uuid, partial, :manifest)
       end
 
-      EtsHelper.get_manifest(video_uuid, filename)
+      EtsHelper.get_manifest(video_uuid)
     end
   end
 
   @doc """
   Handles delta manifest requests with specific partial requested (ll-hls)
   """
-  @spec handle_delta_manifest_request(Video.uuid(), partial(), String.t()) ::
+  @spec handle_delta_manifest_request(Video.uuid(), partial()) ::
           {:ok, String.t()} | {:error, atom()}
-  def handle_delta_manifest_request(video_uuid, partial, filename) do
-    with {:ok, last_partial} <- EtsHelper.get_delta_recent_partial(video_uuid, filename) do
+  def handle_delta_manifest_request(video_uuid, partial) do
+    with {:ok, last_partial} <- EtsHelper.get_delta_recent_partial(video_uuid) do
       unless partial_ready?(partial, last_partial) do
-        wait_for_manifest_ready(video_uuid, partial, :delta_manifest, filename)
+        wait_for_manifest_ready(video_uuid, partial, :delta_manifest)
       end
 
-      EtsHelper.get_delta_manifest(video_uuid, filename)
+      EtsHelper.get_delta_manifest(video_uuid)
     end
   end
 
@@ -120,24 +117,24 @@ defmodule Algora.Pipeline.HLS.LLController do
   ### STORAGE API
   ###
 
-  @spec update_manifest(Video.uuid(), String.t(), String.t()) :: :ok
-  def update_manifest(video_uuid, manifest, filename) do
-    GenServer.cast(registry_id(video_uuid), {:update_manifest, manifest, filename})
+  @spec update_manifest(Video.uuid(), String.t()) :: :ok
+  def update_manifest(video_uuid, manifest) do
+    GenServer.cast(registry_id(video_uuid), {:update_manifest, manifest})
   end
 
-  @spec update_delta_manifest(Video.uuid(), String.t(), String.t()) :: :ok
-  def update_delta_manifest(video_uuid, delta_manifest, filename) do
-    GenServer.cast(registry_id(video_uuid), {:update_delta_manifest, delta_manifest, filename})
+  @spec update_delta_manifest(Video.uuid(), String.t()) :: :ok
+  def update_delta_manifest(video_uuid, delta_manifest) do
+    GenServer.cast(registry_id(video_uuid), {:update_delta_manifest, delta_manifest})
   end
 
-  @spec update_recent_partial(Video.uuid(), partial(), :manifest | :delta_manifest, String.t()) :: :ok
-  def update_recent_partial(video_uuid, last_partial, manifest, filename) do
-    GenServer.cast(registry_id(video_uuid), {:update_recent_partial, last_partial, manifest, filename})
+  @spec update_recent_partial(Video.uuid(), partial(), :manifest | :delta_manifest) :: :ok
+  def update_recent_partial(video_uuid, last_partial, manifest) do
+    GenServer.cast(registry_id(video_uuid), {:update_recent_partial, last_partial, manifest})
   end
 
-  @spec add_partial(Video.uuid(), binary(), binary(), String.t()) :: :ok
-  def add_partial(video_uuid, segment, partial, filename) do
-    GenServer.cast(registry_id(video_uuid), {:add_partial, segment, partial, filename})
+  @spec add_partial(Video.uuid(), binary(), String.t()) :: :ok
+  def add_partial(video_uuid, partial, filename) do
+    GenServer.cast(registry_id(video_uuid), {:add_partial, partial, filename})
   end
 
   @spec delete_partial(Video.uuid(), String.t()) :: :ok
@@ -147,20 +144,6 @@ defmodule Algora.Pipeline.HLS.LLController do
 
   def write_to_file(video_uuid, filename, content) do
     GenServer.cast(registry_id(video_uuid), {:write_to_file, filename, content})
-  end
-
-  # Filename example: muxed_segment_32_g2QABXZpZGVv_5_part.m4s
-  def get_manifest_name(segment_name) do
-    segment_name
-    |> String.replace(@segment_suffix_regex, "")
-    |> String.split("_")
-    |> Enum.drop_while(fn(s) -> !match?({_integer, ""}, Integer.parse(s)) end)
-    |> Enum.drop(1)
-    |> Enum.join("_")
-    |> then(fn
-      ("") -> {:error, :unknown_segment_name_format}
-      (name) -> {:ok, "#{name}.m3u8"}
-    end)
   end
 
   ###
@@ -205,12 +188,11 @@ defmodule Algora.Pipeline.HLS.LLController do
   end
 
   @impl true
-  def handle_cast({:partial_ready?, partial, from, manifest, filename}, state) do
-    manifests = Map.get(state, manifest)
-    state = manifests
-      |> Map.fetch!(filename)
+  def handle_cast({:partial_ready?, partial, from, manifest}, state) do
+    state =
+      state
+      |> Map.fetch!(manifest)
       |> handle_partial_ready?(partial, from)
-      |> then(&Map.put(manifests, filename, &1))
       |> then(&Map.put(state, manifest, &1))
 
     {:noreply, state}
@@ -223,65 +205,45 @@ defmodule Algora.Pipeline.HLS.LLController do
       {:noreply, state}
     else
       {:error, _reason} ->
-        preload_hints = if {:ok, manifest_name} = get_manifest_name(filename) do
-          hints_for_file = state
-            |> Map.get(:preload_hints, %{})
-            |> Map.get(filename, [])
-          Map.put(state.preload_hints, manifest_name, [from | hints_for_file])
-        else
-          state.preload_hints
-        end
-
-      {:noreply, %{ state | preload_hints: preload_hints }}
+        {:noreply, %{state | preload_hints: [from | state.preload_hints]}}
     end
   end
 
   @impl true
-  def handle_cast({:update_manifest, manifest, filename}, %{table: table} = state) do
-    EtsHelper.update_manifest(table, manifest, filename)
+  def handle_cast({:update_manifest, manifest}, %{table: table} = state) do
+    EtsHelper.update_manifest(table, manifest)
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:update_delta_manifest, delta_manifest, filename}, %{table: table} = state) do
-    EtsHelper.update_delta_manifest(table, delta_manifest, filename)
+  def handle_cast({:update_delta_manifest, delta_manifest}, %{table: table} = state) do
+    EtsHelper.update_delta_manifest(table, delta_manifest)
     {:noreply, state}
   end
 
   @impl true
   def handle_cast(
-        {:update_recent_partial, last_partial, manifest, filename},
+        {:update_recent_partial, last_partial, manifest},
         %{preload_hints: preload_hints, table: table} = state
       ) do
-
     case manifest do
-      :manifest -> EtsHelper.update_recent_partial(table, last_partial, filename)
-      :delta_manifest -> EtsHelper.update_delta_recent_partial(table, last_partial, filename)
+      :manifest -> EtsHelper.update_recent_partial(table, last_partial)
+      :delta_manifest -> EtsHelper.update_delta_recent_partial(table, last_partial)
     end
 
-    manifests = Map.fetch!(state, manifest)
-
-    new_manifests = manifests
-      |> Map.get(filename, @default_status)
-      |> update_and_notify_manifest_ready(last_partial)
-      |> then(&Map.put(manifests, filename, &1))
-
-    new_preload_hints = preload_hints
-      |> Map.get(filename, [])
-      |> update_and_notify_preload_hint_ready()
-      |> then(&Map.put(preload_hints, filename, &1))
+    status = Map.fetch!(state, manifest)
 
     state =
       state
-      |> Map.put(manifest, new_manifests)
-      |> Map.put(:preload_hints, new_preload_hints)
+      |> Map.put(manifest, update_and_notify_manifest_ready(status, last_partial))
+      |> Map.put(:preload_hints, update_and_notify_preload_hint_ready(preload_hints))
 
     {:noreply, state}
   end
 
   @impl true
-  def handle_cast({:add_partial, partial, _segment_name, partial_name}, %{table: table} = state) do
-    EtsHelper.add_partial(table, partial, partial_name)
+  def handle_cast({:add_partial, partial, filename}, %{table: table} = state) do
+    EtsHelper.add_partial(table, partial, filename)
     {:noreply, state}
   end
 
@@ -325,8 +287,8 @@ defmodule Algora.Pipeline.HLS.LLController do
   ### PRIVATE FUNCTIONS
   ###
 
-  defp wait_for_manifest_ready(video_uuid, partial, manifest, filename) do
-    GenServer.cast(registry_id(video_uuid), {:partial_ready?, partial, self(), manifest, filename})
+  defp wait_for_manifest_ready(video_uuid, partial, manifest) do
+    GenServer.cast(registry_id(video_uuid), {:partial_ready?, partial, self(), manifest})
 
     receive do
       :manifest_ready ->
@@ -380,8 +342,7 @@ defmodule Algora.Pipeline.HLS.LLController do
   defp preload_hint?(video_uuid, filename) do
     partial_sn = get_partial_sn(filename)
 
-    with {:ok, manifest_name} <- get_manifest_name(filename),
-         {:ok, recent_partial_sn} <- EtsHelper.get_recent_partial(video_uuid, manifest_name) do
+    with {:ok, recent_partial_sn} <- EtsHelper.get_recent_partial(video_uuid) do
       {:ok, check_if_preload_hint(partial_sn, recent_partial_sn)}
     end
   end

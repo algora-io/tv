@@ -1,4 +1,2 @@
-
-ExUnit.start(capture_log: true)
-
+ExUnit.start()
 Ecto.Adapters.SQL.Sandbox.mode(Algora.Repo, :manual)
