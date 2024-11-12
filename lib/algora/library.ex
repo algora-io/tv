@@ -289,7 +289,7 @@ defmodule Algora.Library do
     |> Enum.each(&terminate_stream/1)
   end
 
-  def toggle_streamer_live(%Video{} = video, is_live, reconnect \\ false) do
+  def toggle_streamer_live(%Video{} = video, is_live) do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
 
@@ -297,40 +297,35 @@ defmodule Algora.Library do
       set: [is_live: is_live]
     )
 
+    Repo.update_all(
+      from(v in Video,
+        where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
+      ),
+      set: [is_live: false]
+    )
+
     video = get_video!(video.id)
 
-    video = unless reconnect do
-      Repo.update_all(
-        from(v in Video,
-          where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
-        ),
-        set: [is_live: false]
-      )
-
-      if is_live do
-        with {:ok, duration} <- get_duration(video),
-             {:ok, video} <-
-               video
-               |> change()
-               |> put_change(:duration, duration)
-               |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
-               |> Repo.update() do
-          video
-        end
-      else
-        if {:ok, video} =
-              video
-              |> change()
-              |> put_change(:duration, 0)
-              |> put_change(:url, Video.url(:livestream, video.uuid, video.filename))
-              |> Repo.update() do
-          video
-        else
-          video
-        end
-      end
-    else
+    video = if is_live do
+      with {:ok, duration} <- get_duration(video),
+           {:ok, video} <-
+             video
+             |> change()
+             |> put_change(:duration, duration)
+             |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
+             |> Repo.update() do
       video
+    else
+      if {:ok, video} =
+            video
+            |> change()
+            |> put_change(:duration, 0)
+            |> put_change(:url, Video.url(:livestream, video.uuid, video.filename))
+            |> Repo.update() do
+        video
+      else
+        video
+      end
     end
 
     msg =
@@ -343,7 +338,7 @@ defmodule Algora.Library do
 
     sink_url = Algora.config([:event_sink, :url])
 
-    if !reconnect && sink_url && sink_url != "" && user.visibility == :public do
+    if sink_url && sink_url != "" && user.visibility == :public do
       identity =
         from(i in Algora.Accounts.Identity,
           join: u in assoc(i, :user),
