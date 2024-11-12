@@ -5,92 +5,108 @@ defmodule Algora.Pipeline.SourceBin do
   Outputs single audio and video which are ready for further processing with Membrane Elements.
   At this moment only AAC and H264 codecs are supported.
 
-  The bin can be used in the following two scenarios:
-  * by providing the URL on which the client is expected to connect - note, that if the client doesn't
-  connect on this URL, the bin won't complete its setup
-  * by spawning `Membrane.RTMPServer`, receiving client reference after client connects on a given `app` and `stream_key`
-  and passing the client reference to the `#{inspect(__MODULE__)}`.
+  ## Usage
+
+  The bin requires the RTMP client to be already connected to the socket.
+  The socket passed to the bin must be in non-active mode (`active` set to `false`).
+
+  When the `Membrane.RTMP.Source` is initialized the bin sends `t:Membrane.RTMP.Source.socket_control_needed_t/0` notification.
+  Then, the control of the socket should be immediately granted to the `Source` with the `pass_control/2`,
+  and the `Source` will start reading packets from the socket.
+
+  The bin allows for providing custom validator module, that verifies some of the RTMP messages.
+  The module has to implement the `Membrane.RTMP.MessageValidator` protocol.
+  If the validation fails, a `t:Membrane.RTMP.Source.stream_validation_failed_t/0` notification is sent.
   """
   use Membrane.Bin
 
   alias Membrane.{AAC, H264, RTMP}
 
-  def_output_pad :video,
+  def_output_pad(:video,
     accepted_format: H264,
-    availability: :on_request
+    availability: :always
+  )
 
-  def_output_pad :audio,
+  def_output_pad(:audio,
     accepted_format: AAC,
-    availability: :on_request
+    availability: :always
+  )
 
-  def_options client_ref: [
-                default: nil,
-                spec: pid(),
-                description: """
-                A pid of a process acting as a client reference.
-                Can be gained with the use of `Membrane.RTMPServer`.
-                """
-              ],
-              url: [
-                default: nil,
-                spec: String.t(),
-                description: """
-                An URL on which the client is expected to connect, for example:
-                rtmp://127.0.0.1:1935/app/stream_key
-                """
-              ]
+  def_options(
+    socket: [
+      spec: :gen_tcp.socket() | :ssl.sslsocket(),
+      description: """
+      Socket, on which the bin will receive RTMP or RTMPS stream. The socket will be passed to the `RTMP.Source`.
+      The socket must be already connected to the RTMP client and be in non-active mode (`active` set to `false`).
+
+      In case of RTMPS the `use_ssl?` options must be set to true.
+      """
+    ],
+    use_ssl?: [
+      spec: boolean(),
+      default: false,
+      description: """
+      Tells whether the passed socket is a regular TCP socket or SSL one.
+      """
+    ],
+    validator: [
+      spec: Membrane.RTMP.MessageValidator.t(),
+      description: """
+      A `Membrane.RTMP.MessageValidator` implementation, used for validating the stream. By default allows
+      every incoming stream.
+      """,
+      default: %Membrane.RTMP.MessageValidator.Default{}
+    ]
+  )
 
   @impl true
   def handle_init(_ctx, %__MODULE__{} = opts) do
-    spec =
+    transcode? = Algora.Env.get(:transcode?)
+
+    structure = [
       child(:src, %RTMP.Source{
-        client_ref: opts.client_ref,
-        url: opts.url
+        socket: opts.socket,
+        validator: opts.validator,
+        use_ssl?: opts.use_ssl?
       })
-      |> child(:demuxer, Membrane.FLV.Demuxer)
+      |> child(:demuxer, Algora.Pipeline.Demuxer),
+      #
+      child(:audio_parser, %Membrane.AAC.Parser{
+        out_encapsulation: :none
+      }),
+      child(:video_parser, %Membrane.H264.Parser{
+        output_stream_structure: if(transcode?, do: :annexb, else: :avc1),
+        repeat_parameter_sets: true
+      }),
+      #
+      get_child(:demuxer)
+      |> via_out(Pad.ref(:audio, 0))
+      |> get_child(:audio_parser)
+      |> bin_output(:audio),
+      #
+      get_child(:demuxer)
+      |> via_out(Pad.ref(:video, 0))
+      |> get_child(:video_parser)
+      |> then(fn parser ->
+        if transcode? do
+          parser
+          |> child(:decoder, Membrane.H264.FFmpeg.Decoder)
+          |> child(:encoder, %Membrane.H264.FFmpeg.Encoder{
+            preset: :ultrafast,
+            crf: 30,
+            tune: :zerolatency
+          })
+        else
+          parser
+        end
+      end)
+      |> bin_output(:video)
+    ]
 
-    state = %{
-      demuxer_audio_pad_ref: nil,
-      demuxer_video_pad_ref: nil
-    }
-
-    {[spec: spec], state}
+    {[spec: structure], %{}}
   end
 
   @impl true
-  def handle_pad_added(Pad.ref(:audio, _ref) = pad, ctx, state) do
-    assert_pad_count!(:audio, ctx)
-
-    spec =
-      child(:funnel_audio, Membrane.Funnel, get_if_exists: true)
-      |> bin_output(pad)
-
-    {actions, state} = maybe_link_audio_pad(state)
-
-    {[spec: spec] ++ actions, state}
-  end
-
-  def handle_pad_added(Pad.ref(:video, _ref) = pad, ctx, state) do
-    assert_pad_count!(:video, ctx)
-
-    spec =
-      child(:funnel_video, Membrane.Funnel, get_if_exists: true)
-      |> bin_output(pad)
-
-    {actions, state} = maybe_link_video_pad(state)
-
-    {[spec: spec] ++ actions, state}
-  end
-
-  @impl true
-  def handle_child_notification({:new_stream, pad_ref, :AAC}, :demuxer, _ctx, state) do
-    maybe_link_audio_pad(%{state | demuxer_audio_pad_ref: pad_ref})
-  end
-
-  def handle_child_notification({:new_stream, pad_ref, :H264}, :demuxer, _ctx, state) do
-    maybe_link_video_pad(%{state | demuxer_video_pad_ref: pad_ref})
-  end
-
   def handle_child_notification(
         {type, _socket, _pid} = notification,
         :src,
@@ -129,50 +145,5 @@ defmodule Algora.Pipeline.SourceBin do
   @spec secure_pass_control(:ssl.sslsocket(), pid()) :: :ok | {:error, any()}
   def secure_pass_control(socket, source) do
     :ssl.controlling_process(socket, source)
-  end
-
-  defp maybe_link_audio_pad(state) when state.demuxer_audio_pad_ref != nil do
-    {[
-       spec:
-         get_child(:demuxer)
-         |> via_out(state.demuxer_audio_pad_ref)
-         |> child(:audio_parser, %Membrane.AAC.Parser{
-           out_encapsulation: :none
-         })
-         |> child(:funnel_audio, Membrane.Funnel, get_if_exists: true)
-     ], state}
-  end
-
-  defp maybe_link_audio_pad(state) do
-    {[], state}
-  end
-
-  defp maybe_link_video_pad(state) when state.demuxer_video_pad_ref != nil do
-    {[
-       spec:
-         get_child(:demuxer)
-         |> via_out(state.demuxer_video_pad_ref)
-         |> child(:video_parser, Membrane.H264.Parser)
-         |> child(:funnel_video, Membrane.Funnel, get_if_exists: true)
-     ], state}
-  end
-
-  defp maybe_link_video_pad(state) do
-    {[], state}
-  end
-
-  defp assert_pad_count!(name, ctx) do
-    count =
-      ctx.pads
-      |> Map.keys()
-      |> Enum.count(fn pad_ref -> Pad.name_by_ref(pad_ref) == name end)
-
-    if count > 1 do
-      raise(
-        "Linking more than one #{inspect(name)} output pad to #{inspect(__MODULE__)} is not allowed"
-      )
-    end
-
-    :ok
   end
 end
