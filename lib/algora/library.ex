@@ -244,26 +244,14 @@ defmodule Algora.Library do
   def terminate_stream(video_id) do
     video = Repo.get!(Video, video_id)
 
-    audio_resp = Finch.build(:get, "#{video.url_root}/audio_master.m3u8") |> Finch.request(Algora.Finch)
+    resp = Finch.build(:get, "#{video.url_root}/g3cFdmlkZW8.m3u8") |> Finch.request(Algora.Finch)
 
-    with {:ok, %Finch.Response{status: 200, body: body}} <- audio_resp do
-      if !String.ends_with?(body, "#EXT-X-ENDLIST\n") do
-        Storage.upload(
-          String.trim_trailing(body) <> "\n#EXT-X-ENDLIST\n",
-          "#{video.uuid}/audio_master.m3u8",
-          content_type: "application/x-mpegURL"
-        )
-      end
-    end
-
-    video_resp = Finch.build(:get, "#{video.url_root}/video_master.m3u8") |> Finch.request(Algora.Finch)
-
-    with {:ok, %Finch.Response{status: 200, body: body}} <- video_resp,
+    with {:ok, %Finch.Response{status: 200, body: body}} <- resp,
          {:ok, duration} <- get_duration(video) do
       if !String.ends_with?(body, "#EXT-X-ENDLIST\n") do
         Storage.upload(
           String.trim_trailing(body) <> "\n#EXT-X-ENDLIST\n",
-          "#{video.uuid}/video_master.m3u8",
+          "#{video.uuid}/g3cFdmlkZW8.m3u8",
           content_type: "application/x-mpegURL"
         )
       end
