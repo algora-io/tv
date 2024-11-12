@@ -255,32 +255,6 @@ const Hooks = {
               startLevel: -1,
               testBandwidth: !opts.is_live,
               lowLatencyMode: opts.is_live,
-              stretchShortVideoTrack: true,
-              forceKeyFrameOnDiscontinuity: false,
-              maxFragLookUpTolerance: 60 * 60,
-              maxBufferHole: 5,
-              nudgeOffset: 0.1,
-              highBufferWatchdogPeriod: 0.5,
-              liveSyncDuration: 2,
-              backBufferLength: 30,
-              startPosition: -1,
-              fragLoadPolicy: {
-                default: {
-                  maxTimeToFirstByteMs: 5000,
-                  maxLoadTimeMs: 10000,
-                  timeoutRetry: {
-                    maxNumRetry: 1000,
-                    retryDelayMs: 3000,
-                    maxRetryDelayMs: 15000,
-                  },
-                  errorRetry: {
-                    maxNumRetry: 1000,
-                    retryDelayMs: 3000,
-                    maxRetryDelayMs: 15000,
-                    backoff: 'linear',
-                  },
-                },
-              },
             };
           }
         });
