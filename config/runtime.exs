@@ -14,7 +14,7 @@ end
 
 config :algora,
   hf_token: System.get_env("HF_TOKEN"),
-  resume_rtmp: System.get_env("RESUME_RTMP", "false") == "true"
+  resume_rtmp: true
 
 config :replicate,
   replicate_api_token: System.get_env("REPLICATE_API_TOKEN")
