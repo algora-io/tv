@@ -17,7 +17,28 @@ defmodule Algora.Application do
         active: false,
         ip: {0, 0, 0, 0}
       ],
-      handle_new_client: &Algora.Pipeline.handle_new_client/3
+      handle_new_client: fn client_ref, app, stream_key ->
+        params = %{
+          client_ref: client_ref,
+          app: app,
+          stream_key: stream_key,
+          video_uuid: nil,
+          parent: self()
+        }
+
+
+        {:ok, _pid} = case Registry.lookup(Algora.Pipeline.Registry, stream_key) do
+          [{pid, {:pipeline, video_uuid}}] ->
+            Algora.Pipeline.resume_rtmp(pid, %{params | video_uuid: video_uuid})
+            {:ok, pid}
+          [] ->
+            {:ok, _sup, pid} =
+              Membrane.Pipeline.start_link(Algora.Pipeline, params)
+            {:ok, pid}
+        end
+
+          {Algora.Pipeline.ClientHandler, %{}}
+      end
     }
 
     children = [

@@ -334,24 +334,6 @@ defmodule Algora.Pipeline.SinkBin do
     {[notify_parent: {:track_playable, track_info}], state}
   end
 
-  def handle_child_notification(
-        {:track_activity, track_info},
-        :sink,
-        _ctx,
-        state
-      ) do
-    # notify when track is active
-    {[notify_parent: {:track_activity, track_info}], state}
-  end
-
-  def handle_parent_notification(:disconnected, _ctx, state) do
-    {[notify_child: {:sink, :disconnected}], state}
-  end
-
-  def handle_parent_notification(:reconnected, _ctx, state) do
-    {[notify_child: {:sink, :reconnected}], state}
-  end
-
   defp track_options(context) do
     context.pad_options
     |> Map.take([:track_name, :segment_duration, :partial_segment_duration, :max_framerate])

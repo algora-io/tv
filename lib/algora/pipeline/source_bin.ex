@@ -51,8 +51,7 @@ defmodule Algora.Pipeline.SourceBin do
 
     state = %{
       demuxer_audio_pad_ref: nil,
-      demuxer_video_pad_ref: nil,
-      client_ref: opts.client_ref,
+      demuxer_video_pad_ref: nil
     }
 
     {[spec: spec], state}
@@ -110,12 +109,6 @@ defmodule Algora.Pipeline.SourceBin do
       )
       when type in [:stream_validation_success, :stream_validation_error] do
     {[notify_parent: notification], state}
-  end
-
-  @impl true
-  def handle_parent_notification(:kill, _ctx, state) do
-    Process.exit(state.client_ref, :kill)
-    {[terminate: :kill], state}
   end
 
   @doc """

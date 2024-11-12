@@ -8,11 +8,9 @@ defmodule Algora.Pipeline do
 
   @segment_duration_seconds 6
   @segment_duration Time.seconds(@segment_duration_seconds)
-  @partial_segment_duration_milliseconds 200
-  @partial_segment_duration Time.milliseconds(@partial_segment_duration_milliseconds)
+  @partial_segment_duration Time.milliseconds(200)
   @app "live"
-  @terminate_after 60_000 * 60
-  @reconnect_inactivity_timeout 12_000
+  @terminate_after 60_000
 
   defstruct [
     client_ref: nil,
@@ -21,49 +19,19 @@ defmodule Algora.Pipeline do
     video: nil,
     dir: nil,
     reconnect: 0,
-    terminate_timer: nil,
-    waiting_activity: true
+    terminate_timer: nil
   ]
 
-  def segment_duration(), do: @segment_duration_seconds
-
-  def partial_segment_duration(), do: @partial_segment_duration_milliseconds
-
-  def handle_new_client(client_ref, app, stream_key) do
-    Membrane.Logger.info("Handling new client for pipeline #{app}")
-    params = %{
-      client_ref: client_ref,
-      app: app,
-      stream_key: stream_key,
-      video_uuid: nil
-    }
-
-    {:ok, _pid} = with true <- Algora.config([:resume_rtmp]),
-       [{pid, {:pipeline, video_uuid}}] <- Registry.lookup(Algora.Pipeline.Registry, stream_key) do
-         Algora.Pipeline.resume_rtmp(pid, %{params | video_uuid: video_uuid})
-         {:ok, pid}
-     else
-      _ ->
-        {:ok, _sup, pid} =
-          Membrane.Pipeline.start_link(Algora.Pipeline, params)
-        {:ok, pid}
-    end
-
-    {Algora.Pipeline.ClientHandler, %{}}
-  end
-
   def resume_rtmp(pipeline, params) when is_pid(pipeline) do
-    Membrane.Logger.info("Resuming pipeline #{inspect(params)}")
     GenServer.call(pipeline, {:resume_rtmp, params})
   end
 
   @impl true
-  def handle_init(context, %{app: stream_key, stream_key: ""} = params) do
-    handle_init(context, %{params | stream_key: stream_key})
+  def handle_init(context, %{app: stream_key, stream_key: ""} = state) do
+    handle_init(context, %{state | stream_key: stream_key})
   end
 
   def handle_init(_context, %{app: @app, stream_key: stream_key, client_ref: client_ref}) do
-    Membrane.Logger.info("Starting pipeline #{@app}")
     if user = Algora.Accounts.get_user_by(stream_key: stream_key) do
       video = Library.init_livestream!()
       {:ok, _} = Registry.register(Algora.Pipeline.Registry, stream_key, {:pipeline, video.uuid})
@@ -131,7 +99,6 @@ defmodule Algora.Pipeline do
         }
       }
     else
-      Membrane.Logger.debug("Invalid stream_key")
       {[reply: {:error, "invalid stream key"}, terminate: :normal], %{stream_key: stream_key}}
     end
   end
@@ -140,30 +107,21 @@ defmodule Algora.Pipeline do
     {[reply: {:error, "invalid app"}, terminate: :normal], %{stream_key: stream_key}}
   end
 
-  @impl true
   def handle_child_notification({:track_playable, :video}, _element, _ctx, state) do
+    {:ok, _ref} = :timer.send_after(@segment_duration_seconds * 1000, self(), :go_live)
     {[], state}
   end
 
-  def handle_child_notification({:track_activity, track}, _element, _ctx,  %{waiting_activity: true} = state) do
-    Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
-    Algora.Library.toggle_streamer_live(state.video, true)
-    {[], %{ state | waiting_activity: false }}
-  end
-  def handle_child_notification({:track_activity, _track}, _element, _ctx, state) do
-    {[], state}
-  end
-
-  def handle_child_notification(:end_of_stream, :funnel_video, _ctx, state) do
+  @impl true
+  def handle_child_notification(:stream_interrupted, _element, _ctx, state) do
     state = terminate_later(state)
-    Algora.Library.toggle_streamer_live(state.video, false)
-    {[notify_child: {:sink, :disconnected}], state}
-  end
-
-  def handle_child_notification(message, _element, _ctx, state) do
-    Membrane.Logger.debug("Unhandled child notificaiton #{inspect(message)}")
     {[], state}
   end
+
+  def handle_child_notification(_message, _element, _ctx, state) do
+    {[], state}
+  end
+
 
   @impl true
   def handle_call(:get_video_id, _ctx, state) do
@@ -173,8 +131,6 @@ defmodule Algora.Pipeline do
   def handle_call({:resume_rtmp, %{ client_ref: client_ref }}, _ctx, state) do
     state = cancel_terminate(state)
     reconnect = state.reconnect + 1
-
-    Membrane.Logger.debug("Attempting reconnection for video #{state.video.uuid}")
 
     structure = [
       #
@@ -198,15 +154,12 @@ defmodule Algora.Pipeline do
       |> get_child(:funnel_audio)
     ]
 
-    :timer.send_after(@reconnect_inactivity_timeout, :reconnect_inactivity)
-
     {
       [
         spec: {structure, group: :rtmp_input, crash_group_mode: :temporary},
-        reply: :ok,
-        notify_child: {:sink, :reconnected}
+        reply: :ok
       ],
-      %{state | reconnect: reconnect, waiting_activity: true }
+      %{state | reconnect: reconnect }
     }
   end
 
@@ -238,7 +191,7 @@ defmodule Algora.Pipeline do
         mode: :live,
         manifest_module: Algora.Pipeline.HLS,
         target_window_duration: :infinity,
-        persist?: true,
+        persist?: false,
         storage: %Algora.Pipeline.Storage{video: video, directory: dir}
       }),
 
@@ -271,8 +224,6 @@ defmodule Algora.Pipeline do
   end
 
   def handle_info(:stream_interupted, _ctx, state) do
-    Membrane.Logger.info("Stream interupted #{inspect(state)}")
-    Algora.Library.toggle_streamer_live(state.video, false)
     {[], state}
   end
 
@@ -325,14 +276,8 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_info(:reconnect_inactivity, _ctx, %{ waiting_activity: true } = state) do
-    Membrane.Logger.error("Tried to reconnect but failed #{inspect(state)}")
-
-    send(self(), :terminate)
-
-    {[], state}
-  end
-  def handle_info(:reconnect_inactivity, _ctx, state) do
+  def handle_info(:go_live, _ctx, state) do
+    Algora.Library.toggle_streamer_live(state.video, true)
     {[], state}
   end
 
@@ -343,8 +288,7 @@ defmodule Algora.Pipeline do
 
 
   defp terminate_later(%{terminate_timer: nil} = state) do
-    time = if Algora.config([:resume_rtmp]), do: @terminate_after, else: 0
-    {:ok, timer} = :timer.send_after(time, self(), time)
+    {:ok, timer} = :timer.send_after(@terminate_after, self(), :terminate)
     %{ state | terminate_timer: timer }
   end
 

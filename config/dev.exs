@@ -1,6 +1,6 @@
 import Config
 
-config :algora, mode: :dev, resume_rtmp: true
+config :algora, mode: :dev
 
 config :algora, :buckets,
   media: System.get_env("BUCKET_MEDIA"),

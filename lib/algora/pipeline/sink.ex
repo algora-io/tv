@@ -164,37 +164,6 @@ defmodule Algora.Pipeline.Sink do
     {[], state}
   end
 
-  def handle_parent_notification(:disconnected, _ctx, state) do
-    %{
-      manifest: manifest,
-      storage: storage,
-    } = state
-
-    tracks = Enum.map(manifest.tracks, fn {track_name, track} ->
-      naming_fun = fn(track, _counter) ->
-        # TODO why is the actual header not uploading?
-        name = Enum.join([track.content_type, "header", track.track_name, "part", "0"], "_")
-        Algora.Storage.to_absolute(:video, manifest.video_uuid, name)
-      end
-
-      track = %{ track | header_naming_fun: naming_fun}
-      {_header_name, track} = Track.discontinue(track)
-      {track_name, track}
-    end) |> Map.new()
-
-    manifest = Map.put(manifest, :tracks, tracks)
-    case serialize_and_store_manifest(manifest, storage) do
-      {:ok, storage} ->
-        {[], %{state | manifest: manifest, storage: storage }}
-      {:error, reason} ->
-        raise "Failed to resume the manifest due to #{inspect(reason)}"
-    end
-  end
-
-  def handle_parent_notification(:reconnected, _ctx, state) do
-    {[], state}
-  end
-
   @impl true
   def handle_stream_format(
         Pad.ref(:input, track_id) = pad_ref,
@@ -312,14 +281,8 @@ defmodule Algora.Pipeline.Sink do
 
     result =
       if any_track_persisted? do
-        # reconfigure tracks to disable partial segments on final manifest
-        tracks = Enum.reduce(manifest.tracks, %{}, fn({name, track}, acc) ->
-          Map.put(acc, name, %Track{ track | partial_segment_duration: nil })
-        end)
-
         {result, storage} =
           manifest
-          |> Map.put(:tracks, tracks)
           |> Manifest.from_beginning()
           |> serialize_and_store_manifest(storage)
 
@@ -355,7 +318,7 @@ defmodule Algora.Pipeline.Sink do
 
   defp maybe_notify_playable(track_id, %{playlist_playable_sent: playlist_playable_sent} = state) do
     if MapSet.member?(playlist_playable_sent, track_id) do
-      {[notify_parent: {:track_activity, track_id}], state}
+      {[], state}
     else
       {[notify_parent: {:track_playable, track_id}],
        %{state | playlist_playable_sent: MapSet.put(playlist_playable_sent, track_id)}}
@@ -396,5 +359,4 @@ defmodule Algora.Pipeline.Sink do
 
     :ok
   end
-
 end

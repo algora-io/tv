@@ -35,7 +35,7 @@ defmodule Algora.Pipeline.Funnel do
 
   @impl true
   def handle_end_of_stream(Pad.ref(:input, _id), _ctx, %{end_of_stream: :notify} = state) do
-    {[notify_parent: :end_of_stream], state}
+    {[notify_parent: :stream_interrupted], state}
   end
 
   @impl true

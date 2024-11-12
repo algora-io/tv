@@ -4,8 +4,6 @@ defmodule Algora.Pipeline.ClientHandler do
   `Membrane.RTMP.Source` element.
   """
 
-  require Membrane.Logger
-
   @behaviour Membrane.RTMPServer.ClientHandler
 
   defstruct []
