@@ -243,16 +243,9 @@ defmodule Algora.Pipeline.SinkBin do
       |> Enum.map(fn pad_data ->
         Pad.ref(:input, cmaf_ref) = pad_data.ref
         muxer = cmaf_child_definiton(pad_options)
-        # membraneframework/membrane_http_adaptive_stream_plugin#106
-        [
-          bin_input(pad_data.ref)
-          |> child({:parser, cmaf_ref}, get_parser(pad_data.options.encoding, state))
-          |> child({:cmaf_muxer, cmaf_ref}, muxer)
-          |> via_in(pad, options: track_options(ctx))
-          |> get_child(:sink),
-          get_child(:audio_tee)
-          |> get_child({:cmaf_muxer, cmaf_ref})
-        ]
+
+        get_child(:audio_tee)
+        |> child({:cmaf_muxer, cmaf_ref}, muxer)
       end)
 
     Pad.ref(:input, ref) = pad
@@ -351,18 +344,12 @@ defmodule Algora.Pipeline.SinkBin do
     {[notify_parent: {:track_activity, track_info}], state}
   end
 
-  def handle_child_notification(
-        {:track_discontinued, track_info},
-        :sink,
-        _ctx,
-        state
-      ) do
-    # notify when track is discontinued
-    {[notify_parent: {:track_discontinued, track_info}], state}
+  def handle_parent_notification(:disconnected, _ctx, state) do
+    {[notify_child: {:sink, :disconnected}], state}
   end
 
-  def handle_parent_notification(:finalize, _ctx, state) do
-    {[notify_child: {:sink, :finalize}], state}
+  def handle_parent_notification(:reconnected, _ctx, state) do
+    {[notify_child: {:sink, :reconnected}], state}
   end
 
   defp track_options(context) do

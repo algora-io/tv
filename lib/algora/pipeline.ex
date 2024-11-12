@@ -26,8 +26,7 @@ defmodule Algora.Pipeline do
     reconnect: 0,
     terminate_timer: nil,
     waiting_activity: true,
-    data_frame: nil,
-    playing: false,
+    data_frame: nil
   ]
 
   def segment_duration(), do: @segment_duration_seconds
@@ -51,10 +50,12 @@ defmodule Algora.Pipeline do
       _ ->
         {:ok, _sup, pid} =
           Membrane.Pipeline.start_link(Algora.Pipeline, params)
+          Process.unlink(pid)
+          Process.flag(:trap_exit, true)
         {:ok, pid}
     end
 
-    Algora.Pipeline.ClientHandler
+    {Algora.Pipeline.ClientHandler, %{}, pid}
   end
 
   def resume_rtmp(pipeline, params) when is_pid(pipeline) do
@@ -69,11 +70,12 @@ defmodule Algora.Pipeline do
 
   def handle_init(_context, %{app: @app, stream_key: stream_key, client_ref: client_ref}) do
     Membrane.Logger.info("Starting pipeline #{@app}")
+    true = Process.link(client_ref)
     if user = Algora.Accounts.get_user_by(stream_key: stream_key) do
       video = Library.init_livestream!()
-      dir = Path.join(Admin.tmp_dir(), video.uuid)
-
       {:ok, _} = Registry.register(Algora.Pipeline.Registry, stream_key, {:pipeline, video.uuid})
+
+      dir = Path.join(Admin.tmp_dir(), video.uuid)
       :rpc.multicall(LLController, :start, [video.uuid, dir])
 
       {:ok, video} =
@@ -82,53 +84,59 @@ defmodule Algora.Pipeline do
           stream_key
         )
 
-      reconnect = 0
-      state = %__MODULE__{
-        video: video,
-        user: user,
-        dir: dir,
-        stream_key: stream_key,
-        reconnect: reconnect
-      }
+      destinations = Algora.Accounts.list_active_destinations(video.user_id)
 
-      {:ok, state} = setup_extras!(state)
+      for {destination, i} <- Enum.with_index(destinations) do
+        url =
+          URI.new!(destination.rtmp_url)
+          |> URI.append_path("/" <> destination.stream_key)
+          |> URI.to_string()
 
-      spec = [
+        send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
+      end
+
+      if url = Algora.Accounts.get_restream_ws_url(user) do
+        Task.Supervisor.start_child(
+          Algora.TaskSupervisor,
+          fn -> Algora.Restream.Websocket.start_link(%{url: url, user: user, video: video}) end,
+          restart: :transient
+        )
+      end
+
+      youtube_handle =
+        case user.id do
+          307 -> "@heyandras"
+          9 -> "@dragonroyale"
+          _ -> nil
+        end
+
+      if youtube_handle do
+        DynamicSupervisor.start_child(
+          Algora.Youtube.Chat.Supervisor,
+          {Algora.Youtube.Chat.Fetcher, %{video: video, youtube_handle: youtube_handle}}
+        )
+      end
+
+      structure = [
         #
-        child({:src, reconnect}, %Algora.Pipeline.SourceBin{
+        child({:src, 0}, %Algora.Pipeline.SourceBin{
           client_ref: client_ref,
-        }),
-
-        get_child({:src, reconnect})
-        |> via_out(:video)
-        |> child({:video_reconnect, reconnect}, Membrane.Tee.Parallel)
-        |> via_in(Pad.ref(:input, reconnect))
-        |> child(:funnel_video, %Algora.Pipeline.Funnel{end_of_stream: :notify})
-        |> child(:tee_video, Membrane.Tee.Parallel),
-
-        #
-        get_child({:src, reconnect})
-        |> via_out(:audio)
-        |> child({:audio_reconnect, reconnect}, Membrane.Tee.Parallel)
-        |> via_in(Pad.ref(:input, reconnect))
-        |> child(:funnel_audio, %Algora.Pipeline.Funnel{end_of_stream: :notify})
-        |> child(:tee_audio, Membrane.Tee.Parallel),
-
-        #
-        child(:sink, %Algora.Pipeline.SinkBin{
-          video_uuid: video.uuid,
-          hls_mode: :separate_av,
-          mode: :live,
-          manifest_module: Algora.Pipeline.HLS,
-          target_window_duration: :infinity,
-          persist?: true,
-          storage: %Algora.Pipeline.Storage{video: video, directory: dir}
-        }),
+        })
       ]
 
-      send(self(), :link_tracks)
+      send(self(), :setup_output)
 
-      {[spec: spec], state}
+      spec = {structure, group: :rtmp_input, crash_group_mode: :temporary}
+
+      {
+        [spec: spec],
+        %__MODULE__{
+          video: video,
+          user: user,
+          dir: dir,
+          stream_key: stream_key,
+        }
+      }
     else
       Membrane.Logger.debug("Invalid stream_key")
       {[reply: {:error, "invalid stream key"}, terminate: :normal], %{stream_key: stream_key}}
@@ -144,26 +152,26 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_child_notification({:track_activity, track}, _element, _ctx,  %{playing: false, waiting_activity: true} = state) do
-    Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
-    Algora.Library.toggle_streamer_live(state.video, true)
-    {[], %{ state | waiting_activity: false, playing: true }}
-  end
-
   def handle_child_notification({:track_activity, track}, _element, _ctx,  %{waiting_activity: true} = state) do
     Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
+    Algora.Library.toggle_streamer_live(state.video, true, true)
     {[], %{ state | waiting_activity: false }}
   end
-
-  def handle_child_notification({:track_activity, track}, _element, _ctx, state) do
-    Membrane.Logger.debug("Got activity on track #{track} for video #{state.video.uuid}")
+  def handle_child_notification({:track_activity, _track}, _element, _ctx, state) do
     {[], state}
   end
 
   def handle_child_notification(:end_of_stream, :funnel_video, _ctx, state) do
+    Algora.Library.toggle_streamer_live(state.video, false, true)
     state = terminate_later(state)
-    # unlink next tick
-    send(self(), :unlink_all)
+    {[notify_child: {:sink, :disconnected}], state}
+  end
+  
+  def handle_child_notification(:start_of_stream, _element, _ctx, state) do
+    {[], state}
+  end
+
+  def handle_child_notification(:start_of_stream, _element, _ctx, state) do
     {[], state}
   end
 
@@ -192,19 +200,18 @@ defmodule Algora.Pipeline do
       #
       get_child({:src, reconnect})
       |> via_out(:video)
-      |> child({:video_reconnect, reconnect}, Membrane.Tee.Parallel)
-      |> via_in(Pad.ref(:input, reconnect))
+      |> child(%Membrane.H264.Parser{
+        output_stream_structure: :annexb
+      })
+      |> child(Membrane.H264.FFmpeg.Decoder)
+      |> child(Membrane.H264.FFmpeg.Encoder)
       |> get_child(:funnel_video),
 
       #
       get_child({:src, reconnect})
       |> via_out(:audio)
-      |> child({:audio_reconnect, reconnect}, Membrane.Tee.Parallel)
-      |> via_in(Pad.ref(:input, reconnect))
-      |> get_child(:funnel_audio),
+      |> get_child(:funnel_audio)
     ]
-
-    send(self(), :link_tracks)
 
     :timer.send_after(@reconnect_inactivity_timeout, :reconnect_inactivity)
 
@@ -212,19 +219,47 @@ defmodule Algora.Pipeline do
       [
         spec: {structure, group: :rtmp_input, crash_group_mode: :temporary},
         reply: :ok,
+        notify_child: {:sink, :reconnected}
       ],
       %{state | reconnect: reconnect, waiting_activity: true }
     }
   end
 
-  def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
-    spec = [
+  def handle_info(:setup_output, _ctx, %{video: video, dir: dir, reconnect: reconnect} = state) do
+    structure = [
       #
-      get_child(:tee_video)
-      |> via_in(Pad.ref(:input, "video_master"),
+      get_child({:src, reconnect})
+      |> via_out(:video)
+      |> child(%Membrane.H264.Parser{
+        output_stream_structure: :annexb
+      })
+      |> child(Membrane.H264.FFmpeg.Decoder)
+      |> child(Membrane.H264.FFmpeg.Encoder)
+      |> child(:funnel_video, %Algora.Pipeline.Funnel{ end_of_stream: :notify })
+      |> child(:tee_video, Membrane.Tee.Parallel),
+
+      #
+      get_child({:src, reconnect})
+      |> via_out(:audio)
+      |> child(:funnel_audio, %Algora.Pipeline.Funnel{ end_of_stream: :notify })
+      |> child(:tee_audio, Membrane.Tee.Parallel),
+
+      #
+      child(:sink, %Algora.Pipeline.SinkBin{
+        video_uuid: video.uuid,
+        hls_mode: :muxed_av,
+        mode: :live,
+        manifest_module: Algora.Pipeline.HLS,
+        target_window_duration: :infinity,
+        persist?: true,
+        storage: %Algora.Pipeline.Storage{video: video, directory: dir}
+      }),
+
+      #
+      get_child(:tee_audio)
+      |> via_in(Pad.ref(:input, :audio),
         options: [
-          track_name: "video_master",
-          encoding: :H264,
+          encoding: :AAC,
           segment_duration: @segment_duration,
           partial_segment_duration: @partial_segment_duration
         ]
@@ -232,11 +267,10 @@ defmodule Algora.Pipeline do
       |> get_child(:sink),
 
       #
-      get_child(:tee_audio)
-      |> via_in(Pad.ref(:input, "audio_master"),
+      get_child(:tee_video)
+      |> via_in(Pad.ref(:input, :video),
         options: [
-          track_name: "audio_master",
-          encoding: :AAC,
+          encoding: :H264,
           segment_duration: @segment_duration,
           partial_segment_duration: @partial_segment_duration
         ]
@@ -244,18 +278,67 @@ defmodule Algora.Pipeline do
       |> get_child(:sink)
     ]
 
+    spec = {structure, group: :hls_output}
     {[spec: spec], state}
+
   end
 
-  def handle_info(:unlink_all, _ctx, %{reconnect: reconnect} = state) do
-    actions = [
-      remove_link: {:funnel_video, Pad.ref(:input, reconnect)},
-      remove_link: {:funnel_audio, Pad.ref(:input, reconnect)},
-      remove_link: {:sink, Pad.ref(:input, "audio_master")},
-      remove_link: {:sink, Pad.ref(:input, "video_master")},
-    ]
+  def handle_info(:stream_interupted, _ctx, state) do
+    Membrane.Logger.info("Stream interupted #{inspect(state)}")
+    Algora.Library.toggle_streamer_live(state.video, false, true)
+  end
 
-    {actions, state}
+  def handle_info(%Membrane.RTMP.Messages.SetDataFrame{} = _message, _ctx, %{playing: true} = state) do
+    {[], state}
+  end
+
+  def handle_info(%Membrane.RTMP.Messages.SetDataFrame{} = message, _ctx, state) do
+    %{ height: source_height, width: source_width, framerate: source_framerate } = message
+
+    if transcode_slug = Algora.config([:transcode]) do
+      structure = transcode_slug
+      |> String.split("|")
+      |> Enum.map(&String.split(&1, "p"))
+      |> Enum.map(fn([h, f]) -> {String.to_integer(h), String.to_integer(f)} end)
+      |> Enum.filter(fn({target_height, framerate}) ->
+        target_height <= source_height and framerate <= source_framerate
+      end)
+      |> Enum.map(fn({target_height, framerate}) ->
+        height = normalize_scale(target_height)
+        width = normalize_scale(source_width / (source_height / target_height))
+        track_name = "video_#{width}x#{height}p#{framerate}"
+        #
+        get_child(:tee_video)
+        |> child(%Membrane.H264.Parser{
+          output_stream_structure: :annexb,
+          generate_best_effort_timestamps: %{framerate: {trunc(source_framerate), @frame_devisor}}
+        })
+        |> child(Membrane.H264.FFmpeg.Decoder)
+        |> child(%Membrane.FramerateConverter{framerate: {trunc(framerate), @frame_devisor}})
+        |> child(%Membrane.FFmpeg.SWScale.Scaler{
+          output_height: height,
+          output_width: width
+        })
+        |> child(%Membrane.H264.FFmpeg.Encoder{
+          preset: :ultrafast,
+          gop_size: trunc(framerate * 2),
+        })
+        |> via_in(Pad.ref(:input, track_name),
+          options: [
+            track_name: track_name,
+            encoding: :H264,
+            segment_duration: @segment_duration,
+            partial_segment_duration: @partial_segment_duration
+          ]
+        )
+        |> get_child(:sink)
+      end)
+
+      spec = {structure, group: :hls_adaptive}
+      {[spec: spec], state}
+    else
+      {[], state}
+    end
   end
 
   def handle_info({:forward_rtmp, url, ref}, _ctx, state) do
@@ -312,56 +395,23 @@ defmodule Algora.Pipeline do
     send(self(), :terminate)
     {[], state}
   end
+  
+  def handle_info(:reconnect_inactivity, _ctx, state) do
+    {[], state}
+  end
 
-  def handle_info(:reconnect_inactivity, _ctx, state), do: {[], state}
-
+  def handle_info(:stream_interupted, _ctx, state) do
+    {[], state}
+  end
 
   def handle_info(:terminate, _ctx, state) do
     Algora.Library.toggle_streamer_live(state.video, false)
-    Membrane.Pipeline.terminate(self(), asynchronous?: true)
-    {[notify_child: {:sink, :finalize}], state}
+    {[terminate: :normal], state}
   end
 
   def handle_info(message, _ctx, state) do
     Membrane.Logger.info("Unhandled notification #{inspect(message)}")
     {[], state}
-  end
-
-  defp setup_extras!(%{ video: video, user: user } = state) do
-    destinations = Algora.Accounts.list_active_destinations(video.user_id)
-
-    for {destination, i} <- Enum.with_index(destinations) do
-      url =
-        URI.new!(destination.rtmp_url)
-        |> URI.append_path("/" <> destination.stream_key)
-        |> URI.to_string()
-
-      send(self(), {:forward_rtmp, url, String.to_atom("rtmp_sink_#{i}")})
-    end
-
-    if url = Algora.Accounts.get_restream_ws_url(user) do
-      Task.Supervisor.start_child(
-        Algora.TaskSupervisor,
-        fn -> Algora.Restream.Websocket.start_link(%{url: url, user: user, video: video}) end,
-        restart: :transient
-      )
-    end
-
-    youtube_handle =
-      case user.id do
-        307 -> "@heyandras"
-        9 -> "@dragonroyale"
-        _ -> nil
-      end
-
-    if youtube_handle do
-      DynamicSupervisor.start_child(
-        Algora.Youtube.Chat.Supervisor,
-        {Algora.Youtube.Chat.Fetcher, %{video: video, youtube_handle: youtube_handle}}
-      )
-    end
-
-    {:ok, state}
   end
 
   defp terminate_later(%{terminate_timer: nil} = state) do
@@ -378,4 +428,11 @@ defmodule Algora.Pipeline do
     :timer.cancel(timer)
     %{ state | terminate_timer: nil }
   end
+
+  defp normalize_scale(scale) when is_float(scale), do:
+    scale |> trunc() |> normalize_scale()
+  defp normalize_scale(scale) when is_integer(scale) and scale > 0 do
+    if rem(scale, 2) == 1, do: scale - 1, else: scale
+  end
+
 end
