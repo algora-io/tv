@@ -65,7 +65,6 @@ defmodule Algora.MixProject do
       {:membrane_funnel_plugin, "~> 0.9.1"},
       {:membrane_framerate_converter_plugin, "~> 0.8.2"},
       {:membrane_ffmpeg_swscale_plugin, "~> 0.15.1"},
-      {:syn, "~> 3.3"},
       {:mint, "~> 1.0"},
       {:oban, "~> 2.16"},
       {:open_api_spex, "~> 3.16"},

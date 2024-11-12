@@ -20,8 +20,6 @@ defmodule Algora.Application do
       handle_new_client: &Algora.Pipeline.handle_new_client/3
     }
 
-    :ok = :syn.add_node_to_scopes([:pipelines])
-
     children = [
       Algora.Env,
       {Cluster.Supervisor, [topologies, [name: Algora.ClusterSupervisor]]},
