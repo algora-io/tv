@@ -9,7 +9,7 @@ defmodule Algora.Application do
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies) || []
 
-    tcp_server_options = %Membrane.RTMP.Source.TcpServer{
+    tcp_server_options = %{
       port: Algora.config([:rtmp_port]),
       listen_options: [
         :binary,
@@ -17,18 +17,17 @@ defmodule Algora.Application do
         active: false,
         ip: {0, 0, 0, 0}
       ],
-      socket_handler: fn socket ->
-        {:ok, _sup, pid} =
-          Membrane.Pipeline.start_link(Algora.Pipeline, socket: socket)
-
-        {:ok, pid}
-      end
+      handle_new_client: &Algora.Pipeline.Manager.handle_new_client/3
     }
+
+    :ok = :syn.add_node_to_scopes([:pipelines])
 
     children = [
       Algora.Env,
       {Cluster.Supervisor, [topologies, [name: Algora.ClusterSupervisor]]},
       {Task.Supervisor, name: Algora.TaskSupervisor},
+      # Start the supervisor for tracking manifest uploads
+      {DynamicSupervisor, strategy: :one_for_one, name: Algora.Pipeline.Storage.ManifestSupervisor},
       # Start the RPC server
       {Fly.RPC, []},
       # Start the Ecto repository
@@ -39,6 +38,16 @@ defmodule Algora.Application do
       {Oban, Application.fetch_env!(:algora, Oban)},
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
+      # Pipeline flame pool
+      {FLAME.Pool,
+        name: Algora.Pipeline.Pool,
+        backend: Algora.config([:flame_backend]),
+        min: Algora.config([:flame, :min]),
+        max: Algora.config([:flame, :max]),
+        max_concurrency: Algora.config([:flame, :max_concurrency]),
+        idle_shutdown_after: Algora.config([:flame, :idle_shutdown_after]),
+        log: Algora.config([:flame, :log]),
+      },
       # Start the PubSub system
       {Phoenix.PubSub, name: Algora.PubSub},
       # Start presence
@@ -53,8 +62,8 @@ defmodule Algora.Application do
       {Registry, keys: :unique, name: Algora.LLControllerRegistry},
       # Start the RTMP server
       %{
-        id: Membrane.RTMP.Source.TcpServer,
-        start: {Membrane.RTMP.Source.TcpServer, :start_link, [tcp_server_options]}
+        id: Membrane.RTMPServer,
+        start: {Membrane.RTMPServer, :start_link, [tcp_server_options]}
       },
       Algora.Stargazer,
       Algora.Terminate,
@@ -62,7 +71,7 @@ defmodule Algora.Application do
       Algora.Youtube.Chat.Supervisor
       # Start a worker by calling: Algora.Worker.start_link(arg)
       # {Algora.Worker, arg}
-    ]
+    ] |> Enum.filter(& &1)
 
     :ets.new(:videos_to_tables, [:public, :set, :named_table])
     :ets.new(:videos_to_folder_paths, [:public, :set, :named_table])

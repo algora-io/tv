@@ -1,6 +1,29 @@
 import Config
 
-config :algora, mode: :dev
+transcode_backend = case System.get_env("MIX_TARGET") do
+  "nvidia" -> Membrane.ABRTranscoder.Backends.Nvidia
+  "xilinx" -> Membrane.ABRTranscoder.Backends.U30
+   _ -> nil
+end
+
+flame_backend = case System.get_env("FLAME_BACKEND") do
+  "fly" -> FLAME.FlyBackend
+  _ -> FLAME.LocalBackend
+end
+
+config :algora,
+  mode: :dev,
+  resume_rtmp: System.get_env("RESUME_RTMP", "false") == "true",
+  resume_rtmp_on_unpublish: System.get_env("RESUME_RTMP_ON_UNPUBLUSH", "false") == "true",
+  resume_rtmp_timeout: System.get_env("RESUME_RTMP_TIMEOUT", "3200"),
+  supports_h265: System.get_env("SUPPORTS_H265", "false") == "true",
+  transcode: (case System.get_env("TRANSCODE") do
+    "" -> nil
+    other -> other
+  end),
+  transcode_include_master: System.get_env("TRANSCODE_INCLUDE_MASTER", "false") == "true",
+  transcode_backend: transcode_backend,
+  rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
 
 config :algora, :buckets,
   media: System.get_env("BUCKET_MEDIA"),
@@ -15,6 +38,14 @@ config :algora, :restream,
   client_secret: System.get_env("RESTREAM_CLIENT_SECRET")
 
 config :algora, :event_sink, url: System.get_env("EVENT_SINK_URL")
+
+config :algora, :flame,
+  backend: flame_backend,
+  min: String.to_integer(System.get_env("FLAME_MAX", "1")),
+  max: String.to_integer(System.get_env("FLAME_MAX", "1")),
+  max_concurrency: String.to_integer(System.get_env("FLAME_MAX_CONCURRENCY", "10")),
+  idle_shutdown_after: String.to_integer(System.get_env("FLAME_IDLE_SHUTDOWN_AFTER", "30")),
+  log: String.to_atom(System.get_env("FLAME_LOG", "debug"))
 
 config :ex_aws,
   # debug_requests: true,
@@ -60,7 +91,7 @@ config :algora, Algora.Repo.Local,
 config :algora, AlgoraWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {0, 0, 0, 0}, port: 4000],
+  http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("PORT") || "4000") ],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
@@ -72,7 +103,7 @@ config :algora, AlgoraWeb.Endpoint,
 config :algora, AlgoraWeb.Embed.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {0, 0, 0, 0}, port: 4001]
+  http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("EMBED_PORT") || "4001")]
 
 # ## SSL Support
 #
