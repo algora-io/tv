@@ -344,7 +344,12 @@ defmodule Algora.Pipeline.Storage do
          contents,
          %{independent?: true},
          %{type: :partial_segment, mode: :binary},
-         %{setup_completed?: false, video: video, video_header: video_header, segment_sn: segment_sn} = state
+         %{
+           setup_completed?: false,
+           video: video,
+           video_header: video_header,
+           sequences: %{"video_master.m3u8" => {segment_sn, _}}
+         } = state
        ) do
 
     marker = Thumbnails.find_marker(segment_sn)
@@ -355,7 +360,11 @@ defmodule Algora.Pipeline.Storage do
       end)
     end
 
-    %{state | setup_completed?: if(marker, do: Thumbnails.is_last_marker?(marker), else: false), video_segment: contents}
+    %{
+      state
+      | setup_completed?: if(marker, do: Thumbnails.is_last_marker?(marker), else: false),
+        video_segment: contents
+    }
   end
 
   defp process_contents(
