@@ -301,9 +301,31 @@ defmodule Algora.Library do
     |> Enum.each(&terminate_stream/1)
   end
 
-  def toggle_streamer_live(%Video{} = video, is_live) do
+  @type stream_status :: :live | :paused | :stopped
+
+  @spec maybe_update_duration(Ecto.Changeset.t(), stream_status) :: Ecto.Changeset.t()
+  defp maybe_update_duration(changeset, :live), do: changeset |> put_change(:duration, 0)
+
+  defp maybe_update_duration(changeset, _) do
+    with {:ok, duration} <- get_duration(changeset.data),
+         changeset <- changeset |> put_change(:duration, duration) do
+      changeset
+    end
+  end
+
+  @spec maybe_update_url(Ecto.Changeset.t(), stream_status) :: Ecto.Changeset.t()
+  defp maybe_update_url(changeset, :stopped) do
+    changeset |> put_change(:url, Video.url(:vod, changeset.data.uuid, changeset.data.filename))
+  end
+
+  defp maybe_update_url(changeset, _), do: changeset
+
+  @spec toggle_stream_status(%Video{}, stream_status) :: :ok
+  def toggle_stream_status(%Video{} = video, status) do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
+
+    is_live = status == :live
 
     Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
       set: [is_live: is_live]
@@ -318,19 +340,13 @@ defmodule Algora.Library do
 
     video = get_video!(video.id)
 
-    video =
-      with false <- is_live,
-           {:ok, duration} <- get_duration(video),
-           {:ok, video} <-
-             video
-             |> change()
-             |> put_change(:duration, duration)
-             |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
-             |> Repo.update() do
-        video
-      else
-        _ -> video
-      end
+    if not is_live do
+      video
+      |> change()
+      |> maybe_update_duration(status)
+      |> maybe_update_url(status)
+      |> Repo.update()
+    end
 
     msg =
       case is_live do

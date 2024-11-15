@@ -70,6 +70,7 @@ defmodule Algora.Pipeline do
 
       setup_forwarding!(state)
       setup_extras!(state)
+      Algora.Library.toggle_stream_status(state.video, :live)
 
       spec = [
         #
@@ -124,6 +125,8 @@ defmodule Algora.Pipeline do
   end
 
   def handle_child_notification(:end_of_stream, :funnel_video, _ctx, state) do
+    Algora.Library.toggle_stream_status(state.video, :paused)
+
     state = terminate_later(state)
     # unlink next tick
     send(self(), :unlink_all)
@@ -177,6 +180,7 @@ defmodule Algora.Pipeline do
 
     send(self(), :link_tracks)
     setup_forwarding!(state)
+    Algora.Library.toggle_stream_status(state.video, :live)
 
     {
       [
@@ -321,7 +325,7 @@ defmodule Algora.Pipeline do
 
   def handle_info(:terminate, _ctx, state) do
     Membrane.Logger.info("Terminating pipeline for video #{state.video.uuid}")
-    Algora.Library.toggle_streamer_live(state.video, false)
+    Algora.Library.toggle_stream_status(state.video, :stopped)
     {[terminate: :normal, notify_child: {:sink, :finalize}], %{state | finalized: true}}
   end
 
