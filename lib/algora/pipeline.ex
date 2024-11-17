@@ -50,6 +50,21 @@ defmodule Algora.Pipeline do
   def handle_child_notification(:end_of_stream, _element, _ctx, state) do
     Algora.Library.toggle_streamer_live(state.video, false)
 
+    # List all pipelines
+    pipelines = Membrane.Pipeline.list_pipelines()
+
+    # Check if there are any running livestreams
+    livestreams_running = Enum.any?(pipelines, fn pid ->
+      GenServer.call(pid, :get_video_id) == state.video.id
+    end)
+
+    # If no livestreams are running, destroy old machines
+    unless livestreams_running do
+      # Logic to destroy old machines
+      # This is a placeholder, replace with actual logic to destroy old machines
+      IO.puts("Destroying old machines...")
+    end
+
     # TODO: close any open connections (e.g. Algora.Restream.WebSocket)
 
     {[terminate: :normal], state}

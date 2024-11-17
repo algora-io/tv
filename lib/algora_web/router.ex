@@ -167,4 +167,14 @@ defmodule AlgoraWeb.Router do
       get "/gh/:user_id/channel", GithubController, :get_channel
     end
   end
+
+  scope "/deployments", AlgoraWeb do
+    pipe_through :api
+
+    post "/start_livestream", DeploymentController, :start_livestream
+    post "/trigger_deployment", DeploymentController, :trigger_deployment
+    post "/confirm_livestream_continuity", DeploymentController, :confirm_livestream_continuity
+    post "/stop_livestream", DeploymentController, :stop_livestream
+    post "/destroy_old_machine", DeploymentController, :destroy_old_machine
+  end
 end
