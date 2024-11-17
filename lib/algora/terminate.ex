@@ -23,4 +23,21 @@ defmodule Algora.Terminate do
   defp schedule_terminate() do
     Process.send_after(self(), :terminate, @terminate_interval)
   end
+
+  def terminate_interrupted_streams() do
+    # List all pipelines
+    pipelines = Membrane.Pipeline.list_pipelines()
+
+    # Check if there are any running livestreams
+    livestreams_running = Enum.any?(pipelines, fn pid ->
+      GenServer.call(pid, :get_video_id) != nil
+    end)
+
+    # If no livestreams are running, destroy old machines
+    unless livestreams_running do
+      # Logic to destroy old machines
+      # This is a placeholder, replace with actual logic to destroy old machines
+      IO.puts("Destroying old machines...")
+    end
+  end
 end
