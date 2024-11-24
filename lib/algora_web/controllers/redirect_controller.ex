@@ -10,7 +10,7 @@ defmodule AlgoraWeb.RedirectController do
       AlgoraWeb.UserAuth.redirect_if_user_is_authenticated(conn, [])
     else
       conn
-      |> maybe_store_return_to()
+      |> maybe_store_return_to() // stores the return to path in the session
       |> redirect(to: ~p"/auth/login")
     end
   end
