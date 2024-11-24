@@ -56,6 +56,7 @@ defmodule AlgoraWeb.UserAuth do
   defp redirect_require_login(socket) do
     socket
     |> LiveView.put_flash(:error, "Please sign in")
+    |> LiveView.put_session(:user_return_to, socket.assigns.uri.path)
     |> LiveView.redirect(to: ~p"/auth/login")
   end
 
