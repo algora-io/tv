@@ -178,7 +178,7 @@
             </div>
           <% else %>
             <.link
-              navigate="/auth/login"
+              href={~p"/auth/login?#{[return_to: @uri.path]}"}
               class="rounded-lg bg-gray-50 hover:bg-gray-200 py-1 px-2 text-sm font-semibold leading-6 text-gray-950 active:text-gray-950/80"
             >
               <span class="relative font-semibold text-sm">Login</span>
