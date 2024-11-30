@@ -152,7 +152,19 @@ const Hooks = {
       const backdrop = document.querySelector("#video-backdrop");
       this.playerId = this.el.id;
       this.attemptedAutoplay = false;
-
+  
+      // Create muted overlay element
+      const mutedOverlay = document.createElement('div');
+      mutedOverlay.id = `muted-overlay-${this.playerId}`;
+      mutedOverlay.className = 'absolute inset-0 z-10 flex items-center justify-center bg-black/50 cursor-pointer';
+      mutedOverlay.innerHTML = `
+        <div class="rounded-full bg-white/20 p-8">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5L6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/>
+          </svg>
+        </div>
+      `;
+  
       this.player = await VidstackPlayer.create({
         target: this.el,
         viewType: "video",
@@ -164,12 +176,22 @@ const Hooks = {
         playsInline: true,
         layout: new VidstackPlayerLayout(),
       });
-
+  
       this.player.subscribe(({ autoPlayError }) => {
         if (autoPlayError) {
           this.player.muted = true;
           this.player.play();
           this.attemptedAutoplay = true;
+  
+          // Position overlay and add to parent
+          mutedOverlay.style.position = 'absolute';
+          this.el.parentElement.appendChild(mutedOverlay);
+  
+          // Add unmute functionality
+          mutedOverlay.addEventListener('click', () => {
+            this.player.muted = false;
+            mutedOverlay.remove();
+          });
         }
       });
 
