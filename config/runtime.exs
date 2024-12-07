@@ -158,7 +158,7 @@ if config_env() == :prod do
     ]
 
     # https://hexdocs.pm/flame/FLAME.FlyBackend.html
-    config :flame, FLAME.FlyBackend, [
+    config :flame, FLAME.FlyBackend,
 #     cpu_kind: "performance", # The size of the runner CPU. Defaults to "performance".
 #     cpus: 2, # The number of runner CPUs. Defaults to System.schedulers_online() for the number of cores of the running parent app.
 #     memory_mb: 4096, # The memory of the runner. Must be a 1024 multiple. Defaults to 4096.
@@ -202,5 +202,4 @@ if config_env() == :prod do
         "TEST_DATABASE_URL" => System.get_env("TEST_DATABASE_URL"),
         "TRANSCODE" => System.get_env("TRANSCODE"),
       }
-    ]
 end
