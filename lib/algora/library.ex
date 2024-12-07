@@ -353,7 +353,7 @@ defmodule Algora.Library do
 
     msg =
       if is_live do
-        %Events.LivestreamStarted{video: video, resume: status == :resume}
+        %Events.LivestreamStarted{video: video, resume: status == :resumed}
       else
         %Events.LivestreamEnded{video: video, resume: status == :paused}
       end
