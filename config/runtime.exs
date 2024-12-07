@@ -33,6 +33,7 @@ config :algora,
     "" -> nil
     other -> other
   end),
+  transcode_include_master: System.get_env("TRANSCODE_INCLUDE_MASTER", "false") == "true",
   transcode_backend: transcode_backend,
   flame_backend: flame_backend,
   rtmp_port: String.to_integer(System.get_env("RTMP_PORT", "9006"))
