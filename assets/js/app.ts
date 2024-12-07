@@ -452,6 +452,43 @@ const Hooks = {
       this.setup();
     },
   },
+  TagInput: {
+    mounted() {
+      this.input = this.el.querySelector("input");
+      this.badgeContainer = this.el.querySelector(".badge-container");
+      this.tags = [];
+
+      this.input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && this.input.value.trim() !== "") {
+          this.addTag(this.input.value.trim());
+          this.input.value = "";
+        }
+      });
+
+      this.badgeContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("badge")) {
+          this.removeTag(e.target.textContent);
+        }
+      });
+    },
+    addTag(tag) {
+      if (!this.tags.includes(tag)) {
+        this.tags.push(tag);
+        this.updateBadges();
+        this.pushEvent("tags_updated", { tags: this.tags });
+      }
+    },
+    removeTag(tag) {
+      this.tags = this.tags.filter((t) => t !== tag);
+      this.updateBadges();
+      this.pushEvent("tags_updated", { tags: this.tags });
+    },
+    updateBadges() {
+      this.badgeContainer.innerHTML = this.tags
+        .map((tag) => `<span class="badge">${tag}</span>`)
+        .join("");
+    },
+  },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
 // Accessible focus handling

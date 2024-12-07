@@ -21,6 +21,7 @@ defmodule AlgoraWeb.SettingsLive do
           <.input field={@form[:name]} label="Name" />
           <.input label="Email" name="email" value={@current_user.email} disabled />
           <.input field={@form[:channel_tagline]} label="Stream tagline" />
+          <.input field={@form[:tags]} label="Tags" />
           <:actions>
             <.button>Save</.button>
           </:actions>

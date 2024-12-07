@@ -20,6 +20,7 @@ defmodule Algora.Accounts.User do
     field :bounties_count, :integer
     field :solving_challenge, :boolean, default: false
     field :featured, :boolean, default: false
+    field :tags, {:array, :string}, default: []
 
     embeds_many :tech, Tech do
       field :name, :string
@@ -98,11 +99,12 @@ defmodule Algora.Accounts.User do
         "name" => get_change(identity_changeset, :provider_name),
         "avatar_url" => avatar_url,
         "external_homepage_url" => external_homepage_url,
-        "visibility" => get_visibility(info)
+        "visibility" => get_visibility(info),
+        "tags" => []
       }
 
       %User{}
-      |> cast(params, [:email, :name, :handle, :avatar_url, :external_homepage_url, :visibility])
+      |> cast(params, [:email, :name, :handle, :avatar_url, :external_homepage_url, :visibility, :tags])
       |> validate_required([:email, :name, :handle, :visibility])
       |> validate_handle()
       |> validate_email()
@@ -117,7 +119,7 @@ defmodule Algora.Accounts.User do
 
   def settings_changeset(%User{} = user, params) do
     user
-    |> cast(params, [:handle, :name, :channel_tagline])
+    |> cast(params, [:handle, :name, :channel_tagline, :tags])
     |> validate_required([:handle, :name, :channel_tagline])
     |> validate_handle()
   end
