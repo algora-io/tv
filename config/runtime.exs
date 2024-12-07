@@ -124,7 +124,7 @@ if config_env() == :prod do
 
   config :algora, :flame,
     backend: flame_backend,
-    min: String.to_integer(System.get_env("FLAME_MAX", "1")),
+    min: String.to_integer(System.get_env("FLAME_MIN", "0")),
     max: String.to_integer(System.get_env("FLAME_MAX", "1")),
     max_concurrency: String.to_integer(System.get_env("FLAME_MAX_CONCURRENCY", "10")),
     idle_shutdown_after: String.to_integer(System.get_env("FLAME_IDLE_SHUTDOWN_AFTER", "30")),
