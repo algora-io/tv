@@ -222,25 +222,23 @@ defmodule Algora.Pipeline.Storage do
       )
 
     partial_uploader = partial_uploaders[filename]
-    state = with true <- is_pid(partial_uploader),
-                 true <- Process.alive?(partial_uploader),
-                 ref <- Process.monitor(partial_uploader) do
-      partial_uploaders = receive do
+    with true <- is_pid(partial_uploader),
+         true <- Process.alive?(partial_uploader),
+         ref <- Process.monitor(partial_uploader) do
+      timeout_after = Algora.Pipeline.partial_segment_duration()
+      receive do
         {:DOWN, ^ref, :process, ^partial_uploader, :normal} ->
-          Map.delete(partial_uploaders, partial_uploader)
+          :ok
         {:DOWN, ^ref, :process, ^partial_uploader, reason} ->
           Membrane.Logger.error(
             "Partial uploader for #{video.uuid}/#{filename} exited with with reason #{inspect(reason)}"
           )
-          Map.delete(partial_uploaders, partial_uploader)
       after
-        @partial_uploader_send_update_timeout ->
-          partial_uploaders
+        timeout_after ->
+          Membrane.Logger.error(
+            "Timed out waiting on uploader for #{video.uuid}/#{filename} after #{timeout_after}"
+          )
       end
-
-      %{state | partial_uploaders: Map.put(partial_uploaders, filename, nil)}
-    else
-       _other -> state
     end
 
     manifest_name = String.replace(filename, @delta_manifest_suffix, ".m3u8")
@@ -250,7 +248,7 @@ defmodule Algora.Pipeline.Storage do
       ]])
     end
 
-    {:ok, state}
+    {:ok, %{state | partial_uploaders: Map.delete(partial_uploaders, filename)}}
   end
 
   defp update_sequence_numbers(
