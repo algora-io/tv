@@ -129,7 +129,7 @@ if config_env() == :prod do
     max: String.to_integer(System.get_env("FLAME_MAX", "1")),
     max_concurrency: String.to_integer(System.get_env("FLAME_MAX_CONCURRENCY", "10")),
     idle_shutdown_after: String.to_integer(System.get_env("FLAME_IDLE_SHUTDOWN_AFTER", "30")),
-    log: System.get_env("FLAME_LOG", "debug")
+    log: String.to_atom(System.get_env("FLAME_LOG", "debug"))
 
   config :ex_aws,
     json_codec: Jason,
