@@ -55,6 +55,12 @@ defmodule AlgoraWeb.VideoClipperLive do
                 label="Description"
                 class="w-full bg-white/5 border border-white/15 rounded p-2 h-24"
               />
+              <.input
+                field={@form[:tags]}
+                type="text"
+                label="Tags"
+                class="w-full bg-white/5 border border-white/15 rounded p-2"
+              />
             </div>
             <div class="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto p-2">
               <%= for {clip, index} <- Enum.with_index(@clips) do %>
@@ -261,7 +267,8 @@ defmodule AlgoraWeb.VideoClipperLive do
       livestream_id: :integer,
       title: :string,
       description: :string,
-      clips: :map
+      clips: :map,
+      tags: {:array, :string}
     }
 
     {%{}, types}
@@ -455,7 +462,8 @@ defmodule AlgoraWeb.VideoClipperLive do
             Library.update_video(new_video, %{
               title: params["title"] || "New Video",
               description: params["description"],
-              visibility: :unlisted
+              visibility: :unlisted,
+              tags: params["tags"] || []
             })
 
           # Handle transmux progress updates with all three stages
