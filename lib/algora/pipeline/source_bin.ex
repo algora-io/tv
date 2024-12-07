@@ -15,6 +15,8 @@ defmodule Algora.Pipeline.SourceBin do
 
   alias Membrane.{AAC, H264, RTMP}
 
+  def_clock "rtmp clock"
+
   def_output_pad :video,
     accepted_format: H264,
     availability: :on_request

@@ -73,11 +73,13 @@ defmodule Algora.Pipeline do
       setup_extras!(state)
       Algora.Library.toggle_stream_status(state.video, :live)
 
-      spec = [
+      structure = [
         #
         child({:src, reconnect}, %Algora.Pipeline.SourceBin{
           client_ref: client_ref
         }),
+
+        #
         get_child({:src, reconnect})
         |> via_out(:video)
         |> child({:video_reconnect, reconnect}, Membrane.Tee.Parallel)
@@ -104,6 +106,8 @@ defmodule Algora.Pipeline do
           storage: %Algora.Pipeline.Storage{video: video, directory: dir}
         })
       ]
+
+      spec = {structure, stream_sync: :sinks, clock_provider: {:src, reconnect}}
 
       {[spec: spec], state}
     else
@@ -158,7 +162,7 @@ defmodule Algora.Pipeline do
 
     Membrane.Logger.info("Attempting reconnection for video #{state.video.uuid}")
 
-    structure = [
+    actions = [
       #
       child({:src, reconnect}, %Algora.Pipeline.SourceBin{
         client_ref: client_ref
@@ -183,13 +187,9 @@ defmodule Algora.Pipeline do
     setup_forwarding!(state)
     Algora.Library.toggle_stream_status(state.video, :live)
 
-    {
-      [
-        spec: {structure, group: :rtmp_input, crash_group_mode: :temporary},
-        reply: :ok
-      ],
-      %{state | reconnect: reconnect}
-    }
+    spec = {actions, clock_provider: {:src, reconnect}, group: :rtmp_input, crash_group_mode: :temporary}
+
+    {[spec: spec, reply: :ok], %{state | reconnect: reconnect}}
   end
 
   def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
