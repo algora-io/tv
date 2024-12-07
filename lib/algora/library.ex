@@ -301,10 +301,13 @@ defmodule Algora.Library do
     |> Enum.each(&terminate_stream/1)
   end
 
-  @type stream_status :: :live | :paused | :stopped
+  @type stream_status :: :live | :paused | :resumed | :stopped
 
   @spec maybe_update_duration(Ecto.Changeset.t(), stream_status) :: Ecto.Changeset.t()
   defp maybe_update_duration(changeset, :live), do: changeset |> put_change(:duration, 0)
+
+  defp maybe_update_duration(changeset, status)
+    when status in [:paused, :resumed], do: changeset
 
   defp maybe_update_duration(changeset, _) do
     with {:ok, duration} <- get_duration(changeset.data),
@@ -325,18 +328,20 @@ defmodule Algora.Library do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
 
-    is_live = status == :live
+    is_live = status == :live or status == :resumed
 
     Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
       set: [is_live: is_live]
     )
 
-    Repo.update_all(
-      from(v in Video,
-        where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
-      ),
-      set: [is_live: false]
-    )
+    if status != :resumed do
+      Repo.update_all(
+        from(v in Video,
+          where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
+        ),
+        set: [is_live: false]
+      )
+    end
 
     video = get_video!(video.id)
 
@@ -349,12 +354,13 @@ defmodule Algora.Library do
     end
 
     msg =
-      case is_live do
-        true -> %Events.LivestreamStarted{video: video}
-        false -> %Events.LivestreamEnded{video: video}
+      case status do
+        :live -> %Events.LivestreamStarted{video: video}
+        :stopped -> %Events.LivestreamEnded{video: video}
+        _status -> nil
       end
 
-    broadcast!(topic_livestreams(), msg)
+    if msg, do: broadcast!(topic_livestreams(), msg)
 
     sink_url = Algora.config([:event_sink, :url])
 

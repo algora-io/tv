@@ -185,7 +185,7 @@ defmodule Algora.Pipeline do
 
     send(self(), :link_tracks)
     setup_forwarding!(state)
-    Algora.Library.toggle_stream_status(state.video, :live)
+    Algora.Library.toggle_stream_status(state.video, :resumed)
 
     spec = {actions, clock_provider: {:src, reconnect}, group: :rtmp_input, crash_group_mode: :temporary}
 
