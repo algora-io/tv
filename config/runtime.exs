@@ -180,6 +180,8 @@ if config_env() == :prod do
 #     services: [], # The optional services to run on the machine. Defaults to [].
 #     metadata: %{}, # The optional map of metadata to set for the machine. Defaults to %{}.
       env: %{
+        "DNS_CLUSTER_QUERY" => System.get_env("DNS_CLUSTER_QUERY"),
+        "PRIMARY_REGION" => System.get_env("PRIMARY_REGION"),
         "MIX_TARGET" => "nvidia",
         "AWS_ACCESS_KEY_ID" => System.get_env("AWS_ACCESS_KEY_ID"),
         "AWS_ENDPOINT_URL_S3" => System.get_env("AWS_ENDPOINT_URL_S3"),
