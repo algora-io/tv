@@ -38,9 +38,8 @@ defmodule Algora.Pipeline.Storage do
           partial_uploaders: %{ manifest_name() => pid() }
         }
 
-  @ets_cached_duration_in_segments 4
+  @ets_cached_duration_in_segments 24
   @delta_manifest_suffix "_delta.m3u8"
-  @partial_uploader_send_update_timeout 1000
 
   @impl true
   def init(state) do
