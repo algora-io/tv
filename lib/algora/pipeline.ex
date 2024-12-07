@@ -458,7 +458,7 @@ defmodule Algora.Pipeline do
     )
   end
 
-  defp setup_forwarding!(%{video: video} = state) do
+  defp setup_forwarding!(%{video: video}) do
     destinations = Algora.Accounts.list_active_destinations(video.user_id)
 
     for destination <- destinations do
@@ -471,7 +471,7 @@ defmodule Algora.Pipeline do
     end
   end
 
-  defp setup_extras!(%{video: video, user: user} = state) do
+  defp setup_extras!(%{video: video, user: user}) do
     if url = Algora.Accounts.get_restream_ws_url(user) do
       Task.Supervisor.start_child(
         Algora.TaskSupervisor,
