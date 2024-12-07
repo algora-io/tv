@@ -704,7 +704,7 @@ defmodule AlgoraWeb.VideoLive do
         socket
       ) do
     {:noreply,
-     socket = if video.user_id == socket.assigns.channel.user_id do
+     if video.user_id == socket.assigns.channel.user_id do
        socket
        |> stream_insert(:videos, video, at: 0)
      else
@@ -718,12 +718,13 @@ defmodule AlgoraWeb.VideoLive do
       ) do
     %{channel: channel} = socket.assigns
 
-    {:noreply, if video.user_id == channel.user_id do
-      socket
-      |> assign(channel: %{channel | is_live: true})
-    else
-      socket
-    end}
+    {:noreply,
+     if video.user_id == channel.user_id do
+       socket
+       |> assign(channel: %{channel | is_live: true})
+     else
+       socket
+     end}
   end
 
   def handle_info(

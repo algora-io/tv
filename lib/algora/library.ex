@@ -358,7 +358,7 @@ defmodule Algora.Library do
         %Events.LivestreamEnded{video: video, resume: status == :paused}
       end
 
-    if msg, do: broadcast!(topic_livestreams(), msg)
+    broadcast!(topic_livestreams(), msg)
 
     sink_url = Algora.config([:event_sink, :url])
 
