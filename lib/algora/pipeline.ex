@@ -138,7 +138,7 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_child_notification(:finalized, _element, _ctx, state) do
+  def handle_child_notification(:finalized, _element, _ctx, %{finalized: true} = state) do
     Membrane.Logger.info("Finalized manifests for video #{inspect(state.video.uuid)}")
     {[terminate: :normal], state}
   end
@@ -314,12 +314,7 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_info(%Messages.Anonymous{name: "FCUnpublish"}, _ctx, state) do
-    unless Algora.config([:resume_rtmp_on_unpublish]), do: send(self(), :terminate)
-    {[], state}
-  end
-
-  def handle_info(%Messages.DeleteStream{}, _ctx, state) do
+  def handle_info(:delete_stream, _ctx, state) do
     unless Algora.config([:resume_rtmp_on_unpublish]), do: send(self(), :terminate)
     {[], state}
   end
@@ -327,7 +322,7 @@ defmodule Algora.Pipeline do
   def handle_info(:terminate, _ctx, state) do
     Membrane.Logger.info("Terminating pipeline for video #{state.video.uuid}")
     Algora.Library.toggle_stream_status(state.video, :stopped)
-    {[terminate: :normal, notify_child: {:sink, :finalize}], %{state | finalized: true}}
+    {[notify_child: {:sink, :finalize}], %{state | finalized: true}}
   end
 
   def handle_info(message, _ctx, state) do
