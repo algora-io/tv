@@ -13,7 +13,6 @@ defmodule Algora.Pipeline do
   @partial_segment_duration_milliseconds 1000
   @partial_segment_duration Time.milliseconds(@partial_segment_duration_milliseconds)
   @app "live"
-  @terminate_after String.to_integer(Algora.config([:resume_rtmp_timeout])) * 1000
   @frame_devisor 1
 
   defstruct client_ref: nil,
@@ -27,6 +26,8 @@ defmodule Algora.Pipeline do
             playing: false,
             finalized: false,
             forwarding: []
+
+  defp terminate_after(), do: String.to_integer(Algora.config([:resume_rtmp_timeout])) * 1000
 
   def segment_duration(), do: @segment_duration_seconds
 
@@ -499,7 +500,7 @@ defmodule Algora.Pipeline do
     end
   end
 
-  defp terminate_later(state), do: terminate_later(state, @terminate_after)
+  defp terminate_later(state), do: terminate_later(state, terminate_after())
 
   defp terminate_later(%{terminate_timer: nil} = state, time) do
     time = if Algora.config([:resume_rtmp]), do: time, else: 0
