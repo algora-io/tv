@@ -53,6 +53,17 @@ defmodule AlgoraWeb.Router do
     end
   end
 
+  scope "/auth", AlgoraWeb do
+    pipe_through :browser
+
+    live_session :auth_login, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
+      live "/login", SignInLive, :index
+    end
+
+    get "/:provider", YoutubeAuthController, :request
+    get "/:provider/callback", YoutubeAuthController, :callback
+  end
+
   scope "/", AlgoraWeb do
     pipe_through [:browser, :embed]
 
@@ -71,9 +82,11 @@ defmodule AlgoraWeb.Router do
 
     live_session :chat,
       layout: {AlgoraWeb.Layouts, :live_chat},
-      root_layout: {AlgoraWeb.Layouts, :root_embed} do
+      root_layout: {AlgoraWeb.Layouts, :root_embed},
+      on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
       live "/:channel_handle/chat", ChatLive, :show
       live "/:channel_handle/:video_id/chat", ChatLive, :show
+      live "/:channel_handle/:video_id/chat_popout", ChatPopoutLive, :show
     end
   end
 
@@ -89,6 +102,10 @@ defmodule AlgoraWeb.Router do
     pipe_through :browser
 
     get "/go/:slug", AdRedirectController, :go
+
+    for {guest, video_id} <- AlgoraWeb.RedirectController.guests() do
+      get "/#{guest}", RedirectController, :redirect_guest, assigns: %{video_id: video_id}
+    end
 
     delete "/auth/logout", OAuthCallbackController, :sign_out
 
@@ -123,6 +140,7 @@ defmodule AlgoraWeb.Router do
       live "/channel/settings", SettingsLive, :edit
       live "/channel/studio", StudioLive, :show
       live "/channel/studio/upload", StudioLive, :upload
+      live "/channel/studio/clip", VideoClipperLive, :index
       live "/channel/audience", AudienceLive, :show
       live "/:channel_handle/stream", ChannelLive, :stream
 
@@ -134,7 +152,6 @@ defmodule AlgoraWeb.Router do
     end
 
     live_session :default, on_mount: [{AlgoraWeb.UserAuth, :current_user}, AlgoraWeb.Nav] do
-      live "/auth/login", SignInLive, :index
       live "/cossgpt", COSSGPTLive, :index
       live "/og/cossgpt", COSSGPTOGLive, :index
 

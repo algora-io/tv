@@ -12,4 +12,21 @@ defmodule AlgoraWeb.RedirectController do
       redirect(conn, to: ~p"/auth/login")
     end
   end
+
+  @guests %{
+    "tembo" => 10745,
+    "percona" => 10777,
+    "keygen" => 10799,
+    "electric" => 10826,
+    "midday" => 10851,
+    "trigger" => 10867,
+    "briefer" => 10896,
+    "typesense" => 10967
+  }
+
+  def guests, do: @guests
+
+  def redirect_guest(conn, _params) do
+    redirect(conn, to: "/algora/#{conn.assigns[:video_id]}")
+  end
 end

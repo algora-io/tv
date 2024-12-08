@@ -44,11 +44,13 @@ defmodule AlgoraWeb.PlayerComponent do
             player_id: assigns.id,
             id: video.id,
             url: video.url,
-            title: video.title,
+            title: assigns[:title] || video.title,
             poster: video.thumbnail_url,
             player_type: Library.player_type(video),
             channel_name: video.channel_name,
-            current_time: assigns[:current_time] || 0
+            current_time: assigns[:current_time] || 0,
+            clip_start_time: assigns[:clip_start_time] || assigns[:current_time] || 0,
+            clip_end_time: assigns[:end_time]
           })
       end
 

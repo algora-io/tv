@@ -95,6 +95,12 @@ defmodule Algora.Library.Video do
     end
   end
 
+  def change_thumbnail(video, thumbnail_url \\ "") do
+    video
+    |> change()
+    |> put_change(:thumbnail_url, thumbnail_url)
+  end
+
   def put_user(%Ecto.Changeset{} = changeset, %User{} = user) do
     put_assoc(changeset, :user, user)
   end
@@ -154,6 +160,10 @@ defmodule Algora.Library.Video do
 
   @spec thumbnail_url(Video.t(), String.t()) :: String.t()
   def thumbnail_url(video, filename \\ "index.jpeg"),
+    do: "#{Storage.endpoint_url()}/#{Algora.config([:buckets, :media])}/#{video.uuid}/#{filename}"
+
+  @spec og_image_url(Video.t(), String.t()) :: String.t()
+  def og_image_url(video, filename \\ "og.png"),
     do: "#{Storage.endpoint_url()}/#{Algora.config([:buckets, :media])}/#{video.uuid}/#{filename}"
 
   def slug(%Video{} = video), do: Slug.slugify("#{video.id}-#{video.title}")

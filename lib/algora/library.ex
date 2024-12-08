@@ -7,12 +7,14 @@ defmodule Algora.Library do
   import Ecto.Query, warn: false
   import Ecto.Changeset
   alias Algora.Accounts.User
-  alias Algora.{Repo, Accounts, Storage, Cache, ML}
-  alias Algora.Library.{Channel, Video, Events, Subtitle, Segment}
+  alias Algora.{Repo, Accounts, Storage, Cache, ML, Admin}
+  alias Algora.Library.{Channel, Video, VideoThumbnail, Events, Subtitle, Segment}
 
   @pubsub Algora.PubSub
 
-  @thumbnail_filename "index.jpeg"
+  def thumbnail_filename(minutes) do
+    "index-#{minutes}.jpeg"
+  end
 
   def subscribe_to_studio() do
     Phoenix.PubSub.subscribe(@pubsub, topic_studio())
@@ -60,7 +62,7 @@ defmodule Algora.Library do
       |> change()
       |> Video.put_video_meta(:vod, :mp4, basename)
 
-    dir = Path.join("/data", video.changes.uuid)
+    dir = Path.join(Admin.tmp_dir(), video.changes.uuid)
     File.mkdir_p!(dir)
     local_path = Path.join(dir, video.changes.filename)
     File.cp!(tmp_path, local_path)
@@ -90,7 +92,7 @@ defmodule Algora.Library do
 
     %{uuid: mp4_uuid, filename: mp4_filename, remote_path: mp4_remote_path} = mp4_video.changes
 
-    dir = Path.join("/data", mp4_uuid)
+    dir = Path.join(Admin.tmp_dir(), mp4_uuid)
     File.mkdir_p!(dir)
     mp4_local_path = Path.join(dir, mp4_filename)
 
@@ -115,22 +117,25 @@ defmodule Algora.Library do
 
     hls_video =
       %Video{
+        id: video.id,
         title: video.title,
         duration: duration,
         type: :vod,
         format: :hls,
         is_live: false,
         visibility: video.visibility,
-        user_id: video.user_id
+        user_id: video.user_id,
+        channel_handle: video.channel_handle,
+        channel_name: video.channel_name,
+        description: video.description
       }
       |> change()
       |> Video.put_video_url(:vod, :hls)
 
     %{uuid: hls_uuid, filename: hls_filename} = hls_video.changes
 
-    dir = Path.join("/data", hls_uuid)
+    dir = Path.join(Admin.tmp_dir(), hls_uuid)
     File.mkdir_p!(dir)
-    hls_local_path = Path.join(dir, hls_filename)
 
     cb.(%{stage: :transmuxing, done: 1, total: 1})
 
@@ -139,6 +144,8 @@ defmodule Algora.Library do
       video.local_path,
       "-c",
       "copy",
+      "-master_pl_name",
+      hls_filename,
       "-start_number",
       "0",
       "-hls_time",
@@ -147,7 +154,9 @@ defmodule Algora.Library do
       "0",
       "-f",
       "hls",
-      hls_local_path
+      "-hls_segment_filename",
+      "#{dir}/muxed_segment_%d_g3cFdmlkZW8.ts",
+      "#{dir}/g3cFdmlkZW8.m3u8"
     ])
 
     files = Path.wildcard("#{dir}/*")
@@ -160,10 +169,17 @@ defmodule Algora.Library do
     |> Enum.each(fn hls_local_path ->
       Storage.upload_from_filename(
         hls_local_path,
-        "#{hls_uuid}/#{Path.basename(hls_local_path)}"
+        "#{hls_uuid}/#{Path.basename(hls_local_path)}",
+        cb,
+        content_type:
+          if(String.ends_with?(hls_local_path, ".m3u8"),
+            do: "application/x-mpegURL",
+            else: "video/mp4"
+          )
       )
     end)
 
+    Repo.delete!(video)
     hls_video = Repo.insert!(hls_video)
 
     cb.(%{stage: :generating_thumbnail, done: 1, total: 1})
@@ -173,12 +189,7 @@ defmodule Algora.Library do
     # requests from user?
     File.rm!(video.local_path)
 
-    Repo.delete!(video)
-
     hls_video
-    |> change()
-    |> put_change(:id, video.id)
-    |> Repo.update!()
   end
 
   def get_latest_video(%User{} = user) do
@@ -433,45 +444,60 @@ defmodule Algora.Library do
     Phoenix.PubSub.unsubscribe(@pubsub, topic(channel.user_id))
   end
 
-  defp create_thumbnail_from_file(%Video{} = video, src_path, opts) do
-    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
-
-    with :ok <- Thumbnex.create_thumbnail(src_path, dst_path, opts) do
-      File.read(dst_path)
-    end
+  def get_thumbnails_for_video(%Video{} = video) do
+    Repo.all(from vt in VideoThumbnail, where: vt.video_id == ^video.id, order_by: vt.minutes)
   end
 
-  defp create_thumbnail(%Video{} = video, contents, opts \\ []) do
-    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.mp4")
+  defp create_thumbnail_from_file(%Video{} = video, src_path, marker, opts \\ []) do
+    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-#{marker.minutes}.jpeg")
+
+    if not File.exists?(dst_path) do
+      :ok = Thumbnex.create_thumbnail(src_path, dst_path, opts)
+    end
+
+    File.read(dst_path)
+  end
+
+  defp create_thumbnail(%Video{} = video, contents, marker, opts \\ []) do
+    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}-#{marker.minutes}.mp4")
 
     with :ok <- File.write(src_path, contents) do
-      create_thumbnail_from_file(video, src_path, opts)
+      create_thumbnail_from_file(video, src_path, marker, opts)
     end
   end
 
-  def store_thumbnail_from_file(%Video{} = video, src_path, opts \\ []) do
-    with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, opts),
+  def store_thumbnail_from_file(%Video{} = video, src_path, marker \\ %{minutes: 0}, opts \\ []) do
+    with {:ok, thumbnail} <- create_thumbnail_from_file(video, src_path, marker, opts),
          {:ok, _} <-
-           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}",
+           Storage.upload(thumbnail, "#{video.uuid}/#{thumbnail_filename(marker.minutes)}",
              content_type: "image/jpeg"
            ) do
-      video
-      |> change()
-      |> put_change(:thumbnail_url, Video.thumbnail_url(video, @thumbnail_filename))
-      |> Repo.update()
+      {:ok, video_thumbnail} =
+        %VideoThumbnail{
+          thumbnail_url: Video.thumbnail_url(video, thumbnail_filename(marker.minutes)),
+          minutes: marker.minutes
+        }
+        |> change()
+        |> VideoThumbnail.put_video(video)
+        |> Repo.insert(on_conflict: :nothing)
+
+      update_thumbnail_url(video, video_thumbnail)
     end
   end
 
-  def store_thumbnail(%Video{} = video, contents) do
-    with {:ok, thumbnail} <- create_thumbnail(video, contents),
+  def store_thumbnail(%Video{} = video, contents, marker) do
+    with {:ok, thumbnail} <- create_thumbnail(video, contents, marker, time_offset: 0),
          {:ok, _} <-
-           Storage.upload(thumbnail, "#{video.uuid}/#{@thumbnail_filename}",
+           Storage.upload(thumbnail, "#{video.uuid}/#{thumbnail_filename(marker.minutes)}",
              content_type: "image/jpeg"
            ) do
-      video
+      %VideoThumbnail{
+        thumbnail_url: Video.thumbnail_url(video, thumbnail_filename(marker.minutes)),
+        minutes: marker.minutes
+      }
       |> change()
-      |> put_change(:thumbnail_url, Video.thumbnail_url(video, @thumbnail_filename))
-      |> Repo.update()
+      |> VideoThumbnail.put_video(video)
+      |> Repo.insert(on_conflict: :nothing)
     end
   end
 
@@ -534,39 +560,52 @@ defmodule Algora.Library do
     :ok
   end
 
-  defp create_og_image_from_file(%Video{} = video, src_path, opts) do
-    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-og.png")
+  defp create_og_image_from_file(%Video{} = video, src_path, marker, opts) do
+    dst_path = Path.join(System.tmp_dir!(), "#{video.uuid}-og-#{marker.minutes}.png")
 
-    with :ok <- create_og(src_path, dst_path, opts) do
-      File.read(dst_path)
+    if not File.exists?(dst_path) do
+      :ok = create_og(src_path, dst_path, opts)
     end
+
+    File.read(dst_path)
   end
 
-  defp create_og_image(%Video{} = video, opts \\ []) do
-    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}.jpeg")
-    create_og_image_from_file(video, src_path, opts)
+  defp create_og_image(%Video{} = video, marker, opts \\ []) do
+    src_path = Path.join(System.tmp_dir!(), "#{video.uuid}-#{marker.minutes}.jpeg")
+    create_og_image_from_file(video, src_path, marker, opts)
   end
 
-  def store_og_image_from_file(%Video{} = video, src_path, opts \\ []) do
-    with {:ok, og_image} <- create_og_image_from_file(video, src_path, opts),
+  def store_og_image_from_file(%Video{} = video, src_path, marker \\ %{minutes: 0}, opts \\ []) do
+    with {:ok, og_image} <- create_og_image_from_file(video, src_path, marker, opts),
          {:ok, _} <-
-           Storage.upload(og_image, "#{video.uuid}/og.png", content_type: "image/png") do
+           Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png",
+             content_type: "image/png"
+           ) do
       video
       |> change()
-      |> put_change(:og_image_url, "#{video.url_root}/og.png")
+      |> put_change(:og_image_url, Video.og_image_url(video, "og-#{marker.minutes}.png"))
       |> Repo.update()
     end
   end
 
-  def store_og_image(%Video{} = video) do
-    with {:ok, og_image} <- create_og_image(video),
+  def store_og_image(%Video{} = video, marker) do
+    with {:ok, og_image} <- create_og_image(video, marker, time_offset: 0),
          {:ok, _} <-
-           Storage.upload(og_image, "#{video.uuid}/og.png", content_type: "image/png") do
+           Storage.upload(og_image, "#{video.uuid}/og-#{marker.minutes}.png",
+             content_type: "image/png"
+           ) do
       video
       |> change()
-      |> put_change(:og_image_url, "#{video.url_root}/og.png")
+      |> put_change(:og_image_url, Video.og_image_url(video, "og-#{marker.minutes}.png"))
       |> Repo.update()
     end
+  end
+
+  def update_thumbnail_url(%Video{} = video, %VideoThumbnail{} = video_thumbnail) do
+    video
+    |> change()
+    |> put_change(:thumbnail_url, video_thumbnail.thumbnail_url)
+    |> Repo.update()
   end
 
   def get_thumbnail_url(%Video{} = video) do
