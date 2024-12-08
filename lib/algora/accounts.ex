@@ -2,6 +2,7 @@ defmodule Algora.Accounts do
   import Ecto.Query
   import Ecto.Changeset
 
+  alias Algora.Library.{Video}
   alias Algora.{Repo, Restream, Google}
   alias Algora.Accounts.{User, Identity, Destination, Entity}
 
@@ -18,7 +19,19 @@ defmodule Algora.Accounts do
   end
 
   def update_settings(%User{} = user, attrs) do
-    user |> change_settings(attrs) |> Repo.update()
+    user
+    |> User.settings_changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, updated_user} ->
+        case Video.update_video_tags(updated_user.handle) do
+          {:ok, _} -> {:ok, updated_user}
+          {:error, reason} -> {:error, reason}
+        end
+
+      error ->
+        error
+    end
   end
 
   ## Database getters

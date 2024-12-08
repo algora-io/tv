@@ -4,6 +4,7 @@ defmodule Algora.Library.Video do
   import Ecto.Changeset
   import Ecto.Query
 
+  alias Algora.Repo
   alias Algora.Accounts.User
   alias Algora.Library.Video
   alias Algora.Storage
@@ -40,6 +41,7 @@ defmodule Algora.Library.Video do
     field :remote_path, :string
     field :local_path, :string
     field :deleted_at, :naive_datetime
+    field :tags, {:array, :string}, default: []
 
     belongs_to :user, User
     belongs_to :show, Show
@@ -56,8 +58,41 @@ defmodule Algora.Library.Video do
   @doc false
   def changeset(video, attrs) do
     video
-    |> cast(attrs, [:title])
+    |> cast(attrs, [:title, :tags])
     |> validate_required([:title])
+    |> validate_length(:tags, max: 10)
+    |> inherit_user_tags()
+  end
+
+  def create_video(attrs \\ %{}) do
+    %Video{}
+    |> Video.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_video_tags(channel_handle) do
+    case Algora.Accounts.get_user_by(handle: channel_handle) do
+      %User{id: user_id, tags: user_tags} ->
+        {updated_count, _} =
+          from(v in Video, where: v.user_id == ^user_id)
+          |> Repo.update_all(set: [tags: user_tags])
+
+        {:ok, updated_count}
+
+      nil ->
+        {:error, "User not found"}
+    end
+  end
+
+
+
+  defp inherit_user_tags(changeset) do
+    case get_change(changeset, :user) do
+      %User{tags: user_tags} when is_list(user_tags) ->
+        put_change(changeset, :tags, user_tags)
+      _ ->
+        changeset
+    end
   end
 
   def change_thumbnail(video, thumbnail_url \\ "") do
