@@ -252,22 +252,6 @@ const Hooks = {
               startLevel: -1,
               testBandwidth: !opts.is_live,
               lowLatencyMode: opts.is_live,
-              playlistLoadPolicy: {
-                default: {
-                  maxTimeToFirstByteMs: 2000,
-                  maxLoadTimeMs: 3000,
-                  timeoutRetry: {
-                    maxNumRetry: 100,
-                    retryDelayMs: 200,
-                    maxRetryDelayMs: 1000,
-                  },
-                  errorRetry: {
-                    maxNumRetry: 100,
-                    retryDelayMs: 200,
-                    maxRetryDelayMs: 1000,
-                  },
-                },
-              },
             };
           }
         });
