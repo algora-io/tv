@@ -25,7 +25,7 @@ defmodule Algora.Pipeline.HLS do
   @default_audio_track_name "audio_default_name"
 
   @keep_latest_n_segment_parts 4
-  @min_segments_in_delta_playlist 4
+  @min_segments_in_delta_playlist 6
 
   defmodule SegmentAttribute do
     @moduledoc """
