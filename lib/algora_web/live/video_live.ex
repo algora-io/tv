@@ -713,6 +713,21 @@ defmodule AlgoraWeb.VideoLive do
   end
 
   def handle_info(
+        {Library, %Library.Events.LivestreamStarted{video: video, resume: true}},
+        socket
+      ) do
+    %{channel: channel} = socket.assigns
+
+    {:noreply,
+     if video.user_id == channel.user_id do
+       socket
+       |> assign(channel: %{channel | is_live: true})
+     else
+       socket
+     end}
+  end
+
+  def handle_info(
         {Library, %Library.Events.LivestreamStarted{video: video}},
         socket
       ) do

@@ -73,11 +73,13 @@ defmodule Algora.Pipeline do
       setup_extras!(state)
       Algora.Library.toggle_stream_status(state.video, :live)
 
-      spec = [
+      structure = [
         #
         child({:src, reconnect}, %Algora.Pipeline.SourceBin{
           client_ref: client_ref
         }),
+
+        #
         get_child({:src, reconnect})
         |> via_out(:video)
         |> child({:video_reconnect, reconnect}, Membrane.Tee.Parallel)
@@ -104,6 +106,8 @@ defmodule Algora.Pipeline do
           storage: %Algora.Pipeline.Storage{video: video, directory: dir}
         })
       ]
+
+      spec = {structure, stream_sync: :sinks, clock_provider: {:src, reconnect}}
 
       {[spec: spec], state}
     else
@@ -134,7 +138,7 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_child_notification(:finalized, _element, _ctx, state) do
+  def handle_child_notification(:finalized, _element, _ctx, %{finalized: true} = state) do
     Membrane.Logger.info("Finalized manifests for video #{inspect(state.video.uuid)}")
     {[terminate: :normal], state}
   end
@@ -158,7 +162,7 @@ defmodule Algora.Pipeline do
 
     Membrane.Logger.info("Attempting reconnection for video #{state.video.uuid}")
 
-    structure = [
+    actions = [
       #
       child({:src, reconnect}, %Algora.Pipeline.SourceBin{
         client_ref: client_ref
@@ -181,15 +185,11 @@ defmodule Algora.Pipeline do
 
     send(self(), :link_tracks)
     setup_forwarding!(state)
-    Algora.Library.toggle_stream_status(state.video, :live)
+    Algora.Library.toggle_stream_status(state.video, :resumed)
 
-    {
-      [
-        spec: {structure, group: :rtmp_input, crash_group_mode: :temporary},
-        reply: :ok
-      ],
-      %{state | reconnect: reconnect}
-    }
+    spec = {actions, clock_provider: {:src, reconnect}, group: :rtmp_input, crash_group_mode: :temporary}
+
+    {[spec: spec, reply: :ok], %{state | reconnect: reconnect}}
   end
 
   def handle_info(:link_tracks, _ctx, %{reconnect: reconnect} = state) do
@@ -314,12 +314,7 @@ defmodule Algora.Pipeline do
     {[], state}
   end
 
-  def handle_info(%Messages.Anonymous{name: "FCUnpublish"}, _ctx, state) do
-    unless Algora.config([:resume_rtmp_on_unpublish]), do: send(self(), :terminate)
-    {[], state}
-  end
-
-  def handle_info(%Messages.DeleteStream{}, _ctx, state) do
+  def handle_info(:delete_stream, _ctx, state) do
     unless Algora.config([:resume_rtmp_on_unpublish]), do: send(self(), :terminate)
     {[], state}
   end
@@ -327,7 +322,7 @@ defmodule Algora.Pipeline do
   def handle_info(:terminate, _ctx, state) do
     Membrane.Logger.info("Terminating pipeline for video #{state.video.uuid}")
     Algora.Library.toggle_stream_status(state.video, :stopped)
-    {[terminate: :normal, notify_child: {:sink, :finalize}], %{state | finalized: true}}
+    {[notify_child: {:sink, :finalize}], %{state | finalized: true}}
   end
 
   def handle_info(message, _ctx, state) do
@@ -463,7 +458,7 @@ defmodule Algora.Pipeline do
     )
   end
 
-  defp setup_forwarding!(%{video: video} = state) do
+  defp setup_forwarding!(%{video: video}) do
     destinations = Algora.Accounts.list_active_destinations(video.user_id)
 
     for destination <- destinations do
@@ -476,7 +471,7 @@ defmodule Algora.Pipeline do
     end
   end
 
-  defp setup_extras!(%{video: video, user: user} = state) do
+  defp setup_extras!(%{video: video, user: user}) do
     if url = Algora.Accounts.get_restream_ws_url(user) do
       Task.Supervisor.start_child(
         Algora.TaskSupervisor,

@@ -1,10 +1,10 @@
 defmodule Algora.Library.Events do
   defmodule LivestreamStarted do
-    defstruct video: nil
+    defstruct video: nil, resume: false
   end
 
   defmodule LivestreamEnded do
-    defstruct video: nil
+    defstruct video: nil, resume: false
   end
 
   defmodule ThumbnailsGenerated do
