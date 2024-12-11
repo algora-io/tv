@@ -313,4 +313,20 @@ defmodule Algora.Accounts do
       entity -> entity
     end
   end
+
+  def count_tags(limit \\ 100) do
+    unnest_tags_query = from u in User,
+      select_merge: %{id: u.id, tag: fragment("unnest(tags)")}
+
+    tags_query = from t in subquery(unnest_tags_query),
+      group_by: t.tag,
+      limit: ^limit,
+      select: %{
+        tag: t.tag,
+        count: count(t.tag)
+      }
+
+    Repo.all(order_by(tags_query, [q], desc: q.count))
+  end
+
 end
