@@ -28,17 +28,6 @@ defmodule AlgoraWeb.SettingsLive do
             name="channel_tags"
             tags={@current_user.tags || []}
           />
-          <div>
-            <.input
-              label="Stream URL"
-              name="stream_url"
-              value={"rtmp://#{URI.parse(AlgoraWeb.Endpoint.url()).host}:#{Algora.config([:rtmp_port])}/#{@current_user.stream_key}"}
-              disabled
-            />
-            <p class="mt-2 text-sm text-gray-400">
-              <%= "Paste into OBS Studio > File > Settings > Stream > Server" %>
-            </p>
-          </div>
           <:actions>
             <.button>Save</.button>
           </:actions>

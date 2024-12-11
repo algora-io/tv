@@ -23,16 +23,6 @@ defmodule Algora.Accounts do
     user
     |> User.settings_changeset(attrs)
     |> Repo.update()
-    |> case do
-      {:ok, updated_user} ->
-        case Video.update_video_tags(updated_user.handle) do
-          {:ok, _} -> {:ok, updated_user}
-          {:error, reason} -> {:error, reason}
-        end
-
-      error ->
-        error
-    end
   end
 
   ## Database getters

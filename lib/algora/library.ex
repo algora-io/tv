@@ -699,7 +699,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -715,7 +716,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -732,7 +734,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -748,7 +751,8 @@ defmodule Algora.Library do
         select_merge: %{
           channel_handle: u.handle,
           channel_name: u.name,
-          channel_avatar_url: u.avatar_url
+          channel_avatar_url: u.avatar_url,
+          tags: coalesce(v.tags, u.tags)
         },
         where: v.id in ^ids
       )
@@ -773,7 +777,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       },
       where: v.show_id in ^ids
     )
@@ -794,7 +799,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -810,7 +816,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       },
       where:
         not is_nil(v.url) and
@@ -832,7 +839,8 @@ defmodule Algora.Library do
         channel_handle: u.handle,
         channel_name: u.name,
         channel_avatar_url: u.avatar_url,
-        messages_count: count(m.id)
+        messages_count: count(m.id),
+        tags: coalesce(v.tags, u.tags)
       },
       where:
         is_nil(v.transmuxed_from_id) and
@@ -873,6 +881,43 @@ defmodule Algora.Library do
     |> Enum.map(&get_channel!/1)
   end
 
+  def list_videos_by_tag(tag, limit \\ 100) do
+    from(v in Video,
+      join: u in User,
+      on: v.user_id == u.id,
+      limit: ^limit,
+      where:
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and
+          v.visibility == :public and
+          is_nil(v.vertical_thumbnail_url) and
+          (v.is_live == true or v.duration >= 120 or v.type == :vod) and
+          ^tag in v.tags or ^tag in u.tags,
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
+      }
+    )
+    |> Video.not_deleted()
+    |> order_by_live()
+    |> Repo.all()
+  end
+
+  def count_tags(limit \\ 100) do
+    unnest_tags_query = from u in User,
+      select_merge: %{id: u.id, tag: fragment("unnest(tags)")}
+
+    tags_query =
+      from v in Video,
+      join: t in subquery(unnest_tags_query),
+      group_by: t.tag,
+      select: {t.tag, count(t.tag)}
+
+    Repo.all(tags_query)
+  end
+
   def get_channel!(%Accounts.User{} = user) do
     %Channel{
       user_id: user.id,
@@ -886,7 +931,8 @@ defmodule Algora.Library do
       bounties_count: user.bounties_count,
       orgs_contributed: user.orgs_contributed,
       tech: user.tech,
-      solving_challenge: user.solving_challenge
+      solving_challenge: user.solving_challenge,
+      tags: user.tags
     }
   end
 
@@ -907,7 +953,8 @@ defmodule Algora.Library do
         select_merge: %{
           channel_handle: u.handle,
           channel_name: u.name,
-          channel_avatar_url: u.avatar_url
+          channel_avatar_url: u.avatar_url,
+          tags: coalesce(v.tags, u.tags)
         }
       )
       |> Video.not_deleted()
