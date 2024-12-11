@@ -909,13 +909,16 @@ defmodule Algora.Library do
     unnest_tags_query = from u in User,
       select_merge: %{id: u.id, tag: fragment("unnest(tags)")}
 
-    tags_query =
-      from v in Video,
+    tags_query = from v in Video,
       join: t in subquery(unnest_tags_query),
       group_by: t.tag,
-      select: {t.tag, count(t.tag)}
+      limit: ^limit,
+      select: %{
+        tag: t.tag,
+        count: count(t.tag)
+      }
 
-    Repo.all(tags_query)
+    Repo.all(order_by(tags_query, [q], desc: q.count))
   end
 
   def get_channel!(%Accounts.User{} = user) do
