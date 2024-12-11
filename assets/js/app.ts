@@ -458,7 +458,6 @@ const Hooks = {
       });
     },
   },
-<<<<<<< HEAD
   LiveBillboard: {
     setup() {
       const urls = JSON.parse(this.el.dataset.urls);
