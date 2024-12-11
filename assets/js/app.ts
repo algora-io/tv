@@ -248,16 +248,10 @@ const Hooks = {
           if (isHLSProvider(provider)) {
             provider.library = HLS;
             provider.config = {
-              targetlatency: 6, // one segment
-              capLevelToPlayerSize: true,
-              capLevelOnFPSDrop: false,
               startFragPrefetch: !opts.is_live,
               startLevel: -1,
               testBandwidth: !opts.is_live,
               lowLatencyMode: opts.is_live,
-              maxFragLookUpTolerance: 60 * 60, // 60 minutes
-              maxBufferHole: 0.001,
-              highBufferWatchdogPeriod: 0.01,
             };
           }
         });

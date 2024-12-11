@@ -99,7 +99,7 @@ defmodule AlgoraWeb.EmbedLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.LivestreamStarted{video: video}},
+        {Library, %Library.Events.LivestreamStarted{video: video, resume: false}},
         socket
       ) do
     %{channel: channel} = socket.assigns
@@ -115,7 +115,7 @@ defmodule AlgoraWeb.EmbedLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.LivestreamEnded{video: video}},
+        {Library, %Library.Events.LivestreamEnded{video: video, resume: false}},
         socket
       ) do
     %{channel: channel} = socket.assigns
