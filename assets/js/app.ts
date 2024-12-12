@@ -165,11 +165,27 @@ const Hooks = {
         layout: new VidstackPlayerLayout(),
       });
 
+      let unmuteTarget = document.getElementById(this.playerId)
+      const tryUnmute = (event) => {
+        if (this.player.muted) {
+          event.stopPropagation()
+          this.player.muted = false
+          if (unmuteTarget) {
+            unmuteTarget.classList.remove('autoplay-muted')
+            unmuteTarget.removeEventListener('click', tryUnmute)
+          }
+        }
+      }
+
       this.player.subscribe(({ autoPlayError }) => {
-        if (autoPlayError) {
+        if (autoPlayError && !this.attemptedAutoplay) {
           this.player.muted = true;
           this.player.play();
           this.attemptedAutoplay = true;
+          if (unmuteTarget) {
+            unmuteTarget.classList.add('autoplay-muted')
+            unmuteTarget.addEventListener('click', tryUnmute)
+          }
         }
       });
 
