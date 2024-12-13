@@ -222,13 +222,16 @@ defmodule Algora.Pipeline.Storage do
       )
 
     partial_uploader = partial_uploaders[filename]
+
     with true <- is_pid(partial_uploader),
          true <- Process.alive?(partial_uploader),
          ref <- Process.monitor(partial_uploader) do
-      timeout_after = Algora.Pipeline.partial_segment_duration()
+      timeout_after = 10 * Algora.Pipeline.partial_segment_duration()
+
       receive do
         {:DOWN, ^ref, :process, ^partial_uploader, :normal} ->
           :ok
+
         {:DOWN, ^ref, :process, ^partial_uploader, reason} ->
           Membrane.Logger.error(
             "Partial uploader for #{video.uuid}/#{filename} exited with with reason #{inspect(reason)}"
