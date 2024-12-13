@@ -314,10 +314,8 @@ defmodule Algora.Library do
     )
 
     Repo.update_all(
-      from(v in Video,
-        where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
-      ),
-      set: [is_live: false]
+      from(v in Video, where: v.user_id == ^video.user_id and (v.id == ^video.id or v.is_live)),
+      set: [is_live: dynamic([v], v.id == ^video.id and ^is_live)]
     )
 
     video = get_video!(video.id)
