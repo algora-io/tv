@@ -323,7 +323,7 @@ defmodule AlgoraWeb.ChannelLive do
      end}
   end
 
-  def handle_info({Library, _}, socket), do: {:noreply, socket}
+  def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :stream, _params) do
     if socket.assigns.owns_channel? do
