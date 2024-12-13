@@ -674,7 +674,12 @@ defmodule Algora.Library do
 
     result =
       Repo.update_all(from(v in Video, where: v.id == ^video.id),
-        set: [user_id: user.id, title: user.channel_tagline, visibility: user.visibility]
+        set: [
+          user_id: user.id,
+          title: user.channel_tagline,
+          visibility: user.visibility,
+          tags: user.tags
+        ]
       )
 
     video = get_video!(video.id)
