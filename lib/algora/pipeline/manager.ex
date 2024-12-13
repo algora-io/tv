@@ -16,7 +16,11 @@ defmodule Algora.Pipeline.Manager do
         {:ok, pid}
       else
         _ ->
-          FLAME.place_child(Algora.Pipeline.Pool, {__MODULE__, [self(), params]})
+          if Algora.config([:flame, :backend]) == FLAME.LocalBackend do
+            Algora.Pipeline.Supervisor.start_child([self(), params])
+          else
+            FLAME.place_child(Algora.Pipeline.Pool, {__MODULE__, [self(), params]})
+          end
       end
 
     {Algora.Pipeline.ClientHandler, %{pipeline: pid}}
