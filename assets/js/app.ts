@@ -488,6 +488,17 @@ const Hooks = {
       this.setup();
     },
   },
+  ChannelTagInput: {
+    mounted() {
+      this.handleEvent("tag_added", () => {
+        const input = this.el.querySelector("input");
+
+        if (input) {
+          input.value = "";
+        }
+      });
+    },
+  },
 } satisfies Record<string, Partial<ViewHook> & Record<string, unknown>>;
 
 // Accessible focus handling

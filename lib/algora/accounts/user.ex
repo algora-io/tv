@@ -3,6 +3,8 @@ defmodule Algora.Accounts.User do
   import Ecto.Changeset
 
   alias Algora.{Repo}
+  alias Hex.API.User
+  alias Algora.Repo
   alias Algora.Accounts.{User, Identity, Entity}
 
   schema "users" do
@@ -20,6 +22,7 @@ defmodule Algora.Accounts.User do
     field :bounties_count, :integer
     field :solving_challenge, :boolean, default: false
     field :featured, :boolean, default: false
+    field :tags, {:array, :string}, default: []
 
     embeds_many :tech, Tech do
       field :name, :string
@@ -115,11 +118,18 @@ defmodule Algora.Accounts.User do
     end
   end
 
+  def update_user_tags(user, tags) do
+    user
+    |> User.settings_changeset(%{tags: tags})
+    |> Repo.update()
+  end
+
   def settings_changeset(%User{} = user, params) do
     user
-    |> cast(params, [:handle, :name, :channel_tagline])
+    |> cast(params, [:handle, :name, :channel_tagline, :tags])
     |> validate_required([:handle, :name, :channel_tagline])
     |> validate_handle()
+    |> validate_length(:tags, max: 10)
   end
 
   defp validate_email(changeset) do
