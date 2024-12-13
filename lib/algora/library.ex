@@ -303,26 +303,7 @@ defmodule Algora.Library do
 
   @type stream_status :: :live | :paused | :resumed | :stopped
 
-  @spec maybe_update_duration(Ecto.Changeset.t(), stream_status) :: Ecto.Changeset.t()
-  defp maybe_update_duration(changeset, status)
-    when status in [:live, :resumed], do: changeset
-
-  defp maybe_update_duration(changeset, _) do
-    with {:ok, duration} <- get_duration(changeset.data),
-         changeset <- changeset |> put_change(:duration, duration) do
-      changeset
-    end
-  end
-
-  @spec maybe_update_url(Ecto.Changeset.t(), stream_status) :: Ecto.Changeset.t()
-  defp maybe_update_url(changeset, :stopped) do
-    changeset |> put_change(:url, Video.url(:vod, changeset.data.uuid, changeset.data.filename))
-  end
-
-  defp maybe_update_url(changeset, _), do: changeset
-
   @spec toggle_stream_status(%Video{}, stream_status) :: :ok
-
   def toggle_stream_status(%Video{} = video, status) do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
