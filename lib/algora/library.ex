@@ -322,33 +322,35 @@ defmodule Algora.Library do
   defp maybe_update_url(changeset, _), do: changeset
 
   @spec toggle_stream_status(%Video{}, stream_status) :: :ok
+
   def toggle_stream_status(%Video{} = video, status) do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
-
     is_live = status == :live or status == :resumed
 
     Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
       set: [is_live: is_live]
     )
 
-    if status == :live do
-      Repo.update_all(
-        from(v in Video,
-          where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
-        ),
-        set: [is_live: false]
-      )
-    end
+    Repo.update_all(
+      from(v in Video,
+        where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
+      ),
+      set: [is_live: false]
+    )
 
     video = get_video!(video.id)
 
-    if not is_live do
-      video
-      |> change()
-      |> maybe_update_duration(status)
-      |> maybe_update_url(status)
-      |> Repo.update()
+    if status == :stopped do
+      with {:ok, duration} <- get_duration(video),
+           {:ok, video} <-
+             video
+             |> change()
+             |> put_change(:duration, duration)
+             |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
+             |> Repo.update() do
+        video
+      end
     end
 
     msg =
