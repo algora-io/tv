@@ -323,14 +323,12 @@ defmodule Algora.Library do
     video = get_video!(video.id)
 
     if status == :stopped do
-      with {:ok, duration} <- get_duration(video),
-           {:ok, video} <-
-             video
-             |> change()
-             |> put_change(:duration, duration)
-             |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
-             |> Repo.update() do
+      with {:ok, duration} <- get_duration(video) do
         video
+        |> change()
+        |> put_change(:duration, duration)
+        |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
+        |> Repo.update()
       end
     end
 
