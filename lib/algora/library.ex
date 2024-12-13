@@ -818,7 +818,7 @@ defmodule Algora.Library do
       limit: ^limit,
       join: u in assoc(v, :user),
       left_join: m in assoc(v, :messages),
-      group_by: [v.id, u.handle, u.name, u.avatar_url],
+      group_by: [v.id, u.handle, u.name, u.avatar_url, v.tags, u.tags],
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
