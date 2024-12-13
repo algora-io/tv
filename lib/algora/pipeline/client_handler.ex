@@ -49,6 +49,7 @@ defmodule Algora.Pipeline.ClientHandler do
   @impl true
   def handle_delete_stream(state) do
     if state.source_pid != nil, do: send(state.source_pid, :delete_stream)
+    send(state.pipeline, :delete_stream)
     state
   end
 

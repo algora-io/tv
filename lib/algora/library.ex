@@ -303,52 +303,31 @@ defmodule Algora.Library do
 
   @type stream_status :: :live | :paused | :resumed | :stopped
 
-  @spec maybe_update_duration(Ecto.Changeset.t(), stream_status) :: Ecto.Changeset.t()
-  defp maybe_update_duration(changeset, status)
-    when status in [:live, :resumed], do: changeset
-
-  defp maybe_update_duration(changeset, _) do
-    with {:ok, duration} <- get_duration(changeset.data),
-         changeset <- changeset |> put_change(:duration, duration) do
-      changeset
-    end
-  end
-
-  @spec maybe_update_url(Ecto.Changeset.t(), stream_status) :: Ecto.Changeset.t()
-  defp maybe_update_url(changeset, :stopped) do
-    changeset |> put_change(:url, Video.url(:vod, changeset.data.uuid, changeset.data.filename))
-  end
-
-  defp maybe_update_url(changeset, _), do: changeset
-
   @spec toggle_stream_status(%Video{}, stream_status) :: :ok
   def toggle_stream_status(%Video{} = video, status) do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
-
     is_live = status == :live or status == :resumed
 
     Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
       set: [is_live: is_live]
     )
 
-    if status == :live do
-      Repo.update_all(
-        from(v in Video,
-          where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
-        ),
-        set: [is_live: false]
-      )
-    end
+    Repo.update_all(
+      from(v in Video, where: v.user_id == ^video.user_id and (v.id == ^video.id or v.is_live)),
+      set: [is_live: dynamic([v], v.id == ^video.id and ^is_live)]
+    )
 
     video = get_video!(video.id)
 
-    if not is_live do
-      video
-      |> change()
-      |> maybe_update_duration(status)
-      |> maybe_update_url(status)
-      |> Repo.update()
+    if status == :stopped do
+      with {:ok, duration} <- get_duration(video) do
+        video
+        |> change()
+        |> put_change(:duration, duration)
+        |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
+        |> Repo.update()
+      end
     end
 
     msg =
