@@ -1,10 +1,18 @@
 defmodule Algora.Pipeline.Manager do
   use GenServer
 
-  def handle_new_client(client_ref, app, stream_key) do
+  @app "live"
+
+  def handle_new_client(_client_ref, "", ""), do:
+    {__MODULE__.Abort, "Invalid stream key and app"}
+
+  def handle_new_client(client_ref, stream_key, ""), do:
+    handle_new_client(client_ref, @app, stream_key)
+
+  def handle_new_client(client_ref, @app, stream_key) do
     params = %{
       client_ref: client_ref,
-      app: app,
+      app: @app,
       stream_key: stream_key,
       video_uuid: nil
     }

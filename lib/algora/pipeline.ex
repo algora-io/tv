@@ -39,10 +39,6 @@ defmodule Algora.Pipeline do
   end
 
   @impl true
-  def handle_init(context, %{app: stream_key, stream_key: ""} = params) do
-    handle_init(context, %{params | stream_key: stream_key})
-  end
-
   def handle_init(_context, %{app: @app, stream_key: stream_key, client_ref: client_ref}) do
     Membrane.Logger.info("Starting pipeline #{@app}")
 
