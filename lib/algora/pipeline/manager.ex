@@ -1,10 +1,37 @@
 defmodule Algora.Pipeline.Manager do
+
+  defmodule AbortPipeline do
+    use Membrane.Pipeline
+    require Membrane.Logger
+
+    def handle_init(_ctx, %{stream_key: stream_key, client_ref: client_ref} = params) do
+      Membrane.Logger.error("Aborted stream key: #{stream_key}")
+      spec = [
+        #
+        child(:abort, %Algora.Pipeline.SourceBin{
+          client_ref: client_ref
+        }),
+
+        #
+        get_child(:abort)
+        |> via_out(:audio)
+        |> child(:video, Membrane.Testing.Sink),
+
+        #
+        get_child(:abort)
+        |> via_out(:video)
+        |> child(:audio, Membrane.Testing.Sink),
+      ]
+      {[spec: spec, terminate: :normal], params}
+    end
+  end
+
   use GenServer
 
   @app "live"
 
-  def handle_new_client(_client_ref, "", ""), do:
-    {__MODULE__.Abort, "Invalid stream key and app"}
+  def handle_new_client(client_ref, "", ""), do:
+    handle_new_client(client_ref, @app, "")
 
   def handle_new_client(client_ref, stream_key, ""), do:
     handle_new_client(client_ref, @app, stream_key)
@@ -20,16 +47,21 @@ defmodule Algora.Pipeline.Manager do
     {:ok, pid} =
       with true <- Algora.config([:resume_rtmp]),
            {pid, metadata} when is_pid(pid) <- :syn.lookup(:pipelines, stream_key) do
-        :ok = __MODULE__.resume_rtmp(pid, %{ params | video_uuid: metadata[:video_uuid] })
-        {:ok, pid}
-      else
-        _ ->
-          if Algora.config([:flame, :backend]) == FLAME.LocalBackend do
-            Algora.Pipeline.Supervisor.start_child([self(), params])
-          else
-            FLAME.place_child(Algora.Pipeline.Pool, {__MODULE__, [self(), params]})
-          end
-      end
+        case resume_rtmp(pid, %{params | video_uuid: metadata[:video_uuid]}) do
+          :ok ->
+            {:ok, pid}
+          {:error, reason} ->
+            {:ok, _sub, pid} = Membrane.Pipeline.start_link(AbortPipeline, params)
+            {:ok, pid}
+        end
+    else
+      _ ->
+        if Algora.config([:flame, :backend]) == FLAME.LocalBackend do
+          Algora.Pipeline.Supervisor.start_child([self(), params])
+        else
+          FLAME.place_child(Algora.Pipeline.Pool, {__MODULE__, [self(), params]})
+        end
+    end
 
     {Algora.Pipeline.ClientHandler, %{pipeline: pid}}
   end
