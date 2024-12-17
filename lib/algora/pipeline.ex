@@ -6,6 +6,7 @@ defmodule Algora.Pipeline do
   alias Membrane.RTMP.Messages
 
   alias Algora.{Admin, Library}
+  alias Algora.Pipeline.AbortPipeline
   alias Algora.Pipeline.HLS.LLController
 
   @segment_duration_seconds 6
@@ -122,12 +123,12 @@ defmodule Algora.Pipeline do
 
       {[spec: spec], state}
     else
-      Algora.Pipeline.Manager.AbortPipeline.handle_init(context, params)
+      Algora.Pipeline.AbortPipeline.handle_init(context, params)
     end
   end
 
   def handle_init(context, %{client_ref: client_ref} = params) do
-    Algora.Pipeline.Manager.AbortPipeline.handle_init(context, params)
+    Algora.Pipeline.AbortPipeline.handle_init(context, params)
   end
 
   @impl true
