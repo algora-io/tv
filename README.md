@@ -19,7 +19,7 @@
     ·
     <a href="https://github.com/algora-io/tv/issues">Issues</a>
   </p>
-  
+
   <p align="center">
     <a href="https://console.algora.io/org/algora/bounties?status=open">
       <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fconsole.algora.io%2Fapi%2Fshields%2Falgora%2Fbounties%3Fstatus%3Dopen" alt="Open Bounties">
@@ -92,13 +92,13 @@ To get a local copy up and running, follow these steps.
 5. Set up and seed your database
 
    ```sh
-   env $(cat .env | xargs -L 1) mix ecto.setup
+   mix setup.seed.db
    ```
 
 6. Start your development server
 
    ```sh
-   env $(cat .env | xargs -L 1) iex -S mix phx.server
+   mix start.dev.server
    ```
 
 ### Setting up external services

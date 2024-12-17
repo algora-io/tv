@@ -126,7 +126,9 @@ defmodule Algora.MixProject do
         "tailwind tv --minify",
         "esbuild tv --minify",
         "phx.digest"
-      ]
+      ],
+      "setup.seed.db": "cmd env $(cat .env | xargs -L 1) mix ecto.setup",
+      "start.dev.server": "cmd env $(cat .env | xargs -L 1) iex -S mix phx.server"
     ]
   end
 end
