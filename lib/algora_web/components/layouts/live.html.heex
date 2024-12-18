@@ -48,7 +48,7 @@
       <%= if @current_user do %>
         <.sidebar_account_dropdown id="mobile-account-dropdown" current_user={@current_user} />
       <% else %>
-        <a class="group outline-none w-full" target="_self" href="/auth/login">
+        <a class="group outline-none w-full" href={~p"/auth/login?#{[return_to: @uri.path]}">
           <div class="flex text-center font-sans justify-center items-center shrink-0 duration-150 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none transition bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 h-10 px-2.5 text-base font-semibold rounded mx-3">
             <div class="justify-center flex w-full items-center gap-x-1">
               <span class="mx-auto grow self-center truncate px-1 text-gray-100 text-base font-semibold">
