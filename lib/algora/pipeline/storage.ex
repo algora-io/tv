@@ -40,6 +40,7 @@ defmodule Algora.Pipeline.Storage do
 
   @ets_cached_duration_in_segments 24
   @delta_manifest_suffix "_delta.m3u8"
+  @segment_from_filename ~r/^\w+_segment_+(?<segment>\d*)/
 
   @impl true
   def init(state) do
@@ -87,7 +88,7 @@ defmodule Algora.Pipeline.Storage do
 
     state =
       process_contents(parent_id, name, contents, metadata, ctx, state)
-      |> update_sequence_numbers(sequence_number, manifest_name)
+      |> update_sequence_numbers(sequence_number, name, manifest_name)
       |> add_partial(name, ctx, partial_name, contents, manifest_name)
 
     {:ok, state}
@@ -257,20 +258,24 @@ defmodule Algora.Pipeline.Storage do
   defp update_sequence_numbers(
          %{sequences: sequences} = state,
          new_partial_sn,
+         segment_name,
          manifest_name
        ) do
-    {segment_sn, partial_sn} = Map.get(sequences, manifest_name, {0, 0})
-    new_segment? = new_partial_sn < partial_sn
-    sequence = if new_segment? do
-      { segment_sn + 1, new_partial_sn }
-    else
-      { segment_sn, new_partial_sn }
-    end
+    {segment_sn, _partial_sn} = Map.get(sequences, manifest_name, {0, 0})
+    new_segment_sn =
+      case Regex.named_captures(@segment_from_filename, segment_name) do
+        %{"segment" => new_segment_sn} ->
+          String.to_integer(new_segment_sn)
+        _no_match ->
+          Membrane.Logger.error("failed extract segment number from filename #{inspect(segment_name)}")
+          segment_sn
+      end
+
     state = sequences
-      |> Map.put(manifest_name, sequence)
+      |> Map.put(manifest_name, {new_segment_sn, new_partial_sn})
       |> then(&Map.put(state, :sequences, &1))
       # If there is a new segment we want to remove partials that are too old from ets
-    if new_segment? do
+    if new_segment_sn > segment_sn do
       remove_partials(state, manifest_name)
     else
       state
