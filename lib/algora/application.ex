@@ -41,7 +41,7 @@ defmodule Algora.Application do
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
       # Pipeline flame pool
-      if Algora.config([:flame, :backend]) == FLAME.LocalBackend do
+      if Algora.config([:flame, :backend]) != FLAME.LocalBackend do
         {FLAME.Pool,
           name: Algora.Pipeline.Pool,
           backend: Algora.config([:flame_backend]),
