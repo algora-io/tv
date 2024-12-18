@@ -148,6 +148,12 @@ defmodule Algora.Pipeline do
   end
 
   @impl true
+  def handle_child_pad_removed(:sink, pad, ctx, state) do
+    Membrane.Logger.error(":sink removed its pad #{inspect(pad)} in ctx #{inspect(ctx)}")
+    {[], state}
+  end
+
+  @impl true
   def handle_call(:get_video_id, _ctx, state) do
     {[{:reply, state.video.id}], state}
   end
