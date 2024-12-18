@@ -206,7 +206,7 @@ defmodule Algora.Pipeline.SinkBin do
       |> get_child(:sink)
 
     state = increment_streams_counters(state)
-    {[spec: spec], state}
+    {[spec: {spec, crash_group_mode: :transient}], state}
   end
 
  defp do_handle_pad_added(
