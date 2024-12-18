@@ -28,6 +28,8 @@ defmodule Algora.Application do
       {Task.Supervisor, name: Algora.TaskSupervisor},
       # Start the supervisor for tracking manifest uploads
       {DynamicSupervisor, strategy: :one_for_one, name: Algora.Pipeline.Storage.ManifestSupervisor},
+      # Start the supervisor for rtmp to hls pipeline
+      {DynamicSupervisor, strategy: :one_for_one, name: Algora.Pipeline.Supervisor},
       # Start the RPC server
       {Fly.RPC, []},
       # Start the Ecto repository
@@ -39,15 +41,17 @@ defmodule Algora.Application do
       # Start the Telemetry supervisor
       AlgoraWeb.Telemetry,
       # Pipeline flame pool
-      {FLAME.Pool,
-        name: Algora.Pipeline.Pool,
-        backend: Algora.config([:flame_backend]),
-        min: Algora.config([:flame, :min]),
-        max: Algora.config([:flame, :max]),
-        max_concurrency: Algora.config([:flame, :max_concurrency]),
-        idle_shutdown_after: Algora.config([:flame, :idle_shutdown_after]),
-        log: Algora.config([:flame, :log]),
-      },
+      if Algora.config([:flame, :backend]) != FLAME.LocalBackend do
+        {FLAME.Pool,
+          name: Algora.Pipeline.Pool,
+          backend: Algora.config([:flame_backend]),
+          min: Algora.config([:flame, :min]),
+          max: Algora.config([:flame, :max]),
+          max_concurrency: Algora.config([:flame, :max_concurrency]),
+          idle_shutdown_after: Algora.config([:flame, :idle_shutdown_after]),
+          log: Algora.config([:flame, :log]),
+        }
+      end,
       # Start the PubSub system
       {Phoenix.PubSub, name: Algora.PubSub},
       # Start presence
