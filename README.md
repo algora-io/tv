@@ -160,13 +160,19 @@ graph
     Encoder{Encoder<br>e.g. OBS} -->|RTMP| Source[FLV Demuxer]
     Source -->|video| H264Parser[H264 Parser]
     Source -->|audio| AACParser[AAC Parser]
-    H264Parser --> H264Payloader[H264 Payloader]
-    AACParser --> AACPayloader[AAC Payloader]
-    H264Payloader --> CMAFMuxerVideo[CMAF Muxer]
-    AACPayloader --> CMAFMuxerAudio[CMAF Muxer]
-    CMAFMuxerVideo --> fMP4
-    CMAFMuxerAudio --> fMP4
-    fMP4[Fragmented MP4] -->|HLS| Tigris{Tigris Object Storage}
+    H264Parser --> H264Encoder[H264 Encoder]
+    H264Parser --> H265Encoder[H265 Encoder]
+    H264Encoder --> H264Payloader[H264 Payloader]
+    H265Encoder --> H265Payloader[H265 Payloader]
+    AACParser ---> AACPayloader[AAC Payloader]
+    H264Payloader --> fMP4
+    H265Payloader --> fMP4
+    AACPayloader --> fAAC[Fragmented AAC]
+    fAAC --> AudioPlaylist[HLS Audio Playlist]
+    fMP4[Fragmented MP4] --> VideoPlaylist[HLS Video Playlist]
+    VideoPlaylist --> HLS
+    AudioPlaylist --> HLS
+    HLS[HLS Manifest] -->Tigris{Tigris Object Storage}
 ```
 
 <!-- LICENSE -->
