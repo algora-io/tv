@@ -40,7 +40,6 @@ defmodule Algora.Pipeline.Storage do
 
   @ets_cached_duration_in_segments 24
   @delta_manifest_suffix "_delta.m3u8"
-  @segment_from_filename ~r/^\w+_segment_+(?<segment>\d*)/
 
   @impl true
   def init(state) do
@@ -262,19 +261,12 @@ defmodule Algora.Pipeline.Storage do
          manifest_name
        ) do
     {segment_sn, _partial_sn} = Map.get(sequences, manifest_name, {0, 0})
-    new_segment_sn =
-      case Regex.named_captures(@segment_from_filename, segment_name) do
-        %{"segment" => new_segment_sn} ->
-          String.to_integer(new_segment_sn)
-        _no_match ->
-          Membrane.Logger.error("failed extract segment number from filename #{inspect(segment_name)}")
-          segment_sn
-      end
-
+    new_segment_sn = get_segment_number_from_name(segment_name)
     state = sequences
       |> Map.put(manifest_name, {new_segment_sn, new_partial_sn})
       |> then(&Map.put(state, :sequences, &1))
-      # If there is a new segment we want to remove partials that are too old from ets
+
+    # If there is a new segment we want to remove partials that are too old
     if new_segment_sn > segment_sn do
       remove_partials(state, manifest_name)
     else
@@ -385,5 +377,14 @@ defmodule Algora.Pipeline.Storage do
 
   defp process_contents(_parent_id, _name, _contents, _metadata, _ctx, state) do
     state
+  end
+
+  # audio_segment_0_audio_master.m4s
+  defp get_segment_number_from_name(filename) do
+    filename
+    |> String.split("_")
+    |> Enum.drop(2)
+    |> List.first()
+    |> String.to_integer()
   end
 end
