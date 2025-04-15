@@ -137,14 +137,12 @@ defmodule Algora.Accounts.User do
     |> validate_required([:email])
     |> validate_format(:email, ~r/^[^\s]+@[^\s]+$/, message: "must have the @ sign and no spaces")
     |> validate_length(:email, max: 160)
-    |> unsafe_validate_unique(:email, Algora.Repo)
     |> unique_constraint(:email)
   end
 
   defp validate_handle(changeset) do
     changeset
     |> validate_format(:handle, ~r/^[a-zA-Z0-9_-]{2,32}$/)
-    |> unsafe_validate_unique(:handle, Algora.Repo)
     |> unique_constraint(:handle)
     |> prepare_changes(fn changeset ->
       case fetch_change(changeset, :channel_tagline) do
