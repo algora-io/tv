@@ -4,6 +4,7 @@ defmodule Algora.Library.Video do
   import Ecto.Changeset
   import Ecto.Query
 
+  alias Algora.Repo
   alias Algora.Accounts.User
   alias Algora.Library.Video
   alias Algora.Storage
@@ -40,6 +41,7 @@ defmodule Algora.Library.Video do
     field :remote_path, :string
     field :local_path, :string
     field :deleted_at, :naive_datetime
+    field :tags, {:array, :string}, default: []
 
     belongs_to :user, User
     belongs_to :show, Show
@@ -56,8 +58,15 @@ defmodule Algora.Library.Video do
   @doc false
   def changeset(video, attrs) do
     video
-    |> cast(attrs, [:title])
+    |> cast(attrs, [:title, :tags])
     |> validate_required([:title])
+    |> validate_length(:tags, max: 10)
+  end
+
+  def create_video(attrs \\ %{}) do
+    %Video{}
+    |> Video.changeset(attrs)
+    |> Repo.insert()
   end
 
   def change_thumbnail(video, thumbnail_url \\ "") do

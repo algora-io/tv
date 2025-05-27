@@ -47,7 +47,7 @@ To get a local copy up and running, follow these steps.
 - Elixir and Erlang/OTP
   - We recommend using [asdf](https://github.com/asdf-vm/asdf) to install [Elixir](https://github.com/asdf-vm/asdf-elixir) and [Erlang/OTP](https://github.com/asdf-vm/asdf-erlang).
   - Keep in mind that each Elixir version supports [specific Erlang/OTP versions](https://hexdocs.pm/elixir/compatibility-and-deprecations.html#between-elixir-and-erlang-otp).
-  - Make sure you have at least **Elixir 1.12** installed to run Algora TV.
+  - Make sure you have at least **Elixir 1.17.3** and **Erlang 27.1** installed to run Algora TV.
 - PostgreSQL
 - FFmpeg
 - ImageMagick
@@ -133,6 +133,7 @@ AWS_REGION="auto"
 AWS_ACCESS_KEY_ID="tid_..."
 AWS_SECRET_ACCESS_KEY="tsec_..."
 BUCKET_MEDIA="..."
+RESUME_RTMP=true
 ```
 
 <!-- ARCHITECTURE -->

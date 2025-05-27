@@ -25,7 +25,7 @@ defmodule Algora.Pipeline.HLS do
   @default_audio_track_name "audio_default_name"
 
   @keep_latest_n_segment_parts 4
-  @min_segments_in_delta_playlist 6
+  @min_segments_in_delta_playlist @keep_latest_n_segment_parts - 1
 
   defmodule SegmentAttribute do
     @moduledoc """
@@ -40,7 +40,7 @@ defmodule Algora.Pipeline.HLS do
       [
         "#EXT-X-DISCONTINUITY-SEQUENCE:#{number}",
         "#EXT-X-DISCONTINUITY",
-        "#EXT-X-MAP:URI=#{header_name}"
+        "#EXT-X-MAP:URI=\"#{header_name}\""
       ]
     end
 
@@ -50,6 +50,17 @@ defmodule Algora.Pipeline.HLS do
         "#EXT-X-PROGRAM-DATE-TIME:#{date_time |> DateTime.truncate(:millisecond) |> DateTime.to_iso8601()}"
       ]
     end
+
+    def serialize(discontinuity(header_name, number), base_url) do
+      [
+        "#EXT-X-DISCONTINUITY-SEQUENCE:#{number}",
+        "#EXT-X-DISCONTINUITY",
+        "#EXT-X-MAP:URI=\"#{base_url}/#{header_name}\""
+      ]
+    end
+
+    def serialize({:creation_time, _date_time} = msg, _base_url), do: serialize(msg)
+
   end
 
   @doc """
@@ -240,6 +251,9 @@ defmodule Algora.Pipeline.HLS do
 
   defp serialize_codec({:mp4a, %{aot_id: aot_id}}), do: String.downcase("mp4a.40.#{aot_id}")
 
+  defp serialize_codec({:hvc1, %{profile: profile, level: level}}),
+    do: "hvc1.#{profile}.4.L#{level}.B0"
+
   defp serialize_codec(_other), do: ""
 
   defp build_master_playlist(tracks) do
@@ -351,7 +365,7 @@ defmodule Algora.Pipeline.HLS do
   defp serialize_regular_segment(%Manifest{} = manifest, segment) do
     time = Ratio.to_float(segment.duration / Time.second())
 
-    Enum.flat_map(segment.attributes, &SegmentAttribute.serialize/1) ++
+    Enum.flat_map(segment.attributes, &SegmentAttribute.serialize(&1, "#{storage_base_url()}/#{manifest.video_uuid}")) ++
       [
         "#EXTINF:#{time},",
         "#{storage_base_url()}/#{manifest.video_uuid}/#{segment.name}"

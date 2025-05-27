@@ -244,14 +244,26 @@ defmodule Algora.Library do
   def terminate_stream(video_id) do
     video = Repo.get!(Video, video_id)
 
-    resp = Finch.build(:get, "#{video.url_root}/g3cFdmlkZW8.m3u8") |> Finch.request(Algora.Finch)
+    audio_resp = Finch.build(:get, "#{video.url_root}/audio_master.m3u8") |> Finch.request(Algora.Finch)
 
-    with {:ok, %Finch.Response{status: 200, body: body}} <- resp,
+    with {:ok, %Finch.Response{status: 200, body: body}} <- audio_resp do
+      if !String.ends_with?(body, "#EXT-X-ENDLIST\n") do
+        Storage.upload(
+          String.trim_trailing(body) <> "\n#EXT-X-ENDLIST\n",
+          "#{video.uuid}/audio_master.m3u8",
+          content_type: "application/x-mpegURL"
+        )
+      end
+    end
+
+    video_resp = Finch.build(:get, "#{video.url_root}/video_master.m3u8") |> Finch.request(Algora.Finch)
+
+    with {:ok, %Finch.Response{status: 200, body: body}} <- video_resp,
          {:ok, duration} <- get_duration(video) do
       if !String.ends_with?(body, "#EXT-X-ENDLIST\n") do
         Storage.upload(
           String.trim_trailing(body) <> "\n#EXT-X-ENDLIST\n",
-          "#{video.uuid}/g3cFdmlkZW8.m3u8",
+          "#{video.uuid}/video_master.m3u8",
           content_type: "application/x-mpegURL"
         )
       end
@@ -289,41 +301,40 @@ defmodule Algora.Library do
     |> Enum.each(&terminate_stream/1)
   end
 
-  def toggle_streamer_live(%Video{} = video, is_live) do
+  @type stream_status :: :live | :paused | :resumed | :stopped
+
+  @spec toggle_stream_status(%Video{}, stream_status) :: :ok
+  def toggle_stream_status(%Video{} = video, status) do
     video = get_video!(video.id)
     user = Accounts.get_user!(video.user_id)
+    is_live = status == :live or status == :resumed
 
     Repo.update_all(from(u in Accounts.User, where: u.id == ^video.user_id),
       set: [is_live: is_live]
     )
 
     Repo.update_all(
-      from(v in Video,
-        where: v.user_id == ^video.user_id and (v.id != ^video.id or not (^is_live))
-      ),
-      set: [is_live: false]
+      from(v in Video, where: v.user_id == ^video.user_id and (v.id == ^video.id or v.is_live)),
+      set: [is_live: dynamic([v], v.id == ^video.id and ^is_live)]
     )
 
     video = get_video!(video.id)
 
-    video =
-      with false <- is_live,
-           {:ok, duration} <- get_duration(video),
-           {:ok, video} <-
-             video
-             |> change()
-             |> put_change(:duration, duration)
-             |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
-             |> Repo.update() do
+    if status == :stopped do
+      with {:ok, duration} <- get_duration(video) do
         video
-      else
-        _ -> video
+        |> change()
+        |> put_change(:duration, duration)
+        |> put_change(:url, Video.url(:vod, video.uuid, video.filename))
+        |> Repo.update()
       end
+    end
 
     msg =
-      case is_live do
-        true -> %Events.LivestreamStarted{video: video}
-        false -> %Events.LivestreamEnded{video: video}
+      if is_live do
+        %Events.LivestreamStarted{video: video, resume: status == :resumed}
+      else
+        %Events.LivestreamEnded{video: video, resume: status == :paused}
       end
 
     broadcast!(topic_livestreams(), msg)
@@ -642,7 +653,12 @@ defmodule Algora.Library do
 
     result =
       Repo.update_all(from(v in Video, where: v.id == ^video.id),
-        set: [user_id: user.id, title: user.channel_tagline, visibility: user.visibility]
+        set: [
+          user_id: user.id,
+          title: user.channel_tagline,
+          visibility: user.visibility,
+          tags: user.tags
+        ]
       )
 
     video = get_video!(video.id)
@@ -667,7 +683,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -683,7 +700,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -700,7 +718,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -716,7 +735,8 @@ defmodule Algora.Library do
         select_merge: %{
           channel_handle: u.handle,
           channel_name: u.name,
-          channel_avatar_url: u.avatar_url
+          channel_avatar_url: u.avatar_url,
+          tags: coalesce(v.tags, u.tags)
         },
         where: v.id in ^ids
       )
@@ -741,7 +761,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       },
       where: v.show_id in ^ids
     )
@@ -762,7 +783,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       }
     )
     |> Video.not_deleted()
@@ -778,7 +800,8 @@ defmodule Algora.Library do
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
-        channel_avatar_url: u.avatar_url
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
       },
       where:
         not is_nil(v.url) and
@@ -795,12 +818,13 @@ defmodule Algora.Library do
       limit: ^limit,
       join: u in assoc(v, :user),
       left_join: m in assoc(v, :messages),
-      group_by: [v.id, u.handle, u.name, u.avatar_url],
+      group_by: [v.id, u.handle, u.name, u.avatar_url, v.tags, u.tags],
       select_merge: %{
         channel_handle: u.handle,
         channel_name: u.name,
         channel_avatar_url: u.avatar_url,
-        messages_count: count(m.id)
+        messages_count: count(m.id),
+        tags: coalesce(v.tags, u.tags)
       },
       where:
         is_nil(v.transmuxed_from_id) and
@@ -841,6 +865,46 @@ defmodule Algora.Library do
     |> Enum.map(&get_channel!/1)
   end
 
+  def list_videos_by_tag(tag, limit \\ 100) do
+    from(v in Video,
+      join: u in User,
+      on: v.user_id == u.id,
+      limit: ^limit,
+      where:
+        not is_nil(v.url) and
+          is_nil(v.transmuxed_from_id) and
+          v.visibility == :public and
+          is_nil(v.vertical_thumbnail_url) and
+          (v.is_live == true or v.duration >= 120 or v.type == :vod) and
+          ^tag in v.tags or ^tag in u.tags,
+      select_merge: %{
+        channel_handle: u.handle,
+        channel_name: u.name,
+        channel_avatar_url: u.avatar_url,
+        tags: coalesce(v.tags, u.tags)
+      }
+    )
+    |> Video.not_deleted()
+    |> order_by_live()
+    |> Repo.all()
+  end
+
+  def count_tags(limit \\ 100) do
+    unnest_tags_query = from u in User,
+      select_merge: %{id: u.id, tag: fragment("unnest(tags)")}
+
+    tags_query = from v in Video,
+      join: t in subquery(unnest_tags_query),
+      group_by: t.tag,
+      limit: ^limit,
+      select: %{
+        tag: t.tag,
+        count: count(t.tag)
+      }
+
+    Repo.all(order_by(tags_query, [q], desc: q.count))
+  end
+
   def get_channel!(%Accounts.User{} = user) do
     %Channel{
       user_id: user.id,
@@ -854,7 +918,8 @@ defmodule Algora.Library do
       bounties_count: user.bounties_count,
       orgs_contributed: user.orgs_contributed,
       tech: user.tech,
-      solving_challenge: user.solving_challenge
+      solving_challenge: user.solving_challenge,
+      tags: user.tags
     }
   end
 
@@ -875,7 +940,8 @@ defmodule Algora.Library do
         select_merge: %{
           channel_handle: u.handle,
           channel_name: u.name,
-          channel_avatar_url: u.avatar_url
+          channel_avatar_url: u.avatar_url,
+          tags: coalesce(v.tags, u.tags)
         }
       )
       |> Video.not_deleted()

@@ -3,6 +3,8 @@ defmodule Algora.Accounts do
   import Ecto.Changeset
 
   alias Algora.{Repo, Restream, Google}
+  alias Algora.{Repo, Restream}
+  alias Algora.Library.{Video}
   alias Algora.Accounts.{User, Identity, Destination, Entity}
 
   def list_users(opts) do
@@ -18,7 +20,9 @@ defmodule Algora.Accounts do
   end
 
   def update_settings(%User{} = user, attrs) do
-    user |> change_settings(attrs) |> Repo.update()
+    user
+    |> User.settings_changeset(attrs)
+    |> Repo.update()
   end
 
   ## Database getters
@@ -309,4 +313,20 @@ defmodule Algora.Accounts do
       entity -> entity
     end
   end
+
+  def count_tags(limit \\ 100) do
+    unnest_tags_query = from u in User,
+      select_merge: %{id: u.id, tag: fragment("unnest(tags)")}
+
+    tags_query = from t in subquery(unnest_tags_query),
+      group_by: t.tag,
+      limit: ^limit,
+      select: %{
+        tag: t.tag,
+        count: count(t.tag)
+      }
+
+    Repo.all(order_by(tags_query, [q], desc: q.count))
+  end
+
 end

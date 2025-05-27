@@ -69,4 +69,14 @@ defmodule Algora.Storage do
       err -> err
     end
   end
+
+  def remove(remote_path, opts \\ []) do
+    remove_from_bucket(remote_path, :media, opts)
+  end
+
+  def remove_from_bucket(remote_path, bucket, opts) do
+    ExAws.S3.delete_object(Algora.config([:buckets, bucket]), remote_path, opts)
+    |> ExAws.request([])
+  end
+
 end

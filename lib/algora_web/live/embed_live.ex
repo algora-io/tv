@@ -99,7 +99,7 @@ defmodule AlgoraWeb.EmbedLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.LivestreamStarted{video: video}},
+        {Library, %Library.Events.LivestreamStarted{video: video, resume: false}},
         socket
       ) do
     %{channel: channel} = socket.assigns
@@ -115,7 +115,7 @@ defmodule AlgoraWeb.EmbedLive do
   end
 
   def handle_info(
-        {Library, %Library.Events.LivestreamEnded{video: video}},
+        {Library, %Library.Events.LivestreamEnded{video: video, resume: false}},
         socket
       ) do
     %{channel: channel} = socket.assigns
@@ -130,7 +130,7 @@ defmodule AlgoraWeb.EmbedLive do
      end}
   end
 
-  def handle_info({Library, _}, socket), do: {:noreply, socket}
+  def handle_info(_arg, socket), do: {:noreply, socket}
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset, as: :data))

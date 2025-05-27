@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@algora/hls.js':
-    specifier: 1.0.0
-    version: 1.0.0
+    specifier: 1.5.17-algora.1
+    version: 1.5.17-algora.1
   vidstack:
     specifier: ^1.12.9
     version: 1.12.9
@@ -22,8 +22,8 @@ devDependencies:
 
 packages:
 
-  /@algora/hls.js@1.0.0:
-    resolution: {integrity: sha512-2Lh/sBnxeyD4gi2F8Isr5CsliQQ6t5Nf0+I9jLkibLmHkryVMis+z0PssPA5iOGZncvSgAwhAlDf2wxwJtsRcw==}
+  /@algora/hls.js@1.5.17-algora.1:
+    resolution: {integrity: sha512-VarvdusHFzZefiiL7wu9lN9YNRFlGpoZdWC83K4bY7rqz+mXER++FTfnsM3IIHWJ9ZZjQtebAZP2rvp4mnB8vw==}
     dev: false
 
   /@floating-ui/core@1.6.7:

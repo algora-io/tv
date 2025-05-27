@@ -164,6 +164,37 @@ defmodule Algora.Pipeline.Sink do
     {[], state}
   end
 
+  def handle_parent_notification(:finalize, _ctx, state) do
+    %{
+      manifest: manifest,
+      storage: storage
+    } = state
+
+    {tracks_kw, storage} = Enum.reduce(manifest.tracks, {[], storage}, fn({track_name, track}, {acc, storage}) ->
+      with {changeset, track} <- Track.finish(track),
+           {:ok, storage} <- Storage.apply_track_changeset(storage, track.id, changeset) do
+        {[{track_name, track}|acc], storage}
+      else
+        {{:error, reason}, _storage} ->
+          raise "Failed to store apply changeset for track #{inspect(track.id)} due to #{inspect(reason)}"
+      end
+    end)
+
+    manifest = manifest
+      |> Map.put(:tracks, Map.new(tracks_kw))
+      |> Manifest.from_beginning()
+
+    case serialize_and_store_manifest(manifest, storage) do
+      {:ok, storage} ->
+        state = %{state | manifest: manifest, storage: storage}
+        :ok = maybe_schedule_cleanup_task(state)
+        {[notify_parent: :finalized], state}
+
+      {{:error, reason}, _storage} ->
+        raise "Failed to persist the manifest due to #{inspect(reason)}"
+    end
+  end
+
   @impl true
   def handle_stream_format(
         Pad.ref(:input, track_id) = pad_ref,
@@ -245,12 +276,18 @@ defmodule Algora.Pipeline.Sink do
         _ctx,
         %{manifest: manifest, storage: storage} = state
       ) do
-    {changeset, manifest} = Manifest.finish(manifest, track_id)
 
-    with {:ok, storage} <- Storage.apply_track_changeset(storage, track_id, changeset),
-         {:ok, storage} <- serialize_and_store_manifest(manifest, storage) do
-      storage = Storage.clear_cache(storage)
-      {[], %{state | storage: storage, manifest: manifest}}
+    tracks = manifest.tracks
+    manifest = if track = tracks[track_id] do
+      {_header_name, track} = Track.discontinue(track)
+      %{ manifest | tracks: %{ tracks | track_id => track } }
+    else
+      manifest
+    end
+
+    with {:ok, storage} <- serialize_and_store_manifest(manifest, storage) do
+      state = %{state | storage: storage, manifest: manifest}
+      {[notify_parent: {:track_discontinued, track_id}], state}
     else
       {{:error, reason}, _storage} ->
         raise "Failed to store the finalized manifest for track #{inspect(track_id)} due to #{inspect(reason)}"
@@ -281,8 +318,14 @@ defmodule Algora.Pipeline.Sink do
 
     result =
       if any_track_persisted? do
+        # reconfigure tracks to disable partial segments on final manifest
+        tracks = Enum.reduce(manifest.tracks, %{}, fn({name, track}, acc) ->
+          Map.put(acc, name, %Track{ track | mode: :vod, partial_segment_duration: nil })
+        end)
+
         {result, storage} =
           manifest
+          |> Map.put(:tracks, tracks)
           |> Manifest.from_beginning()
           |> serialize_and_store_manifest(storage)
 
@@ -296,10 +339,14 @@ defmodule Algora.Pipeline.Sink do
         :ok = maybe_schedule_cleanup_task(state)
 
         {[terminate: :normal], state}
-
       {{:error, reason}, _state} ->
         raise "Failed to persist the manifest due to #{inspect(reason)}"
     end
+  end
+
+  @impl true
+  def handle_info({:DOWN, _rev, :process, _pid, _reason}, _ctx, state) do
+    {[], state}
   end
 
   defp serialize_track_name(track_id) when is_binary(track_id) do
@@ -359,4 +406,5 @@ defmodule Algora.Pipeline.Sink do
 
     :ok
   end
+
 end

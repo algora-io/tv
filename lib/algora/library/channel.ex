@@ -10,5 +10,6 @@ defmodule Algora.Library.Channel do
             bounties_count: nil,
             orgs_contributed: nil,
             tech: nil,
-            solving_challenge: nil
+            solving_challenge: nil,
+            tags: []
 end
