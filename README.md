@@ -9,8 +9,6 @@
   <p align="center">
     The interactive livestreaming & video sharing service for developers.
     <br />
-    <a href="https://tv.algora.io">Website</a>
-    ·
     <a href="https://algora.io/discord">Discord</a>
     ·
     <a href="https://twitter.com/algoraio">Twitter</a>
@@ -21,18 +19,18 @@
   </p>
   
   <p align="center">
-    <a href="https://console.algora.io/org/algora/bounties?status=open">
-      <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fconsole.algora.io%2Fapi%2Fshields%2Falgora%2Fbounties%3Fstatus%3Dopen" alt="Open Bounties">
+    <a href="https://algora.io/algora/bounties?status=open">
+      <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Falgora.io%2Fapi%2Fshields%2Falgora%2Fbounties%3Fstatus%3Dopen" alt="Open Bounties">
     </a>
-    <a href="https://console.algora.io/org/algora/bounties?status=completed">
-      <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fconsole.algora.io%2Fapi%2Fshields%2Falgora%2Fbounties%3Fstatus%3Dcompleted" alt="Rewarded Bounties">
+    <a href="https://algora.io/algora/bounties?status=completed">
+      <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Falgora.io%2Fapi%2Fshields%2Falgora%2Fbounties%3Fstatus%3Dcompleted" alt="Rewarded Bounties">
     </a>
   </p>
 </p>
 
 ## ✨ New feature: Earn with Livestream Billboards! ✨
 
-Algora Live Billboards allow for in-video ads, helping devs earn money while livestreaming and giving devtools companies a novel channel to reach new audiences. [Learn more](https://tv.algora.io/partner)
+Algora Live Billboards allow for in-video ads, helping devs earn money while livestreaming and giving devtools companies a novel channel to reach new audiences.
 
 https://github.com/user-attachments/assets/6f706a4b-210f-4ec8-a817-2a72cea0954a
 
